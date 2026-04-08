@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte de Ventas por Canal — 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg: #F5F4F0;
+  --surface: #FFFFFF;
+  --surface2: #EEECEA;
+  --border: rgba(0,0,0,0.08);
+  --border-strong: rgba(0,0,0,0.14);
+  --text: #1A1916;
+  --text-muted: #6B6860;
+  --text-faint: #A09D98;
+  --accent: #1A1916;
+  --green: #1D6E45;
+  --green-bg: #EAF5EE;
+  --amber: #A05C00;
+  --amber-bg: #FEF3E2;
+  --red: #C0392B;
+  --red-bg: #FDEEEC;
+  --blue: #1B4F9B;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border-strong);
+}
+.header-left h1 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+.header-left p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.header-badge {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 5px 10px;
+  border-radius: 20px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--accent);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.kpi-label { font-size: 11px; color: var(--text-faint); font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+.kpi-value { font-size: 26px; font-weight: 600; letter-spacing: -0.5px; font-family: 'DM Mono', monospace; }
+.kpi-sub { font-size: 12px; color: var(--text-muted); margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+.kpi-meta { font-size: 11px; color: var(--text-faint); font-family: 'DM Mono', monospace; margin-top: 4px; }
+.badge-up { background: var(--green-bg); color: var(--green); font-size: 11px; font-weight: 500; padding: 2px 7px; border-radius: 20px; }
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-faint);
+  margin-bottom: 14px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  margin-bottom: 20px;
+}
+.card-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.ld { width: 10px; height: 10px; border-radius: 2px; }
+.chart-wrap { position: relative; width: 100%; }
+.tabs-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  background: var(--surface2);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  width: fit-content;
+}
+.tab {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 18px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+.tab.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.month-panel { display: none; }
+.month-panel.visible { display: block; }
+.obj-table { width: 100%; border-collapse: collapse; }
+.obj-table thead th {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.obj-table thead th:not(:first-child) { text-align: right; }
+.obj-table tbody td {
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  vertical-align: middle;
+}
+.obj-table tbody td:not(:first-child) { text-align: right; }
+.obj-table tbody tr:last-child td { border-bottom: none; }
+.ch-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+.ch-pip { width: 8px; height: 8px; border-radius: 2px; }
+.obj-input {
+  width: 100px;
+  font-size: 13px;
+  font-family: 'DM Mono', monospace;
+  padding: 5px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  text-align: right;
+  transition: border-color 0.15s;
+  -moz-appearance: textfield;
+}
+.obj-input::-webkit-outer-spin-button,
+.obj-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.obj-input:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+.pb-cell { min-width: 140px; }
+.pb-wrap { display: flex; align-items: center; gap: 8px; }
+.pb-bg { flex: 1; height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+.pb-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease, background 0.3s; }
+.pct-val { font-size: 12px; font-family: 'DM Mono', monospace; font-weight: 500; min-width: 36px; text-align: right; }
+.gap-val { font-size: 12px; font-family: 'DM Mono', monospace; }
+.g-pos { color: var(--green); }
+.g-neg { color: var(--red); }
+.total-row td { font-weight: 600; padding-top: 14px; border-bottom: none !important; }
+.total-sep { border-top: 1px solid var(--border-strong) !important; }
+.footnote {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+@media (max-width: 700px) {
+  .kpi-row { grid-template-columns: 1fr; }
+  header { flex-direction: column; gap: 12px; }
+  .obj-table thead th:nth-child(3),
+  .obj-table tbody td:nth-child(3) { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="header-left">
+      <h1>Reporte de ventas por canal</h1>
+      <p>Facturación mensual acumulada · Enero – Marzo 2026</p>
+    </div>
+    <span class="header-badge" id="last-updated">Actualizado: abril 2026</span>
+  </header>
+
+  <div class="section-title">Facturación total</div>
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">Enero 2026</div>
+      <div class="kpi-value">S/. 57,658</div>
+      <div class="kpi-sub">31 días registrados</div>
+      <div class="kpi-meta" id="kpi-meta-Enero">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Febrero 2026</div>
+      <div class="kpi-value">S/. 63,301</div>
+      <div class="kpi-sub"><span class="badge-up">+9.8%</span> vs enero</div>
+      <div class="kpi-meta" id="kpi-meta-Febrero">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Marzo 2026</div>
+      <div class="kpi-value">S/. 78,848</div>
+      <div class="kpi-sub"><span class="badge-up">+24.6%</span> vs febrero</div>
+      <div class="kpi-meta" id="kpi-meta-Marzo">—</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Distribución de facturación por canal (S/.)</div>
+    <div class="legend" id="legend-abs"></div>
+    <div class="chart-wrap" style="height:230px;">
+      <canvas id="chart-abs" role="img" aria-label="Barras apiladas de facturación por canal enero a marzo 2026"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Mix de canales por mes (%)</div>
+    <div class="legend" id="legend-pct"></div>
+    <div class="chart-wrap" style="height:200px;">
+      <canvas id="chart-pct" role="img" aria-label="Barras 100% apiladas mostrando participación por canal"></canvas>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:32px;">Simulación de objetivos por canal</div>
+  <p style="font-size:13px;color:var(--text-muted);margin-bottom:18px;">Ingresa el objetivo mensual por canal. El avance y brecha se calculan en tiempo real.</p>
+
+  <div class="tabs-row" id="tabs"></div>
+  <div id="panels"></div>
+
+  <div class="footnote">
+    <span>Fuente: Tasa de ventas diarias 2026 — datos del cliente</span>
+    <span>Lima Retail · Reporte interno</span>
+  </div>
+
+</div>
+
+<script>
+const months = ['Enero','Febrero','Marzo'];
+const channels = ['Tienda','Web','WhatsApp','Showroom','Instagram','Facebook'];
+
+const realData = {
+  Enero:   {Tienda:39013.52, Web:10223.82, WhatsApp:3181.40, Showroom:3818.40, Instagram:1420.80, Facebook:0},
+  Febrero: {Tienda:44573.33, Web:13197.54, WhatsApp:3562.50, Showroom:1967.40, Instagram:0,       Facebook:0},
+  Marzo:   {Tienda:61837.00, Web:9675.70,  WhatsApp:3939.90, Showroom:2573.30, Instagram:822.40,  Facebook:0},
+};
+
+const defaultTargets = {
+  Enero:   {Tienda:40000, Web:11000, WhatsApp:3500, Showroom:4000, Instagram:1500, Facebook:0},
+  Febrero: {Tienda:46000, Web:14000, WhatsApp:4000, Showroom:2500, Instagram:500,  Facebook:0},
+  Marzo:   {Tienda:62000, Web:12000, WhatsApp:4500, Showroom:3000, Instagram:1000, Facebook:0},
+};
+
+const targets = JSON.parse(JSON.stringify(defaultTargets));
+
+const palette = {
+  Tienda:'#2563EB', Web:'#16A34A', WhatsApp:'#65A30D', Showroom:'#D97706', Instagram:'#DB2777', Facebook:'#9CA3AF'
+};
+
+function fmt(n) { return Math.round(n).toLocaleString('es-PE'); }
+function pctColor(p) { return p>=100 ? 'var(--green)' : p>=80 ? 'var(--amber)' : 'var(--red)'; }
+function pctBg(p) { return p>=100 ? '#2563EB' : p>=80 ? '#D97706' : '#DC2626'; }
+
+function buildLegend(id) {
+  const el = document.getElementById(id);
+  channels.forEach(ch => {
+    const total = months.reduce((s,m) => s + realData[m][ch], 0);
+    if (!total) return;
+    el.insertAdjacentHTML('beforeend',
+      `<span class="legend-item"><span class="ld" style="background:${palette[ch]}"></span>${ch}</span>`);
+  });
+}
+buildLegend('legend-abs');
+buildLegend('legend-pct');
+
+const tickColor = '#A09D98';
+const gridColor = 'rgba(0,0,0,0.05)';
+
+new Chart(document.getElementById('chart-abs'), {
+  type:'bar',
+  data:{
+    labels: months,
+    datasets: channels.map(ch => ({
+      label: ch,
+      data: months.map(m => Math.round(realData[m][ch])),
+      backgroundColor: palette[ch],
+      borderRadius: 3,
+    }))
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ' '+ctx.dataset.label+': S/. '+ctx.raw.toLocaleString('es-PE') }}},
+    scales:{
+      x:{ stacked:true, ticks:{color:tickColor, font:{family:'DM Sans'}}, grid:{display:false} },
+      y:{ stacked:true, ticks:{color:tickColor, font:{family:'DM Mono',size:11}, callback: v=>'S/. '+(v/1000).toFixed(0)+'k'}, grid:{color:gridColor} }
+    }
+  }
+});
+
+new Chart(document.getElementById('chart-pct'), {
+  type:'bar',
+  data:{
+    labels: months,
+    datasets: channels.map(ch => ({
+      label: ch,
+      data: months.map(m => {
+        const t = channels.reduce((s,c)=>s+realData[m][c],0);
+        return t>0 ? parseFloat((realData[m][ch]/t*100).toFixed(1)) : 0;
+      }),
+      backgroundColor: palette[ch],
+      borderRadius: 3,
+    }))
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ' '+ctx.dataset.label+': '+ctx.raw+'%' }}},
+    scales:{
+      x:{ stacked:true, ticks:{color:tickColor, font:{family:'DM Sans'}}, grid:{display:false} },
+      y:{ stacked:true, max:100, ticks:{color:tickColor, font:{family:'DM Mono',size:11}, callback: v=>v+'%'}, grid:{color:gridColor} }
+    }
+  }
+});
+
+function updateKpi(month) {
+  const real = channels.reduce((s,ch)=>s+realData[month][ch],0);
+  const target = channels.reduce((s,ch)=>s+(targets[month][ch]||0),0);
+  const p = target>0 ? real/target*100 : 0;
+  const el = document.getElementById('kpi-meta-'+month);
+  if(!el) return;
+  if(target===0){ el.textContent='Sin objetivo definido'; return; }
+  const gap = real-target;
+  const sign = gap>=0 ? '+' : '';
+  el.innerHTML = `Meta S/. ${fmt(target)} &nbsp;·&nbsp; <span style="color:${pctColor(p)};font-weight:600">${p.toFixed(1)}%</span> &nbsp;·&nbsp; <span style="color:${gap>=0?'var(--green)':'var(--red)'}">${sign}S/. ${fmt(gap)}</span>`;
+}
+
+function refreshRow(month, ch) {
+  const rawVal = document.getElementById(`inp-${month}-${ch}`).value;
+  targets[month][ch] = parseFloat(rawVal) || 0;
+  const real = realData[month][ch];
+  const target = targets[month][ch];
+  const p = target>0 ? real/target*100 : 0;
+  const pb = document.getElementById(`pb-${month}-${ch}`);
+  const pv = document.getElementById(`pv-${month}-${ch}`);
+  const gv = document.getElementById(`gv-${month}-${ch}`);
+  pb.style.width = Math.min(p,100).toFixed(1)+'%';
+  pb.style.background = pctBg(p);
+  pv.textContent = p.toFixed(0)+'%';
+  pv.style.color = pctColor(p);
+  const gap = real-target;
+  gv.textContent = (gap>=0?'+':'')+'S/. '+fmt(gap);
+  gv.className = 'gap-val '+(gap>=0?'g-pos':'g-neg');
+  refreshTotalRow(month);
+  updateKpi(month);
+}
+
+function refreshTotalRow(month) {
+  const totalReal = channels.reduce((s,ch)=>s+realData[month][ch],0);
+  const totalTarget = channels.reduce((s,ch)=>s+(targets[month][ch]||0),0);
+  const p = totalTarget>0 ? totalReal/totalTarget*100 : 0;
+  const pb = document.getElementById(`pb-total-${month}`);
+  const pv = document.getElementById(`pv-total-${month}`);
+  const gv = document.getElementById(`gv-total-${month}`);
+  const mt = document.getElementById(`mt-${month}`);
+  pb.style.width = Math.min(p,100).toFixed(1)+'%';
+  pb.style.background = pctBg(p);
+  pv.textContent = p.toFixed(0)+'%';
+  pv.style.color = pctColor(p);
+  const gap = totalReal-totalTarget;
+  gv.textContent = (gap>=0?'+':'')+'S/. '+fmt(gap);
+  gv.className = 'gap-val '+(gap>=0?'g-pos':'g-neg');
+  if(mt) mt.textContent = 'S/. '+fmt(totalTarget);
+}
+
+const tabsEl = document.getElementById('tabs');
+const panelsEl = document.getElementById('panels');
+
+months.forEach((month, i) => {
+  const panel = document.createElement('div');
+  panel.className = 'month-panel'+(i===0?' visible':'');
+  panel.id = 'panel-'+month;
+
+  const monthTotal = channels.reduce((s,ch)=>s+realData[month][ch],0);
+
+  let rows = '';
+  channels.forEach(ch => {
+    const real = realData[month][ch];
+    const share = monthTotal>0 ? (real/monthTotal*100).toFixed(1) : '0.0';
+    rows += `
+    <tr>
+      <td><span class="ch-name"><span class="ch-pip" style="background:${palette[ch]}"></span>${ch}</span></td>
+      <td style="font-family:'DM Mono',monospace;">S/. ${fmt(real)}</td>
+      <td>${share}%</td>
+      <td><input class="obj-input" type="number" id="inp-${month}-${ch}" value="${targets[month][ch]}" min="0" step="100"></td>
+      <td class="pb-cell">
+        <div class="pb-wrap">
+          <div class="pb-bg"><div class="pb-fill" id="pb-${month}-${ch}"></div></div>
+          <span class="pct-val" id="pv-${month}-${ch}"></span>
+        </div>
+      </td>
+      <td id="gv-${month}-${ch}"></td>
+    </tr>`;
+  });
+
+  panel.innerHTML = `
+  <div class="card" style="padding:0;overflow:hidden;">
+    <table class="obj-table" style="padding:0 24px;">
+      <thead style="padding:0 24px;">
+        <tr style="padding:0 24px;">
+          <th style="padding-left:24px;">Canal</th>
+          <th>Real</th>
+          <th>% del mes</th>
+          <th>Objetivo S/.</th>
+          <th class="pb-cell">Avance</th>
+          <th>Brecha</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-${month}" style="padding:0 24px;">${rows}
+        <tr class="total-row">
+          <td class="total-sep" style="padding-left:24px;">Total</td>
+          <td class="total-sep" style="font-family:'DM Mono',monospace;">S/. ${fmt(monthTotal)}</td>
+          <td class="total-sep">100%</td>
+          <td class="total-sep" id="mt-${month}" style="font-family:'DM Mono',monospace;text-align:right;color:var(--text-muted)"></td>
+          <td class="total-sep pb-cell">
+            <div class="pb-wrap">
+              <div class="pb-bg"><div class="pb-fill" id="pb-total-${month}"></div></div>
+              <span class="pct-val" id="pv-total-${month}"></span>
+            </div>
+          </td>
+          <td class="total-sep" id="gv-total-${month}"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>`;
+
+  panelsEl.appendChild(panel);
+
+  channels.forEach(ch => {
+    document.getElementById(`inp-${month}-${ch}`).addEventListener('input', () => refreshRow(month, ch));
+    refreshRow(month, ch);
+  });
+
+  const tab = document.createElement('button');
+  tab.className = 'tab'+(i===0?' active':'');
+  tab.textContent = month;
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.month-panel').forEach(p=>p.classList.remove('visible'));
+    tab.classList.add('active');
+    panel.classList.add('visible');
+  });
+  tabsEl.appendChild(tab);
+
+  updateKpi(month);
+});
+</script>
+</body>
+</html>

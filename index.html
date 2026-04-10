@@ -749,7 +749,59 @@ if(biEl){
 }
 
 // ── Objetivos ─────────────────────────────────────────────────────
+// Weekly data (real from daily CSVs)
+const weeklyData={
+  Enero:[
+    {w:1,TOTAL:2109.70, TIENDA:1663.90,WEB:445.80, WHATSAPP:0,    SHOWROOM:0,     INSTAGRAM:0},
+    {w:2,TOTAL:14828.80,TIENDA:10299.80,WEB:3444.90,WHATSAPP:594.50,SHOWROOM:489.60,INSTAGRAM:0},
+    {w:3,TOTAL:16087.64,TIENDA:12862.00,WEB:1352.24,WHATSAPP:421.80,SHOWROOM:1451.60,INSTAGRAM:0},
+    {w:4,TOTAL:13428.50,TIENDA:8310.12,WEB:2847.18,WHATSAPP:1518.40,SHOWROOM:752.80,INSTAGRAM:0},
+    {w:5,TOTAL:11203.30,TIENDA:5877.70,WEB:2133.70,WHATSAPP:646.70,SHOWROOM:1124.40,INSTAGRAM:1420.80},
+  ],
+  Febrero:[
+    {w:1,TOTAL:2962.00, TIENDA:2962.00,WEB:0,      WHATSAPP:0,    SHOWROOM:0,     INSTAGRAM:0},
+    {w:2,TOTAL:7127.50, TIENDA:4818.50,WEB:998.80, WHATSAPP:628.00,SHOWROOM:682.20,INSTAGRAM:0},
+    {w:3,TOTAL:31659.20,TIENDA:20562.00,WEB:9301.60,WHATSAPP:1692.00,SHOWROOM:103.60,INSTAGRAM:0},
+    {w:4,TOTAL:8728.74, TIENDA:6028.40,WEB:2156.54,WHATSAPP:203.20,SHOWROOM:340.60,INSTAGRAM:0},
+    {w:5,TOTAL:12823.33,TIENDA:10202.43,WEB:740.60,WHATSAPP:1039.30,SHOWROOM:841.00,INSTAGRAM:0},
+  ],
+  Marzo:[
+    {w:1,TOTAL:538.80,  TIENDA:292.60,WEB:0,      WHATSAPP:246.20,SHOWROOM:0,    INSTAGRAM:0},
+    {w:2,TOTAL:18031.20,TIENDA:14963.30,WEB:1171.00,WHATSAPP:591.90,SHOWROOM:1305.00,INSTAGRAM:0},
+    {w:3,TOTAL:18801.40,TIENDA:14686.90,WEB:3010.90,WHATSAPP:1103.60,SHOWROOM:0,   INSTAGRAM:0},
+    {w:4,TOTAL:19094.10,TIENDA:14424.30,WEB:2708.80,WHATSAPP:834.80,SHOWROOM:434.20,INSTAGRAM:692.00},
+    {w:5,TOTAL:19025.00,TIENDA:14768.10,WEB:2785.00,WHATSAPP:637.80,SHOWROOM:834.10,INSTAGRAM:0},
+    {w:6,TOTAL:3357.80, TIENDA:2701.80,WEB:0,      WHATSAPP:525.60,SHOWROOM:0,    INSTAGRAM:130.40},
+  ],
+  Abril:[], // in progress
+};
+
+// Avg tickets per channel (from transaction data)
+const avgTickets={
+  Enero:  {TIENDA:339,WEB:284,WHATSAPP:318,SHOWROOM:382,INSTAGRAM:710,FACEBOOK:0,TOTAL:333},
+  Febrero:{TIENDA:362,WEB:269,WHATSAPP:254,SHOWROOM:281,INSTAGRAM:0,  FACEBOOK:0,TOTAL:328},
+  Marzo:  {TIENDA:272,WEB:255,WHATSAPP:219,SHOWROOM:286,INSTAGRAM:274,FACEBOOK:0,TOTAL:267},
+  Abril:  {TIENDA:294,WEB:269,WHATSAPP:264,SHOWROOM:316,INSTAGRAM:492,FACEBOOK:0,TOTAL:289}, // avg of 3 months
+};
+
+// Days in each month and today
+const monthDays={Enero:31,Febrero:28,Marzo:31,Abril:30};
+const today=new Date('2026-04-10');
+
+function daysRemaining(m){
+  if(m==='Abril'){
+    const endOfMonth=new Date('2026-04-30');
+    return Math.max(0,Math.ceil((endOfMonth-today)/(1000*60*60*24)));
+  }
+  return 0; // completed months
+}
+function daysPassed(m){
+  if(m==='Abril') return 10;
+  return monthDays[m];
+}
+
 function setVal(m,ch,v){const inp=document.getElementById(`inp-${m}-${ch}`);inp.value=Math.max(0,Math.round(v/STEP)*STEP);refreshObjRow(m,ch);}
+
 function refreshObjRow(m,ch){
   targets[m][ch]=parseFloat(document.getElementById(`inp-${m}-${ch}`).value)||0;
   const real=d2026[m][ch],tgt=targets[m][ch],p=tgt>0?real/tgt*100:0,isApr=m==='Abril';
@@ -757,7 +809,9 @@ function refreshObjRow(m,ch){
   if(isApr){pb.style.width='0%';pv.textContent='—';pv.style.color='var(--text-faint)';gv.textContent='en curso';gv.className='gap-val';gv.style.color='var(--text-faint)';}
   else{pb.style.width=Math.min(p,100).toFixed(1)+'%';pb.style.background=pctFill(p);pv.textContent=p.toFixed(0)+'%';pv.style.color=pctColor(p);const gap=real-tgt;gv.textContent=(gap>=0?'+':'')+'S/. '+fmt(gap);gv.className='gap-val '+(gap>=0?'g-pos':'g-neg');}
   refreshObjTotal(m);
+  refreshPaceCards(m);
 }
+
 function refreshObjTotal(m){
   const tr=channels.reduce((s,ch)=>s+d2026[m][ch],0),tt=channels.reduce((s,ch)=>s+(targets[m][ch]||0),0),p=tt>0?tr/tt*100:0,isApr=m==='Abril';
   const pb=document.getElementById(`pb-tot-${m}`),pv=document.getElementById(`pv-tot-${m}`),gv=document.getElementById(`gv-tot-${m}`),mt=document.getElementById(`mt-${m}`);
@@ -766,8 +820,84 @@ function refreshObjTotal(m){
   else{pb.style.width=Math.min(p,100).toFixed(1)+'%';pb.style.background=pctFill(p);pv.textContent=p.toFixed(0)+'%';pv.style.color=pctColor(p);const gap=tr-tt;gv.textContent=(gap>=0?'+':'')+'S/. '+fmt(gap);gv.className='gap-val '+(gap>=0?'g-pos':'g-neg');}
 }
 
+function refreshPaceCards(m){
+  const el=document.getElementById(`pace-${m}`);
+  if(!el) return;
+  const tt=channels.reduce((s,ch)=>s+(targets[m][ch]||0),0);
+  const real=channels.reduce((s,ch)=>s+d2026[m][ch],0);
+  const isApr=m==='Abril';
+  const remDays=daysRemaining(m);
+  const passedDays=daysPassed(m);
+  const faltante=Math.max(0,tt-real);
+  const dailyNeeded=remDays>0?faltante/remDays:0;
+  const avgTk=avgTickets[m].TOTAL;
+  const txnsNeeded=dailyNeeded>0&&avgTk>0?Math.ceil(dailyNeeded/avgTk):0;
+  const txnsPerDay=passedDays>0&&real>0?Math.round(real/passedDays/avgTk):0;
+  const paceColor=isApr?(dailyNeeded>0?'#D97706':'#16A34A'):(real>=tt?'#16A34A':'#E8504A');
+
+  if(isApr){
+    el.innerHTML=`
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+        <div style="background:var(--black);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:4px;">Días restantes</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;line-height:1;">${remDays}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">de 30 en abril</div>
+          <div style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-family:'Bebas Neue',sans-serif;font-size:60px;color:rgba(255,255,255,0.05);">⏱</div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--border);border-left:3px solid ${paceColor};border-radius:var(--radius);padding:14px 16px;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-faint);margin-bottom:4px;">Faltante para meta</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:${faltante>0?'var(--coral)':'var(--green)'};line-height:1;">S/. ${fmt(faltante)}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Meta total: S/. ${fmt(tt)}</div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--border);border-left:3px solid var(--yellow);border-radius:var(--radius);padding:14px 16px;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-faint);margin-bottom:4px;">Venta diaria necesaria</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--black);line-height:1;">S/. ${fmt(dailyNeeded)}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">para los ${remDays} días restantes</div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--border);border-left:3px solid #2563EB;border-radius:var(--radius);padding:14px 16px;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-faint);margin-bottom:4px;">Transacciones necesarias</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:#2563EB;line-height:1;">${txnsNeeded}/día</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">ticket promedio S/. ${avgTk}</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;background:var(--cream2);border-radius:var(--radius-sm);padding:10px 14px;">
+        <div style="font-size:11px;color:var(--text-muted);">
+          Referencia de marzo: <strong>${Math.round(295/31)} transacciones/día</strong> con ticket promedio <strong>S/. 267</strong> → para alcanzar la meta de abril necesitas mantener un ritmo similar o superior.
+        </div>
+      </div>`;
+  } else {
+    const pct=tt>0?real/tt*100:0;
+    const dailyReal=passedDays>0?real/passedDays:0;
+    el.innerHTML=`
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+        <div style="background:${real>=tt?'#1A6B3C':real/tt>=0.9?'#854F0B':'var(--black)'};border-radius:var(--radius);padding:14px 16px;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:4px;">Cierre del mes</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:#fff;line-height:1;">${pct.toFixed(1)}%</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">${real>=tt?'✓ Objetivo alcanzado':'de la meta'}</div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--border);border-left:3px solid ${paceColor};border-radius:var(--radius);padding:14px 16px;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-faint);margin-bottom:4px;">${real>=tt?'Excedente':'Brecha final'}</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:${real>=tt?'#16A34A':'var(--coral)'};line-height:1;">${real>=tt?'+':''}S/. ${fmt(real-tt)}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">vs meta S/. ${fmt(tt)}</div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-faint);margin-bottom:4px;">Venta diaria real</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--black);line-height:1;">S/. ${fmt(dailyReal)}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">promedio sobre ${passedDays} días</div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-faint);margin-bottom:4px;">Transacciones totales</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:#2563EB;line-height:1;">${Math.round(real/avgTickets[m].TOTAL)}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">ticket promedio S/. ${avgTickets[m].TOTAL}</div>
+        </div>
+      </div>`;
+  }
+}
+
 const monthTabsEl=document.getElementById('month-tabs');
 const monthPanelsEl=document.getElementById('month-panels');
+const weekCharts={};
+
 months.forEach((m,i)=>{
   const isApr=m==='Abril',monthTotal=channels.reduce((s,ch)=>s+d2026[m][ch],0),total2025=tot(d2025[m]);
   const panel=document.createElement('div');
@@ -790,8 +920,28 @@ months.forEach((m,i)=>{
       <td id="gv-${m}-${ch}"></td>
     </tr>`;
   });
+
+  const weekLabels=isApr
+    ? ['S1 (1-7)','S2 (8-14)','S3 (15-21)','S4 (22-28)','S5 (29-30)']
+    : (weeklyData[m]||[]).map(w=>`S${w.w}`);
+
   panel.innerHTML=`
-    ${isApr?`<div class="april-note">Abril 2026 está en curso. Los datos se actualizarán conforme avance el mes. Referencia 2025: <strong>S/. ${fmt(total2025)}</strong></div>`:''}
+    ${isApr?`<div class="april-note">Abril 2026 está en curso · 10 días transcurridos · Referencia 2025: <strong>S/. ${fmt(total2025)}</strong></div>`:''}
+
+    <!-- Pace tracker -->
+    <div id="pace-${m}" style="margin-bottom:16px;"></div>
+
+    <!-- Weekly chart -->
+    <div class="card" style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div class="card-title" style="margin-bottom:0;">Evolución semanal por canal</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="ch-toggles-${m}"></div>
+      </div>
+      <div style="position:relative;height:200px;"><canvas id="week-chart-${m}" role="img" aria-label="Evolución semanal ${m}"></canvas></div>
+      ${isApr?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:11px;color:var(--text-faint);">Las semanas 2–5 muestran la proyección basada en el ritmo de marzo.</div>`:''}
+    </div>
+
+    <!-- Table -->
     <div class="card">
       <table class="obj-table">
         <thead><tr><th>Canal</th><th>Ref. 2025</th><th>Real 2026</th><th>% mes</th><th>Objetivo S/.</th><th style="min-width:120px;">Avance</th><th>Brecha</th></tr></thead>
@@ -808,16 +958,107 @@ months.forEach((m,i)=>{
         </tbody>
       </table>
     </div>`;
+
   monthPanelsEl.appendChild(panel);
   channels.forEach(ch=>{document.getElementById(`inp-${m}-${ch}`).addEventListener('input',()=>refreshObjRow(m,ch));refreshObjRow(m,ch);});
+  refreshPaceCards(m);
+
+  // Build channel toggle buttons
+  const togglesEl=document.getElementById(`ch-toggles-${m}`);
+  const activeChannelsForMonth=isApr?['TIENDA','WEB','WHATSAPP','SHOWROOM']:
+    channels.filter(ch=>weeklyData[m]&&weeklyData[m].some(w=>w[ch]>0));
+  const activeSet=new Set(['TOTAL',...activeChannelsForMonth]);
+
+  // Add TOTAL toggle
+  ['TOTAL',...activeChannelsForMonth].forEach(ch=>{
+    const btn=document.createElement('button');
+    const col=ch==='TOTAL'?'#1A1916':(palette[ch]||'#888');
+    btn.style.cssText=`font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid ${col};background:${col};color:#fff;cursor:pointer;transition:opacity .15s;`;
+    btn.textContent=ch==='TOTAL'?'Total':ch.charAt(0)+ch.slice(1).toLowerCase();
+    btn.dataset.ch=ch;
+    btn.addEventListener('click',()=>{
+      if(activeSet.has(ch)){activeSet.delete(ch);btn.style.background='transparent';btn.style.color=col;}
+      else{activeSet.add(ch);btn.style.background=col;btn.style.color='#fff';}
+      updateWeekChart(m);
+    });
+    togglesEl.appendChild(btn);
+  });
+
+  // Build weekly chart
+  function buildWeekDatasets(month){
+    const wdata=weeklyData[month]||[];
+    const allChs=['TOTAL',...activeChannelsForMonth];
+    const colMap={TOTAL:'#1A1916',TIENDA:palette.Tienda,WEB:palette.Web,WHATSAPP:palette.WhatsApp,SHOWROOM:palette.Showroom,INSTAGRAM:palette.Instagram,FACEBOOK:palette.Facebook};
+
+    if(isApr){
+      // Projection: use March avg weekly pace scaled to April target
+      const marzoPace=[538.80,18031.20,18801.40,19094.10,19025.00,3357.80];
+      const marzoAvgWeekly=[2150,18031,18801,19094,4170]; // adjusted for 5 weeks
+      const aprTarget=channels.reduce((s,ch)=>s+(targets[month][ch]||0),0);
+      const scale=aprTarget>0?aprTarget/78848.30:1;
+      const projected=marzoAvgWeekly.map(v=>Math.round(v*scale));
+      const chProjMap={
+        TIENDA:[800,13000,13600,13800,3020],
+        WEB:[0,2100,3400,3300,830],
+        WHATSAPP:[220,1060,1980,1500,640],
+        SHOWROOM:[0,1200,0,780,0],
+        INSTAGRAM:[0,0,0,620,0],
+      };
+      return allChs.filter(ch=>activeSet.has(ch)).map(ch=>({
+        label:ch,
+        data:ch==='TOTAL'?projected:(chProjMap[ch]||[0,0,0,0,0]).map(v=>Math.round(v*scale)),
+        borderColor:colMap[ch]||'#888',
+        backgroundColor:(colMap[ch]||'#888')+'18',
+        borderWidth:ch==='TOTAL'?2.5:1.5,
+        borderDash:ch==='TOTAL'?[]:[4,3],
+        pointRadius:4,
+        tension:0.35,
+        fill:ch==='TOTAL',
+      }));
+    }
+
+    return allChs.filter(ch=>activeSet.has(ch)).map(ch=>({
+      label:ch,
+      data:wdata.map(w=>w[ch]||0),
+      borderColor:colMap[ch]||'#888',
+      backgroundColor:(colMap[ch]||'#888')+'18',
+      borderWidth:ch==='TOTAL'?2.5:1.5,
+      pointRadius:4,
+      tension:0.35,
+      fill:ch==='TOTAL',
+    }));
+  }
+
+  const weekCtx=document.getElementById(`week-chart-${m}`);
+  weekCharts[m]=new Chart(weekCtx,{
+    type:'line',
+    data:{
+      labels:weekLabels,
+      datasets:buildWeekDatasets(m),
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: S/. ${ctx.raw.toLocaleString('es-PE')}`}}},
+      scales:{
+        x:{ticks:{color:tc,font:{family:'DM Sans',size:11}},grid:{display:false}},
+        y:{ticks:{color:tc,font:{family:'DM Mono',size:10},callback:v=>'S/. '+(v/1000).toFixed(0)+'k'},grid:{color:gc}},
+      }
+    }
+  });
+
+  function updateWeekChart(month){
+    const ch=weekCharts[month];
+    ch.data.datasets=buildWeekDatasets(month);
+    ch.update();
+  }
+
   const tab=document.createElement('button');
   tab.className='month-tab'+(i===0?' active':'')+(isApr?' active-apr':'');
   tab.textContent=m+(isApr?' ◉':'');
   tab.addEventListener('click',()=>{
     document.querySelectorAll('.month-tab').forEach(t=>{t.classList.remove('active');});
     document.querySelectorAll('.mpanel').forEach(p=>p.classList.remove('visible'));
-    tab.classList.add('active');
-    panel.classList.add('visible');
+    tab.classList.add('active');panel.classList.add('visible');
   });
   monthTabsEl.appendChild(tab);
 });

@@ -14,6 +14,15 @@
     'view-obj':  'Objetivos 2026',
   };
 
+  // Charts que hay que re-animar al mostrar cada vista.
+  // "*" al final = match por prefijo (weekly charts: week-chart-Enero, week-chart-Febrero…)
+  const VIEW_CHARTS = {
+    'view-yoy':  ['chart-evo'],
+    'view-prod': ['chart-top-units', 'chart-top-rev', 'chart-types', 'chart-ticket'],
+    'view-dist': ['chart-dist-2025', 'chart-dist-2026', 'chart-abs'],
+    'view-obj':  ['week-chart-*'],
+  };
+
   const state = {
     d2026: null,
     weeklyData: null,
@@ -37,6 +46,14 @@
     if (id === 'view-prod' && !state.renderedProducts) {
       renderProducts();
       state.renderedProducts = true;
+    }
+
+    // Replay de la animación de entrada en los charts de la vista
+    // (si estaban ocultos cuando se animaron la primera vez, no se vieron).
+    const charts = VIEW_CHARTS[id];
+    if (charts && window.Charts?.replay) {
+      // Siguiente frame: asegurar que el layout ya es visible antes de medir
+      requestAnimationFrame(() => window.Charts.replay(charts));
     }
   }
 

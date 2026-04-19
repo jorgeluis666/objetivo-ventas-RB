@@ -80,6 +80,24 @@
     return chart;
   }
 
+  // Re-ejecuta la animación de entrada de los charts indicados.
+  // Útil al cambiar de vista — los charts ocultos no se "ven" animarse.
+  function replay(ids) {
+    const list = Array.isArray(ids) ? ids : [ids];
+    list.forEach(id => {
+      // Admite prefijos tipo "week-chart-" para grupos.
+      if (id.endsWith('*')) {
+        const prefix = id.slice(0, -1);
+        instances.forEach((chart, key) => {
+          if (key.startsWith(prefix)) { chart.reset(); chart.update(); }
+        });
+        return;
+      }
+      const chart = instances.get(id);
+      if (chart) { chart.reset(); chart.update(); }
+    });
+  }
+
   // ── Helpers ──
   const tot = obj => channels.reduce((s, c) => s + (obj[c] || 0), 0);
   const fmt = n => Math.round(n).toLocaleString('es-PE');
@@ -375,7 +393,8 @@
 
   global.Charts = {
     evoChart, distCharts, absChart, productCharts, weeklyChart,
-    destroy, destroyAll: () => { instances.forEach(c => c.destroy()); instances.clear(); },
+    destroy, replay,
+    destroyAll: () => { instances.forEach(c => c.destroy()); instances.clear(); },
     tot, fmt,
   };
 })(window);

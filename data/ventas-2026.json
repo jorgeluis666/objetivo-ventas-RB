@@ -1,100 +1,528 @@
 {
-  "generated": "2026-04-19T17:02:46",
+  "generated": "2026-04-19T17:06:14",
   "d2026": {
     "Enero": {
-      "WhatsApp": 0,
-      "Instagram": 0,
+      "WhatsApp": 3181.4,
+      "Instagram": 1420.8,
       "Facebook": 0,
-      "Showroom": 0,
-      "Web": 0,
-      "Tienda": 0
+      "Showroom": 3818.4,
+      "Web": 10223.82,
+      "Tienda": 39013.52
     },
     "Febrero": {
-      "WhatsApp": 0,
+      "WhatsApp": 3562.5,
       "Instagram": 0,
       "Facebook": 0,
-      "Showroom": 0,
-      "Web": 0,
-      "Tienda": 0
+      "Showroom": 1967.4,
+      "Web": 13197.54,
+      "Tienda": 44573.33
     },
     "Marzo": {
-      "WhatsApp": 0,
-      "Instagram": 0,
+      "WhatsApp": 3939.9,
+      "Instagram": 822.4,
       "Facebook": 0,
-      "Showroom": 0,
-      "Web": 0,
-      "Tienda": 0
+      "Showroom": 2573.3,
+      "Web": 9675.7,
+      "Tienda": 61837
     },
     "Abril": {
-      "WhatsApp": 0,
-      "Instagram": 0,
+      "WhatsApp": 456.6,
+      "Instagram": 242.4,
       "Facebook": 0,
-      "Showroom": 0,
-      "Web": 0,
-      "Tienda": 0
+      "Showroom": 936.2,
+      "Web": 2761,
+      "Tienda": 27523.7
     }
   },
   "weeklyData": {
-    "Enero": [],
-    "Febrero": [],
-    "Marzo": [],
-    "Abril": []
+    "Enero": [
+      {
+        "w": 1,
+        "TOTAL": 2109.7,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 445.8,
+        "TIENDA": 1663.9
+      },
+      {
+        "w": 2,
+        "TOTAL": 14828.8,
+        "WHATSAPP": 594.5,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 489.6,
+        "WEB": 3444.9,
+        "TIENDA": 10299.8
+      },
+      {
+        "w": 3,
+        "TOTAL": 16087.64,
+        "WHATSAPP": 421.8,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 1451.6,
+        "WEB": 1352.24,
+        "TIENDA": 12862
+      },
+      {
+        "w": 4,
+        "TOTAL": 13428.5,
+        "WHATSAPP": 1518.4,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 752.8,
+        "WEB": 2847.18,
+        "TIENDA": 8310.12
+      },
+      {
+        "w": 5,
+        "TOTAL": 11203.3,
+        "WHATSAPP": 646.7,
+        "INSTAGRAM": 1420.8,
+        "FACEBOOK": 0,
+        "SHOWROOM": 1124.4,
+        "WEB": 2133.7,
+        "TIENDA": 5877.7
+      }
+    ],
+    "Febrero": [
+      {
+        "w": 1,
+        "TOTAL": 2962,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 0,
+        "TIENDA": 2962
+      },
+      {
+        "w": 2,
+        "TOTAL": 7127.5,
+        "WHATSAPP": 628,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 682.2,
+        "WEB": 998.8,
+        "TIENDA": 4818.5
+      },
+      {
+        "w": 3,
+        "TOTAL": 31659.2,
+        "WHATSAPP": 1692,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 103.6,
+        "WEB": 9301.6,
+        "TIENDA": 20562
+      },
+      {
+        "w": 4,
+        "TOTAL": 8728.74,
+        "WHATSAPP": 203.2,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 340.6,
+        "WEB": 2156.54,
+        "TIENDA": 6028.4
+      },
+      {
+        "w": 5,
+        "TOTAL": 12823.33,
+        "WHATSAPP": 1039.3,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 841,
+        "WEB": 740.6,
+        "TIENDA": 10202.43
+      }
+    ],
+    "Marzo": [
+      {
+        "w": 1,
+        "TOTAL": 538.8,
+        "WHATSAPP": 246.2,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 0,
+        "TIENDA": 292.6
+      },
+      {
+        "w": 2,
+        "TOTAL": 18031.2,
+        "WHATSAPP": 591.9,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 1305,
+        "WEB": 1171,
+        "TIENDA": 14963.3
+      },
+      {
+        "w": 3,
+        "TOTAL": 18801.4,
+        "WHATSAPP": 1103.6,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 3010.9,
+        "TIENDA": 14686.9
+      },
+      {
+        "w": 4,
+        "TOTAL": 19094.1,
+        "WHATSAPP": 834.8,
+        "INSTAGRAM": 692,
+        "FACEBOOK": 0,
+        "SHOWROOM": 434.2,
+        "WEB": 2708.8,
+        "TIENDA": 14424.3
+      },
+      {
+        "w": 5,
+        "TOTAL": 19025,
+        "WHATSAPP": 637.8,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 834.1,
+        "WEB": 2785,
+        "TIENDA": 14768.1
+      },
+      {
+        "w": 6,
+        "TOTAL": 3357.8,
+        "WHATSAPP": 525.6,
+        "INSTAGRAM": 130.4,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 0,
+        "TIENDA": 2701.8
+      }
+    ],
+    "Abril": [
+      {
+        "w": 1,
+        "TOTAL": 7614.6,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 0,
+        "TIENDA": 7614.6
+      },
+      {
+        "w": 2,
+        "TOTAL": 24305.3,
+        "WHATSAPP": 456.6,
+        "INSTAGRAM": 242.4,
+        "FACEBOOK": 0,
+        "SHOWROOM": 936.2,
+        "WEB": 2761,
+        "TIENDA": 19909.1
+      },
+      {
+        "w": 3,
+        "TOTAL": 0,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 0,
+        "TIENDA": 0
+      },
+      {
+        "w": 4,
+        "TOTAL": 0,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 0,
+        "TIENDA": 0
+      },
+      {
+        "w": 5,
+        "TOTAL": 0,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 0,
+        "TIENDA": 0
+      }
+    ]
   },
   "weekly2026": {
-    "Enero": [],
-    "Febrero": [],
-    "Marzo": [],
-    "Abril": []
+    "Enero": [
+      {
+        "w": 1,
+        "TOTAL": 2109.7,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 445.8,
+        "TIENDA": 1663.9
+      },
+      {
+        "w": 2,
+        "TOTAL": 14828.8,
+        "WHATSAPP": 594.5,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 489.6,
+        "WEB": 3444.9,
+        "TIENDA": 10299.8
+      },
+      {
+        "w": 3,
+        "TOTAL": 16087.64,
+        "WHATSAPP": 421.8,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 1451.6,
+        "WEB": 1352.24,
+        "TIENDA": 12862
+      },
+      {
+        "w": 4,
+        "TOTAL": 13428.5,
+        "WHATSAPP": 1518.4,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 752.8,
+        "WEB": 2847.18,
+        "TIENDA": 8310.12
+      },
+      {
+        "w": 5,
+        "TOTAL": 11203.3,
+        "WHATSAPP": 646.7,
+        "INSTAGRAM": 1420.8,
+        "FACEBOOK": 0,
+        "SHOWROOM": 1124.4,
+        "WEB": 2133.7,
+        "TIENDA": 5877.7
+      }
+    ],
+    "Febrero": [
+      {
+        "w": 1,
+        "TOTAL": 2962,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 0,
+        "TIENDA": 2962
+      },
+      {
+        "w": 2,
+        "TOTAL": 7127.5,
+        "WHATSAPP": 628,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 682.2,
+        "WEB": 998.8,
+        "TIENDA": 4818.5
+      },
+      {
+        "w": 3,
+        "TOTAL": 31659.2,
+        "WHATSAPP": 1692,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 103.6,
+        "WEB": 9301.6,
+        "TIENDA": 20562
+      },
+      {
+        "w": 4,
+        "TOTAL": 8728.74,
+        "WHATSAPP": 203.2,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 340.6,
+        "WEB": 2156.54,
+        "TIENDA": 6028.4
+      },
+      {
+        "w": 5,
+        "TOTAL": 12823.33,
+        "WHATSAPP": 1039.3,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 841,
+        "WEB": 740.6,
+        "TIENDA": 10202.43
+      }
+    ],
+    "Marzo": [
+      {
+        "w": 1,
+        "TOTAL": 538.8,
+        "WHATSAPP": 246.2,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 0,
+        "TIENDA": 292.6
+      },
+      {
+        "w": 2,
+        "TOTAL": 18031.2,
+        "WHATSAPP": 591.9,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 1305,
+        "WEB": 1171,
+        "TIENDA": 14963.3
+      },
+      {
+        "w": 3,
+        "TOTAL": 18801.4,
+        "WHATSAPP": 1103.6,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 3010.9,
+        "TIENDA": 14686.9
+      },
+      {
+        "w": 4,
+        "TOTAL": 19094.1,
+        "WHATSAPP": 834.8,
+        "INSTAGRAM": 692,
+        "FACEBOOK": 0,
+        "SHOWROOM": 434.2,
+        "WEB": 2708.8,
+        "TIENDA": 14424.3
+      },
+      {
+        "w": 5,
+        "TOTAL": 19025,
+        "WHATSAPP": 637.8,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 834.1,
+        "WEB": 2785,
+        "TIENDA": 14768.1
+      },
+      {
+        "w": 6,
+        "TOTAL": 3357.8,
+        "WHATSAPP": 525.6,
+        "INSTAGRAM": 130.4,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 0,
+        "TIENDA": 2701.8
+      }
+    ],
+    "Abril": [
+      {
+        "w": 1,
+        "TOTAL": 7614.6,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 0,
+        "TIENDA": 7614.6
+      },
+      {
+        "w": 2,
+        "TOTAL": 24305.3,
+        "WHATSAPP": 456.6,
+        "INSTAGRAM": 242.4,
+        "FACEBOOK": 0,
+        "SHOWROOM": 936.2,
+        "WEB": 2761,
+        "TIENDA": 19909.1
+      },
+      {
+        "w": 3,
+        "TOTAL": 0,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 0,
+        "TIENDA": 0
+      },
+      {
+        "w": 4,
+        "TOTAL": 0,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 0,
+        "TIENDA": 0
+      },
+      {
+        "w": 5,
+        "TOTAL": 0,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "SHOWROOM": 0,
+        "WEB": 0,
+        "TIENDA": 0
+      }
+    ]
   },
   "transactions": {
     "Enero": {
-      "WHATSAPP": 0,
-      "INSTAGRAM": 0,
+      "WHATSAPP": 10,
+      "INSTAGRAM": 2,
       "FACEBOOK": 0,
-      "SHOWROOM": 0,
-      "WEB": 0,
-      "TIENDA": 0
+      "SHOWROOM": 10,
+      "WEB": 36,
+      "TIENDA": 115
     },
     "Febrero": {
-      "WHATSAPP": 0,
+      "WHATSAPP": 14,
       "INSTAGRAM": 0,
       "FACEBOOK": 0,
-      "SHOWROOM": 0,
-      "WEB": 0,
-      "TIENDA": 0
+      "SHOWROOM": 7,
+      "WEB": 49,
+      "TIENDA": 123
     },
     "Marzo": {
-      "WHATSAPP": 0,
-      "INSTAGRAM": 0,
+      "WHATSAPP": 18,
+      "INSTAGRAM": 3,
       "FACEBOOK": 0,
-      "SHOWROOM": 0,
-      "WEB": 0,
-      "TIENDA": 0
+      "SHOWROOM": 9,
+      "WEB": 38,
+      "TIENDA": 227
     },
     "Abril": {
-      "WHATSAPP": 0,
-      "INSTAGRAM": 0,
+      "WHATSAPP": 2,
+      "INSTAGRAM": 2,
       "FACEBOOK": 0,
-      "SHOWROOM": 0,
-      "WEB": 0,
-      "TIENDA": 0
+      "SHOWROOM": 3,
+      "WEB": 13,
+      "TIENDA": 88
     }
   },
   "d2025_live": {
     "Enero": {
-      "WhatsApp": 0,
-      "Instagram": 0,
+      "WhatsApp": 1219.44,
+      "Instagram": 227.2,
       "Facebook": 0,
-      "Web": 0,
-      "Tienda": 0,
+      "Web": 8196.8,
+      "Tienda": 44745.56,
       "Showroom": 0
     },
     "Febrero": {
-      "WhatsApp": 0,
+      "WhatsApp": 3510.8,
       "Instagram": 0,
       "Facebook": 0,
-      "Web": 0,
-      "Tienda": 0,
+      "Web": 9726.8,
+      "Tienda": 48628.6,
       "Showroom": 0
     },
     "Marzo": {
@@ -106,43 +534,43 @@
       "Showroom": 0
     },
     "Abril": {
-      "WhatsApp": 0,
+      "WhatsApp": 5367.7,
       "Instagram": 0,
       "Facebook": 0,
-      "Web": 0,
-      "Tienda": 0,
+      "Web": 9316.54,
+      "Tienda": 54762.89,
       "Showroom": 0
     },
     "Mayo": {
-      "WhatsApp": 0,
-      "Instagram": 0,
+      "WhatsApp": 1207,
+      "Instagram": 442,
       "Facebook": 0,
-      "Web": 0,
-      "Tienda": 0,
+      "Web": 17098.8,
+      "Tienda": 52700.09,
       "Showroom": 0
     },
     "Junio": {
-      "WhatsApp": 0,
-      "Instagram": 0,
+      "WhatsApp": 323.8,
+      "Instagram": 149.4,
       "Facebook": 0,
-      "Web": 0,
-      "Tienda": 0,
+      "Web": 13994.89,
+      "Tienda": 69079.23,
       "Showroom": 0
     },
     "Julio": {
-      "WhatsApp": 0,
-      "Instagram": 0,
+      "WhatsApp": 4214.5,
+      "Instagram": 689.4,
       "Facebook": 0,
-      "Web": 0,
-      "Tienda": 0,
+      "Web": 10365.12,
+      "Tienda": 48894.4,
       "Showroom": 0
     },
     "Agosto": {
-      "WhatsApp": 0,
-      "Instagram": 0,
+      "WhatsApp": 3940,
+      "Instagram": 908,
       "Facebook": 0,
-      "Web": 0,
-      "Tienda": 0,
+      "Web": 17681.3,
+      "Tienda": 67785.2,
       "Showroom": 0
     },
     "Septiembre": {
@@ -170,17 +598,119 @@
       "Showroom": 0
     },
     "Diciembre": {
-      "WhatsApp": 0,
-      "Instagram": 0,
+      "WhatsApp": 5799.85,
+      "Instagram": 1020.2,
       "Facebook": 0,
-      "Web": 0,
-      "Tienda": 0,
+      "Web": 16408.06,
+      "Tienda": 77675.55,
       "Showroom": 0
     }
   },
   "weekly2025": {
-    "Enero": [],
-    "Febrero": [],
+    "Enero": [
+      {
+        "w": 1,
+        "TOTAL": 7511.36,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 1279.2,
+        "TIENDA": 6232.16,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 2,
+        "TOTAL": 14882.5,
+        "WHATSAPP": 1066,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 249,
+        "TIENDA": 13567.5,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 3,
+        "TOTAL": 14123.64,
+        "WHATSAPP": 104.44,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 2662.6,
+        "TIENDA": 11356.6,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 4,
+        "TOTAL": 12656.1,
+        "WHATSAPP": 49,
+        "INSTAGRAM": 227.2,
+        "FACEBOOK": 0,
+        "WEB": 3648.2,
+        "TIENDA": 8731.7,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 5,
+        "TOTAL": 5215.4,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 357.8,
+        "TIENDA": 4857.6,
+        "SHOWROOM": 0
+      }
+    ],
+    "Febrero": [
+      {
+        "w": 1,
+        "TOTAL": 2495.7,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 670.7,
+        "TIENDA": 1825,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 2,
+        "TOTAL": 13326.4,
+        "WHATSAPP": 682,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 602.6,
+        "TIENDA": 12041.8,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 3,
+        "TOTAL": 27785.3,
+        "WHATSAPP": 1685.8,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 7284.7,
+        "TIENDA": 18814.8,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 4,
+        "TOTAL": 10481.4,
+        "WHATSAPP": 913.7,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 835.7,
+        "TIENDA": 8732,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 5,
+        "TOTAL": 7777.4,
+        "WHATSAPP": 229.3,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 333.1,
+        "TIENDA": 7215,
+        "SHOWROOM": 0
+      }
+    ],
     "Marzo": [
       {
         "w": 1,
@@ -243,11 +773,276 @@
         "SHOWROOM": 0
       }
     ],
-    "Abril": [],
-    "Mayo": [],
-    "Junio": [],
-    "Julio": [],
-    "Agosto": [],
+    "Abril": [
+      {
+        "w": 1,
+        "TOTAL": 17174,
+        "WHATSAPP": 1644.1,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 982.9,
+        "TIENDA": 14547,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 2,
+        "TOTAL": 18721.94,
+        "WHATSAPP": 839.2,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 2687.04,
+        "TIENDA": 15195.7,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 3,
+        "TOTAL": 9715.29,
+        "WHATSAPP": 1400.4,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 1641.1,
+        "TIENDA": 6673.79,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 4,
+        "TOTAL": 15891.4,
+        "WHATSAPP": 550.6,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 2533.4,
+        "TIENDA": 12807.4,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 5,
+        "TOTAL": 7944.5,
+        "WHATSAPP": 933.4,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 1472.1,
+        "TIENDA": 5539,
+        "SHOWROOM": 0
+      }
+    ],
+    "Mayo": [
+      {
+        "w": 1,
+        "TOTAL": 8579.4,
+        "WHATSAPP": 325.2,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 2158.6,
+        "TIENDA": 6095.6,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 2,
+        "TOTAL": 14208,
+        "WHATSAPP": 409.2,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 2394.9,
+        "TIENDA": 11403.9,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 3,
+        "TOTAL": 14099.4,
+        "WHATSAPP": 401.7,
+        "INSTAGRAM": 218,
+        "FACEBOOK": 0,
+        "WEB": 4111.4,
+        "TIENDA": 9368.3,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 4,
+        "TOTAL": 21187.19,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 224,
+        "FACEBOOK": 0,
+        "WEB": 6407.1,
+        "TIENDA": 14556.09,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 5,
+        "TOTAL": 13373.9,
+        "WHATSAPP": 70.9,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 2026.8,
+        "TIENDA": 11276.2,
+        "SHOWROOM": 0
+      }
+    ],
+    "Junio": [
+      {
+        "w": 1,
+        "TOTAL": 1445,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 0,
+        "TIENDA": 1445,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 2,
+        "TOTAL": 18463.55,
+        "WHATSAPP": 119.8,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 2174.25,
+        "TIENDA": 16169.5,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 3,
+        "TOTAL": 22452.93,
+        "WHATSAPP": 204,
+        "INSTAGRAM": 149.4,
+        "FACEBOOK": 0,
+        "WEB": 4131.5,
+        "TIENDA": 17968.03,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 4,
+        "TOTAL": 18351.52,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 3728.22,
+        "TIENDA": 14623.3,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 5,
+        "TOTAL": 22774.42,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 3960.92,
+        "TIENDA": 18813.5,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 6,
+        "TOTAL": 59.9,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 0,
+        "TIENDA": 59.9,
+        "SHOWROOM": 0
+      }
+    ],
+    "Julio": [
+      {
+        "w": 1,
+        "TOTAL": 18792.62,
+        "WHATSAPP": 1203.9,
+        "INSTAGRAM": 389,
+        "FACEBOOK": 0,
+        "WEB": 1962.72,
+        "TIENDA": 15237,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 2,
+        "TOTAL": 17312.4,
+        "WHATSAPP": 69.9,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 4102.4,
+        "TIENDA": 13140.1,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 3,
+        "TOTAL": 11134.6,
+        "WHATSAPP": 2138.7,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 1812.5,
+        "TIENDA": 7183.4,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 4,
+        "TOTAL": 13390.1,
+        "WHATSAPP": 94.5,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 2241.1,
+        "TIENDA": 11054.5,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 5,
+        "TOTAL": 3533.7,
+        "WHATSAPP": 707.5,
+        "INSTAGRAM": 300.4,
+        "FACEBOOK": 0,
+        "WEB": 246.4,
+        "TIENDA": 2279.4,
+        "SHOWROOM": 0
+      }
+    ],
+    "Agosto": [
+      {
+        "w": 1,
+        "TOTAL": 5334,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 389,
+        "FACEBOOK": 0,
+        "WEB": 615.5,
+        "TIENDA": 4329.5,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 2,
+        "TOTAL": 20421.3,
+        "WHATSAPP": 2139.6,
+        "INSTAGRAM": 519,
+        "FACEBOOK": 0,
+        "WEB": 3254.7,
+        "TIENDA": 14508,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 3,
+        "TOTAL": 26778.5,
+        "WHATSAPP": 438.5,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 5293.8,
+        "TIENDA": 21046.2,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 4,
+        "TOTAL": 21986.8,
+        "WHATSAPP": 675.2,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 3594.1,
+        "TIENDA": 17717.5,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 5,
+        "TOTAL": 15793.9,
+        "WHATSAPP": 686.7,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 4923.2,
+        "TIENDA": 10184,
+        "SHOWROOM": 0
+      }
+    ],
     "Septiembre": [
       {
         "w": 1,
@@ -404,23 +1199,74 @@
         "SHOWROOM": 0
       }
     ],
-    "Diciembre": []
+    "Diciembre": [
+      {
+        "w": 1,
+        "TOTAL": 25029.64,
+        "WHATSAPP": 599.2,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 4492.74,
+        "TIENDA": 19937.7,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 2,
+        "TOTAL": 25102.6,
+        "WHATSAPP": 2618.55,
+        "INSTAGRAM": 552.2,
+        "FACEBOOK": 0,
+        "WEB": 4113.3,
+        "TIENDA": 17818.55,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 3,
+        "TOTAL": 26829.09,
+        "WHATSAPP": 1151.1,
+        "INSTAGRAM": 468,
+        "FACEBOOK": 0,
+        "WEB": 4318.84,
+        "TIENDA": 20891.15,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 4,
+        "TOTAL": 19797.33,
+        "WHATSAPP": 1431,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 2921.78,
+        "TIENDA": 15444.55,
+        "SHOWROOM": 0
+      },
+      {
+        "w": 5,
+        "TOTAL": 4145,
+        "WHATSAPP": 0,
+        "INSTAGRAM": 0,
+        "FACEBOOK": 0,
+        "WEB": 561.4,
+        "TIENDA": 3583.6,
+        "SHOWROOM": 0
+      }
+    ]
   },
   "transactions2025": {
     "Enero": {
-      "WHATSAPP": 0,
-      "INSTAGRAM": 0,
+      "WHATSAPP": 7,
+      "INSTAGRAM": 1,
       "FACEBOOK": 0,
-      "WEB": 0,
-      "TIENDA": 0,
+      "WEB": 28,
+      "TIENDA": 103,
       "SHOWROOM": 0
     },
     "Febrero": {
-      "WHATSAPP": 0,
+      "WHATSAPP": 12,
       "INSTAGRAM": 0,
       "FACEBOOK": 0,
-      "WEB": 0,
-      "TIENDA": 0,
+      "WEB": 21,
+      "TIENDA": 108,
       "SHOWROOM": 0
     },
     "Marzo": {
@@ -432,43 +1278,43 @@
       "SHOWROOM": 0
     },
     "Abril": {
-      "WHATSAPP": 0,
+      "WHATSAPP": 20,
       "INSTAGRAM": 0,
       "FACEBOOK": 0,
-      "WEB": 0,
-      "TIENDA": 0,
+      "WEB": 37,
+      "TIENDA": 186,
       "SHOWROOM": 0
     },
     "Mayo": {
-      "WHATSAPP": 0,
-      "INSTAGRAM": 0,
+      "WHATSAPP": 9,
+      "INSTAGRAM": 2,
       "FACEBOOK": 0,
-      "WEB": 0,
-      "TIENDA": 0,
+      "WEB": 46,
+      "TIENDA": 215,
       "SHOWROOM": 0
     },
     "Junio": {
-      "WHATSAPP": 0,
-      "INSTAGRAM": 0,
+      "WHATSAPP": 2,
+      "INSTAGRAM": 1,
       "FACEBOOK": 0,
-      "WEB": 0,
-      "TIENDA": 0,
+      "WEB": 34,
+      "TIENDA": 195,
       "SHOWROOM": 0
     },
     "Julio": {
-      "WHATSAPP": 0,
-      "INSTAGRAM": 0,
+      "WHATSAPP": 17,
+      "INSTAGRAM": 2,
       "FACEBOOK": 0,
-      "WEB": 0,
-      "TIENDA": 0,
+      "WEB": 41,
+      "TIENDA": 151,
       "SHOWROOM": 0
     },
     "Agosto": {
-      "WHATSAPP": 0,
-      "INSTAGRAM": 0,
+      "WHATSAPP": 15,
+      "INSTAGRAM": 2,
       "FACEBOOK": 0,
-      "WEB": 0,
-      "TIENDA": 0,
+      "WEB": 68,
+      "TIENDA": 217,
       "SHOWROOM": 0
     },
     "Septiembre": {
@@ -496,11 +1342,11 @@
       "SHOWROOM": 0
     },
     "Diciembre": {
-      "WHATSAPP": 0,
-      "INSTAGRAM": 0,
+      "WHATSAPP": 26,
+      "INSTAGRAM": 2,
       "FACEBOOK": 0,
-      "WEB": 0,
-      "TIENDA": 0,
+      "WEB": 60,
+      "TIENDA": 249,
       "SHOWROOM": 0
     }
   }

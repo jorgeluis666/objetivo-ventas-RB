@@ -2,8 +2,8 @@ name: Actualizar datos de ventas
 
 on:
   schedule:
-    # Lunes 11:00 hora Lima (UTC-5) = 16:00 UTC
-    - cron: '0 16 * * 1'
+    # Cada hora en punto (UTC). Suficiente para un dashboard operativo.
+    - cron: '0 * * * *'
   workflow_dispatch: {}
 
 permissions:

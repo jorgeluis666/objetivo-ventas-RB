@@ -219,17 +219,29 @@ async function loadRowsFromApi(monthConfig, spreadsheetId, rangeSpec) {
 }
 
 function loadRowsFromCsv(monthConfig, csvDir, year) {
-  // Busca archivos del formato canónico "TASA DE VENTAS DIARIAS <año> - <MES>*.csv"
+  // Busca archivos con cualquiera de estos prefijos y el mes en el nombre:
+  //   "TASA DE VENTAS DIARIAS <año> - <MES>*.csv"  (2026 típico)
+  //   "TASA DE VENDA <año> - <MES>*.csv"           (2025 típico)
   const yearStr = String(year);
+  const prefixes = [
+    `TASA DE VENTAS DIARIAS ${yearStr}`,
+    `TASA DE VENTAS DIARIAS ${yearStr} -`,
+    `TASA DE VENDA ${yearStr}`,
+    `TASA DE VENDA ${yearStr} -`,
+  ];
+  const monthUpper = monthConfig.sheet.toUpperCase();
   const candidates = fs.readdirSync(csvDir).filter(f => {
     const up = f.toUpperCase();
     if (!up.endsWith('.CSV')) return false;
-    if (!up.startsWith(`TASA DE VENTAS DIARIAS ${yearStr}`)) return false;
-    return up.includes(monthConfig.sheet);
+    if (!prefixes.some(p => up.startsWith(p))) return false;
+    // Match por palabra (evita que ENERO matchee FEBRERO, etc.)
+    return new RegExp(`\\b${monthUpper}\\b`).test(up);
   });
   if (candidates.length === 0) {
     throw new Error(`No se encontró CSV para ${monthConfig.sheet} (${year}) en ${csvDir}`);
   }
+  // Preferimos el de menor longitud (el original sin sufijos "(1)", " (copy)", etc.)
+  candidates.sort((a, b) => a.length - b.length);
   const filePath = path.join(csvDir, candidates[0]);
   const text = fs.readFileSync(filePath, 'utf8');
   return parseCSVText(text);

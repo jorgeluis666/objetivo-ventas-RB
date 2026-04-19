@@ -32,22 +32,32 @@ function monthsForYear(year) {
   ];
 }
 
-// Cada año con su sheet y los meses que hay que leer. 2025 = histórico (año completo),
-// 2026 = en curso (solo los cerrados + el actual).
-const SOURCES = [
-  { year: 2025, id: '13gqg8ZueL4YOj3wQ7gypf3Mem3oNBSFyPNJE67cICQ0', months: monthsForYear(2025) },
-  { year: 2026, id: '1WQhZyWVWq7cnLybU-LfXRBVg8B66jbNNPqfcYD_assM', months: monthsForYear(2026).slice(0, 4) },
+// Layouts de columnas por año. Los sheets 2025 y 2026 tienen órdenes distintos:
+//   2025 (A–H): FECHA | CANT/MONTO | WHATSAPP | INSTAGRAM | FACEBOOK | WEB | TIENDA | TOTAL
+//   2026 (A–I): FECHA | CANT/MONTO | WHATSAPP | INSTAGRAM | FACEBOOK | SHOWROOM | WEB | TIENDA | TOTAL
+const COLS_2025 = [
+  { col: 2, upper: 'WHATSAPP',  title: 'WhatsApp'  },
+  { col: 3, upper: 'INSTAGRAM', title: 'Instagram' },
+  { col: 4, upper: 'FACEBOOK',  title: 'Facebook'  },
+  { col: 5, upper: 'WEB',       title: 'Web'       },
+  { col: 6, upper: 'TIENDA',    title: 'Tienda'    },
+  // Showroom no existe en 2025 — se completa con 0
+  { col: null, upper: 'SHOWROOM', title: 'Showroom' },
 ];
-
-// Columnas del sheet (0-indexed dentro del rango A:I):
-// 0=FECHA, 1=CANT/MONTO, 2=WHATSAPP, 3=INSTAGRAM, 4=FACEBOOK, 5=SHOWROOM, 6=WEB, 7=TIENDA, 8=TOTAL
-const CHANNEL_COLS = [
+const COLS_2026 = [
   { col: 2, upper: 'WHATSAPP',  title: 'WhatsApp'  },
   { col: 3, upper: 'INSTAGRAM', title: 'Instagram' },
   { col: 4, upper: 'FACEBOOK',  title: 'Facebook'  },
   { col: 5, upper: 'SHOWROOM',  title: 'Showroom'  },
   { col: 6, upper: 'WEB',       title: 'Web'       },
   { col: 7, upper: 'TIENDA',    title: 'Tienda'    },
+];
+
+// Cada año con su sheet, meses y layout. 2025 = histórico (año completo),
+// 2026 = en curso (solo los cerrados + el actual).
+const SOURCES = [
+  { year: 2025, id: '13gqg8ZueL4YOj3wQ7gypf3Mem3oNBSFyPNJE67cICQ0', months: monthsForYear(2025), cols: COLS_2025, range: 'A1:H100' },
+  { year: 2026, id: '1WQhZyWVWq7cnLybU-LfXRBVg8B66jbNNPqfcYD_assM', months: monthsForYear(2026).slice(0, 4), cols: COLS_2026, range: 'A1:I100' },
 ];
 
 function toNumber(v) {
@@ -85,10 +95,10 @@ function buildWeekMap(year, monthIndex, daysInMonth) {
   return dayToWeek;
 }
 
-function parseSheet(rows, monthConfig, year) {
+function parseSheet(rows, monthConfig, year, cols) {
   const totals = {};
   const transactions = {};
-  CHANNEL_COLS.forEach(c => { totals[c.title] = 0; transactions[c.upper] = 0; });
+  cols.forEach(c => { totals[c.title] = 0; transactions[c.upper] = 0; });
 
   const dayToWeek = buildWeekMap(year, monthConfig.monthIndex, monthConfig.days);
   const weekCount = dayToWeek[monthConfig.days];
@@ -96,7 +106,7 @@ function parseSheet(rows, monthConfig, year) {
   const weeklyTotals = [];
   for (let w = 1; w <= weekCount; w++) {
     const row = { w, TOTAL: 0 };
-    CHANNEL_COLS.forEach(c => { row[c.upper] = 0; });
+    cols.forEach(c => { row[c.upper] = 0; });
     weeklyTotals.push(row);
   }
 
@@ -114,7 +124,8 @@ function parseSheet(rows, monthConfig, year) {
       const w = dayToWeek[dayCounter];
       const weekRow = weeklyTotals[w - 1];
 
-      for (const c of CHANNEL_COLS) {
+      for (const c of cols) {
+        if (c.col == null) continue; // Canal no presente en el sheet (ej. Showroom en 2025)
         const qty = toNumber(pendingCantidad[c.col]);
         const amount = toNumber(row[c.col]);
         transactions[c.upper] += qty;
@@ -126,10 +137,10 @@ function parseSheet(rows, monthConfig, year) {
     }
   }
 
-  CHANNEL_COLS.forEach(c => { totals[c.title] = round2(totals[c.title]); });
+  cols.forEach(c => { totals[c.title] = round2(totals[c.title]); });
   weeklyTotals.forEach(wr => {
     wr.TOTAL = round2(wr.TOTAL);
-    CHANNEL_COLS.forEach(c => { wr[c.upper] = round2(wr[c.upper]); });
+    cols.forEach(c => { wr[c.upper] = round2(wr[c.upper]); });
   });
 
   return { totals, transactions, weeklyTotals };
@@ -175,11 +186,11 @@ async function getSheetsClient() {
   return _sheetsClient;
 }
 
-async function loadRowsFromApi(monthConfig, spreadsheetId) {
+async function loadRowsFromApi(monthConfig, spreadsheetId, rangeSpec) {
   const sheets = await getSheetsClient();
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: `${monthConfig.sheet}!A1:I100`,
+    range: `${monthConfig.sheet}!${rangeSpec || 'A1:I100'}`,
     valueRenderOption: 'UNFORMATTED_VALUE',
   });
   return res.data.values || [];
@@ -221,16 +232,16 @@ async function fetchYear(source, args) {
     try {
       rows = args.csvDir
         ? loadRowsFromCsv(m, args.csvDir, source.year)
-        : await loadRowsFromApi(m, source.id);
+        : await loadRowsFromApi(m, source.id, source.range);
     } catch (err) {
       console.error(`  ! ${source.year} ${m.sheet}: ${err.message}`);
-      totals[m.name] = Object.fromEntries(CHANNEL_COLS.map(c => [c.title, 0]));
-      transactions[m.name] = Object.fromEntries(CHANNEL_COLS.map(c => [c.upper, 0]));
+      totals[m.name] = Object.fromEntries(source.cols.map(c => [c.title, 0]));
+      transactions[m.name] = Object.fromEntries(source.cols.map(c => [c.upper, 0]));
       weekly[m.name] = [];
       continue;
     }
 
-    const parsed = parseSheet(rows, m, source.year);
+    const parsed = parseSheet(rows, m, source.year, source.cols);
     totals[m.name]       = parsed.totals;
     transactions[m.name] = parsed.transactions;
     weekly[m.name]       = parsed.weeklyTotals;

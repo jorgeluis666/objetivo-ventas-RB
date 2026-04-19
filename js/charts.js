@@ -99,7 +99,7 @@
   }
 
   // ── Helpers ──
-  const tot = obj => channels.reduce((s, c) => s + (obj[c] || 0), 0);
+  const tot = obj => obj ? channels.reduce((s, c) => s + (obj[c] || 0), 0) : 0;
   const fmt = n => Math.round(n).toLocaleString('es-PE');
 
   // ── Evolución mensual ──

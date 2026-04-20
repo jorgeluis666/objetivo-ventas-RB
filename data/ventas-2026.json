@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-20T10:07:40",
+  "generated": "2026-04-20T11:52:00",
   "d2026": {
     "Enero": {
       "WhatsApp": 3181.4,
@@ -31,7 +31,7 @@
       "Facebook": 0,
       "Showroom": 1526.2,
       "Web": 5398.4,
-      "Tienda": 27523.7
+      "Tienda": 38816.5
     }
   },
   "weeklyData": {
@@ -224,13 +224,13 @@
       },
       {
         "w": 3,
-        "TOTAL": 4498.6,
+        "TOTAL": 15791.4,
         "WHATSAPP": 1041.8,
         "INSTAGRAM": 229.4,
         "FACEBOOK": 0,
         "SHOWROOM": 590,
         "WEB": 2637.4,
-        "TIENDA": 0
+        "TIENDA": 11292.8
       },
       {
         "w": 4,
@@ -444,13 +444,13 @@
       },
       {
         "w": 3,
-        "TOTAL": 4498.6,
+        "TOTAL": 15791.4,
         "WHATSAPP": 1041.8,
         "INSTAGRAM": 229.4,
         "FACEBOOK": 0,
         "SHOWROOM": 590,
         "WEB": 2637.4,
-        "TIENDA": 0
+        "TIENDA": 11292.8
       },
       {
         "w": 4,
@@ -505,7 +505,7 @@
       "FACEBOOK": 0,
       "SHOWROOM": 5,
       "WEB": 19,
-      "TIENDA": 88
+      "TIENDA": 129
     }
   },
   "d2025_live": {

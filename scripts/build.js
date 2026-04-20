@@ -47,12 +47,16 @@ function ensureDir(dir) {
 }
 
 function copyDataDir() {
+  // Solo copiamos los .json del dashboard, no los subdirectorios
+  // (ej. data/csv-backups/ es fuente local, no se sirve en producción).
   const srcData  = path.join(ROOT, 'data');
   const destData = path.join(DIST_DIR, 'data');
   if (!fs.existsSync(srcData)) return;
   ensureDir(destData);
-  for (const file of fs.readdirSync(srcData)) {
-    fs.copyFileSync(path.join(srcData, file), path.join(destData, file));
+  for (const entry of fs.readdirSync(srcData, { withFileTypes: true })) {
+    if (!entry.isFile()) continue;
+    if (!entry.name.endsWith('.json')) continue;
+    fs.copyFileSync(path.join(srcData, entry.name), path.join(destData, entry.name));
   }
 }
 

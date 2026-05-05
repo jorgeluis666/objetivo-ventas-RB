@@ -7,6 +7,14 @@
 .view { display: none; }
 .view.visible { display: block; }
 
+/* KPIs YoY se expanden de 4 a N meses según haya datos.
+   auto-fit + minmax mantiene cards parejas y baja a 2x2 / 3x2 si hace falta. */
+#kpi-yoy {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
 .section-sub {
   font-size: 12px;
   color: var(--text-2);

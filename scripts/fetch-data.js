@@ -54,10 +54,19 @@ const COLS_2026 = [
 ];
 
 // Cada año con su sheet, meses y layout. 2025 = histórico (año completo),
-// 2026 = en curso (solo los cerrados + el actual).
+// 2026 = en curso. Para 2026 leemos los meses hasta el actual + 1 (cierra
+// margen para meses recién creados). Tabs inexistentes caen al fallback de zeros.
+function monthsUpToCurrent(year) {
+  const all = monthsForYear(year);
+  const today = new Date();
+  if (today.getFullYear() < year)  return [];
+  if (today.getFullYear() > year)  return all;
+  return all.slice(0, today.getMonth() + 2); // +1 actual, +1 buffer
+}
+
 const SOURCES = [
-  { year: 2025, id: '13gqg8ZueL4YOj3wQ7gypf3Mem3oNBSFyPNJE67cICQ0', months: monthsForYear(2025), cols: COLS_2025, range: 'A1:H100' },
-  { year: 2026, id: '1WQhZyWVWq7cnLybU-LfXRBVg8B66jbNNPqfcYD_assM', months: monthsForYear(2026).slice(0, 4), cols: COLS_2026, range: 'A1:I100' },
+  { year: 2025, id: '13gqg8ZueL4YOj3wQ7gypf3Mem3oNBSFyPNJE67cICQ0', months: monthsForYear(2025),       cols: COLS_2025, range: 'A1:H100' },
+  { year: 2026, id: '1WQhZyWVWq7cnLybU-LfXRBVg8B66jbNNPqfcYD_assM', months: monthsUpToCurrent(2026),    cols: COLS_2026, range: 'A1:I100' },
 ];
 
 function toNumber(v) {

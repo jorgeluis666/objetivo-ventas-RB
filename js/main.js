@@ -68,12 +68,20 @@
   const tot = o => channels.reduce((s, c) => s + (o[c] || 0), 0);
   const fmt = n => Math.round(n).toLocaleString('es-PE');
 
+  // Meses 2026 con al menos un canal > 0. Si no hay ninguno, fallback al
+  // hardcoded para que el dashboard no quede vacío en estado inicial.
+  function activeMonths2026(d2026) {
+    if (!d2026) return monthsWith2026Data;
+    const live = months.filter(m => d2026[m] && Object.values(d2026[m]).some(v => v > 0));
+    return live.length ? live : monthsWith2026Data;
+  }
+
   function renderKpisYoY(d2026) {
     const el = document.getElementById('kpi-yoy');
     if (!el) return;
     el.innerHTML = '';
-    // KPIs solo para meses con datos 2026 (los 4 meses cerrados/en curso)
-    monthsWith2026Data.forEach(m => {
+    // KPIs solo para meses con datos 2026 reales (filtrado dinámico)
+    activeMonths2026(d2026).forEach(m => {
       const t25 = tot(d2025[m]);
       const t26 = tot(d2026[m]);
       if (t26 === 0) {
@@ -101,16 +109,29 @@
     });
   }
 
+  // Meses 2026 cerrados (no el actual). Hoy en mayo → Ene-Abr.
+  function closedMonths2026() {
+    const today = new Date();
+    if (today.getFullYear() < 2026) return [];
+    if (today.getFullYear() > 2026) return months;
+    return months.slice(0, today.getMonth());
+  }
+
   function renderYoYTable(d2026) {
     const host = document.getElementById('yoy-tables');
     if (!host) return;
-    const cmpMonths = ['Enero', 'Febrero', 'Marzo'];
-    const activeCh = channels.filter(ch => cmpMonths.some(m => d2025[m][ch] > 0 || d2026[m][ch] > 0));
+    const cmpMonths = closedMonths2026();
+    if (cmpMonths.length === 0) {
+      host.innerHTML = '<p class="muted" style="font-size:12px;">Aún no hay meses cerrados para comparar.</p>';
+      return;
+    }
+    const activeCh = channels.filter(ch => cmpMonths.some(m => (d2025[m] || {})[ch] > 0 || (d2026[m] || {})[ch] > 0));
     let rows = '';
     activeCh.forEach(ch => {
       let cells = `<tr><td><span class="ch-name"><span class="ch-pip" style="background:${palette[ch]}"></span>${ch}</span></td>`;
       cmpMonths.forEach(m => {
-        const v25 = d2025[m][ch], v26 = d2026[m][ch];
+        const v25 = (d2025[m] || {})[ch] || 0;
+        const v26 = (d2026[m] || {})[ch] || 0;
         if (v25 === 0 && v26 === 0) cells += `<td class="r"><span class="muted">—</span></td>`;
         else if (v25 === 0)         cells += `<td class="r green">nuevo<span class="sub-val mono">S/. ${fmt(v26)}</span></td>`;
         else {
@@ -267,9 +288,21 @@
     window.Charts.evoChart(state.d2026);
     renderYoYTable(state.d2026);
 
-    const distMonths = ['Enero', 'Febrero', 'Marzo'];
+    // Distribución: usa meses cerrados (más representativo) o fallback a Ene-Mar.
+    const closed = closedMonths2026();
+    const distMonths = closed.length >= 3 ? closed : ['Enero', 'Febrero', 'Marzo'];
     window.Charts.distCharts(state.d2026, distMonths);
     window.Charts.absChart(state.d2026, distMonths);
+
+    // Sub-text dinámico de la panel YoY
+    const yoySub = document.querySelector('#view-yoy .panel:last-of-type .panel-sub');
+    if (yoySub) {
+      yoySub.textContent = closed.length === 0
+        ? 'aún sin meses cerrados'
+        : closed.length === 1
+          ? `${closed[0]} (mes cerrado)`
+          : `${closed[0]} – ${closed[closed.length - 1]} (meses cerrados)`;
+    }
 
     window.Objectives.render({
       d2026: state.d2026,

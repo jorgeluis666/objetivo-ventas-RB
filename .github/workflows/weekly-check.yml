@@ -1,0 +1,77 @@
+name: Revisión semanal del pipeline
+
+on:
+  schedule:
+    # Lunes 21:00 hora Lima (UTC-5) = Martes 02:00 UTC
+    - cron: '0 2 * * 2'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run weekly check
+        id: check
+        run: |
+          set +e
+          REPORT=$(node scripts/weekly-check.js)
+          CODE=$?
+          echo "exit_code=$CODE" >> "$GITHUB_OUTPUT"
+          echo "$REPORT"
+          # Pasar el reporte multi-línea al job
+          {
+            echo "report<<__EOF__"
+            echo "$REPORT"
+            echo "__EOF__"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create issue on findings
+        if: steps.check.outputs.exit_code != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const today = new Date().toISOString().slice(0, 10);
+            const code = '${{ steps.check.outputs.exit_code }}';
+            const sev  = code === '2' ? '🔴 alerta' : '🟡 revisión';
+            const title = `[${today}] ${sev} pipeline · revisión semanal`;
+            const body = `${{ steps.check.outputs.report }}`;
+
+            // Evitar duplicados: si ya hay un issue abierto con el mismo título
+            // o etiqueta `weekly-check` y similar, lo cerramos y reabrimos al final.
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'weekly-check',
+              per_page: 50,
+            });
+            for (const it of existing.data) {
+              if (it.title === title) {
+                core.info(`Issue ya existe con el mismo título: #${it.number}, skip.`);
+                return;
+              }
+            }
+            const res = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['weekly-check'],
+            });
+            core.info(`Issue creado: #${res.data.number}`);
+
+      - name: Sin hallazgos · todo OK
+        if: steps.check.outputs.exit_code == '0'
+        run: echo "Pipeline saludable · no se crea issue"

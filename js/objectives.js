@@ -26,13 +26,16 @@
 
   // ── Calendar helpers (año en curso = 2026) ──
   const YEAR = 2026;
-  const today = new Date();
+
   // Índice del mes que estamos viviendo hoy dentro de months[] (0=Enero, 11=Diciembre).
-  // -1 si today está fuera de 2026 (pasado o futuro).
+  // -2 si todo el año es futuro, 12 si todo es pasado.
+  // Llama new Date() en cada invocación para que funcione correctamente si la
+  // página queda abierta de un día para otro.
   function currentMonthIdx() {
-    if (today.getFullYear() < YEAR) return -2; // todo el año es futuro
-    if (today.getFullYear() > YEAR) return 12; // todo el año es pasado
-    return today.getMonth();
+    const now = new Date();
+    if (now.getFullYear() < YEAR) return -2;
+    if (now.getFullYear() > YEAR) return 12;
+    return now.getMonth();
   }
   function monthStatus(m) {
     const idx = months.indexOf(m);
@@ -45,13 +48,13 @@
     const s = monthStatus(m);
     if (s === 'past')    return monthDays[m];
     if (s === 'future')  return 0;
-    return today.getDate();
+    return new Date().getDate();
   }
   function daysRemaining(m) {
     const s = monthStatus(m);
     if (s === 'past')    return 0;
     if (s === 'future')  return monthDays[m];
-    return Math.max(0, monthDays[m] - today.getDate());
+    return Math.max(0, monthDays[m] - new Date().getDate());
   }
 
   // ── Avg ticket por canal (monto / qty) — tolera meses sin data 2026 ──
@@ -81,12 +84,13 @@
     return !!d && channels.some(ch => (d[ch] || 0) > 0);
   }
 
-  // ── Refrescar fila individual ──
-  function refreshObjRow(m, ch) {
-    state.targets[m][ch] = parseFloat(document.getElementById(`inp-${m}-${ch}`).value) || 0;
-    const real = state.d2026?.[m]?.[ch] || 0;
-    const tgt  = state.targets[m][ch];
-    const p    = tgt > 0 ? real / tgt * 100 : 0;
+  // ── Actualizar DOM de una fila (barra + % + brecha) sin cascada ──
+  // Usa state.targets[m][ch] directamente. Llamar desde el render inicial
+  // para evitar N×refreshObjTotal + N×refreshPaceCards por mes.
+  function renderRowUI(m, ch) {
+    const real   = state.d2026?.[m]?.[ch] || 0;
+    const tgt    = state.targets[m][ch] || 0;
+    const p      = tgt > 0 ? real / tgt * 100 : 0;
     const status = monthStatus(m);
 
     const pb = document.getElementById(`pb-${m}-${ch}`);
@@ -95,13 +99,10 @@
     if (!pb || !pv || !gv) return;
 
     if (status === 'future' || (status === 'current' && !isLiveMonth(m))) {
-      // Aún no arranca o sin data cargada
       pb.style.width = '0%'; pv.textContent = '—'; pv.style.color = 'var(--muted)';
       gv.textContent = status === 'future' ? 'futuro' : '—';
       gv.className = 'gap-val'; gv.style.color = 'var(--muted)';
     } else {
-      // En curso o cerrado: mostrar brecha numérica.
-      // En mes current la brecha es parcial (real hasta hoy - meta total).
       pb.style.width = Math.min(p, 100).toFixed(1) + '%';
       pb.style.background = pctFill(p);
       pv.textContent = p.toFixed(0) + '%';
@@ -110,6 +111,13 @@
       gv.textContent = (gap >= 0 ? '+' : '') + 'S/. ' + fmt(gap);
       gv.className = 'gap-val ' + (gap >= 0 ? 'g-pos' : 'g-neg');
     }
+  }
+
+  // Versión interactiva: lee el input, actualiza state y dispara cascada completa.
+  // Usada por los event listeners de stepper e input.
+  function refreshObjRow(m, ch) {
+    state.targets[m][ch] = parseFloat(document.getElementById(`inp-${m}-${ch}`).value) || 0;
+    renderRowUI(m, ch);
     refreshObjTotal(m);
     refreshPaceCards(m);
   }
@@ -368,8 +376,9 @@
       });
       channels.forEach(ch => {
         document.getElementById(`inp-${m}-${ch}`).addEventListener('input', () => refreshObjRow(m, ch));
-        refreshObjRow(m, ch);
+        renderRowUI(m, ch);
       });
+      refreshObjTotal(m);
       refreshPaceCards(m);
 
       // Month tab button

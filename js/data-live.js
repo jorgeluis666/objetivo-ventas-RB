@@ -10,7 +10,10 @@
   const MONTHS_12 = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
   // Shape de fallback usado cuando no hay JSON disponible (lighthouse / primera carga).
+  // Usa DataStatic.monthsWith2026Data para que los meses cubiertos queden sincronizados
+  // con data-static.js — solo hay que actualizar ese array cuando avance el año.
   function emptyShape() {
+    const liveMonths = global.DataStatic?.monthsWith2026Data || MONTHS_12.slice(0, 4);
     const zero = () => ({ Tienda: 0, Web: 0, WhatsApp: 0, Showroom: 0, Instagram: 0, Facebook: 0 });
     const zeroTx = () => ({ TIENDA: 0, WEB: 0, WHATSAPP: 0, SHOWROOM: 0, INSTAGRAM: 0, FACEBOOK: 0 });
     const monthsShape = (names, factory) =>
@@ -20,9 +23,9 @@
 
     return {
       generated: null,
-      d2026:        monthsShape(['Enero','Febrero','Marzo','Abril'], zero),
-      weeklyData:   weeksShape(['Enero','Febrero','Marzo','Abril']),
-      transactions: monthsShape(['Enero','Febrero','Marzo','Abril'], zeroTx),
+      d2026:        monthsShape(liveMonths, zero),
+      weeklyData:   weeksShape(liveMonths),
+      transactions: monthsShape(liveMonths, zeroTx),
       weekly2025:        weeksShape(MONTHS_12),
       d2025_live:        monthsShape(MONTHS_12, zero),
       transactions2025:  monthsShape(MONTHS_12, zeroTx),

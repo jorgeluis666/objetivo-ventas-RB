@@ -332,10 +332,11 @@ async function main() {
     results[src.year] = await fetchYear(src, args);
   }
 
-  // Timestamp en hora Lima (UTC-5)
-  const nowUtc = new Date();
-  const lima = new Date(nowUtc.getTime() - 5 * 60 * 60 * 1000);
-  const generated = lima.toISOString().replace(/\.\d{3}Z$/, '');
+  // Timestamp en hora Lima (UTC-5). Perú no aplica horario de verano.
+  // El resultado es un ISO-8601 sin zona ("2026-05-16T10:30:00"); el cliente
+  // lo parsea añadiendo "-05:00" (ver sheets.js formatRelative).
+  const LIMA_OFFSET_MS = -5 * 60 * 60 * 1000;
+  const generated = new Date(Date.now() + LIMA_OFFSET_MS).toISOString().replace(/\.\d{3}Z$/, '');
 
   const output = {
     generated,

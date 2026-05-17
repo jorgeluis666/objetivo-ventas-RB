@@ -53,10 +53,12 @@ function checkFreshness(j, findings) {
   // generated viene en hora Lima (UTC-5) sin zona — lo trato como tal
   const then = new Date(gen + '-05:00');
   const hoursAgo = (Date.now() - then.getTime()) / 3600000;
-  if (hoursAgo > 30) {
+  // El sheet se actualiza los lunes; el JSON puede tener hasta ~7 días de antigüedad.
+  // Alerta si supera 10 días (240 h) sin actualizar — señal de que el pipeline falló.
+  if (hoursAgo > 240) {
     findings.push({
       sev: 'err',
-      txt: `Pipeline frío: última actualización hace ${hoursAgo.toFixed(1)} h (debería ser < 2 h). Revisar workflow \`update-data.yml\`.`,
+      txt: `Pipeline frío: última actualización hace ${hoursAgo.toFixed(1)} h (debería ser < 240 h · 10 días). Revisar workflow \`update-data.yml\`.`,
     });
   }
 }

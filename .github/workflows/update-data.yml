@@ -2,8 +2,13 @@ name: Actualizar datos de ventas
 
 on:
   schedule:
-    # Cada hora en punto (UTC). Suficiente para un dashboard operativo.
-    - cron: '0 * * * *'
+    # El sheet se actualiza los lunes. Tres pasadas para cubrir distintos horarios Lima:
+    #   Lunes 09:00 Lima = Lunes 14:00 UTC
+    - cron: '0 14 * * 1'
+    #   Lunes 14:00 Lima = Lunes 19:00 UTC
+    - cron: '0 19 * * 1'
+    #   Lunes 21:00 Lima = Martes 02:00 UTC (misma hora que weekly-check)
+    - cron: '0 2 * * 2'
   workflow_dispatch: {}
 
 permissions:

@@ -64,6 +64,12 @@
     };
   }
 
+  const MONTH_SHORT = {
+    Enero:'Ene', Febrero:'Feb', Marzo:'Mar', Abril:'Abr',
+    Mayo:'May', Junio:'Jun', Julio:'Jul', Agosto:'Ago',
+    Septiembre:'Sep', Octubre:'Oct', Noviembre:'Nov', Diciembre:'Dic',
+  };
+
   const instances = new Map();
   function destroy(id) {
     if (instances.has(id)) {
@@ -105,12 +111,11 @@
   // ── Evolución mensual ──
   // Muestra los 12 meses. 2025 se pinta completo (12 pts), 2026 solo hasta
   // donde el pipeline trajo datos (el resto queda en null → spanGaps:false).
-  const MONTH_SHORT_EVO = { Enero:'Ene', Febrero:'Feb', Marzo:'Mar', Abril:'Abr', Mayo:'May', Junio:'Jun', Julio:'Jul', Agosto:'Ago', Septiembre:'Sep', Octubre:'Oct', Noviembre:'Nov', Diciembre:'Dic' };
   function evoChart(d2026) {
     return mount('chart-evo', {
       type: 'line',
       data: {
-        labels: months.map(m => MONTH_SHORT_EVO[m] || m),
+        labels: months.map(m => MONTH_SHORT[m] || m),
         datasets: [
           {
             label: '2025',
@@ -356,14 +361,11 @@
   // weeklyRef  = 12 meses del año anterior (referencia, gris punteada)
   // weeklyCurrent = meses disponibles del año en curso (azul sólido)
   function combinedWeeklyChart(weeklyRef, weeklyCurrent) {
-    const ALL_MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-    const MONTH_SHORT = { Enero:'Ene', Febrero:'Feb', Marzo:'Mar', Abril:'Abr', Mayo:'May', Junio:'Jun', Julio:'Jul', Agosto:'Ago', Septiembre:'Sep', Octubre:'Oct', Noviembre:'Nov', Diciembre:'Dic' };
-
     // Aplana las semanas del año en una serie continua
     const flatten = (weekMap) => {
       const labels = [];
       const values = [];
-      ALL_MONTHS.forEach(m => {
+      months.forEach(m => {
         const weeks = weekMap[m] || [];
         weeks.forEach((w, i) => {
           // Primera semana del mes muestra la abreviatura; las demás solo "S<n>"

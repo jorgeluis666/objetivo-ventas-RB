@@ -12,6 +12,15 @@
 
   const fmt = n => Math.round(n).toLocaleString('es-PE');
   const tot = o => channels.reduce((s, c) => s + (o[c] || 0), 0);
+
+  // Formato compacto para etiquetas dentro del gráfico (k / M)
+  const fmtShort = v => {
+    if (v == null) return null;
+    const a = Math.abs(v);
+    if (a >= 1e6) return 'S/. ' + (v / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (a >= 1e3) return 'S/. ' + Math.round(v / 1e3) + 'k';
+    return 'S/. ' + Math.round(v);
+  };
   const pctFill  = p => p >= 100 ? 'var(--green)' : p >= 80 ? 'var(--amber)' : 'var(--brand)';
   const pctColor = p => p >= 100 ? 'var(--green-text)' : p >= 80 ? 'var(--amber-text)' : 'var(--brand-text)';
 
@@ -803,12 +812,45 @@
             if (btn.dataset.mode === 'monthly') {
               if (titleEl) titleEl.textContent = 'Evolución mensual · 2025 vs 2026';
               if (cumStrip) cumStrip.style.display = 'none';
-              chart.data.labels = ALL_MONTHS.map(m => MONTH_SHORT[m]);
-              chart.data.datasets[0].data = ALL_MONTHS.map(m => Math.round(tot(d2025[m] || {})));
-              chart.data.datasets[1].data = ALL_MONTHS.map(m => {
+
+              const mData25 = ALL_MONTHS.map(m => Math.round(tot(d2025[m] || {})));
+              const mData26 = ALL_MONTHS.map(m => {
                 const v = tot(state.d2026?.[m] || {});
                 return v > 0 ? Math.round(v) : null;
               });
+
+              chart.data.labels = ALL_MONTHS.map(m => MONTH_SHORT[m]);
+              chart.data.datasets[0].data = mData25;
+              chart.data.datasets[1].data = mData26;
+
+              // ── Datalabels: valor + delta por nodo ──
+              chart.data.datasets[0].datalabels = {
+                display: true,
+                color: '#94a3b8',
+                anchor: 'end',
+                align: 'bottom',
+                offset: 5,
+                font: { size: 10, weight: '400' },
+                formatter: v => fmtShort(v),
+              };
+              chart.data.datasets[1].datalabels = {
+                display: ctx => ctx.dataset.data[ctx.dataIndex] !== null,
+                color: '#2563eb',
+                anchor: 'end',
+                align: 'top',
+                offset: 5,
+                font: { size: 10, weight: '600' },
+                formatter: (v, ctx) => {
+                  if (v === null) return null;
+                  const ref = mData25[ctx.dataIndex];
+                  if (!ref) return fmtShort(v);
+                  const pct = (v - ref) / ref * 100;
+                  const sign = pct >= 0 ? '+' : '';
+                  return `${fmtShort(v)}\n${sign}${pct.toFixed(0)}%`;
+                },
+              };
+              chart.options.plugins.datalabels = { display: true };
+              chart.options.layout = { padding: { top: 32, bottom: 8 } };
               chart.update();
 
             } else if (btn.dataset.mode === 'cumulative') {
@@ -841,6 +883,34 @@
               chart.data.datasets[1].borderWidth = 3;
               chart.data.datasets[1].fill = false;
 
+              // ── Datalabels: acumulado + delta por nodo ──
+              chart.data.datasets[0].datalabels = {
+                display: true,
+                color: '#94a3b8',
+                anchor: 'end',
+                align: 'bottom',
+                offset: 5,
+                font: { size: 10, weight: '400' },
+                formatter: v => fmtShort(v),
+              };
+              chart.data.datasets[1].datalabels = {
+                display: ctx => ctx.dataset.data[ctx.dataIndex] !== null,
+                color: '#2563eb',
+                anchor: 'end',
+                align: 'top',
+                offset: 5,
+                font: { size: 10, weight: '600' },
+                formatter: (v, ctx) => {
+                  if (v === null) return null;
+                  const ref = cum25Data[ctx.dataIndex];
+                  if (!ref) return fmtShort(v);
+                  const pct = (v - ref) / ref * 100;
+                  const sign = pct >= 0 ? '+' : '';
+                  return `${fmtShort(v)}\n${sign}${pct.toFixed(0)}%`;
+                },
+              };
+              chart.options.plugins.datalabels = { display: true };
+              chart.options.layout = { padding: { top: 32, bottom: 8 } };
               chart.update();
 
               // ── KPI strip: diferencia YTD ──
@@ -884,11 +954,15 @@
             } else {
               if (titleEl) titleEl.textContent = 'Evolución semanal · 2025 vs 2026';
               if (cumStrip) cumStrip.style.display = 'none';
-              // Restaurar anchos de línea que pudieron modificarse en modo acumulado
+              // Restaurar anchos de línea, datalabels y layout que pudieron modificarse
               const chart2 = global.Charts?.getInstance('chart-weekly-combined');
               if (chart2) {
                 chart2.data.datasets[0].borderWidth = 1.5;
                 chart2.data.datasets[1].borderWidth = 2;
+                chart2.data.datasets[0].datalabels = { display: false };
+                chart2.data.datasets[1].datalabels = { display: false };
+                chart2.options.plugins.datalabels = { display: false };
+                chart2.options.layout = { padding: 0 };
               }
               global.Charts.combinedWeeklyChart(state.weekly2025, state.weeklyData);
             }

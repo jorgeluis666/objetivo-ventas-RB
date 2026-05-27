@@ -21,6 +21,10 @@
     if (a >= 1e3) return 'S/. ' + Math.round(v / 1e3) + 'k';
     return 'S/. ' + Math.round(v);
   };
+
+  // Extrae el valor de un mes según canal seleccionado ('' = Total de todos los canales)
+  const getChVal = (monthObj, chName) =>
+    chName ? ((monthObj || {})[chName] || 0) : tot(monthObj || {});
   const pctFill  = p => p >= 100 ? 'var(--green)' : p >= 80 ? 'var(--amber)' : 'var(--brand)';
   const pctColor = p => p >= 100 ? 'var(--green-text)' : p >= 80 ? 'var(--amber-text)' : 'var(--brand-text)';
 
@@ -780,7 +784,9 @@
 
     // Chart combinado arriba de los month tabs (52 semanas 2025 + 2026 disponibles)
     if (global.Charts?.combinedWeeklyChart) {
-      global.Charts.combinedWeeklyChart(state.weekly2025, state.weeklyData);
+      const initSelCh = document.getElementById('chart-channel-select')?.value || '';
+      const initChKey = initSelCh ? chToUpper[initSelCh] : 'TOTAL';
+      global.Charts.combinedWeeklyChart(state.weekly2025, state.weeklyData, initChKey);
     }
 
     // ── Toggle Semanal / Mensual ──
@@ -791,7 +797,8 @@
       toggleEl.querySelectorAll('.vt-btn').forEach(b => b.classList.remove('active'));
       const weeklyBtn = toggleEl.querySelector('[data-mode="weekly"]');
       if (weeklyBtn) weeklyBtn.classList.add('active');
-      if (titleEl) titleEl.textContent = 'Evolución semanal · 2025 vs 2026';
+      const initLabel = document.getElementById('chart-channel-select')?.value || 'Total';
+      if (titleEl) titleEl.textContent = `Evolución semanal · ${initLabel} · 2025 vs 2026`;
 
       if (!toggleEl.dataset.wired) {
         toggleEl.dataset.wired = '1';
@@ -799,6 +806,11 @@
         const MONTH_SHORT = { Enero:'Ene', Febrero:'Feb', Marzo:'Mar', Abril:'Abr', Mayo:'May', Junio:'Jun', Julio:'Jul', Agosto:'Ago', Septiembre:'Sep', Octubre:'Oct', Noviembre:'Nov', Diciembre:'Dic' };
 
         const cumStrip = document.getElementById('cum-kpi-strip');
+
+        // Helper: etiqueta del canal seleccionado para usar en títulos
+        const getSelCh   = () => document.getElementById('chart-channel-select')?.value || '';
+        const getChLabel = () => getSelCh() || 'Total';
+        const getChKey   = () => { const c = getSelCh(); return c ? chToUpper[c] : 'TOTAL'; };
 
         toggleEl.querySelectorAll('.vt-btn').forEach(btn => {
           btn.addEventListener('click', () => {
@@ -809,13 +821,16 @@
             const chart = global.Charts?.getInstance('chart-weekly-combined');
             if (!chart) return;
 
+            const selCh    = getSelCh();
+            const chLabel  = getChLabel();
+
             if (btn.dataset.mode === 'monthly') {
-              if (titleEl) titleEl.textContent = 'Evolución mensual · 2025 vs 2026';
+              if (titleEl) titleEl.textContent = `Evolución mensual · ${chLabel} · 2025 vs 2026`;
               if (cumStrip) cumStrip.style.display = 'none';
 
-              const mData25 = ALL_MONTHS.map(m => Math.round(tot(d2025[m] || {})));
+              const mData25 = ALL_MONTHS.map(m => Math.round(getChVal(d2025[m], selCh)));
               const mData26 = ALL_MONTHS.map(m => {
-                const v = tot(state.d2026?.[m] || {});
+                const v = getChVal(state.d2026?.[m], selCh);
                 return v > 0 ? Math.round(v) : null;
               });
 
@@ -854,15 +869,15 @@
               chart.update();
 
             } else if (btn.dataset.mode === 'cumulative') {
-              if (titleEl) titleEl.textContent = 'Acumulado interanual · 2025 vs 2026';
+              if (titleEl) titleEl.textContent = `Acumulado interanual · ${chLabel} · 2025 vs 2026`;
 
-              // ── Calcular running totals ──
+              // ── Calcular running totals por canal ──
               let cum25 = 0, cum26 = 0;
               const cum25Data = [], cum26Data = [];
 
               ALL_MONTHS.forEach(m => {
-                cum25 += Math.round(tot(d2025[m] || {}));
-                const v26 = tot(state.d2026?.[m] || {});
+                cum25 += Math.round(getChVal(d2025[m], selCh));
+                const v26 = getChVal(state.d2026?.[m], selCh);
                 cum25Data.push(cum25);
                 if (v26 > 0) {
                   cum26 += Math.round(v26);
@@ -934,12 +949,12 @@
                     <div class="cum-kpi-card">
                       <div class="cum-kpi-lbl">2025 · ${periodLabel}</div>
                       <div class="cum-kpi-val">S/. ${fmt(ytd25)}</div>
-                      <div class="cum-kpi-sub">acumulado referencia</div>
+                      <div class="cum-kpi-sub">acumulado referencia${selCh ? ' · ' + selCh : ''}</div>
                     </div>
                     <div class="cum-kpi-card cum-kpi-card-current">
                       <div class="cum-kpi-lbl">2026 · ${periodLabel}</div>
                       <div class="cum-kpi-val" style="color:var(--brand);">S/. ${fmt(ytd26)}</div>
-                      <div class="cum-kpi-sub">acumulado en curso</div>
+                      <div class="cum-kpi-sub">acumulado en curso${selCh ? ' · ' + selCh : ''}</div>
                     </div>
                     <div class="cum-kpi-card" style="background:${diffBg};border-color:${diffBorder};">
                       <div class="cum-kpi-lbl">Diferencia YoY</div>
@@ -952,7 +967,7 @@
               }
 
             } else {
-              if (titleEl) titleEl.textContent = 'Evolución semanal · 2025 vs 2026';
+              if (titleEl) titleEl.textContent = `Evolución semanal · ${chLabel} · 2025 vs 2026`;
               if (cumStrip) cumStrip.style.display = 'none';
               // Restaurar anchos de línea, datalabels y layout que pudieron modificarse
               const chart2 = global.Charts?.getInstance('chart-weekly-combined');
@@ -964,10 +979,22 @@
                 chart2.options.plugins.datalabels = { display: false };
                 chart2.options.layout = { padding: 0 };
               }
-              global.Charts.combinedWeeklyChart(state.weekly2025, state.weeklyData);
+              global.Charts.combinedWeeklyChart(state.weekly2025, state.weeklyData, getChKey());
             }
           });
         });
+
+        // ── Dropdown de canal: re-dispara el modo activo al cambiar ──
+        const channelSel = document.getElementById('chart-channel-select');
+        if (channelSel) {
+          channelSel.addEventListener('change', () => {
+            const activeBtn = toggleEl.querySelector('.vt-btn.active');
+            if (!activeBtn) return;
+            // Quita 'active' momentáneamente para que el handler del click proceda
+            activeBtn.classList.remove('active');
+            activeBtn.click();
+          });
+        }
       }
     }
 

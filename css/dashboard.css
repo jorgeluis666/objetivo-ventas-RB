@@ -410,6 +410,30 @@
 .topbar-pill.sync.loading .sync-dot { animation: pulse 1.2s ease-in-out infinite; }
 @keyframes pulse { 50% { opacity: .35; } }
 
+/* ── Channel select (desplegable de canal en el gráfico combinado) ── */
+.ch-select {
+  height: 32px;
+  padding: 0 26px 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 7px center;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  min-width: 100px;
+}
+.ch-select:hover { border-color: var(--brand); }
+.ch-select:focus { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(185,28,28,.12); }
+
 /* ── View toggle (Semanal / Mensual) ── */
 .view-toggle {
   display: inline-flex;

@@ -360,7 +360,9 @@
   // ── Combined weekly — 2025 full year (ref) + 2026 available ──
   // weeklyRef  = 12 meses del año anterior (referencia, gris punteada)
   // weeklyCurrent = meses disponibles del año en curso (azul sólido)
-  function combinedWeeklyChart(weeklyRef, weeklyCurrent) {
+  function combinedWeeklyChart(weeklyRef, weeklyCurrent, channelKey) {
+    // channelKey: 'TOTAL' (default) o clave de canal como 'TIENDA', 'WEB', etc.
+    const field = channelKey || 'TOTAL';
     // Aplana las semanas del año en una serie continua
     const flatten = (weekMap) => {
       const labels = [];
@@ -370,7 +372,7 @@
         weeks.forEach((w, i) => {
           // Primera semana del mes muestra la abreviatura; las demás solo "S<n>"
           labels.push(i === 0 ? `${MONTH_SHORT[m]} S${w.w}` : `S${w.w}`);
-          values.push(w.TOTAL || 0);
+          values.push(w[field] || 0);
         });
       });
       return { labels, values };

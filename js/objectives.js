@@ -398,13 +398,23 @@
     }
   }
 
-  // ── Semanas del mes: barras semanales vs meta prorrateada ──
+  // ── Semanas del mes: barras colapsables con detalle por canal ──
+  // wk.w es el número de semana DENTRO del mes (1 = primera semana)
+  const MONTH_ABR = { Enero:'ene', Febrero:'feb', Marzo:'mar', Abril:'abr', Mayo:'may',
+    Junio:'jun', Julio:'jul', Agosto:'ago', Septiembre:'sep', Octubre:'oct',
+    Noviembre:'nov', Diciembre:'dic' };
+
+  function weekDateRange(m, w) {
+    const start = (w - 1) * 7 + 1;
+    const end   = Math.min(w * 7, monthDays[m]);
+    return `${start}–${end} ${MONTH_ABR[m]}`;
+  }
+
   function refreshWeeklyAlert(m) {
     const el = document.getElementById(`weekly-alert-${m}`);
     if (!el) return;
 
     const status = monthStatus(m);
-    // Solo meses con datos (current o past)
     if (status === 'future' || !isLiveMonth(m)) { el.innerHTML = ''; return; }
 
     const weeks = state.weeklyData?.[m];
@@ -413,52 +423,67 @@
     const monthTarget = channels.reduce((s, ch) => s + (state.targets[m][ch] || 0), 0);
     if (monthTarget === 0) { el.innerHTML = ''; return; }
 
-    // Meta semanal prorrateada: target * 7 / días del mes
+    // Meta semanal prorrateada: objetivo mensual × 7 / días del mes
     const weekTarget = monthTarget * 7 / monthDays[m];
-    const todayISOWeek = isoWeekNumber(new Date());
+
+    // Semana actual dentro del mes (1-based): ceil(día/7)
+    const curWeekNum = status === 'current' ? Math.ceil(new Date().getDate() / 7) : -1;
 
     const rows = weeks.map((wk, i) => {
-      // weeklyData puede tener TOTAL precalculado o sumar por canal
+      const weekNum = wk.w;  // número de semana dentro del mes (1, 2, 3…)
       const real    = (wk.TOTAL != null && wk.TOTAL > 0)
                         ? wk.TOTAL
                         : channels.reduce((s, ch) => s + (wk[chToUpper[ch]] || 0), 0);
-      const weekNum = wk.w;
 
-      const isCurrentWeek = (status === 'current') && (weekNum === todayISOWeek);
-      const isFuture      = (status === 'current') && (weekNum > todayISOWeek);
+      const isCurrentWeek = status === 'current' && weekNum === curWeekNum;
+      const isFuture      = status === 'current' && weekNum > curWeekNum;
       const pct           = weekTarget > 0 ? real / weekTarget * 100 : 0;
       const gap           = real - weekTarget;
+      const detailId      = `wa-d-${m.replace(/\s/g,'')}-${weekNum}`;
 
       let cls, badge;
-      if (isFuture) {
-        cls = 'muted';  badge = 'próxima';
-      } else if (isCurrentWeek) {
-        cls = 'brand';  badge = '→ en curso';
-      } else if (pct >= 90) {
-        cls = 'green';  badge = '✓ en track';
-      } else if (pct >= 70) {
-        cls = 'amber';  badge = '⚠ atención';
-      } else {
-        cls = 'red';    badge = '▼ brecha';
-      }
+      if (isFuture)          { cls = 'muted';  badge = 'próxima'; }
+      else if (isCurrentWeek){ cls = 'brand';  badge = '→ en curso'; }
+      else if (pct >= 90)    { cls = 'green';  badge = '✓ en track'; }
+      else if (pct >= 70)    { cls = 'amber';  badge = '⚠ atención'; }
+      else                   { cls = 'red';    badge = '▼ brecha'; }
 
-      const barColor = {
-        muted: '#e2e8f0', brand: 'var(--brand)',
-        green: 'var(--green)', amber: 'var(--amber)', red: 'var(--red)',
-      }[cls];
-      const textColor = {
-        muted: 'var(--muted)', brand: 'var(--brand-text)',
-        green: 'var(--green-text)', amber: 'var(--amber-text)', red: 'var(--red-text)',
-      }[cls];
+      const barColor  = { muted:'#e2e8f0', brand:'var(--brand)',
+                          green:'var(--green)', amber:'var(--amber)', red:'var(--red)' }[cls];
+      const textColor = { muted:'var(--muted)', brand:'var(--brand-text)',
+                          green:'var(--green-text)', amber:'var(--amber-text)', red:'var(--red-text)' }[cls];
 
       const barW     = isFuture ? 0 : Math.min(pct, 100).toFixed(0);
-      const gapLabel = isFuture ? '' : (isCurrentWeek ? '' : ((gap >= 0 ? '+' : '') + 'S/. ' + fmt(gap)));
+      const gapLabel = (isFuture || isCurrentWeek) ? '' : (gap >= 0 ? '+' : '') + 'S/. ' + fmt(gap);
+      const dateRange = weekDateRange(m, weekNum);
+
+      // ── Detalle por canal (visible al expandir) ──
+      const chRows = channels
+        .filter(ch => (state.targets[m][ch] || 0) > 0 || (wk[chToUpper[ch]] || 0) > 0)
+        .map(ch => {
+          const chReal   = wk[chToUpper[ch]] || 0;
+          const chTarget = (state.targets[m][ch] || 0) * 7 / monthDays[m];
+          const chPct    = chTarget > 0 ? chReal / chTarget * 100 : 0;
+          const chColor  = chPct >= 90 ? 'var(--green)' : chPct >= 70 ? 'var(--amber)' : (chReal > 0 ? 'var(--red)' : '#e2e8f0');
+          return `
+            <div class="wa-ch-row">
+              <span class="ch-pip" style="background:${palette[ch]};width:8px;height:8px;border-radius:2px;flex-shrink:0;display:inline-block;"></span>
+              <span class="wa-ch-name">${ch}</span>
+              <div class="wa-ch-track">
+                <div class="wa-ch-fill" style="width:${isFuture ? 0 : Math.min(chPct,100).toFixed(0)}%;background:${chColor};"></div>
+              </div>
+              <span class="wa-ch-amt">S/. ${fmt(chReal)}</span>
+              <span class="wa-ch-pct" style="color:${chColor};">${chTarget > 0 ? chPct.toFixed(0) + '%' : '—'}</span>
+              <span class="wa-ch-tgt" style="color:var(--muted);">/ S/. ${fmt(chTarget)}</span>
+            </div>`;
+        }).join('');
 
       return `
-        <div class="wa-row${isCurrentWeek ? ' wa-row-current' : ''}">
+        <div class="wa-row${isCurrentWeek ? ' wa-row-current' : ''}${isFuture ? ' wa-row-future' : ''}"
+             data-detail="${detailId}" role="button" tabindex="0" aria-expanded="false">
           <div class="wa-lbl">
             <span class="wa-sem">Sem. ${i + 1}</span>
-            <span class="wa-wnum">W${weekNum}</span>
+            <span class="wa-wnum">${dateRange}</span>
           </div>
           <div class="wa-track">
             <div class="wa-fill" style="width:${barW}%;background:${barColor};"></div>
@@ -469,6 +494,27 @@
           </div>
           <div class="wa-gap">${gapLabel ? `<span style="color:${textColor};font-size:11px;">${gapLabel}</span>` : ''}</div>
           <span class="pace-badge ${cls}">${badge}</span>
+          <span class="wa-chevron${isFuture ? ' wa-chevron-hide' : ''}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </span>
+        </div>
+        <div class="wa-detail" id="${detailId}">
+          <div class="wa-detail-inner">
+            <div class="wa-ch-head">
+              <span></span><span>Canal</span><span></span>
+              <span class="r">Real sem.</span><span class="r">%</span>
+              <span class="r">Meta sem.</span>
+            </div>
+            ${chRows}
+            <div class="wa-detail-footer">
+              Total semana: <strong>S/. ${fmt(real)}</strong> &nbsp;·&nbsp;
+              Meta: <strong>S/. ${fmt(weekTarget)}</strong>
+              ${!isFuture && !isCurrentWeek ? ` &nbsp;·&nbsp; <strong style="color:${textColor};">${pct.toFixed(1)}% alcanzado</strong>` : ''}
+            </div>
+          </div>
         </div>`;
     }).join('');
 
@@ -476,12 +522,35 @@
       <div class="panel wa-panel">
         <div class="panel-head">
           <div>
-            <div class="panel-title">Alerta semanal &nbsp;<span style="font-weight:400;color:var(--muted);font-size:12px;">· ${m} ${YEAR}</span></div>
-            <div class="panel-sub">Meta semanal ≈ S/. ${fmt(weekTarget)} &nbsp;·&nbsp; objetivo mensual S/. ${fmt(monthTarget)} / ${monthDays[m]} días</div>
+            <div class="panel-title">Alerta semanal
+              <span style="font-weight:400;color:var(--muted);font-size:12px;">· ${m} ${YEAR}</span>
+            </div>
+            <div class="panel-sub">
+              Meta semanal ≈ S/. ${fmt(weekTarget)} &nbsp;·&nbsp;
+              objetivo mensual S/. ${fmt(monthTarget)} / ${monthDays[m]} días &nbsp;·&nbsp;
+              <em>Clic en una semana para ver el detalle por canal</em>
+            </div>
           </div>
         </div>
         <div class="wa-rows">${rows}</div>
       </div>`;
+
+    // ── Event listeners de expand/collapse ──
+    el.querySelectorAll('.wa-row[data-detail]').forEach(row => {
+      if (row.classList.contains('wa-row-future')) return; // no expandir futuras
+      row.addEventListener('click', () => {
+        const detail   = document.getElementById(row.dataset.detail);
+        const chevron  = row.querySelector('.wa-chevron');
+        if (!detail) return;
+        const isOpen = detail.classList.contains('wa-detail-open');
+        detail.classList.toggle('wa-detail-open', !isOpen);
+        chevron?.classList.toggle('wa-chevron-open', !isOpen);
+        row.setAttribute('aria-expanded', String(!isOpen));
+      });
+      row.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); row.click(); }
+      });
+    });
   }
 
   // ── Render principal de la vista ──

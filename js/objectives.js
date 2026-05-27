@@ -173,23 +173,35 @@
     if (status === 'future') {
       el.innerHTML = `
         <div class="pace-grid">
-          <div class="pace-card dark">
-            <div class="pace-lbl">Días del mes</div>
+          <div class="pace-card">
+            <div class="pace-card-head">
+              <div class="pace-lbl">Días del mes</div>
+              <span class="pace-badge muted">futuro</span>
+            </div>
             <div class="pace-val">${monthDays[m]}</div>
             <div class="pace-sub">mes futuro</div>
           </div>
-          <div class="pace-card brand-border">
-            <div class="pace-lbl">Meta propuesta</div>
+          <div class="pace-card">
+            <div class="pace-card-head">
+              <div class="pace-lbl">Meta propuesta</div>
+              <span class="pace-badge muted">editable</span>
+            </div>
             <div class="pace-val brand">S/. ${fmt(tt)}</div>
-            <div class="pace-sub">editable debajo</div>
+            <div class="pace-sub">ajustable abajo</div>
           </div>
-          <div class="pace-card amber-border">
-            <div class="pace-lbl">Venta diaria necesaria</div>
+          <div class="pace-card">
+            <div class="pace-card-head">
+              <div class="pace-lbl">Venta diaria necesaria</div>
+              <span class="pace-badge muted">proyección</span>
+            </div>
             <div class="pace-val">S/. ${fmt(tt / monthDays[m])}</div>
             <div class="pace-sub">para alcanzar la meta</div>
           </div>
           <div class="pace-card">
-            <div class="pace-lbl">Ref. ${m} 2025</div>
+            <div class="pace-card-head">
+              <div class="pace-lbl">Ref. ${m} 2025</div>
+              <span class="pace-badge muted">referencia</span>
+            </div>
             <div class="pace-val">S/. ${fmt(tot(d2025[m] || {}))}</div>
             <div class="pace-sub">cierre año anterior</div>
           </div>
@@ -204,25 +216,39 @@
       const refTxns = Math.round(Object.values(state.transactions?.[refMonth] || {}).reduce((a, b) => a + b, 0) / (monthDays[refMonth] || 30));
       const refTk   = state.avgTickets?.[refMonth]?.TOTAL || 0;
 
+      const pctPassed = Math.round(passed / monthDays[m] * 100);
+      const pctMissing = faltante > 0 ? Math.round(faltante / tt * 100) : 0;
       el.innerHTML = `
         <div class="pace-grid">
-          <div class="pace-card dark">
-            <div class="pace-lbl">Días restantes</div>
+          <div class="pace-card">
+            <div class="pace-card-head">
+              <div class="pace-lbl">Días restantes</div>
+              <span class="pace-badge muted">${pctPassed}% del mes</span>
+            </div>
             <div class="pace-val">${remDays}</div>
             <div class="pace-sub">de ${monthDays[m]} en ${m.toLowerCase()}</div>
           </div>
-          <div class="pace-card ${faltante > 0 ? 'red-border' : 'green-border'}">
-            <div class="pace-lbl">Faltante para meta</div>
+          <div class="pace-card">
+            <div class="pace-card-head">
+              <div class="pace-lbl">Faltante para meta</div>
+              <span class="pace-badge ${faltante > 0 ? 'red' : 'green'}">${faltante > 0 ? '▼ ' + pctMissing + '%' : '✓ cubierto'}</span>
+            </div>
             <div class="pace-val ${faltante > 0 ? 'red' : 'green'}">S/. ${fmt(faltante)}</div>
             <div class="pace-sub">Meta total: S/. ${fmt(tt)}</div>
           </div>
-          <div class="pace-card amber-border">
-            <div class="pace-lbl">Venta diaria necesaria</div>
+          <div class="pace-card">
+            <div class="pace-card-head">
+              <div class="pace-lbl">Venta diaria necesaria</div>
+              <span class="pace-badge muted">${remDays} días</span>
+            </div>
             <div class="pace-val">S/. ${fmt(dailyNeed)}</div>
             <div class="pace-sub">para los ${remDays} días restantes</div>
           </div>
-          <div class="pace-card brand-border">
-            <div class="pace-lbl">Transacciones necesarias</div>
+          <div class="pace-card">
+            <div class="pace-card-head">
+              <div class="pace-lbl">Transacciones necesarias</div>
+              <span class="pace-badge muted">S/. ${avgTk} ticket</span>
+            </div>
             <div class="pace-val brand">${txnsNeed}/día</div>
             <div class="pace-sub">ticket promedio S/. ${avgTk}</div>
           </div>
@@ -234,25 +260,38 @@
     } else {
       const totalTx = avgTk > 0 ? Math.round(real / avgTk) : 0;
       const closeColor = real >= tt ? 'green' : pctMet >= 90 ? 'amber' : 'red';
+      const closeBadgeLabel = closeColor === 'green' ? '✓ alcanzado' : closeColor === 'amber' ? '↑ casi' : '▼ brecha';
       el.innerHTML = `
         <div class="pace-grid">
-          <div class="pace-card ${closeColor}-border">
-            <div class="pace-lbl">Cierre del mes</div>
+          <div class="pace-card">
+            <div class="pace-card-head">
+              <div class="pace-lbl">Cierre del mes</div>
+              <span class="pace-badge ${closeColor}">${closeBadgeLabel}</span>
+            </div>
             <div class="pace-val ${closeColor}">${pctMet.toFixed(1)}%</div>
             <div class="pace-sub">${real >= tt ? '✓ Objetivo alcanzado' : 'de la meta'}</div>
           </div>
-          <div class="pace-card ${real >= tt ? 'green-border' : 'red-border'}">
-            <div class="pace-lbl">${real >= tt ? 'Excedente' : 'Brecha final'}</div>
+          <div class="pace-card">
+            <div class="pace-card-head">
+              <div class="pace-lbl">${real >= tt ? 'Excedente' : 'Brecha final'}</div>
+              <span class="pace-badge ${real >= tt ? 'green' : 'red'}">vs meta</span>
+            </div>
             <div class="pace-val ${real >= tt ? 'green' : 'red'}">${real >= tt ? '+' : ''}S/. ${fmt(real - tt)}</div>
             <div class="pace-sub">vs meta S/. ${fmt(tt)}</div>
           </div>
           <div class="pace-card">
-            <div class="pace-lbl">Venta diaria real</div>
+            <div class="pace-card-head">
+              <div class="pace-lbl">Venta diaria real</div>
+              <span class="pace-badge muted">${passed} días</span>
+            </div>
             <div class="pace-val">S/. ${fmt(dailyReal)}</div>
             <div class="pace-sub">promedio sobre ${passed} días</div>
           </div>
-          <div class="pace-card brand-border">
-            <div class="pace-lbl">Transacciones totales</div>
+          <div class="pace-card">
+            <div class="pace-card-head">
+              <div class="pace-lbl">Transacciones totales</div>
+              <span class="pace-badge muted">S/. ${state.avgTickets[m]?.TOTAL || 0} ticket</span>
+            </div>
             <div class="pace-val brand">${totalTx}</div>
             <div class="pace-sub">ticket promedio S/. ${state.avgTickets[m]?.TOTAL || 0}</div>
           </div>
@@ -428,8 +467,9 @@
       const isCurrent = status === 'current';
       const classes = ['month-tab'];
       if (i === defaultIdx) classes.push('active');
-      if (isCurrent)        classes.push('active-current');
+      if (isCurrent)           classes.push('active-current');
       if (status === 'future') classes.push('future');
+      if (status === 'past')   classes.push('past');
       tab.className = classes.join(' ');
       tab.textContent = m + (isCurrent ? ' ◉' : '');
       tab.addEventListener('click', () => {

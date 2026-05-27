@@ -75,14 +75,18 @@
 .month-tab {
   font-size: 13px;
   font-weight: 500;
-  padding: 8px 18px;
-  border-radius: 8px;
+  padding: 9px 20px;
+  border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text-2);
   cursor: pointer;
   transition: background .15s, border-color .15s, color .15s;
   font-family: inherit;
+}
+.month-tab.past {
+  color: var(--text);
+  font-weight: 600;
 }
 .month-tab:hover { background: #F8FAFC; color: var(--text); border-color: #cbd5e1; }
 .month-tab.active {
@@ -97,7 +101,7 @@
   border-color: var(--amber);
   font-weight: 700;
 }
-.month-tab.future { color: var(--muted); }
+.month-tab.future { color: var(--muted); font-weight: 400; }
 .month-tab.future:hover { color: var(--text-2); }
 .month-tab.future.active {
   background: var(--brand-soft);
@@ -133,17 +137,26 @@
   box-shadow: var(--sh);
   position: relative;
 }
-.pace-card.dark {
-  background: var(--brand-soft);
-  border-color: #fca5a5;
+.pace-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }
-.pace-card.dark .pace-lbl { color: var(--brand-text); }
-.pace-card.dark .pace-sub { color: var(--brand-text); opacity: .75; }
-.pace-card.dark .pace-val { color: var(--brand); }
-.pace-card.green-border { border-top: 3px solid var(--green); }
-.pace-card.amber-border { border-top: 3px solid var(--amber); }
-.pace-card.red-border   { border-top: 3px solid var(--red); }
-.pace-card.brand-border { border-top: 3px solid var(--brand); }
+.pace-card-head .pace-lbl { margin-bottom: 0; }
+.pace-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.pace-badge.green { background: var(--green-soft);  color: var(--green-text); }
+.pace-badge.amber { background: var(--amber-soft);  color: var(--amber-text); }
+.pace-badge.red   { background: var(--red-soft);    color: var(--red-text);   }
+.pace-badge.brand { background: var(--brand-soft);  color: var(--brand-text); }
+.pace-badge.muted { background: #f1f5f9; color: var(--muted); }
 
 .pace-lbl {
   font-size: 11px;

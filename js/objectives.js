@@ -273,6 +273,48 @@
       global.Charts.combinedWeeklyChart(state.weekly2025, state.weeklyData);
     }
 
+    // ── Toggle Semanal / Mensual ──
+    const toggleEl = document.getElementById('weekly-view-toggle');
+    const titleEl  = document.getElementById('combined-chart-title');
+    if (toggleEl) {
+      // Siempre resetear a Semanal cuando se cargan datos frescos
+      toggleEl.querySelectorAll('.vt-btn').forEach(b => b.classList.remove('active'));
+      const weeklyBtn = toggleEl.querySelector('[data-mode="weekly"]');
+      if (weeklyBtn) weeklyBtn.classList.add('active');
+      if (titleEl) titleEl.textContent = 'Evolución semanal · 2025 vs 2026';
+
+      if (!toggleEl.dataset.wired) {
+        toggleEl.dataset.wired = '1';
+        const ALL_MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        const MONTH_SHORT = { Enero:'Ene', Febrero:'Feb', Marzo:'Mar', Abril:'Abr', Mayo:'May', Junio:'Jun', Julio:'Jul', Agosto:'Ago', Septiembre:'Sep', Octubre:'Oct', Noviembre:'Nov', Diciembre:'Dic' };
+
+        toggleEl.querySelectorAll('.vt-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (btn.classList.contains('active')) return;
+            toggleEl.querySelectorAll('.vt-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const chart = global.Charts?.getInstance('chart-weekly-combined');
+            if (!chart) return;
+
+            if (btn.dataset.mode === 'monthly') {
+              if (titleEl) titleEl.textContent = 'Evolución mensual · 2025 vs 2026';
+              chart.data.labels = ALL_MONTHS.map(m => MONTH_SHORT[m]);
+              chart.data.datasets[0].data = ALL_MONTHS.map(m => Math.round(tot(d2025[m] || {})));
+              chart.data.datasets[1].data = ALL_MONTHS.map(m => {
+                const v = tot(state.d2026?.[m] || {});
+                return v > 0 ? Math.round(v) : null;
+              });
+              chart.update();
+            } else {
+              if (titleEl) titleEl.textContent = 'Evolución semanal · 2025 vs 2026';
+              global.Charts.combinedWeeklyChart(state.weekly2025, state.weeklyData);
+            }
+          });
+        });
+      }
+    }
+
     const monthTabsEl   = document.getElementById('month-tabs');
     const monthPanelsEl = document.getElementById('month-panels');
     if (!monthTabsEl || !monthPanelsEl) return;

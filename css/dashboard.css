@@ -357,6 +357,34 @@
 .topbar-pill.sync.loading .sync-dot { animation: pulse 1.2s ease-in-out infinite; }
 @keyframes pulse { 50% { opacity: .35; } }
 
+/* ── View toggle (Semanal / Mensual) ── */
+.view-toggle {
+  display: inline-flex;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.vt-btn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s, color .15s;
+  letter-spacing: 0.02em;
+}
+.vt-btn.active {
+  background: #b91c1c;
+  color: #ffffff;
+}
+.vt-btn:not(.active):hover {
+  background: #f8fafc;
+  color: var(--text);
+}
+
 /* ── Site footer ── */
 .site-footer {
   padding-top: 16px;

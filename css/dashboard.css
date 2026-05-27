@@ -73,38 +73,37 @@
   flex-wrap: wrap;
 }
 .month-tab {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
-  padding: 7px 16px;
-  border-radius: var(--r-sm);
+  padding: 8px 18px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text-2);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background .15s, border-color .15s, color .15s;
   font-family: inherit;
 }
-.month-tab:hover { background: #F8FAFC; color: var(--text); }
+.month-tab:hover { background: #F8FAFC; color: var(--text); border-color: #cbd5e1; }
 .month-tab.active {
-  background: var(--brand);
-  color: #fff;
-  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand);
+  border-color: #fca5a5;
+  font-weight: 700;
 }
 .month-tab.active-current {
-  background: var(--amber);
-  color: #fff;
+  background: var(--amber-soft);
+  color: var(--amber-text);
   border-color: var(--amber);
+  font-weight: 700;
 }
-.month-tab.future {
-  color: var(--muted);
-  border-style: dashed;
-}
+.month-tab.future { color: var(--muted); }
 .month-tab.future:hover { color: var(--text-2); }
 .month-tab.future.active {
-  background: var(--brand);
-  color: #fff;
-  border-color: var(--brand);
-  border-style: solid;
+  background: var(--brand-soft);
+  color: var(--brand);
+  border-color: #fca5a5;
+  font-weight: 700;
 }
 .mpanel { display: none; }
 .mpanel.visible { display: block; }
@@ -130,39 +129,37 @@
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--r);
-  padding: 14px 16px;
+  padding: 16px 18px;
   box-shadow: var(--sh);
   position: relative;
-  overflow: hidden;
 }
 .pace-card.dark {
-  background: var(--sidebar-bg);
-  border-color: var(--sidebar-bg);
-  color: #fff;
+  background: var(--brand-soft);
+  border-color: #fca5a5;
 }
-.pace-card.dark .pace-lbl { color: rgba(255,255,255,0.55); }
-.pace-card.dark .pace-sub { color: rgba(255,255,255,0.5); }
-.pace-card.green-border { border-left: 3px solid var(--green); }
-.pace-card.amber-border { border-left: 3px solid var(--amber); }
-.pace-card.red-border   { border-left: 3px solid var(--red); }
-.pace-card.brand-border { border-left: 3px solid var(--brand); }
+.pace-card.dark .pace-lbl { color: var(--brand-text); }
+.pace-card.dark .pace-sub { color: var(--brand-text); opacity: .75; }
+.pace-card.dark .pace-val { color: var(--brand); }
+.pace-card.green-border { border-top: 3px solid var(--green); }
+.pace-card.amber-border { border-top: 3px solid var(--amber); }
+.pace-card.red-border   { border-top: 3px solid var(--red); }
+.pace-card.brand-border { border-top: 3px solid var(--brand); }
 
 .pace-lbl {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: #64748b;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 .pace-val {
-  font-size: 22px;
-  font-weight: 600;
+  font-size: 26px;
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.1;
   color: var(--text);
 }
-.pace-card.dark .pace-val { color: #fff; }
 .pace-val.red    { color: var(--red); }
 .pace-val.green  { color: var(--green); }
 .pace-val.amber  { color: var(--amber); }
@@ -170,7 +167,7 @@
 .pace-sub {
   font-size: 11px;
   color: var(--text-2);
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .pace-footnote {

@@ -217,7 +217,7 @@
     renderRowUI(m, ch);
     refreshObjTotal(m);
     refreshPaceCards(m);
-    refreshWeeklyAlert(m);
+    rebuildChannelWeeklyDetail(m, ch);
     saveToStorage();
   }
 
@@ -398,8 +398,8 @@
     }
   }
 
-  // ── Semanas del mes: barras colapsables con detalle por canal ──
-  // wk.w es el número de semana DENTRO del mes (1 = primera semana)
+  // ── Detalle semanal por canal (expandible desde la fila de la tabla) ──
+  // wk.w es el número de semana DENTRO del mes (1 = primera semana del mes)
   const MONTH_ABR = { Enero:'ene', Febrero:'feb', Marzo:'mar', Abril:'abr', Mayo:'may',
     Junio:'jun', Julio:'jul', Agosto:'ago', Septiembre:'sep', Octubre:'oct',
     Noviembre:'nov', Diciembre:'dic' };
@@ -408,6 +408,64 @@
     const start = (w - 1) * 7 + 1;
     const end   = Math.min(w * 7, monthDays[m]);
     return `${start}–${end} ${MONTH_ABR[m]}`;
+  }
+
+  // Construye el HTML interno del desplegable semanal de un canal concreto.
+  // Se puede llamar en cualquier momento; lee state.weeklyData y state.targets.
+  function buildChannelWeeklyHTML(m, ch, status) {
+    const weeks = state.weeklyData?.[m];
+    if (!weeks || !weeks.length) {
+      return '<div style="padding:8px 4px;font-size:12px;color:var(--muted);">Sin datos semanales para este canal.</div>';
+    }
+    const chKey        = chToUpper[ch];
+    const monthChTgt   = state.targets[m][ch] || 0;
+    const weekChTarget = monthChTgt > 0 ? monthChTgt * 7 / monthDays[m] : 0;
+    const curWeekNum   = status === 'current' ? Math.ceil(new Date().getDate() / 7) : -1;
+
+    const weekRows = weeks.map((wk, i) => {
+      const weekNum       = wk.w;
+      const real          = wk[chKey] || 0;
+      const isCurrentWeek = status === 'current' && weekNum === curWeekNum;
+      const isFuture      = status === 'current' && weekNum > curWeekNum;
+      const pct           = !isFuture && weekChTarget > 0 ? real / weekChTarget * 100 : 0;
+      const dateRange     = weekDateRange(m, weekNum);
+
+      let cls, badge;
+      if (isFuture)           { cls = 'muted'; badge = 'próxima'; }
+      else if (isCurrentWeek) { cls = 'brand'; badge = '→ en curso'; }
+      else if (pct >= 90)     { cls = 'green'; badge = '✓ en track'; }
+      else if (pct >= 70)     { cls = 'amber'; badge = '⚠ atención'; }
+      else                    { cls = 'red';   badge = '▼ brecha'; }
+
+      const barColor  = { muted:'#e2e8f0', brand:'var(--brand)', green:'var(--green)', amber:'var(--amber)', red:'var(--red)' }[cls];
+      const textColor = { muted:'var(--muted)', brand:'var(--brand-text)', green:'var(--green-text)', amber:'var(--amber-text)', red:'var(--red-text)' }[cls];
+      const barW      = isFuture ? 0 : Math.min(pct, 100).toFixed(0);
+
+      return `
+        <div class="ch-week-row${isCurrentWeek ? ' ch-week-current' : ''}${isFuture ? ' ch-week-future' : ''}">
+          <div class="ch-wk-lbl">
+            <span class="ch-wk-sem">Sem. ${i + 1}</span>
+            <span class="ch-wk-range">${dateRange}</span>
+          </div>
+          <div class="ch-wk-track"><div class="ch-wk-fill" style="width:${barW}%;background:${barColor};"></div></div>
+          <span class="ch-wk-amt">${isFuture ? '<span style="color:var(--muted)">—</span>' : 'S/. ' + fmt(real)}</span>
+          <span class="ch-wk-pct" style="color:${textColor};">${isFuture ? '—' : isCurrentWeek ? 'parcial' : pct.toFixed(0) + '%'}</span>
+          <span class="pace-badge ${cls}" style="font-size:10px;padding:2px 6px;">${badge}</span>
+        </div>`;
+    }).join('');
+
+    const metaLabel = weekChTarget > 0 ? `meta sem. ≈ S/. ${fmt(weekChTarget)}` : 'sin objetivo definido';
+    return `
+      <div class="ch-weeks-header">${ch} · ${m} · ${metaLabel}</div>
+      ${weekRows}`;
+  }
+
+  // Actualiza solo el contenido del desplegable cuando cambia el objetivo de un canal.
+  function rebuildChannelWeeklyDetail(m, ch) {
+    const detailRow = document.getElementById(`ch-weeks-${m}-${ch}`);
+    if (!detailRow) return;
+    const inner = detailRow.querySelector('.ch-weeks-inner');
+    if (inner) inner.innerHTML = buildChannelWeeklyHTML(m, ch, monthStatus(m));
   }
 
   function refreshWeeklyAlert(m) {
@@ -639,11 +697,24 @@
 
       let rows = '';
       channels.forEach(ch => {
-        const real  = d2026Month[ch] || 0;
-        const ref25 = (d2025[m] || {})[ch] || 0;
-        const share = showReal && monthTotal > 0 ? (real / monthTotal * 100).toFixed(1) : '—';
-        rows += `<tr>
-          <td><span class="ch-name"><span class="ch-pip" style="background:${palette[ch]}"></span>${ch}</span></td>
+        const real       = d2026Month[ch] || 0;
+        const ref25      = (d2025[m] || {})[ch] || 0;
+        const share      = showReal && monthTotal > 0 ? (real / monthTotal * 100).toFixed(1) : '—';
+        const wkDetailId = `ch-weeks-${m}-${ch}`;
+        rows += `<tr class="ch-obj-row">
+          <td>
+            <div class="ch-cell">
+              <button class="ch-weeks-toggle" data-detail="${wkDetailId}"
+                      title="Ver semanas" aria-expanded="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round"
+                     style="width:12px;height:12px;pointer-events:none;display:block;">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+              <span class="ch-name"><span class="ch-pip" style="background:${palette[ch]}"></span>${ch}</span>
+            </div>
+          </td>
           <td class="r mono text-2">S/. ${fmt(ref25)}</td>
           <td class="r mono">${showReal ? 'S/. ' + fmt(real) : '<span class="muted">—</span>'}</td>
           <td class="r">${showReal ? share + '%' : '—'}</td>
@@ -654,6 +725,13 @@
           </div></td>
           <td class="r" style="min-width:140px;"><div class="pb-wrap"><div class="pb-bg"><div class="pb-fill" id="pb-${m}-${ch}"></div></div><span class="pct-val" id="pv-${m}-${ch}"></span></div></td>
           <td class="r" id="gv-${m}-${ch}"></td>
+        </tr>
+        <tr class="ch-weeks-row" id="${wkDetailId}" style="display:none;">
+          <td colspan="7" style="padding:0;">
+            <div class="ch-weeks-inner">
+              ${buildChannelWeeklyHTML(m, ch, status)}
+            </div>
+          </td>
         </tr>`;
       });
 
@@ -666,7 +744,6 @@
       panel.innerHTML = `
         ${statusNote}
         <div id="pace-${m}" style="margin-bottom:16px;"></div>
-        <div id="weekly-alert-${m}" style="margin-bottom:16px;"></div>
         <div class="panel">
           <div class="panel-head">
             <div>
@@ -716,7 +793,19 @@
       });
       refreshObjTotal(m);
       refreshPaceCards(m);
-      refreshWeeklyAlert(m);
+
+      // Bind botones › de cada canal (expand/collapse semanal)
+      panel.querySelectorAll('.ch-weeks-toggle').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          const detailRow = document.getElementById(btn.dataset.detail);
+          if (!detailRow) return;
+          const isOpen = detailRow.style.display !== 'none';
+          detailRow.style.display = isOpen ? 'none' : 'table-row';
+          btn.setAttribute('aria-expanded', String(!isOpen));
+          btn.classList.toggle('open', !isOpen);
+        });
+      });
 
       // Month tab button
       const tab = document.createElement('button');

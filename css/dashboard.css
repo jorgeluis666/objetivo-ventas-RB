@@ -529,6 +529,98 @@
   color: var(--text-2);
 }
 
+/* ── Detalle semanal por canal (expandible desde la tabla de objetivos) ── */
+
+/* Celda del nombre del canal con botón › */
+.ch-cell {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Botón chevron por canal */
+.ch-weeks-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--muted);
+  flex-shrink: 0;
+  padding: 0;
+  transition: background .1s, color .15s, transform .2s ease;
+}
+.ch-weeks-toggle:hover { background: var(--border); color: var(--brand); }
+.ch-weeks-toggle.open  { transform: rotate(90deg); color: var(--brand); }
+
+/* Fila detalle (oculta por defecto vía style="display:none") */
+.ch-weeks-row td { padding: 0 !important; border: none !important; }
+
+/* Contenedor interno con acento lateral */
+.ch-weeks-inner {
+  padding: 10px 16px 12px 36px;
+  background: #f8fafc;
+  border-left: 3px solid var(--brand);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Encabezado del desplegable */
+.ch-weeks-header {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Fila semanal dentro del desplegable */
+.ch-week-row {
+  display: grid;
+  /* label | bar | amount | pct | badge */
+  grid-template-columns: 82px 1fr 100px 46px 88px;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 4px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.ch-week-row:last-child { border-bottom: none; }
+
+.ch-week-current {
+  background: var(--amber-soft);
+  border-radius: 4px;
+  border-bottom-color: transparent;
+}
+.ch-week-future { opacity: 0.5; }
+
+/* Etiqueta Sem N + rango */
+.ch-wk-lbl   { display: flex; flex-direction: column; gap: 1px; }
+.ch-wk-sem   { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1; }
+.ch-wk-range { font-size: 10px; color: var(--muted); }
+
+/* Barra */
+.ch-wk-track {
+  position: relative;
+  height: 5px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.ch-wk-fill {
+  position: absolute; left: 0; top: 0;
+  height: 100%; border-radius: 3px;
+  transition: width .35s ease;
+}
+
+.ch-wk-amt { font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; color: var(--text); }
+.ch-wk-pct { font-size: 12px; font-weight: 700; text-align: right; }
+
 /* ── Obj toolbar (exportar / restablecer) ── */
 .obj-toolbar {
   display: flex;
@@ -595,7 +687,7 @@
 /* ── Config view — formulario agregar ── */
 .cfg-add-form {
   display: grid;
-  grid-template-columns: 1fr 1fr 80px auto;
+  grid-template-columns: 1fr 1fr 80px 1fr auto;
   gap: 12px;
   align-items: end;
   padding: 0 0 4px;
@@ -603,12 +695,35 @@
 .cfg-field { display: flex; flex-direction: column; gap: 5px; }
 .cfg-field-sm { max-width: 80px; }
 .cfg-field-action { min-width: 160px; }
+.cfg-field-check { justify-content: flex-end; }
 .cfg-label {
   font-size: 11px;
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+/* Checkbox con texto en línea */
+.cfg-check-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: #fff;
+  user-select: none;
+  white-space: nowrap;
+}
+.cfg-check-label input[type="checkbox"] {
+  accent-color: var(--brand);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
 }
 .cfg-btn-add { width: 100%; }
 
@@ -674,7 +789,7 @@
 }
 .cfg-edit-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 80px 120px;
+  grid-template-columns: 1fr 1fr 80px 120px 1fr;
   gap: 12px;
   margin-bottom: 14px;
   align-items: end;

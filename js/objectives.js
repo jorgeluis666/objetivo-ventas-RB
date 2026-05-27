@@ -789,6 +789,8 @@
         const ALL_MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
         const MONTH_SHORT = { Enero:'Ene', Febrero:'Feb', Marzo:'Mar', Abril:'Abr', Mayo:'May', Junio:'Jun', Julio:'Jul', Agosto:'Ago', Septiembre:'Sep', Octubre:'Oct', Noviembre:'Nov', Diciembre:'Dic' };
 
+        const cumStrip = document.getElementById('cum-kpi-strip');
+
         toggleEl.querySelectorAll('.vt-btn').forEach(btn => {
           btn.addEventListener('click', () => {
             if (btn.classList.contains('active')) return;
@@ -800,6 +802,7 @@
 
             if (btn.dataset.mode === 'monthly') {
               if (titleEl) titleEl.textContent = 'Evolución mensual · 2025 vs 2026';
+              if (cumStrip) cumStrip.style.display = 'none';
               chart.data.labels = ALL_MONTHS.map(m => MONTH_SHORT[m]);
               chart.data.datasets[0].data = ALL_MONTHS.map(m => Math.round(tot(d2025[m] || {})));
               chart.data.datasets[1].data = ALL_MONTHS.map(m => {
@@ -807,8 +810,86 @@
                 return v > 0 ? Math.round(v) : null;
               });
               chart.update();
+
+            } else if (btn.dataset.mode === 'cumulative') {
+              if (titleEl) titleEl.textContent = 'Acumulado interanual · 2025 vs 2026';
+
+              // ── Calcular running totals ──
+              let cum25 = 0, cum26 = 0;
+              const cum25Data = [], cum26Data = [];
+
+              ALL_MONTHS.forEach(m => {
+                cum25 += Math.round(tot(d2025[m] || {}));
+                const v26 = tot(state.d2026?.[m] || {});
+                cum25Data.push(cum25);
+                if (v26 > 0) {
+                  cum26 += Math.round(v26);
+                  cum26Data.push(cum26);
+                } else {
+                  cum26Data.push(null);
+                }
+              });
+
+              chart.data.labels = ALL_MONTHS.map(m => MONTH_SHORT[m]);
+
+              // Dataset 2025: línea gris más gruesa para que sea legible como acumulado
+              chart.data.datasets[0].data = cum25Data;
+              chart.data.datasets[0].borderWidth = 2;
+
+              // Dataset 2026: línea azul sólida
+              chart.data.datasets[1].data = cum26Data;
+              chart.data.datasets[1].borderWidth = 3;
+              chart.data.datasets[1].fill = false;
+
+              chart.update();
+
+              // ── KPI strip: diferencia YTD ──
+              const lastIdx = cum26Data.reduce((li, v, i) => v !== null ? i : li, -1);
+              if (cumStrip && lastIdx >= 0) {
+                const periodLabel = lastIdx === 0
+                  ? MONTH_SHORT[ALL_MONTHS[0]]
+                  : `Ene–${MONTH_SHORT[ALL_MONTHS[lastIdx]]}`;
+                const ytd25  = cum25Data[lastIdx];
+                const ytd26  = cum26Data[lastIdx];
+                const diff   = ytd26 - ytd25;
+                const diffPct = ytd25 > 0 ? diff / ytd25 * 100 : 0;
+                const isAhead = diff >= 0;
+                const diffColor = isAhead ? 'var(--green-text)' : 'var(--red-text)';
+                const diffBg    = isAhead ? 'var(--green-soft)' : 'var(--red-soft)';
+                const diffBorder= isAhead ? '#6ee7b7' : '#fca5a5';
+
+                cumStrip.style.display = '';
+                cumStrip.innerHTML = `
+                  <div class="cum-kpi-strip">
+                    <div class="cum-kpi-card">
+                      <div class="cum-kpi-lbl">2025 · ${periodLabel}</div>
+                      <div class="cum-kpi-val">S/. ${fmt(ytd25)}</div>
+                      <div class="cum-kpi-sub">acumulado referencia</div>
+                    </div>
+                    <div class="cum-kpi-card cum-kpi-card-current">
+                      <div class="cum-kpi-lbl">2026 · ${periodLabel}</div>
+                      <div class="cum-kpi-val" style="color:var(--brand);">S/. ${fmt(ytd26)}</div>
+                      <div class="cum-kpi-sub">acumulado en curso</div>
+                    </div>
+                    <div class="cum-kpi-card" style="background:${diffBg};border-color:${diffBorder};">
+                      <div class="cum-kpi-lbl">Diferencia YoY</div>
+                      <div class="cum-kpi-val" style="color:${diffColor};">${isAhead ? '+' : ''}S/. ${fmt(diff)}</div>
+                      <div class="cum-kpi-sub" style="color:${diffColor};font-weight:600;">
+                        ${isAhead ? '▲' : '▼'} ${Math.abs(diffPct).toFixed(1)}% vs 2025
+                      </div>
+                    </div>
+                  </div>`;
+              }
+
             } else {
               if (titleEl) titleEl.textContent = 'Evolución semanal · 2025 vs 2026';
+              if (cumStrip) cumStrip.style.display = 'none';
+              // Restaurar anchos de línea que pudieron modificarse en modo acumulado
+              const chart2 = global.Charts?.getInstance('chart-weekly-combined');
+              if (chart2) {
+                chart2.data.datasets[0].borderWidth = 1.5;
+                chart2.data.datasets[1].borderWidth = 2;
+              }
               global.Charts.combinedWeeklyChart(state.weekly2025, state.weeklyData);
             }
           });

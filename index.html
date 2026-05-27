@@ -250,6 +250,7 @@
               <div class="view-toggle" id="weekly-view-toggle">
                 <button class="vt-btn active" data-mode="weekly">Semanal</button>
                 <button class="vt-btn" data-mode="monthly">Mensual</button>
+                <button class="vt-btn" data-mode="cumulative">Acumulado</button>
               </div>
               <div class="chart-legend">
                 <span class="legend-item"><span class="ld" style="background:#94A3B8;border-top:1px dashed #94A3B8;"></span>2025 (referencia)</span>
@@ -258,6 +259,9 @@
             </div>
           </div>
           <div class="chart-wrap h-300"><canvas id="chart-weekly-combined" role="img" aria-label="Evolución semanal 2025 vs 2026"></canvas></div>
+
+          <!-- Strip de KPIs acumulados (visible solo en modo Acumulado) -->
+          <div id="cum-kpi-strip" style="display:none;"></div>
         </div>
 
         <div class="obj-toolbar" id="obj-toolbar">

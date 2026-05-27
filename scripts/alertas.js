@@ -144,6 +144,30 @@ for (let i = monthIdx - 1; i >= 0 && closedMonths.length < 3; i--) {
   }
 }
 
+// ── Canales que cumplieron el objetivo ───────────────────────
+const achievedChannels = cur.byChannel.filter(r => r.pct >= 100);
+const totalSurplus     = achievedChannels.reduce((s, r) => s + (r.real - r.meta), 0);
+
+// Canales con mayor brecha (para sugerencia de redistribución)
+const topNeedChannels  = cur.byChannel
+  .filter(r => r.pct < 90 && !achievedChannels.find(a => a.ch === r.ch))
+  .sort((a, b) => (b.meta - b.real) - (a.meta - a.real))
+  .slice(0, 2);
+
+// ── Alerta de brecha a mitad de mes ─────────────────────────
+// Solo aplica si ya pasó la mitad del mes
+const pastMidMonth = dayOfMonth >= Math.floor(curMonthDays / 2);
+const laggingChannels = pastMidMonth
+  ? cur.byChannel.filter(r => {
+      const expectedReal = r.meta * dayOfMonth / curMonthDays;
+      return r.pct < 100 && r.real < expectedReal * 0.80;
+    }).map(r => ({
+      ...r,
+      expectedReal: r.meta * dayOfMonth / curMonthDays,
+      lag: r.real - (r.meta * dayOfMonth / curMonthDays),
+    }))
+  : [];
+
 // ── Log métricas ─────────────────────────────────────────────
 console.log(`\n📊 ${curMonth} ${limaYear}:`);
 console.log(`   Real acum.  : S/. ${fmt(cur.real)}`);
@@ -156,6 +180,15 @@ console.log('\n   Por canal:');
 cur.byChannel.forEach(r => {
   console.log(`     ${r.ch.padEnd(12)} real: S/. ${fmt(r.real).padStart(8)}  /  meta: S/. ${fmt(r.meta).padStart(8)}  →  ${r.pct.toFixed(1)}%`);
 });
+if (achievedChannels.length > 0) {
+  console.log(`\n🎯 Objetivo alcanzado: ${achievedChannels.map(r => r.ch).join(', ')}  |  Excedente: S/. ${fmt(totalSurplus)}`);
+}
+if (laggingChannels.length > 0) {
+  console.log(`\n⚠️  Brecha a mitad de mes (día ${dayOfMonth}/${curMonthDays}):`);
+  laggingChannels.forEach(r => {
+    console.log(`     ${r.ch.padEnd(12)} lag: S/. ${fmt(Math.abs(r.lag))}`);
+  });
+}
 
 // ── Helpers HTML ─────────────────────────────────────────────
 function pill(p) {
@@ -308,6 +341,66 @@ const htmlEmail = `<!DOCTYPE html>
       </table>
     </td></tr>` : ''}
 
+    ${achievedChannels.length > 0 ? `
+    <!-- ═══ OBJETIVO CUMPLIDO ════ -->
+    <tr><td style="background:#f0fdf4;border:1px solid #bbf7d0;border-top:none;padding:20px 32px;">
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:20px;flex-shrink:0;">🎯</span>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:#16a34a;margin-bottom:6px;">
+            Objetivo alcanzado · ${achievedChannels.map(r => r.ch).join(', ')}
+          </div>
+          <div style="font-size:12px;color:#374151;margin-bottom:10px;">
+            ${achievedChannels.map(r =>
+              `<strong>${r.ch}</strong> llegó al ${r.pct.toFixed(0)}% con un excedente de <strong>S/. ${fmt(r.real - r.meta)}</strong>`
+            ).join(' · ')}
+          </div>
+          ${topNeedChannels.length > 0 ? `
+          <div style="background:rgba(255,255,255,0.7);border-radius:8px;padding:10px 14px;border:1px solid #bbf7d0;font-size:12px;color:#374151;">
+            💡 <strong>Sugerencia:</strong> El excedente de <strong>S/. ${fmt(totalSurplus)}</strong> podría
+            redistribuirse a
+            ${topNeedChannels.map(n =>
+              `<strong>${n.ch}</strong> (brecha S/. ${fmt(n.meta - n.real)})`
+            ).join(' y ')}
+            para reforzar sus campañas de marketing.
+          </div>` : ''}
+        </div>
+      </div>
+    </td></tr>` : ''}
+
+    ${laggingChannels.length > 0 ? `
+    <!-- ═══ ALERTA BRECHA MID-MONTH ════ -->
+    <tr><td style="background:#fffbeb;border:1px solid #fde68a;border-top:none;padding:20px 32px;">
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:20px;flex-shrink:0;">⚠️</span>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:#d97706;margin-bottom:4px;">
+            Alerta de brecha · día ${dayOfMonth} de ${curMonthDays}
+          </div>
+          <div style="font-size:12px;color:#92400e;margin-bottom:10px;">
+            Los siguientes canales están por debajo del 80% del ritmo esperado a mitad de mes:
+          </div>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:12px;">
+            ${laggingChannels.map(r => `
+            <tr>
+              <td style="padding:5px 0;color:#374151;font-weight:600;">${CANAL_ICONS[r.ch] || ''} ${r.ch}</td>
+              <td style="padding:5px 8px;text-align:right;color:#374151;">real S/. ${fmt(r.real)}</td>
+              <td style="padding:5px 8px;text-align:right;color:#9ca3af;">esperado S/. ${fmt(r.expectedReal)}</td>
+              <td style="padding:5px 0;text-align:right;color:#dc2626;font-weight:700;">brecha S/. ${fmt(Math.abs(r.lag))}</td>
+            </tr>`).join('')}
+          </table>
+          <div style="background:rgba(255,255,255,0.6);border-radius:8px;padding:10px 14px;margin-top:10px;border:1px solid #fde68a;font-size:12px;color:#374151;">
+            💡 Quedan <strong>${curMonthDays - dayOfMonth} días</strong>.
+            Para cerrar la brecha de
+            <strong>S/. ${fmt(laggingChannels.reduce((s, r) => s + (r.meta - r.real), 0))}</strong>
+            se necesita un promedio de
+            <strong>S/. ${fmt(laggingChannels.reduce((s, r) => s + (r.meta - r.real), 0) / Math.max(curMonthDays - dayOfMonth, 1))}/día adicional</strong>
+            en estos canales.
+          </div>
+        </div>
+      </div>
+    </td></tr>` : ''}
+
     <!-- ═══ CTA ════ -->
     <tr><td style="background:#ffffff;border:1px solid #e5e7eb;border-top:none;padding:16px 32px 28px;text-align:center;">
       <a href="${config.url_dashboard}"
@@ -332,8 +425,14 @@ const htmlEmail = `<!DOCTYPE html>
 </body>
 </html>`;
 
-// Asunto
-const subject = `${NIVEL_LABEL[NIVEL].split(' ')[0]} ${curMonth} ${limaYear} · ${proyPct.toFixed(0)}% proyectado · Lima Retail`;
+// Asunto — añade prefijos especiales si hay alertas destacadas
+const subjectPrefix = achievedChannels.length > 0
+  ? `🎯 Objetivo alcanzado ·`
+  : laggingChannels.length > 0
+    ? `⚠️ Brecha a mitad de mes ·`
+    : NIVEL_LABEL[NIVEL].split(' ')[0];
+
+const subject = `${subjectPrefix} ${curMonth} ${limaYear} · ${proyPct.toFixed(0)}% proyectado · Lima Retail`;
 
 // ── Dry-run ───────────────────────────────────────────────────
 if (DRY_RUN) {

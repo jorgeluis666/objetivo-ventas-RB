@@ -218,6 +218,7 @@
     refreshObjTotal(m);
     refreshPaceCards(m);
     rebuildChannelWeeklyDetail(m, ch);
+    refreshAlertPanel(m);
     saveToStorage();
   }
 
@@ -411,24 +412,36 @@
   }
 
   // Construye el HTML interno del desplegable semanal de un canal concreto.
-  // Se puede llamar en cualquier momento; lee state.weeklyData y state.targets.
+  // Incluye meta efectiva con arrastre de brecha semana a semana.
   function buildChannelWeeklyHTML(m, ch, status) {
     const weeks = state.weeklyData?.[m];
     if (!weeks || !weeks.length) {
       return '<div style="padding:8px 4px;font-size:12px;color:var(--muted);">Sin datos semanales para este canal.</div>';
     }
-    const chKey        = chToUpper[ch];
-    const monthChTgt   = state.targets[m][ch] || 0;
-    const weekChTarget = monthChTgt > 0 ? monthChTgt * 7 / monthDays[m] : 0;
-    const curWeekNum   = status === 'current' ? Math.ceil(new Date().getDate() / 7) : -1;
+    const chKey       = chToUpper[ch];
+    const monthChTgt  = state.targets[m][ch] || 0;
+    const baseWeekTgt = monthChTgt > 0 ? monthChTgt * 7 / monthDays[m] : 0;
+    const curWeekNum  = status === 'current' ? Math.ceil(new Date().getDate() / 7) : -1;
+
+    let carry = 0;   // brecha arrastrada de semanas anteriores
 
     const weekRows = weeks.map((wk, i) => {
       const weekNum       = wk.w;
       const real          = wk[chKey] || 0;
       const isCurrentWeek = status === 'current' && weekNum === curWeekNum;
       const isFuture      = status === 'current' && weekNum > curWeekNum;
-      const pct           = !isFuture && weekChTarget > 0 ? real / weekChTarget * 100 : 0;
-      const dateRange     = weekDateRange(m, weekNum);
+
+      // Meta efectiva = base + brecha arrastrada de semana previa
+      const prevCarry    = carry;
+      const effectiveTgt = baseWeekTgt + prevCarry;
+      const pct          = !isFuture && effectiveTgt > 0 ? real / effectiveTgt * 100 : 0;
+      const brecha       = real - effectiveTgt;
+      const dateRange    = weekDateRange(m, weekNum);
+
+      // Actualizar carry para la siguiente semana (solo semanas pasadas cerradas)
+      if (!isFuture && !isCurrentWeek) {
+        carry = brecha < 0 ? Math.abs(brecha) : 0;
+      }
 
       let cls, badge;
       if (isFuture)           { cls = 'muted'; badge = 'próxima'; }
@@ -441,6 +454,22 @@
       const textColor = { muted:'var(--muted)', brand:'var(--brand-text)', green:'var(--green-text)', amber:'var(--amber-text)', red:'var(--red-text)' }[cls];
       const barW      = isFuture ? 0 : Math.min(pct, 100).toFixed(0);
 
+      // Etiqueta de meta: si hay arrastre se muestra de dónde viene
+      const metaLabel = isFuture ? '—'
+        : prevCarry > 0
+          ? `<span class="ch-wk-meta-base">S/. ${fmt(effectiveTgt)}</span>
+             <span class="ch-wk-meta-carry">(base S/. ${fmt(baseWeekTgt)} + arrastre S/. ${fmt(prevCarry)})</span>`
+          : `S/. ${fmt(effectiveTgt)}`;
+
+      // Indicador de traspaso hacia la siguiente semana
+      const traspasoHtml = (!isFuture && !isCurrentWeek && brecha < 0 && i < weeks.length - 1)
+        ? `<div class="ch-wk-traspaso">
+             ↳ Brecha S/. ${fmt(Math.abs(brecha))} se traslada a sem. ${i + 2} · su nueva meta efectiva: S/. ${fmt(baseWeekTgt + Math.abs(brecha))}
+           </div>`
+        : (!isFuture && !isCurrentWeek && brecha >= 0 && pct >= 90)
+          ? `<div class="ch-wk-traspaso ch-wk-traspaso-ok">✓ Sem. ${i + 1} cubierta · no genera arrastre</div>`
+          : '';
+
       return `
         <div class="ch-week-row${isCurrentWeek ? ' ch-week-current' : ''}${isFuture ? ' ch-week-future' : ''}">
           <div class="ch-wk-lbl">
@@ -448,16 +477,137 @@
             <span class="ch-wk-range">${dateRange}</span>
           </div>
           <div class="ch-wk-track"><div class="ch-wk-fill" style="width:${barW}%;background:${barColor};"></div></div>
-          <span class="ch-wk-amt">${isFuture ? '<span style="color:var(--muted)">—</span>' : 'S/. ' + fmt(real)}</span>
+          <div class="ch-wk-amt-group">
+            <span class="ch-wk-amt">${isFuture ? '<span style="color:var(--muted)">—</span>' : 'S/. ' + fmt(real)}</span>
+            <span class="ch-wk-meta-lbl">/ ${metaLabel}</span>
+          </div>
           <span class="ch-wk-pct" style="color:${textColor};">${isFuture ? '—' : isCurrentWeek ? 'parcial' : pct.toFixed(0) + '%'}</span>
           <span class="pace-badge ${cls}" style="font-size:10px;padding:2px 6px;">${badge}</span>
-        </div>`;
+        </div>
+        ${traspasoHtml}`;
     }).join('');
 
-    const metaLabel = weekChTarget > 0 ? `meta sem. ≈ S/. ${fmt(weekChTarget)}` : 'sin objetivo definido';
+    const metaHdr = baseWeekTgt > 0 ? `meta sem. base ≈ S/. ${fmt(baseWeekTgt)}` : 'sin objetivo definido';
     return `
-      <div class="ch-weeks-header">${ch} · ${m} · ${metaLabel}</div>
+      <div class="ch-weeks-header">${ch} · ${m} · ${metaHdr}</div>
+      <div class="ch-wk-col-head">
+        <span>Semana</span><span></span>
+        <span>Real / Meta efectiva</span>
+        <span class="r">%</span><span></span>
+      </div>
       ${weekRows}`;
+  }
+
+  // ── Panel de alertas: objetivo cumplido + brecha a mitad de mes ──
+  function refreshAlertPanel(m) {
+    const el = document.getElementById(`alert-panel-${m}`);
+    if (!el) return;
+
+    const status = monthStatus(m);
+    if (status === 'future' || !isLiveMonth(m)) { el.innerHTML = ''; return; }
+
+    const d2026Month = state.d2026?.[m] || {};
+    const passed     = daysPassed(m);
+    const totalDays  = monthDays[m];
+
+    // Estadísticas por canal
+    const stats = channels.map(ch => {
+      const real = d2026Month[ch] || 0;
+      const tgt  = state.targets[m][ch] || 0;
+      const pct  = tgt > 0 ? real / tgt * 100 : 0;
+      const expectedReal = tgt > 0 ? tgt * passed / totalDays : 0;
+      return { ch, real, tgt, pct, expectedReal, surplus: real - tgt, gap: tgt - real };
+    }).filter(s => s.tgt > 0);
+
+    // Canales que superaron el objetivo mensual
+    const achieved = stats.filter(s => s.pct >= 100);
+
+    // Canales por debajo del ritmo esperado a mitad de mes
+    const pastMidMonth = status === 'current' && passed >= Math.floor(totalDays / 2);
+    const lagging = pastMidMonth
+      ? stats.filter(s => s.pct < 100 && s.real < s.expectedReal * 0.80)
+      : [];
+
+    if (achieved.length === 0 && lagging.length === 0) { el.innerHTML = ''; return; }
+
+    let html = '<div class="obj-alerts-wrap">';
+
+    // ── Objetivo alcanzado + sugerencia de redistribución ──
+    if (achieved.length > 0) {
+      const totalSurplus = achieved.reduce((s, a) => s + a.surplus, 0);
+      // Canales con mayor brecha que aún no alcanzaron el objetivo
+      const topNeed = stats
+        .filter(s => s.pct < 90 && !achieved.find(a => a.ch === s.ch))
+        .sort((a, b) => b.gap - a.gap)
+        .slice(0, 2);
+
+      html += `
+        <div class="obj-alert obj-alert-green">
+          <div class="obj-alert-head">
+            <span class="obj-alert-icon">🎯</span>
+            <div class="obj-alert-text">
+              <div class="obj-alert-title">Objetivo alcanzado</div>
+              <div class="obj-alert-sub">
+                ${achieved.map(a =>
+                  `<span class="ch-pip" style="background:${palette[a.ch]};display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:3px;"></span>
+                   <strong>${a.ch}</strong> ${a.pct.toFixed(0)}% · excedente S/. ${fmt(a.surplus)}`
+                ).join(' &nbsp;·&nbsp; ')}
+              </div>
+            </div>
+          </div>
+          ${topNeed.length > 0 ? `
+          <div class="obj-alert-sug">
+            <span>💡</span>
+            <span>
+              Excedente total <strong>S/. ${fmt(totalSurplus)}</strong>.
+              Considerá traspasar presupuesto a
+              ${topNeed.map(n =>
+                `<strong>${n.ch}</strong> <span style="color:var(--red-text)">(brecha S/. ${fmt(n.gap)})</span>`
+              ).join(' y ')}
+              para reforzar las campañas de mayor brecha.
+            </span>
+          </div>` : ''}
+        </div>`;
+    }
+
+    // ── Alerta de brecha a mitad de mes ──
+    if (lagging.length > 0) {
+      html += `
+        <div class="obj-alert obj-alert-amber">
+          <div class="obj-alert-head">
+            <span class="obj-alert-icon">⚠️</span>
+            <div class="obj-alert-text">
+              <div class="obj-alert-title">Brecha a mitad de mes · día ${passed} de ${totalDays}</div>
+              <div class="obj-alert-sub">Canales por debajo del 80% del ritmo esperado</div>
+            </div>
+          </div>
+          <div class="obj-alert-rows">
+            ${lagging.map(b => `
+              <div class="obj-alert-row">
+                <span class="ch-pip" style="background:${palette[b.ch]};display:inline-block;width:7px;height:7px;border-radius:2px;flex-shrink:0;"></span>
+                <span>
+                  <strong>${b.ch}</strong>:
+                  real S/. ${fmt(b.real)} ·
+                  esperado S/. ${fmt(b.expectedReal)} ·
+                  <span style="color:var(--red-text);font-weight:600;">brecha S/. ${fmt(Math.abs(b.real - b.expectedReal))}</span>
+                </span>
+              </div>`).join('')}
+          </div>
+          <div class="obj-alert-sug">
+            <span>💡</span>
+            <span>
+              Quedan <strong>${totalDays - passed} días</strong> en el mes.
+              Para cerrar la brecha de
+              <strong>S/. ${fmt(lagging.reduce((s, b) => s + b.gap, 0))}</strong>
+              se necesita un incremento diario de
+              <strong>S/. ${fmt(lagging.reduce((s, b) => s + b.gap, 0) / Math.max(totalDays - passed, 1))}</strong>.
+            </span>
+          </div>
+        </div>`;
+    }
+
+    html += '</div>';
+    el.innerHTML = html;
   }
 
   // Actualiza solo el contenido del desplegable cuando cambia el objetivo de un canal.
@@ -744,6 +894,7 @@
       panel.innerHTML = `
         ${statusNote}
         <div id="pace-${m}" style="margin-bottom:16px;"></div>
+        <div id="alert-panel-${m}"></div>
         <div class="panel">
           <div class="panel-head">
             <div>
@@ -793,6 +944,7 @@
       });
       refreshObjTotal(m);
       refreshPaceCards(m);
+      refreshAlertPanel(m);
 
       // Bind botones › de cada canal (expand/collapse semanal)
       panel.querySelectorAll('.ch-weeks-toggle').forEach(btn => {

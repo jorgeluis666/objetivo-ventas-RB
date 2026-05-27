@@ -1,0 +1,9 @@
+{
+  "workspace": "Lima Retail · Dashboard Ventas",
+  "url_dashboard": "https://jorgeluis666.github.io/objetivo-canales-ventas/",
+  "from_name": "Lima Retail Alertas",
+  "from_email": "alertas@limaretail.com",
+  "destinatarios": [
+    { "email": "jorgeluis@limaretail.com", "nombre": "Jorge Luis" }
+  ]
+}

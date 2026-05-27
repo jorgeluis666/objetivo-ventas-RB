@@ -24,6 +24,94 @@
     avgTickets: {},
   };
 
+  // ── localStorage — clave de almacenamiento ──
+  const LS_KEY = 'lr_objetivos_2026';
+
+  function loadFromStorage() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return false;
+      const saved = JSON.parse(raw);
+      if (!saved || !saved.targets) return false;
+      months.forEach(m => {
+        if (saved.targets[m]) {
+          channels.forEach(ch => {
+            if (typeof saved.targets[m][ch] === 'number') {
+              state.targets[m][ch] = saved.targets[m][ch];
+            }
+          });
+        }
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function saveToStorage() {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify({
+        version : '1',
+        updated : new Date().toISOString().slice(0, 10),
+        targets : state.targets,
+      }));
+      _updateStorageLabel();
+    } catch (e) { /* ignore */ }
+  }
+
+  function _updateStorageLabel() {
+    const el = document.getElementById('obj-guardado-label');
+    if (!el) return;
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        el.textContent = `Objetivos guardados en navegador · ${saved.updated || ''}`;
+      } else {
+        el.textContent = 'Objetivos por defecto (sin cambios guardados)';
+      }
+    } catch (e) { el.textContent = ''; }
+  }
+
+  function exportarObjetivos() {
+    const payload = {
+      version  : '1',
+      anio     : YEAR,
+      updated  : new Date().toISOString().slice(0, 10),
+      nota     : 'Este archivo es la fuente de verdad para el sistema de alertas. El browser lo actualiza via "Exportar objetivos" y se commitea al repo.',
+      targets  : state.targets,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'objetivos-2026.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function restablecerObjetivos() {
+    if (!confirm('¿Restaurar todos los objetivos a los valores originales?\nSe perderán los cambios guardados en este navegador.')) return;
+    state.targets = JSON.parse(JSON.stringify(defaultTargets));
+    localStorage.removeItem(LS_KEY);
+    // Actualizar todos los inputs y la UI
+    months.forEach(m => {
+      channels.forEach(ch => {
+        const inp = document.getElementById(`inp-${m}-${ch}`);
+        if (inp) inp.value = state.targets[m][ch];
+        renderRowUI(m, ch);
+      });
+      refreshObjTotal(m);
+      refreshPaceCards(m);
+    });
+    _updateStorageLabel();
+  }
+
+  // Carga inicial desde localStorage (una vez al cargar el módulo)
+  loadFromStorage();
+
   // ── Calendar helpers (año en curso = 2026) ──
   const YEAR = 2026;
 
@@ -120,6 +208,7 @@
     renderRowUI(m, ch);
     refreshObjTotal(m);
     refreshPaceCards(m);
+    saveToStorage();
   }
 
   function refreshObjTotal(m) {
@@ -482,5 +571,21 @@
     });
   }
 
-  global.Objectives = { render, state };
+  // ── Toolbar de objetivos: exportar y restablecer ──
+  // Ejecutar una vez tras el primer render (los botones ya deben existir en el DOM).
+  function wireObjToolbar() {
+    const btnExp = document.getElementById('btn-exportar-obj');
+    const btnRst = document.getElementById('btn-restablecer-obj');
+    if (btnExp && !btnExp.dataset.wired) {
+      btnExp.dataset.wired = '1';
+      btnExp.addEventListener('click', exportarObjetivos);
+    }
+    if (btnRst && !btnRst.dataset.wired) {
+      btnRst.dataset.wired = '1';
+      btnRst.addEventListener('click', restablecerObjetivos);
+    }
+    _updateStorageLabel();
+  }
+
+  global.Objectives = { render, state, exportarObjetivos, restablecerObjetivos, wireObjToolbar };
 })(window);

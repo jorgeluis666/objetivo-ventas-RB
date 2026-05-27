@@ -311,6 +311,7 @@
       transactions: state.transactions,
       weekly2025: state.weekly2025,
     });
+    window.Objectives.wireObjToolbar?.();
 
     if (state.renderedProducts) renderProducts();
     window.Sheets.updateGenerated(state.generated);

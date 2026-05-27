@@ -247,6 +247,20 @@
           <div class="chart-wrap h-300"><canvas id="chart-weekly-combined" role="img" aria-label="Evolución semanal 2025 vs 2026"></canvas></div>
         </div>
 
+        <div class="obj-toolbar" id="obj-toolbar">
+          <span class="obj-toolbar-info" id="obj-guardado-label">Objetivos guardados en navegador</span>
+          <div class="obj-toolbar-actions">
+            <button class="btn ghost btn-sm" id="btn-exportar-obj" title="Descarga objetivos-2026.json para commitear al repo y actualizar las alertas semanales">
+              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportar objetivos
+            </button>
+            <button class="btn ghost btn-sm" id="btn-restablecer-obj" title="Vuelve a los valores originales del sistema">
+              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+              Restablecer
+            </button>
+          </div>
+        </div>
+
         <div class="month-tabs" id="month-tabs"></div>
         <div id="month-panels"></div>
       </section>

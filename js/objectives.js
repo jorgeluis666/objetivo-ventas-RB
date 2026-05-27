@@ -25,6 +25,29 @@
   // Extrae el valor de un mes según canal seleccionado ('' = Total de todos los canales)
   const getChVal = (monthObj, chName) =>
     chName ? ((monthObj || {})[chName] || 0) : tot(monthObj || {});
+
+  // Aplica datalabels al gráfico semanal (2026 encima, 2025 sin label por densidad).
+  // Se llama después de cada render de combinedWeeklyChart.
+  const applyWeeklyLabels = () => {
+    const c = global.Charts?.getInstance('chart-weekly-combined');
+    if (!c) return;
+    // 2025: sin etiqueta — 52 puntos, demasiado denso
+    c.data.datasets[0].datalabels = { display: false };
+    // 2026: valor compacto sobre cada nodo con dato real
+    c.data.datasets[1].datalabels = {
+      display: ctx => ctx.dataset.data[ctx.dataIndex] !== null,
+      color: '#2563eb',
+      anchor: 'end',
+      align: 'top',
+      offset: 3,
+      font: { size: 9, weight: '600' },
+      formatter: v => fmtShort(v),
+    };
+    c.options.plugins.datalabels = { display: true };
+    c.options.layout = { padding: { top: 24, bottom: 4 } };
+    c.update('none'); // aplicar sin reanimar las líneas
+  };
+
   const pctFill  = p => p >= 100 ? 'var(--green)' : p >= 80 ? 'var(--amber)' : 'var(--brand)';
   const pctColor = p => p >= 100 ? 'var(--green-text)' : p >= 80 ? 'var(--amber-text)' : 'var(--brand-text)';
 
@@ -787,6 +810,7 @@
       const initSelCh = document.getElementById('chart-channel-select')?.value || '';
       const initChKey = initSelCh ? chToUpper[initSelCh] : 'TOTAL';
       global.Charts.combinedWeeklyChart(state.weekly2025, state.weeklyData, initChKey);
+      applyWeeklyLabels();
     }
 
     // ── Toggle Semanal / Mensual ──
@@ -980,6 +1004,7 @@
                 chart2.options.layout = { padding: 0 };
               }
               global.Charts.combinedWeeklyChart(state.weekly2025, state.weeklyData, getChKey());
+              applyWeeklyLabels();
             }
           });
         });

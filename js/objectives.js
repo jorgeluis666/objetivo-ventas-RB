@@ -1137,7 +1137,7 @@
               <th>Canal</th>
               <th class="r">Ref. 2025</th>
               <th class="r">Real 2026</th>
-              <th class="r">% mes</th>
+              <th class="r">Participación</th>
               <th class="r">Objetivo S/.</th>
               <th class="r" style="min-width:140px;">Avance</th>
               <th class="r">Brecha</th>

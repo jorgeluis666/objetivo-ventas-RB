@@ -62,6 +62,7 @@
 
   // ── localStorage — clave de almacenamiento ──
   const LS_KEY = 'lr_objetivos_2026';
+  const TARGET_POLICY = '2025_PLUS_10';
 
   function loadFromStorage() {
     try {
@@ -69,6 +70,10 @@
       if (!raw) return false;
       const saved = JSON.parse(raw);
       if (!saved || !saved.targets) return false;
+      if (saved.policy !== TARGET_POLICY) {
+        localStorage.removeItem(LS_KEY);
+        return false;
+      }
       months.forEach(m => {
         if (saved.targets[m]) {
           channels.forEach(ch => {
@@ -88,6 +93,7 @@
     try {
       localStorage.setItem(LS_KEY, JSON.stringify({
         version : '1',
+        policy  : TARGET_POLICY,
         updated : new Date().toISOString().slice(0, 10),
         targets : state.targets,
       }));

@@ -39,18 +39,18 @@
   };
 
   const defaultTargets = {
-    Enero:      { Tienda: 40000, Web: 11000, WhatsApp: 3500, Showroom: 4000, Instagram: 1500, Facebook: 0 },
-    Febrero:    { Tienda: 46000, Web: 14000, WhatsApp: 4000, Showroom: 2500, Instagram:  500, Facebook: 0 },
-    Marzo:      { Tienda: 62000, Web: 12000, WhatsApp: 4500, Showroom: 3000, Instagram: 1000, Facebook: 0 },
-    Abril:      { Tienda: 56000, Web: 10000, WhatsApp: 5000, Showroom: 2500, Instagram:  500, Facebook: 0 },
-    Mayo:       { Tienda: 60000, Web: 12000, WhatsApp: 4500, Showroom: 3000, Instagram:  500, Facebook: 0 },
-    Junio:      { Tienda: 65000, Web: 13000, WhatsApp: 5000, Showroom: 3000, Instagram:  500, Facebook: 0 },
-    Julio:      { Tienda: 65000, Web: 13000, WhatsApp: 5000, Showroom: 3000, Instagram:  500, Facebook: 0 },
-    Agosto:     { Tienda: 70000, Web: 14000, WhatsApp: 5000, Showroom: 3000, Instagram:  500, Facebook: 0 },
-    Septiembre: { Tienda: 70000, Web: 14000, WhatsApp: 5000, Showroom: 3000, Instagram:  500, Facebook: 0 },
-    Octubre:    { Tienda: 75000, Web: 15000, WhatsApp: 5500, Showroom: 3500, Instagram:  500, Facebook: 0 },
-    Noviembre:  { Tienda: 85000, Web: 17000, WhatsApp: 6000, Showroom: 4000, Instagram:  500, Facebook: 0 },
-    Diciembre:  { Tienda: 90000, Web: 18000, WhatsApp: 6000, Showroom: 4000, Instagram:  500, Facebook: 0 },
+    Enero:      { Tienda: 49220, Web:  9016, WhatsApp: 1341, Showroom: 0, Instagram:  250, Facebook: 0 },
+    Febrero:    { Tienda: 53491, Web: 10699, WhatsApp: 3862, Showroom: 0, Instagram:    0, Facebook: 0 },
+    Marzo:      { Tienda: 70248, Web: 14870, WhatsApp: 3806, Showroom: 0, Instagram:  201, Facebook: 0 },
+    Abril:      { Tienda: 60239, Web: 10248, WhatsApp: 5904, Showroom: 0, Instagram:    0, Facebook: 0 },
+    Mayo:       { Tienda: 57970, Web: 18809, WhatsApp: 1328, Showroom: 0, Instagram:  486, Facebook: 0 },
+    Junio:      { Tienda: 75987, Web: 15394, WhatsApp:  356, Showroom: 0, Instagram:  164, Facebook: 0 },
+    Julio:      { Tienda: 53784, Web: 11402, WhatsApp: 4636, Showroom: 0, Instagram:  758, Facebook: 0 },
+    Agosto:     { Tienda: 74564, Web: 19449, WhatsApp: 4334, Showroom: 0, Instagram:  999, Facebook: 0 },
+    Septiembre: { Tienda: 66740, Web: 22677, WhatsApp: 6172, Showroom: 0, Instagram:    0, Facebook: 0 },
+    Octubre:    { Tienda: 70703, Web: 11653, WhatsApp: 3843, Showroom: 0, Instagram:  674, Facebook: 0 },
+    Noviembre:  { Tienda: 87765, Web: 22501, WhatsApp: 6452, Showroom: 0, Instagram: 2005, Facebook: 0 },
+    Diciembre:  { Tienda: 85443, Web: 18049, WhatsApp: 6380, Showroom: 0, Instagram: 1122, Facebook: 0 },
   };
 
   const monthDays = {

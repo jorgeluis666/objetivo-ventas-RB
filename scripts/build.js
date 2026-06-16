@@ -60,18 +60,38 @@ function copyDataDir() {
   }
 }
 
+function copyAssetsDir() {
+  const srcAssets  = path.join(ROOT, 'assets');
+  const destAssets = path.join(DIST_DIR, 'assets');
+  if (!fs.existsSync(srcAssets)) return;
+  ensureDir(destAssets);
+  for (const entry of fs.readdirSync(srcAssets, { withFileTypes: true })) {
+    if (!entry.isFile()) continue;
+    fs.copyFileSync(path.join(srcAssets, entry.name), path.join(destAssets, entry.name));
+  }
+}
+
+// Reescribe rutas relativas de CSS que apuntan a ../assets/ para que funcionen
+// desde dist/index.html (donde el CSS está inlineado y los assets están en dist/assets/).
+function fixInlinedCssPaths(html) {
+  return html.replace(/url\(['"]?\.\.\/assets\//g, "url('assets/");
+}
+
 function main() {
   const rawHtml = readFile('index.html');
   let html = inlineCss(rawHtml);
   html = inlineScripts(html);
+  html = fixInlinedCssPaths(html);
 
   ensureDir(DIST_DIR);
   fs.writeFileSync(DIST_HTML, html, 'utf8');
   copyDataDir();
+  copyAssetsDir();
 
   const size = (fs.statSync(DIST_HTML).size / 1024).toFixed(1);
   console.log(`[build] escrito ${path.relative(ROOT, DIST_HTML)} (${size} KB)`);
   console.log(`[build] data copiada a dist/data/`);
+  console.log(`[build] assets copiados a dist/assets/`);
 }
 
 try {

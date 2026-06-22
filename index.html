@@ -13,6 +13,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -86,6 +87,17 @@
       <div class="s-text">
         <div class="s-title-nav">Productos Web</div>
         <div class="s-desc-nav">Ranking y ventas por producto</div>
+      </div>
+      <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </button>
+
+    <button class="s-item" data-view="view-meta">
+      <div class="s-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-9"/><path d="M15 6h6v6"/></svg>
+      </div>
+      <div class="s-text">
+        <div class="s-title-nav">Planificador Meta Ads</div>
+        <div class="s-desc-nav">Presupuesto Web y WhatsApp</div>
       </div>
       <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
     </button>
@@ -315,8 +327,137 @@
       </section>
 
       <!-- ══ VIEW: Usuarios y Claves ═══════════════════ -->
+      <section class="view" id="view-meta">
+        <div class="sec-lbl">05 — Planificación de pauta</div>
+        <div class="section-title">Planificador de inversión · Meta Ads</div>
+        <div class="section-desc">
+          Calcula la pauta necesaria para campañas Web por CPA y campañas de
+          Mensajes por CPL. Los cambios se guardan automáticamente por cliente.
+        </div>
+
+        <div class="meta-context-bar panel">
+          <div class="meta-context-main">
+            <div class="meta-field">
+              <label for="meta-client-select">Cliente</label>
+              <select class="inp" id="meta-client-select"></select>
+            </div>
+            <button class="btn ghost" id="meta-client-add">Nuevo cliente</button>
+            <button class="btn ghost" id="meta-client-rename">Renombrar</button>
+          </div>
+          <div class="meta-version-actions">
+            <input class="inp" id="meta-version-name" type="text" placeholder="Nombre de versión · Ej. Cierre julio">
+            <button class="btn primary" id="meta-version-save">Guardar versión</button>
+          </div>
+        </div>
+
+        <div class="meta-grid">
+          <div class="panel meta-module">
+            <div class="panel-head">
+              <div>
+                <div class="meta-module-kicker web">Módulo 1 · Web</div>
+                <div class="panel-title">Campaña por CPA</div>
+                <div class="panel-sub">Facturación objetivo → ventas estimadas → inversión</div>
+              </div>
+              <button class="btn ghost btn-sm" id="meta-web-reset">Resetear ajustes</button>
+            </div>
+            <div class="meta-controls">
+              <div class="meta-field">
+                <label for="meta-web-target">Facturación objetivo</label>
+                <div class="inp-wrap"><span class="inp-pre">S/</span><input class="inp" id="meta-web-target" type="number" min="0" step="100"></div>
+              </div>
+              <div class="meta-field">
+                <label for="meta-web-actual">Ya facturado</label>
+                <div class="inp-wrap"><span class="inp-pre">S/</span><input class="inp" id="meta-web-actual" type="number" min="0" step="100"></div>
+              </div>
+              <div class="meta-field meta-field-status">
+                <label>Objetivo restante</label>
+                <strong id="meta-web-remaining">S/ 0</strong>
+              </div>
+            </div>
+            <div class="meta-kpis meta-kpis-4">
+              <div class="meta-kpi"><span>Facturación base</span><strong id="meta-web-base">S/ 0</strong></div>
+              <div class="meta-kpi" id="meta-web-adjusted-card"><span>Fact. ajustada</span><strong id="meta-web-adjusted">S/ 0</strong></div>
+              <div class="meta-kpi"><span>Ventas estimadas</span><strong id="meta-web-sales">0</strong></div>
+              <div class="meta-kpi success"><span>Inversión Web</span><strong id="meta-web-investment">S/ 0</strong></div>
+            </div>
+            <div class="meta-table-wrap">
+              <table class="meta-table">
+                <thead><tr>
+                  <th>Conjunto</th><th class="r">% fact.</th><th class="r">Fact. base</th>
+                  <th class="r">Fact. ajustada</th><th class="r">Δ</th><th class="r">Ticket</th>
+                  <th class="r">Ventas</th><th class="r">CPA</th><th class="r">Inversión</th>
+                </tr></thead>
+                <tbody id="meta-web-rows"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel meta-module">
+            <div class="panel-head">
+              <div>
+                <div class="meta-module-kicker messages">Módulo 2 · WhatsApp</div>
+                <div class="panel-title">Campaña de Mensajes por CPL</div>
+                <div class="panel-sub">Mensajes objetivo × costo por lead</div>
+              </div>
+            </div>
+            <div class="meta-controls meta-controls-4">
+              <div class="meta-field">
+                <label for="meta-msg-target">Facturación objetivo</label>
+                <div class="inp-wrap"><span class="inp-pre">S/</span><input class="inp" id="meta-msg-target" type="number" min="0" step="100"></div>
+              </div>
+              <div class="meta-field">
+                <label for="meta-msg-actual">Ya facturado</label>
+                <div class="inp-wrap"><span class="inp-pre">S/</span><input class="inp" id="meta-msg-actual" type="number" min="0" step="100"></div>
+              </div>
+              <div class="meta-field">
+                <label for="meta-msg-ticket">Ticket promedio</label>
+                <div class="inp-wrap"><span class="inp-pre">S/</span><input class="inp" id="meta-msg-ticket" type="number" min="1" step="10"></div>
+              </div>
+              <div class="meta-field">
+                <label for="meta-msg-cpl">CPL promedio</label>
+                <div class="inp-wrap"><span class="inp-pre">S/</span><input class="inp" id="meta-msg-cpl" type="number" min="0" step="0.1"></div>
+              </div>
+            </div>
+            <div class="meta-kpis meta-kpis-5">
+              <div class="meta-kpi"><span>Fact. objetivo</span><strong id="meta-msg-target-kpi">S/ 0</strong></div>
+              <div class="meta-kpi"><span>Ya facturado</span><strong id="meta-msg-actual-kpi">S/ 0</strong></div>
+              <div class="meta-kpi" id="meta-msg-remaining-card"><span>Restante</span><strong id="meta-msg-remaining">S/ 0</strong></div>
+              <div class="meta-kpi"><span>Ventas necesarias</span><strong id="meta-msg-sales">0</strong></div>
+              <div class="meta-kpi success"><span>Inversión Mensajes</span><strong id="meta-msg-investment">S/ 0</strong></div>
+            </div>
+            <div class="meta-table-wrap">
+              <table class="meta-table">
+                <thead><tr><th>Conjunto</th><th class="r">Mensajes objetivo</th><th class="r">Costo / lead</th><th class="r">Inversión</th></tr></thead>
+                <tbody id="meta-msg-rows"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="meta-total-panel">
+          <div><span>Inversión Web</span><strong id="meta-total-web">S/ 0</strong></div>
+          <div><span>Inversión Mensajes</span><strong id="meta-total-msg">S/ 0</strong></div>
+          <div class="highlight"><span>Inversión total Meta Ads</span><strong id="meta-total-all">S/ 0</strong></div>
+        </div>
+
+        <div class="meta-bottom-grid">
+          <div class="panel">
+            <div class="panel-head"><div><div class="panel-title">Historial de simulaciones</div><div class="panel-sub">Versiones guardadas del cliente activo</div></div></div>
+            <div id="meta-history"></div>
+          </div>
+          <div class="panel meta-export-panel">
+            <div><div class="panel-title">Compartir propuesta</div><div class="panel-sub">Copia el resumen o descarga el detalle en Excel.</div></div>
+            <div class="meta-export-actions">
+              <button class="btn ghost" id="meta-copy-summary">Copiar resumen</button>
+              <button class="btn primary" id="meta-export-xlsx">Descargar Excel</button>
+            </div>
+            <div class="meta-feedback" id="meta-feedback" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="view" id="view-config">
-        <div class="sec-lbl">05 — Sistema</div>
+        <div class="sec-lbl">06 — Sistema</div>
         <div class="section-title">Usuarios y Claves</div>
         <div class="section-desc">
           Gestión de destinatarios del reporte semanal de ventas y configuración del sistema de alertas.
@@ -415,6 +556,7 @@
 <script src="js/objectives.js"></script>
 <script src="js/config.js"></script>
 <script src="js/sheets.js"></script>
+<script src="js/meta-planner.js"></script>
 <script src="js/main.js"></script>
 
 <script>

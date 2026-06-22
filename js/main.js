@@ -12,6 +12,7 @@
     'view-prod': 'Productos Web · 2026',
     'view-dist': 'Distribución por canal',
     'view-obj':  'Objetivos 2026',
+    'view-meta': 'Planificador Meta Ads',
     'view-config': 'Usuarios y Claves',
   };
 
@@ -21,6 +22,7 @@
     'view-prod':   'Ranking y ventas por producto',
     'view-dist':   'Ventas por canal de distribución',
     'view-obj':    'Seguimiento de metas mensuales',
+    'view-meta':   'Presupuesto Web y WhatsApp',
     'view-config': 'Gestión de accesos y alertas',
   };
 
@@ -30,6 +32,7 @@
     'view-prod':   ['chart-top-units', 'chart-top-rev', 'chart-types', 'chart-ticket'],
     'view-dist':   ['chart-dist-2025', 'chart-dist-2026', 'chart-abs'],
     'view-obj':    ['chart-weekly-combined'],
+    'view-meta':   [],
     'view-config': [],
   };
 
@@ -41,6 +44,7 @@
     generated: null,
     renderedProducts: false,
     configInited: false,
+    metaInited: false,
   };
 
   // ── Navegación ──
@@ -65,6 +69,11 @@
     if (id === 'view-config' && !state.configInited) {
       state.configInited = true;
       window.Config?.init();
+    }
+
+    if (id === 'view-meta' && !state.metaInited) {
+      state.metaInited = true;
+      window.MetaPlanner?.init();
     }
 
     // Render perezoso de productos para no bloquear primera pantalla

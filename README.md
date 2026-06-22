@@ -2,6 +2,10 @@
 
 Dashboard de ventas por canal (Tienda, Web, WhatsApp, Showroom, Instagram, Facebook) con comparativo YoY, distribución, análisis de productos web y simulador de objetivos.
 
+Incluye además un módulo de planificación de pauta Meta Ads con modelos Web por
+CPA y WhatsApp por CPL, estados separados por cliente, historial de versiones,
+resumen copiable y exportación a Excel.
+
 Los datos de 2026 se sincronizan automáticamente desde un Google Sheet mediante un pipeline que corre en GitHub Actions.
 
 ## Estructura
@@ -17,6 +21,7 @@ Los datos de 2026 se sincronizan automáticamente desde un Google Sheet mediante
     data-live.js          Fetcher de data/ventas-2026.json
     charts.js             Instancias de Chart.js
     objectives.js         Vista de Objetivos (pace tracker, weekly charts)
+    meta-planner.js       Planificador Meta Ads por cliente
     sheets.js             Indicador de sync + trigger de workflow
     main.js               Orquestación: init, navegación, render
   data/

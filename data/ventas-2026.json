@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-13T11:30:38",
+  "generated": "2026-07-13T15:16:38",
   "d2026": {
     "Enero": {
       "WhatsApp": 3181.4,
@@ -55,7 +55,7 @@
       "Facebook": 0,
       "Showroom": 3674,
       "Web": 7148.94,
-      "Tienda": 11223.9
+      "Tienda": 24831.89
     },
     "Agosto": {
       "WhatsApp": 0,
@@ -402,13 +402,13 @@
       },
       {
         "w": 2,
-        "TOTAL": 6035.1,
+        "TOTAL": 19643.09,
         "WHATSAPP": 240,
         "INSTAGRAM": 0,
         "FACEBOOK": 0,
         "SHOWROOM": 1612.6,
         "WEB": 4182.5,
-        "TIENDA": 0
+        "TIENDA": 13607.99
       },
       {
         "w": 3,
@@ -779,13 +779,13 @@
       },
       {
         "w": 2,
-        "TOTAL": 6035.1,
+        "TOTAL": 19643.09,
         "WHATSAPP": 240,
         "INSTAGRAM": 0,
         "FACEBOOK": 0,
         "SHOWROOM": 1612.6,
         "WEB": 4182.5,
-        "TIENDA": 0
+        "TIENDA": 13607.99
       },
       {
         "w": 3,
@@ -875,7 +875,7 @@
       "FACEBOOK": 0,
       "SHOWROOM": 9,
       "WEB": 25,
-      "TIENDA": 33
+      "TIENDA": 83
     },
     "Agosto": {
       "WHATSAPP": 0,

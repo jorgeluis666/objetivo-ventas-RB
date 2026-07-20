@@ -1706,3 +1706,11 @@ tbody tr:hover td {
     padding: 20px 16px;
   }
 }
+
+/* Barra de avance: mantiene visible el 0% real como marcador mínimo */
+.pb-fill.is-zero {
+  width: 6px !important;
+  min-width: 6px;
+  background: var(--brand) !important;
+  opacity: .95;
+}

@@ -50,6 +50,11 @@
 
   const pctFill  = p => p >= 100 ? 'var(--green)' : p >= 80 ? 'var(--amber)' : 'var(--brand)';
   const pctColor = p => p >= 100 ? 'var(--green-text)' : p >= 80 ? 'var(--amber-text)' : 'var(--brand-text)';
+  const setProgressFill = (el, pct) => {
+    const safePct = Math.max(0, Math.min(pct, 100));
+    el.style.width = safePct > 0 ? safePct.toFixed(1) + '%' : '6px';
+    el.classList.toggle('is-zero', safePct <= 0);
+  };
 
   // Estado interno
   const state = {
@@ -242,7 +247,7 @@
       gv.textContent = status === 'future' ? 'futuro' : '—';
       gv.className = 'gap-val'; gv.style.color = 'var(--muted)';
     } else {
-      pb.style.width = Math.min(p, 100).toFixed(1) + '%';
+      setProgressFill(pb, p);
       pb.style.background = pctFill(p);
       pv.textContent = p.toFixed(0) + '%';
       pv.style.color = pctColor(p);
@@ -283,7 +288,7 @@
       gv.textContent = status === 'future' ? 'futuro' : '—';
       gv.className = 'gap-val'; gv.style.color = 'var(--muted)';
     } else {
-      pb.style.width = Math.min(p, 100).toFixed(1) + '%';
+      setProgressFill(pb, p);
       pb.style.background = pctFill(p);
       pv.textContent = p.toFixed(0) + '%';
       pv.style.color = pctColor(p);

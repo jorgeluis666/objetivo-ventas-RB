@@ -113,6 +113,7 @@ function parseSheet(rows, monthConfig, year, cols) {
   const weekCount = dayToWeek[monthConfig.days];
 
   const weeklyTotals = [];
+  const dailyRows = [];
   for (let w = 1; w <= weekCount; w++) {
     const row = { w, TOTAL: 0 };
     cols.forEach(c => { row[c.upper] = 0; });
@@ -133,6 +134,10 @@ function parseSheet(rows, monthConfig, year, cols) {
       const w = dayToWeek[dayCounter];
       const weekRow = weeklyTotals[w - 1];
 
+      const dailyTotals = {};
+      const dailyTransactions = {};
+      cols.forEach(c => { dailyTotals[c.title] = 0; dailyTransactions[c.upper] = 0; });
+
       for (const c of cols) {
         if (c.col == null) continue; // Canal no presente en el sheet (ej. Showroom en 2025)
         const qty = toNumber(pendingCantidad[c.col]);
@@ -141,7 +146,17 @@ function parseSheet(rows, monthConfig, year, cols) {
         totals[c.title] += amount;
         weekRow[c.upper] += amount;
         weekRow.TOTAL += amount;
+        dailyTransactions[c.upper] += qty;
+        dailyTotals[c.title] += amount;
       }
+
+      dailyRows.push({
+        year,
+        monthIndex: monthConfig.monthIndex,
+        day: dayCounter,
+        totals: dailyTotals,
+        transactions: dailyTransactions,
+      });
       pendingCantidad = null;
     }
   }
@@ -152,7 +167,11 @@ function parseSheet(rows, monthConfig, year, cols) {
     cols.forEach(c => { wr[c.upper] = round2(wr[c.upper]); });
   });
 
-  return { totals, transactions, weeklyTotals };
+  dailyRows.forEach(dr => {
+    Object.keys(dr.totals).forEach(k => { dr.totals[k] = round2(dr.totals[k]); });
+  });
+
+  return { totals, transactions, weeklyTotals, dailyRows };
 }
 
 // --- CSV parser (mínimo, maneja campos entrecomillados) ---
@@ -268,6 +287,7 @@ async function fetchYear(source, args) {
   const totals = {};
   const weekly = {};
   const transactions = {};
+  const dailyRows = [];
 
   // Diagnóstico: tabs que efectivamente existen en el spreadsheet
   let availableTabs = null;
@@ -314,14 +334,91 @@ async function fetchYear(source, args) {
     totals[m.name]       = parsed.totals;
     transactions[m.name] = parsed.transactions;
     weekly[m.name]       = parsed.weeklyTotals;
+    dailyRows.push(...parsed.dailyRows);
 
     const monthTotal = round2(Object.values(parsed.totals).reduce((a, b) => a + b, 0));
     console.log(`  ${source.year} · ${m.name}: S/. ${monthTotal.toLocaleString('es-PE')} · ${parsed.weeklyTotals.length} semanas`);
   }
 
-  return { totals, weekly, transactions };
+  return { totals, weekly, transactions, dailyRows };
 }
 
+function commercialPeriodDays(year, targetMonthIndex) {
+  const start = new Date(year, targetMonthIndex - 1, 26);
+  const end = new Date(year, targetMonthIndex, 25);
+  return Math.round((end - start) / 86400000) + 1;
+}
+
+function buildEmptyWeekly(cols, days) {
+  const weekCount = Math.ceil(days / 7);
+  const weeks = [];
+  for (let w = 1; w <= weekCount; w++) {
+    const row = { w, TOTAL: 0 };
+    cols.forEach(c => { row[c.upper] = 0; });
+    weeks.push(row);
+  }
+  return weeks;
+}
+
+function buildCommercialYear(dailyRows, sourceYear, cols) {
+  const monthConfigs = monthsForYear(sourceYear);
+  const totals = {};
+  const weekly = {};
+  const transactions = {};
+  const periodDays = {};
+
+  monthConfigs.forEach(m => {
+    periodDays[m.name] = commercialPeriodDays(sourceYear, m.monthIndex);
+    totals[m.name] = Object.fromEntries(cols.map(c => [c.title, 0]));
+    transactions[m.name] = Object.fromEntries(cols.map(c => [c.upper, 0]));
+    weekly[m.name] = buildEmptyWeekly(cols, periodDays[m.name]);
+  });
+
+  dailyRows.forEach(dr => {
+    let targetYear = dr.year;
+    let targetMonthIndex = dr.monthIndex;
+    let periodDay;
+
+    if (dr.day > 25) {
+      targetMonthIndex = dr.monthIndex + 1;
+      periodDay = dr.day - 25;
+      if (targetMonthIndex > 11) {
+        targetMonthIndex = 0;
+        targetYear += 1;
+      }
+    } else {
+      const previousMonthDays = new Date(dr.year, dr.monthIndex, 0).getDate();
+      periodDay = previousMonthDays - 25 + dr.day;
+    }
+
+    if (targetYear !== sourceYear) return;
+    const monthName = monthConfigs[targetMonthIndex]?.name;
+    if (!monthName || !totals[monthName]) return;
+
+    const weekIndex = Math.max(0, Math.ceil(periodDay / 7) - 1);
+    const weekRow = weekly[monthName][weekIndex];
+    if (!weekRow) return;
+
+    cols.forEach(c => {
+      const amount = dr.totals[c.title] || 0;
+      const qty = dr.transactions[c.upper] || 0;
+      totals[monthName][c.title] += amount;
+      transactions[monthName][c.upper] += qty;
+      weekRow[c.upper] += amount;
+      weekRow.TOTAL += amount;
+    });
+  });
+
+  Object.values(totals).forEach(month => {
+    Object.keys(month).forEach(k => { month[k] = round2(month[k]); });
+  });
+  Object.values(weekly).forEach(weeks => weeks.forEach(wr => {
+    wr.TOTAL = round2(wr.TOTAL);
+    cols.forEach(c => { wr[c.upper] = round2(wr[c.upper]); });
+  }));
+
+  return { totals, weekly, transactions, periodDays };
+}
 async function main() {
   const args = parseArgs(process.argv);
   const source = args.csvDir ? `CSV (${args.csvDir})` : 'Google Sheets API';
@@ -338,17 +435,34 @@ async function main() {
   const LIMA_OFFSET_MS = -5 * 60 * 60 * 1000;
   const generated = new Date(Date.now() + LIMA_OFFSET_MS).toISOString().replace(/\.\d{3}Z$/, '');
 
+  const commercial2026 = buildCommercialYear(results[2026].dailyRows, 2026, COLS_2026);
+  const commercial2025 = buildCommercialYear(results[2025].dailyRows, 2025, COLS_2025);
+
   const output = {
     generated,
+    commercialCutoffDay: 25,
+    commercialCycleLabel: '26-25',
     // 2026 (en curso)
     d2026:        results[2026].totals,
-    weeklyData:   results[2026].weekly,       // nombre legacy, usado por objectives.js
-    weekly2026:   results[2026].weekly,       // alias explícito
-    transactions: results[2026].transactions, // legacy → usado por pace cards
+    d2026_calendar: results[2026].totals,
+    d2026_commercial: commercial2026.totals,
+    weeklyData:   results[2026].weekly,
+    weeklyData_calendar: results[2026].weekly,
+    weeklyData_commercial: commercial2026.weekly,       // nombre legacy, usado por objectives.js
+    weekly2026:   results[2026].weekly,
+    weekly2026_calendar: results[2026].weekly,
+    weekly2026_commercial: commercial2026.weekly,       // alias explícito
+    transactions: results[2026].transactions,
+    transactions_calendar: results[2026].transactions,
+    transactions_commercial: commercial2026.transactions,
+    commercialPeriodDays: commercial2026.periodDays, // legacy → usado por pace cards
     // 2025 (histórico, referencia anual)
     d2025_live:        results[2025].totals,
+    d2025_commercial:  commercial2025.totals,
     weekly2025:        results[2025].weekly,
+    weekly2025_commercial: commercial2025.weekly,
     transactions2025:  results[2025].transactions,
+    transactions2025_commercial: commercial2025.transactions,
   };
 
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });

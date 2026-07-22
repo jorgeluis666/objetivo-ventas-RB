@@ -78,3 +78,9 @@ La URL pública queda expuesta en la pestaña `Settings → Pages` del repositor
 3. Compartir el spreadsheet con el email del service account (permiso lector).
 4. En `Settings → Pages`, seleccionar source = `GitHub Actions`.
 5. Pushear a main — el primer deploy corre solo.
+
+### Ciclo comercial de objetivos
+
+El módulo **Objetivos 2026** usa ciclo comercial **26–25**: las ventas del día 26 al cierre calendario se acumulan al objetivo del mes siguiente. Los reportes comparativos generales conservan el mes calendario.
+
+Hito de rollback antes de este cambio: `hito-pre-cierre-25-20260722`.

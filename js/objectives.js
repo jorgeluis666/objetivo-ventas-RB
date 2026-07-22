@@ -63,6 +63,9 @@
     weeklyData: null,
     transactions: null,
     avgTickets: {},
+    d2025Ref: d2025,
+    periodDays: monthDays,
+    cycleLabel: 'calendario',
   };
 
   // ── localStorage — clave de almacenamiento ──
@@ -170,7 +173,17 @@
     const now = new Date();
     if (now.getFullYear() < YEAR) return -2;
     if (now.getFullYear() > YEAR) return 12;
-    return now.getMonth();
+    const idx = now.getDate() > 25 ? now.getMonth() + 1 : now.getMonth();
+    return idx > 11 ? 12 : idx;
+  }
+  function objectiveDays(m) {
+    return state.periodDays?.[m] || monthDays[m];
+  }
+  function currentCommercialDay() {
+    const now = new Date();
+    if (now.getDate() > 25) return now.getDate() - 25;
+    const previousMonthDays = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+    return previousMonthDays - 25 + now.getDate();
   }
   function monthStatus(m) {
     const idx = months.indexOf(m);
@@ -181,15 +194,15 @@
   }
   function daysPassed(m) {
     const s = monthStatus(m);
-    if (s === 'past')    return monthDays[m];
+    if (s === 'past')    return objectiveDays(m);
     if (s === 'future')  return 0;
-    return new Date().getDate();
+    return Math.min(objectiveDays(m), currentCommercialDay());
   }
   function daysRemaining(m) {
     const s = monthStatus(m);
     if (s === 'past')    return 0;
-    if (s === 'future')  return monthDays[m];
-    return Math.max(0, monthDays[m] - new Date().getDate());
+    if (s === 'future')  return objectiveDays(m);
+    return Math.max(0, objectiveDays(m) - currentCommercialDay());
   }
 
   // ── ISO week number del año (1-53) ──
@@ -325,7 +338,7 @@
               <div class="pace-lbl">Días del mes</div>
               <span class="pace-badge muted">futuro</span>
             </div>
-            <div class="pace-val">${monthDays[m]}</div>
+            <div class="pace-val">${objectiveDays(m)}</div>
             <div class="pace-sub">mes futuro</div>
           </div>
           <div class="pace-card">
@@ -341,7 +354,7 @@
               <div class="pace-lbl">Venta diaria necesaria</div>
               <span class="pace-badge muted">proyección</span>
             </div>
-            <div class="pace-val">S/. ${fmt(tt / monthDays[m])}</div>
+            <div class="pace-val">S/. ${fmt(tt / objectiveDays(m))}</div>
             <div class="pace-sub">para alcanzar la meta</div>
           </div>
           <div class="pace-card">
@@ -349,7 +362,7 @@
               <div class="pace-lbl">Ref. ${m} 2025</div>
               <span class="pace-badge muted">referencia</span>
             </div>
-            <div class="pace-val">S/. ${fmt(tot(d2025[m] || {}))}</div>
+            <div class="pace-val">S/. ${fmt(tot(state.d2025Ref[m] || {}))}</div>
             <div class="pace-sub">cierre año anterior</div>
           </div>
         </div>`;
@@ -360,10 +373,10 @@
       // Referencia: mes cerrado anterior (si hay). Si no, usa marzo de respaldo.
       const curIdx = months.indexOf(m);
       const refMonth = curIdx > 0 ? months[curIdx - 1] : 'Marzo';
-      const refTxns = Math.round(Object.values(state.transactions?.[refMonth] || {}).reduce((a, b) => a + b, 0) / (monthDays[refMonth] || 30));
+      const refTxns = Math.round(Object.values(state.transactions?.[refMonth] || {}).reduce((a, b) => a + b, 0) / (objectiveDays(refMonth) || 30));
       const refTk   = state.avgTickets?.[refMonth]?.TOTAL || 0;
 
-      const pctPassed = Math.round(passed / monthDays[m] * 100);
+      const pctPassed = Math.round(passed / objectiveDays(m) * 100);
       const pctMissing = faltante > 0 ? Math.round(faltante / tt * 100) : 0;
       el.innerHTML = `
         <div class="pace-grid">
@@ -373,7 +386,7 @@
               <span class="pace-badge muted">${pctPassed}% del mes</span>
             </div>
             <div class="pace-val">${remDays}</div>
-            <div class="pace-sub">de ${monthDays[m]} en ${m.toLowerCase()}</div>
+            <div class="pace-sub">de ${objectiveDays(m)} en ${m.toLowerCase()}</div>
           </div>
           <div class="pace-card">
             <div class="pace-card-head">
@@ -454,7 +467,7 @@
 
   function weekDateRange(m, w) {
     const start = (w - 1) * 7 + 1;
-    const end   = Math.min(w * 7, monthDays[m]);
+    const end   = Math.min(w * 7, objectiveDays(m));
     return `${start}–${end} ${MONTH_ABR[m]}`;
   }
 
@@ -467,7 +480,7 @@
     }
     const chKey       = chToUpper[ch];
     const monthChTgt  = state.targets[m][ch] || 0;
-    const baseWeekTgt = monthChTgt > 0 ? monthChTgt * 7 / monthDays[m] : 0;
+    const baseWeekTgt = monthChTgt > 0 ? monthChTgt * 7 / objectiveDays(m) : 0;
     const curWeekNum  = status === 'current' ? Math.ceil(new Date().getDate() / 7) : -1;
 
     let carry = 0;   // brecha arrastrada de semanas anteriores
@@ -555,7 +568,7 @@
 
     const d2026Month = state.d2026?.[m] || {};
     const passed     = daysPassed(m);
-    const totalDays  = monthDays[m];
+    const totalDays  = objectiveDays(m);
 
     // Estadísticas por canal
     const stats = channels.map(ch => {
@@ -679,7 +692,7 @@
     if (monthTarget === 0) { el.innerHTML = ''; return; }
 
     // Meta semanal prorrateada: objetivo mensual × 7 / días del mes
-    const weekTarget = monthTarget * 7 / monthDays[m];
+    const weekTarget = monthTarget * 7 / objectiveDays(m);
 
     // Semana actual dentro del mes (1-based): ceil(día/7)
     const curWeekNum = status === 'current' ? Math.ceil(new Date().getDate() / 7) : -1;
@@ -717,7 +730,7 @@
         .filter(ch => (state.targets[m][ch] || 0) > 0 || (wk[chToUpper[ch]] || 0) > 0)
         .map(ch => {
           const chReal   = wk[chToUpper[ch]] || 0;
-          const chTarget = (state.targets[m][ch] || 0) * 7 / monthDays[m];
+          const chTarget = (state.targets[m][ch] || 0) * 7 / objectiveDays(m);
           const chPct    = chTarget > 0 ? chReal / chTarget * 100 : 0;
           const chColor  = chPct >= 90 ? 'var(--green)' : chPct >= 70 ? 'var(--amber)' : (chReal > 0 ? 'var(--red)' : '#e2e8f0');
           return `
@@ -782,7 +795,7 @@
             </div>
             <div class="panel-sub">
               Meta semanal ≈ S/. ${fmt(weekTarget)} &nbsp;·&nbsp;
-              objetivo mensual S/. ${fmt(monthTarget)} / ${monthDays[m]} días &nbsp;·&nbsp;
+              objetivo mensual S/. ${fmt(monthTarget)} / ${objectiveDays(m)} días &nbsp;·&nbsp;
               <em>Clic en una semana para ver el detalle por canal</em>
             </div>
           </div>
@@ -809,11 +822,14 @@
   }
 
   // ── Render principal de la vista ──
-  function render({ d2026, weeklyData, transactions, weekly2025 }) {
+  function render({ d2026, weeklyData, transactions, weekly2025, d2025Ref, periodDays, cycleLabel }) {
     state.d2026        = d2026;
     state.weeklyData   = weeklyData;
     state.transactions = transactions;
     state.weekly2025   = weekly2025 || {};
+    state.d2025Ref     = d2025Ref || d2025;
+    state.periodDays   = periodDays || monthDays;
+    state.cycleLabel   = cycleLabel || 'calendario';
     state.avgTickets   = computeAvgTickets(d2026, transactions);
 
     // Chart combinado arriba de los month tabs (52 semanas 2025 + 2026 disponibles)
@@ -863,7 +879,7 @@
               if (titleEl) titleEl.textContent = `Evolución mensual · ${chLabel} · 2025 vs 2026`;
               if (cumStrip) cumStrip.style.display = 'none';
 
-              const mData25 = ALL_MONTHS.map(m => Math.round(getChVal(d2025[m], selCh)));
+              const mData25 = ALL_MONTHS.map(m => Math.round(getChVal(state.d2025Ref[m], selCh)));
               const mData26 = ALL_MONTHS.map(m => {
                 const v = getChVal(state.d2026?.[m], selCh);
                 return v > 0 ? Math.round(v) : null;
@@ -911,7 +927,7 @@
               const cum25Data = [], cum26Data = [];
 
               ALL_MONTHS.forEach(m => {
-                cum25 += Math.round(getChVal(d2025[m], selCh));
+                cum25 += Math.round(getChVal(state.d2025Ref[m], selCh));
                 const v26 = getChVal(state.d2026?.[m], selCh);
                 cum25Data.push(cum25);
                 if (v26 > 0) {
@@ -1054,7 +1070,7 @@
       const status     = monthStatus(m);
       const d2026Month = d2026[m] || {};
       const monthTotal = channels.reduce((s, ch) => s + (d2026Month[ch] || 0), 0);
-      const total2025  = tot(d2025[m] || {});
+      const total2025  = tot(state.d2025Ref[m] || {});
 
       // Panel HTML
       const panel = document.createElement('div');
@@ -1066,7 +1082,7 @@
       // ── Marcador del día actual sobre la barra ──
       // Posición proporcional: día transcurrido / días del mes
       const todayPct = status === 'current'
-        ? (daysPassed(m) / monthDays[m] * 100).toFixed(1)
+        ? (daysPassed(m) / objectiveDays(m) * 100).toFixed(1)
         : null;
       const todayPin = todayPct !== null
         ? `<div class="pb-today-pin" style="left:${todayPct}%">
@@ -1078,7 +1094,7 @@
       let rows = '';
       channels.forEach(ch => {
         const real       = d2026Month[ch] || 0;
-        const ref25      = (d2025[m] || {})[ch] || 0;
+        const ref25      = (state.d2025Ref[m] || {})[ch] || 0;
         const share      = showReal && monthTotal > 0 ? (real / monthTotal * 100).toFixed(1) : '—';
         const wkDetailId = `ch-weeks-${m}-${ch}`;
         rows += `<tr class="ch-obj-row">
@@ -1110,7 +1126,7 @@
                   <div class="pb-bg"><div class="pb-fill" id="pb-${m}-${ch}"></div></div>
                   ${todayPin}
                 </div>
-                <div class="pb-day-scale"><span>1</span><span>${monthDays[m]}</span></div>
+                <div class="pb-day-scale"><span>1</span><span>${objectiveDays(m)}</span></div>
               </div>
               <span class="pct-val" id="pv-${m}-${ch}"></span>
             </div>
@@ -1127,7 +1143,7 @@
       });
 
       const statusNote = status === 'current'
-        ? `<div class="period-note">${m} 2026 está en curso · ${daysPassed(m)} días transcurridos · Referencia 2025: <strong>S/. ${fmt(total2025)}</strong></div>`
+        ? `<div class="period-note">${m} 2026 esta en curso · ciclo comercial 26-25 · dia ${daysPassed(m)} de ${objectiveDays(m)} · Referencia 2025 comercial: <strong>S/. ${fmt(total2025)}</strong></div>`
         : status === 'future'
           ? `<div class="period-note" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-text);">${m} 2026 es mes futuro · Referencia 2025: <strong>S/. ${fmt(total2025)}</strong> · los objetivos se pueden planificar desde ya.</div>`
           : '';
@@ -1167,7 +1183,7 @@
                         <div class="pb-bg"><div class="pb-fill" id="pb-tot-${m}"></div></div>
                         ${todayPin}
                       </div>
-                      <div class="pb-day-scale"><span>1</span><span>${monthDays[m]}</span></div>
+                      <div class="pb-day-scale"><span>1</span><span>${objectiveDays(m)}</span></div>
                     </div>
                     <span class="pct-val" id="pv-tot-${m}"></span>
                   </div>

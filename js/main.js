@@ -338,10 +338,13 @@
     }
 
     window.Objectives.render({
-      d2026: state.d2026,
-      weeklyData: state.weeklyData,
-      transactions: state.transactions,
-      weekly2025: state.weekly2025,
+      d2026: liveData.d2026_commercial || state.d2026,
+      weeklyData: liveData.weeklyData_commercial || state.weeklyData,
+      transactions: liveData.transactions_commercial || state.transactions,
+      weekly2025: liveData.weekly2025_commercial || state.weekly2025,
+      d2025Ref: liveData.d2025_commercial || ds.d2025,
+      periodDays: liveData.commercialPeriodDays,
+      cycleLabel: liveData.commercialCycleLabel || '26-25',
     });
     window.Objectives.wireObjToolbar?.();
 

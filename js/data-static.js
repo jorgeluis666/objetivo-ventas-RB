@@ -65,7 +65,7 @@
   ];
   // Meses de 2026 que ya tienen datos cerrados/en curso (el pipeline solo
   // lee estos del sheet). Se expanden conforme 2026 avanza.
-  const monthsWith2026Data = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'];
+  const monthsWith2026Data = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio'];
 
   const STEP = 500;
 

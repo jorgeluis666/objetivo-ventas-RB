@@ -1714,3 +1714,41 @@ tbody tr:hover td {
   background: var(--brand) !important;
   opacity: .95;
 }
+
+/* Cierre comercial: el triángulo marca hoy; esta línea marca el día 25 */
+.pb-close-pin {
+  position: absolute;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 2;
+}
+.pb-close-day {
+  font-size: 10px;
+  font-weight: 800;
+  color: #b45309;
+  line-height: 1;
+}
+.pb-close-label {
+  margin-top: 1px;
+  font-size: 8px;
+  font-weight: 800;
+  color: #b45309;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.pb-close-line {
+  width: 2px;
+  height: 13px;
+  margin-top: 2px;
+  border-radius: 2px;
+  background: #f59e0b;
+  box-shadow: 0 0 0 2px #fff7ed;
+}
+.pb-ruler .pb-close-pin:last-child {
+  transform: translateX(-100%);
+}

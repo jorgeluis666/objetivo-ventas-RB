@@ -185,6 +185,9 @@
     const previousMonthDays = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
     return previousMonthDays - 25 + now.getDate();
   }
+  function currentCalendarDay() {
+    return new Date().getDate();
+  }
   function monthStatus(m) {
     const idx = months.indexOf(m);
     const cur = currentMonthIdx();
@@ -1085,9 +1088,16 @@
         ? (daysPassed(m) / objectiveDays(m) * 100).toFixed(1)
         : null;
       const todayPin = todayPct !== null
-        ? `<div class="pb-today-pin" style="left:${todayPct}%">
-             <span class="pb-today-day">${daysPassed(m)}</span>
+        ? `<div class="pb-today-pin" style="left:${todayPct}%" title="Día calendario ${currentCalendarDay()}">
+             <span class="pb-today-day">${currentCalendarDay()}</span>
              <div class="pb-today-tri"></div>
+           </div>`
+        : '';
+      const closePin = state.cycleLabel === '26-25'
+        ? `<div class="pb-close-pin" style="left:100%" title="Cierre comercial: día 25">
+             <span class="pb-close-day">25</span>
+             <span class="pb-close-label">cierre</span>
+             <div class="pb-close-line"></div>
            </div>`
         : '';
 

@@ -188,12 +188,14 @@
   function currentCalendarDay() {
     return new Date().getDate();
   }
-  function visualRulerDays(m) {
-    return state.cycleLabel === '26-25' ? 25 : objectiveDays(m);
+  function visualRulerStart(m) {
+    return state.cycleLabel === '26-25' ? '26' : '1';
+  }
+  function visualRulerEnd(m) {
+    return state.cycleLabel === '26-25' ? '25' : String(objectiveDays(m));
   }
   function visualTodayPct(m) {
-    const day = Math.max(1, Math.min(currentCalendarDay(), visualRulerDays(m)));
-    return (day / visualRulerDays(m) * 100).toFixed(1);
+    return (daysPassed(m) / objectiveDays(m) * 100).toFixed(1);
   }
   function monthStatus(m) {
     const idx = months.indexOf(m);
@@ -1143,7 +1145,7 @@
                   <div class="pb-bg"><div class="pb-fill" id="pb-${m}-${ch}"></div></div>
                   ${todayPin}
                 </div>
-                <div class="pb-day-scale"><span>1</span><span>${visualRulerDays(m)}</span></div>
+                <div class="pb-day-scale"><span>${visualRulerStart(m)}</span><span>${visualRulerEnd(m)}</span></div>
               </div>
               <span class="pct-val" id="pv-${m}-${ch}"></span>
             </div>
@@ -1200,7 +1202,7 @@
                         <div class="pb-bg"><div class="pb-fill" id="pb-tot-${m}"></div></div>
                         ${todayPin}
                       </div>
-                      <div class="pb-day-scale"><span>1</span><span>${visualRulerDays(m)}</span></div>
+                      <div class="pb-day-scale"><span>${visualRulerStart(m)}</span><span>${visualRulerEnd(m)}</span></div>
                     </div>
                     <span class="pct-val" id="pv-tot-${m}"></span>
                   </div>

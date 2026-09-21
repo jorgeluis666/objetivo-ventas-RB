@@ -13,6 +13,7 @@
     'view-dist': 'Distribución por canal',
     'view-obj':  'Objetivos 2026',
     'view-meta': 'Planificador Meta Ads',
+    'view-proj': 'Proyecciones 2026',
     'view-config': 'Usuarios y Claves',
   };
 
@@ -23,6 +24,7 @@
     'view-dist':   'Ventas por canal de distribución',
     'view-obj':    'Seguimiento de metas mensuales',
     'view-meta':   'Presupuesto Web y WhatsApp',
+    'view-proj':   'Cierre estimado vs objetivo anual',
     'view-config': 'Gestión de accesos y alertas',
   };
 
@@ -33,6 +35,7 @@
     'view-dist':   ['chart-dist-2025', 'chart-dist-2026', 'chart-abs'],
     'view-obj':    ['chart-weekly-combined'],
     'view-meta':   [],
+    'view-proj':   [],
     'view-config': [],
   };
 
@@ -45,6 +48,7 @@
     renderedProducts: false,
     configInited: false,
     metaInited: false,
+    projInited: false,
   };
 
   // ── Navegación ──
@@ -74,6 +78,11 @@
     if (id === 'view-meta' && !state.metaInited) {
       state.metaInited = true;
       window.MetaPlanner?.init();
+    }
+
+    if (id === 'view-proj' && !state.projInited && state.d2026) {
+      state.projInited = true;
+      window.Projections?.render({ d2026: state.d2026, targets: ds.defaultTargets });
     }
 
     // Render perezoso de productos para no bloquear primera pantalla
@@ -349,6 +358,9 @@
     window.Objectives.wireObjToolbar?.();
 
     if (state.renderedProducts) renderProducts();
+    if (state.projInited) {
+      window.Projections?.render({ d2026: state.d2026, targets: ds.defaultTargets });
+    }
     window.Sheets.updateGenerated(state.generated);
   }
 

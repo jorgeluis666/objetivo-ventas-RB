@@ -365,20 +365,21 @@ a { text-decoration: none; color: inherit; }
 /* ── PILLS ── */
 .pill {
   font-size: 10px;
-  font-weight: 600;
-  padding: 3px 9px;
-  border-radius: 20px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   white-space: nowrap;
+  letter-spacing: 0.02em;
 }
-.pill.blue   { background: var(--brand-soft);  color: var(--brand-text); }
-.pill.green  { background: var(--green-soft);  color: var(--green-text); }
-.pill.amber  { background: var(--amber-soft);  color: var(--amber-text); }
-.pill.red    { background: var(--red-soft);    color: var(--red-text); }
-.pill.purple { background: var(--purple-soft); color: var(--purple-text); }
-.pill.gray   { background: #F1F5F9;            color: #475569; }
+.pill.blue   { background: var(--brand-soft);  color: var(--brand-text);  border: 1px solid rgba(37,99,235,.15); }
+.pill.green  { background: var(--green-soft);  color: var(--green-text);  border: 1px solid rgba(5,150,105,.15); }
+.pill.amber  { background: var(--amber-soft);  color: var(--amber-text);  border: 1px solid rgba(217,119,6,.15); }
+.pill.red    { background: var(--red-soft);    color: var(--red-text);    border: 1px solid rgba(185,28,28,.15); }
+.pill.purple { background: var(--purple-soft); color: var(--purple-text); border: 1px solid rgba(124,58,237,.15); }
+.pill.gray   { background: #F1F5F9;            color: #475569;            border: 1px solid #E2E8F0; }
 
 /* ── INSIGHTS ── */
 .insight {

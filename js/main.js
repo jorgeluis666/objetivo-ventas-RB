@@ -80,9 +80,16 @@
       window.MetaPlanner?.init();
     }
 
-    if (id === 'view-proj' && !state.projInited && state.d2026) {
-      state.projInited = true;
-      window.Projections?.render({ d2026: state.d2026, targets: ds.defaultTargets });
+    if (id === 'view-proj') {
+      if (!state.projInited && state.d2026) {
+        state.projInited = true;
+        window.Projections?.render({ d2026: state.d2026, targets: ds.defaultTargets });
+      } else if (!state.d2026) {
+        const kpi = document.getElementById('kpi-proj');
+        if (kpi && !kpi.childElementCount) {
+          kpi.innerHTML = '<div class="insight info" style="grid-column:1/-1;">Cargando datos… Si persiste, usa <strong>Actualizar</strong> en la barra superior.</div>';
+        }
+      }
     }
 
     // Render perezoso de productos para no bloquear primera pantalla

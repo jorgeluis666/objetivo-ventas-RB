@@ -188,18 +188,19 @@
 }
 .pace-card-head .pace-lbl { margin-bottom: 0; }
 .pace-badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 6px;
   white-space: nowrap;
   flex-shrink: 0;
+  letter-spacing: 0.02em;
 }
-.pace-badge.green { background: var(--green-soft);  color: var(--green-text); }
-.pace-badge.amber { background: var(--amber-soft);  color: var(--amber-text); }
-.pace-badge.red   { background: var(--red-soft);    color: var(--red-text);   }
-.pace-badge.brand { background: var(--brand-soft);  color: var(--brand-text); }
-.pace-badge.muted { background: #f1f5f9; color: var(--muted); }
+.pace-badge.green { background: var(--green-soft);  color: var(--green-text);  border: 1px solid rgba(5,150,105,.15); }
+.pace-badge.amber { background: var(--amber-soft);  color: var(--amber-text);  border: 1px solid rgba(217,119,6,.15); }
+.pace-badge.red   { background: var(--red-soft);    color: var(--red-text);    border: 1px solid rgba(185,28,28,.15); }
+.pace-badge.brand { background: var(--brand-soft);  color: var(--brand-text);  border: 1px solid rgba(37,99,235,.15); }
+.pace-badge.muted { background: #f1f5f9; color: var(--muted); border: 1px solid #E2E8F0; }
 
 .pace-lbl {
   font-size: 11px;
@@ -901,37 +902,7 @@
   gap: 5px;
 }
 
-/* ── MÓDULO ACTIVO (sidebar) ── */
-.s-modulo-activo {
-  margin: 8px 12px 16px;
-  background: #1a2744;
-  border: 1px solid rgba(59, 130, 246, 0.25);
-  border-radius: var(--r);
-  padding: 12px 14px;
-}
-.s-ma-label {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: #60a5fa;
-  text-transform: uppercase;
-  margin-bottom: 5px;
-}
-.s-ma-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1.2;
-  margin-bottom: 3px;
-}
-.s-ma-desc {
-  font-size: 11px;
-  color: #94a3b8;
-  line-height: 1.35;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+/* ── MÓDULO ACTIVO (sidebar) — estilos en bloque "Light minimal refresh" abajo ── */
 
 /* ── Config view — formulario agregar ── */
 .cfg-add-form {
@@ -1066,13 +1037,17 @@
   inset: 0;
   z-index: 9999;
   display: flex;
+  overflow: hidden;
+  background: #0f172a;
 }
 #auth-overlay.auth-hidden { display: none; }
 
 /* Panel izquierdo — blanco */
 #auth-panel {
   width: 400px;
+  max-width: 100%;
   flex-shrink: 0;
+  box-sizing: border-box;
   background: #fff;
   display: flex;
   align-items: center;
@@ -1153,11 +1128,34 @@
   color: var(--red);
 }
 
-/* Panel derecho — imagen */
+/* Panel derecho — imagen. El degradado va debajo: si la imagen falta o
+   falla la descarga, el panel sigue opaco y no deja ver el dashboard. */
 #auth-bg {
   flex: 1;
-  background: url('../assets/login-bg.jpg') center center / cover no-repeat;
+  min-width: 0;
+  align-self: stretch;
+  background-color: #0f172a;
+  background-image:
+    url('../assets/login-bg.jpg'),
+    linear-gradient(140deg, var(--brand) 0%, #991b1b 38%, #0f172a 100%);
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
   filter: grayscale(20%);
+}
+
+/* En pantallas angostas el panel de 400px no entra: ocupa todo el ancho. */
+@media (max-width: 768px) {
+  #auth-panel { width: 100%; padding: 32px 24px; }
+  #auth-panel-inner { max-width: 360px; margin: 0 auto; }
+  #auth-title { font-size: 30px; margin-bottom: 22px; }
+  #auth-divider { margin-bottom: 26px; }
+  #auth-bg { display: none; }
+}
+@media (max-height: 520px) {
+  #auth-panel { align-items: flex-start; padding: 24px; overflow-y: auto; }
+  #auth-title { font-size: 26px; margin-bottom: 18px; }
+  #auth-divider { margin-bottom: 20px; }
 }
 
 /* ══ Planificador Meta Ads ═══════════════════════════════════════════════ */
@@ -1326,6 +1324,176 @@
   .meta-controls, .meta-controls-4 { grid-template-columns: 1fr; }
   .meta-kpis-4, .meta-kpis-5, .meta-total-panel { grid-template-columns: 1fr 1fr; }
   .meta-total-panel .highlight { grid-column: 1 / -1; }
+}
+
+/* ============================================================
+   Módulo Proyecciones  (estética Amador)
+   ============================================================ */
+
+/* ── KPI strip ── */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.kpi-pill {
+  min-height: 86px;
+  padding: 14px 15px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 0 1px 2px rgba(15,23,42,.03);
+}
+.kpi-pill span {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.kpi-pill strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+.kpi-pill small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+/* ── Canal cards ── */
+.proj-ch-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.proj-ch-card {
+  padding: 14px 15px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 0 1px 2px rgba(15,23,42,.03);
+}
+.proj-ch-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+.proj-ch-pip {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.proj-ch-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  flex: 1;
+}
+.proj-ch-badge {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+}
+.proj-ch-badge.green { background: var(--green-soft); color: var(--green-text); border: 1px solid rgba(5,150,105,.15); }
+.proj-ch-badge.amber { background: var(--amber-soft); color: var(--amber-text); border: 1px solid rgba(217,119,6,.15); }
+.proj-ch-badge.red   { background: var(--red-soft);   color: var(--red-text);   border: 1px solid rgba(185,28,28,.15); }
+.proj-ch-badge.muted { background: #f1f5f9; color: var(--muted); border: 1px solid #E2E8F0; }
+
+.proj-ch-val {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.proj-ch-sub {
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.proj-bar-track {
+  height: 3px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+.proj-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .4s ease;
+}
+.proj-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--muted);
+}
+.proj-ch-gap {
+  margin-top: 8px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* ── Selector de canal ── */
+.proj-selector {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.proj-sel-btn {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.proj-sel-btn .pip {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+.proj-sel-btn.active, .proj-sel-btn:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.proj-gap-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  color: var(--text-2);
+}
+.proj-gap-row strong {
+  color: var(--text);
 }
 
 /* ============================================================

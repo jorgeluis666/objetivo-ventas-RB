@@ -114,7 +114,6 @@
     grid.innerHTML = channels.map(ch => {
       const p = proj[ch];
       if (!p) return '';
-      const pct = Math.min(p.pct, 1.5); // cap visual a 150%
       const barW = Math.min(p.pct * 100, 100).toFixed(1);
       const color = palette[ch] || '#64748b';
       const badgeClass = p.pct >= 1 ? 'green' : p.pct >= 0.75 ? 'amber' : 'red';
@@ -277,7 +276,6 @@
             order: 2,
             borderColor: channels.map(ch => palette[ch] || '#64748b'),
             borderWidth: 1,
-            borderDash: [4, 3],
           },
           {
             label: 'Objetivo anual',

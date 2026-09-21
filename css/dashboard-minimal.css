@@ -1357,36 +1357,76 @@
 }
 
 /* ============================================================
-   Módulo Proyecciones
+   Módulo Proyecciones  (estética Amador)
    ============================================================ */
+
+/* ── KPI strip ── */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.kpi-pill {
+  min-height: 86px;
+  padding: 14px 15px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 0 1px 2px rgba(15,23,42,.03);
+}
+.kpi-pill span {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.kpi-pill strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+.kpi-pill small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+/* ── Canal cards ── */
 .proj-ch-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 20px;
 }
 .proj-ch-card {
-  background: var(--card);
+  padding: 14px 15px;
   border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 16px 18px;
-  box-shadow: var(--sh);
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 0 1px 2px rgba(15,23,42,.03);
 }
 .proj-ch-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 7px;
+  margin-bottom: 10px;
 }
 .proj-ch-pip {
-  width: 8px; height: 8px;
+  width: 7px; height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 .proj-ch-name {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: .04em;
   text-transform: uppercase;
   color: var(--muted);
   flex: 1;
@@ -1404,24 +1444,23 @@
 .proj-ch-badge.muted { background: #f1f5f9; color: var(--muted); border: 1px solid #E2E8F0; }
 
 .proj-ch-val {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
-  letter-spacing: -0.02em;
   color: var(--text);
-  line-height: 1.1;
-  margin-bottom: 2px;
+  line-height: 1;
+  margin-bottom: 4px;
 }
 .proj-ch-sub {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--muted);
   margin-bottom: 10px;
 }
 .proj-bar-track {
-  height: 4px;
+  height: 3px;
   background: var(--border);
   border-radius: 99px;
   overflow: hidden;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
 .proj-bar-fill {
   height: 100%;
@@ -1434,10 +1473,13 @@
   font-size: 10px;
   color: var(--muted);
 }
-.proj-bar-labels .proj-target-lbl {
-  color: var(--muted);
+.proj-ch-gap {
+  margin-top: 8px;
+  font-size: 10px;
+  font-weight: 600;
 }
 
+/* ── Selector de canal ── */
 .proj-selector {
   display: flex;
   gap: 6px;

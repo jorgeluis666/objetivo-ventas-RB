@@ -76,36 +76,33 @@
   function renderKpis(proj) {
     const el = document.getElementById('kpi-proj');
     if (!el) return;
+    el.className = 'kpi-strip';
     const tot = proj._total;
-    const gapClass = tot.gap >= 0 ? 'green' : 'red';
-    const gapSign  = tot.gap >= 0 ? '+' : '';
-    const pctFmt   = (tot.pct * 100).toFixed(1);
-    const closedN  = tot.withData.length;
+    const gapSign = tot.gap >= 0 ? '+' : '';
+    const pctFmt  = (tot.pct * 100).toFixed(1);
+    const closedN = tot.withData.length;
+    const rateTotal = channels.reduce((s, c) => s + (proj[c]?.rate || 0), 0);
 
     el.innerHTML = `
-      <div class="kpi-card">
-        <div class="kpi-icon blue">S/</div>
-        <div class="kpi-lbl">Acumulado YTD</div>
-        <div class="kpi-val blue">S/. ${fmt(tot.ytd)}</div>
-        <div class="kpi-sub">${closedN} ${closedN === 1 ? 'mes' : 'meses'} con datos</div>
+      <div class="kpi-pill">
+        <span>Acumulado YTD</span>
+        <strong>S/. ${fmt(tot.ytd)}</strong>
+        <small>${closedN} ${closedN === 1 ? 'mes' : 'meses'} con datos reales</small>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-icon purple">◎</div>
-        <div class="kpi-lbl">Objetivo anual</div>
-        <div class="kpi-val">${fmtK(tot.annualTarget)}</div>
-        <div class="kpi-sub">suma 12 meses · todos los canales</div>
+      <div class="kpi-pill">
+        <span>Objetivo anual</span>
+        <strong>${fmtK(tot.annualTarget)}</strong>
+        <small>suma 12 meses · todos los canales</small>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-icon amber">▶</div>
-        <div class="kpi-lbl">Proyección diciembre</div>
-        <div class="kpi-val amber">${fmtK(tot.projected)}</div>
-        <div class="kpi-sub">${pctFmt}% del objetivo anual</div>
+      <div class="kpi-pill">
+        <span>Proyección diciembre</span>
+        <strong>${fmtK(tot.projected)}</strong>
+        <small>${pctFmt}% del objetivo · tasa ~${fmtK(rateTotal)}/mes</small>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-icon ${gapClass}">${tot.gap >= 0 ? '▲' : '▼'}</div>
-        <div class="kpi-lbl">Brecha vs objetivo</div>
-        <div class="kpi-val ${gapClass}">${gapSign}${fmtK(tot.gap)}</div>
-        <div class="kpi-sub">${tot.gap >= 0 ? 'por encima del objetivo' : 'por debajo del objetivo'}</div>
+      <div class="kpi-pill">
+        <span>Brecha vs objetivo</span>
+        <strong style="color:${tot.gap >= 0 ? 'var(--green-text)' : 'var(--red-text)'};">${gapSign}${fmtK(tot.gap)}</strong>
+        <small>${tot.gap >= 0 ? 'por encima del objetivo' : 'por debajo del objetivo'}</small>
       </div>`;
   }
 
@@ -132,17 +129,15 @@
             <span class="proj-ch-badge ${badgeClass}">${badgeTxt}</span>
           </div>
           <div class="proj-ch-val">${fmtK(p.projected)}</div>
-          <div class="proj-ch-sub">YTD: S/. ${fmt(p.ytd)} · tasa ~S/. ${fmt(p.rate)}/mes</div>
+          <div class="proj-ch-sub">YTD S/. ${fmt(p.ytd)} · ~S/. ${fmt(p.rate)}/mes</div>
           <div class="proj-bar-track">
             <div class="proj-bar-fill" style="width:${barW}%; background:${color};"></div>
           </div>
           <div class="proj-bar-labels">
             <span>${(p.pct * 100).toFixed(0)}% del objetivo</span>
-            <span class="proj-target-lbl">Obj: ${fmtK(p.annualTarget)}</span>
+            <span>Obj: ${fmtK(p.annualTarget)}</span>
           </div>
-          ${p.annualTarget > 0 ? `<div style="margin-top:8px;font-size:10px;color:${p.gap>=0?'var(--green-text)':'var(--red-text)'};">
-            Brecha: ${gapSign}S/. ${fmt(p.gap)}
-          </div>` : ''}
+          ${p.annualTarget > 0 ? `<div class="proj-ch-gap" style="color:${p.gap>=0?'var(--green-text)':'var(--red-text)'};">${gapSign}S/. ${fmt(p.gap)}</div>` : ''}
         </div>`;
     }).join('');
   }

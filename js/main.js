@@ -130,8 +130,11 @@
     const el = document.getElementById('kpi-yoy');
     if (!el) return;
     el.innerHTML = '';
-    // KPIs solo para meses con datos 2026 reales (filtrado dinámico)
-    activeMonths2026(d2026).forEach(m => {
+
+    const activeMes = activeMonths2026(d2026);
+
+    // Cards por mes
+    activeMes.forEach(m => {
       const t25 = tot(d2025[m]);
       const t26 = tot(d2026[m]);
       if (t26 === 0) {
@@ -139,7 +142,7 @@
           <div class="kpi-card">
             <div class="kpi-icon amber">⏳</div>
             <div class="kpi-lbl">${m} · en curso</div>
-            <div class="kpi-val muted" style="font-size:20px;">—</div>
+            <div class="kpi-val muted">—</div>
             <div class="kpi-sub"><span class="pill amber">2025 · S/. ${fmt(t25)}</span></div>
           </div>`);
       } else {
@@ -157,6 +160,45 @@
           </div>`);
       }
     });
+
+    // Card de total anual proyectado
+    const mesConDatos = activeMes.filter(m => tot(d2026[m]) > 0);
+    if (mesConDatos.length > 0) {
+      const ytd26 = mesConDatos.reduce((s, m) => s + tot(d2026[m]), 0);
+      const ytd25 = mesConDatos.reduce((s, m) => s + tot(d2025[m]), 0);
+      const tasa  = ytd26 / mesConDatos.length;
+      const mesesRestantes = 12 - mesConDatos.length;
+      const proyAnual = ytd26 + tasa * mesesRestantes;
+      const total25   = months.reduce((s, m) => s + tot(d2025[m]), 0);
+      const diffPct   = total25 > 0 ? (proyAnual - total25) / total25 * 100 : 0;
+      const up        = diffPct >= 0;
+      const obj2026   = months.reduce((s, m) => s + Object.values((ds.defaultTargets[m] || {})).reduce((a, b) => a + b, 0), 0);
+      const vsObj     = obj2026 > 0 ? (proyAnual / obj2026 * 100).toFixed(1) : null;
+
+      el.insertAdjacentHTML('beforeend', `
+        <div class="kpi-card kpi-card-anual">
+          <div class="anual-item">
+            <span class="anual-label">Acumulado YTD 2026</span>
+            <span class="anual-val">S/. ${fmt(ytd26)}</span>
+            <span class="anual-pill" style="background:var(--brand-soft);color:var(--brand-text);">${mesConDatos.length} meses cerrados</span>
+          </div>
+          <div class="anual-item">
+            <span class="anual-label">Proyección anual 2026</span>
+            <span class="anual-val" style="color:var(--brand);">S/. ${fmt(proyAnual)}</span>
+            <span class="anual-pill" style="background:var(--brand-soft);color:var(--brand-text);">tasa ~S/. ${fmt(tasa)}/mes</span>
+          </div>
+          <div class="anual-item">
+            <span class="anual-label">vs cierre 2025</span>
+            <span class="anual-val" style="color:${up ? 'var(--green-text)' : 'var(--red-text)'};">${up ? '+' : ''}${diffPct.toFixed(1)}%</span>
+            <span class="anual-pill" style="background:${up ? 'var(--green-soft)' : 'var(--red-soft)'};color:${up ? 'var(--green-text)' : 'var(--red-text)'};">2025 · S/. ${fmt(total25)}</span>
+          </div>
+          ${vsObj ? `<div class="anual-item">
+            <span class="anual-label">vs objetivo 2026</span>
+            <span class="anual-val" style="color:${parseFloat(vsObj)>=100?'var(--green-text)':'var(--red-text)'};">${vsObj}%</span>
+            <span class="anual-pill" style="background:var(--brand-soft);color:var(--brand-text);">obj S/. ${fmt(obj2026)}</span>
+          </div>` : ''}
+        </div>`);
+    }
   }
 
   // Meses 2026 cerrados (no el actual). Hoy en mayo → Ene-Abr.

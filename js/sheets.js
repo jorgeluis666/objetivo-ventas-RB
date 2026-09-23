@@ -1,23 +1,21 @@
 /* ============================================================
    sheets.js — indicador de sync + botón "Actualizar".
    Muestra cuándo fue la última generación del JSON y permite
-   disparar el workflow de GitHub Actions on-demand si el usuario
-   guardó un Personal Access Token en localStorage.
+   recargar los datos publicados sin refrescar la página.
+   Los datos nuevos llegan solos: el workflow "Actualizar datos
+   de ventas" corre cada lunes y vuelve a publicar el tablero.
+   Antes el botón disparaba ese workflow con un Personal Access
+   Token guardado en localStorage; se quitó porque el tablero lo
+   abren clientes y un token con permiso `workflow` no debe vivir
+   en su navegador. Para forzar una corrida: GitHub > Actions.
    Expone window.Sheets.
    ============================================================ */
 
 (function (global) {
-  const REPO_OWNER    = 'jorgeluis666';
-  const REPO_NAME     = 'objetivo-canales-ventas';
-  const WORKFLOW_FILE = 'update-data.yml';    // ver .github/workflows/
-  const PAT_STORAGE   = 'ghPatReadWrite';     // token opcional
-  const POLL_INTERVAL = 8000;                 // polling del run activo
-
   const state = {
     generated: null,
     loading: false,
-    polling: null,
-    lastCheck: null,
+    onUpdate: null,
   };
 
   // ── Formatters ──
@@ -34,16 +32,6 @@
     return `hace ${diffD} d`;
   }
 
-  function getPat() {
-    try { return localStorage.getItem(PAT_STORAGE) || ''; } catch { return ''; }
-  }
-  function setPat(val) {
-    try {
-      if (val) localStorage.setItem(PAT_STORAGE, val);
-      else     localStorage.removeItem(PAT_STORAGE);
-    } catch {}
-  }
-
   // ── Render del indicador ──
   function renderIndicator() {
     const el = document.getElementById('sync-indicator');
@@ -51,11 +39,11 @@
     const classes = ['topbar-pill', 'sync'];
     classes.push(state.loading ? 'loading' : 'ok');
     el.className = classes.join(' ');
-    const rel = formatRelative(state.generated);
     const label = state.loading
-      ? 'Sincronizando…'
-      : `Sincronizado · ${rel}`;
-    el.innerHTML = `<span class="sync-dot"></span><span>${label}</span>`;
+      ? 'Recargando…'
+      : `Sincronizado · ${formatRelative(state.generated)}`;
+    el.innerHTML = '<span class="sync-dot"></span><span></span>';
+    el.lastElementChild.textContent = label;
   }
 
   function renderRefreshButton() {
@@ -71,105 +59,30 @@
     renderRefreshButton();
   }
 
-  // ── GitHub API — dispara y hace polling del workflow ──
-  async function triggerWorkflow() {
-    const pat = getPat();
-    if (!pat) {
-      openTokenModal();
-      return;
-    }
+  // ── Recarga data/ventas-2026.json (la última versión publicada) ──
+  async function reload() {
     setLoading(true);
     try {
-      const branch = 'main';
-      const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/actions/workflows/${WORKFLOW_FILE}/dispatches`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/vnd.github+json',
-          'Authorization': `Bearer ${pat}`,
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-        body: JSON.stringify({ ref: branch }),
-      });
-      if (!res.ok) {
-        const body = await res.text();
-        throw new Error(`GitHub ${res.status}: ${body.slice(0, 140)}`);
-      }
-      // Poll hasta que aparezca un run más reciente que state.generated
-      startPolling();
+      const live = await global.DataLive.load();
+      if (live.source !== 'live') throw new Error(live.error || 'sin datos');
+      state.generated = live.generated;
+      if (typeof state.onUpdate === 'function') state.onUpdate(live);
     } catch (err) {
-      console.error('[sheets] dispatch failed', err);
-      alert('No se pudo lanzar la sincronización:\n' + err.message);
+      console.error('[sheets] no se pudo recargar', err);
+      alert('No se pudieron recargar los datos. Intentá de nuevo en unos minutos.');
+    } finally {
       setLoading(false);
     }
-  }
-
-  function startPolling() {
-    const startedAt = Date.now();
-    if (state.polling) clearInterval(state.polling);
-    state.polling = setInterval(async () => {
-      try {
-        const res = await fetch('data/ventas-2026.json?_=' + Date.now(), { cache: 'no-store' });
-        if (res.ok) {
-          const json = await res.json();
-          if (json.generated && json.generated !== state.generated) {
-            state.generated = json.generated;
-            clearInterval(state.polling); state.polling = null;
-            setLoading(false);
-            if (typeof state.onUpdate === 'function') state.onUpdate(json);
-            return;
-          }
-        }
-      } catch {}
-      // Timeout después de 4 minutos
-      if (Date.now() - startedAt > 4 * 60 * 1000) {
-        clearInterval(state.polling); state.polling = null;
-        setLoading(false);
-      }
-    }, POLL_INTERVAL);
-  }
-
-  // ── Modal para guardar el PAT ──
-  function openTokenModal() {
-    const modal = document.getElementById('modal-pat');
-    if (!modal) return;
-    modal.querySelector('input').value = getPat();
-    modal.classList.add('visible');
-  }
-  function closeTokenModal() {
-    const modal = document.getElementById('modal-pat');
-    if (!modal) return;
-    modal.classList.remove('visible');
-  }
-
-  function wireModal() {
-    const modal = document.getElementById('modal-pat');
-    if (!modal) return;
-    modal.addEventListener('click', e => { if (e.target === modal) closeTokenModal(); });
-    modal.querySelector('[data-action="save"]').addEventListener('click', () => {
-      const val = modal.querySelector('input').value.trim();
-      setPat(val);
-      closeTokenModal();
-      if (val) triggerWorkflow();
-    });
-    modal.querySelector('[data-action="cancel"]').addEventListener('click', closeTokenModal);
-    modal.querySelector('[data-action="clear"]').addEventListener('click', () => {
-      setPat('');
-      modal.querySelector('input').value = '';
-    });
   }
 
   // ── API pública ──
   function init({ generated, onUpdate }) {
     state.generated = generated || null;
     state.onUpdate  = onUpdate;
-    wireModal();
     renderIndicator();
     renderRefreshButton();
     const refresh = document.getElementById('btn-refresh');
-    if (refresh) refresh.addEventListener('click', triggerWorkflow);
-    const settings = document.getElementById('btn-settings');
-    if (settings) settings.addEventListener('click', openTokenModal);
+    if (refresh) refresh.addEventListener('click', reload);
   }
 
   function updateGenerated(iso) {
@@ -177,5 +90,5 @@
     renderIndicator();
   }
 
-  global.Sheets = { init, triggerWorkflow, updateGenerated, openTokenModal };
+  global.Sheets = { init, reload, updateGenerated };
 })(window);

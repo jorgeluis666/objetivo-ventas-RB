@@ -1,5 +1,7 @@
-name: Deploy a GitHub Pages
+name: Deploy al hosting de Lima Retail
 
+# Publica solo dist/ (HTML con CSS/JS incrustados, data/ventas-2026.json y .htaccess con Basic Auth)
+# en la carpeta del cliente. Antes publicaba en GitHub Pages, donde los datos quedaban publicos.
 on:
   push:
     branches: [main]
@@ -14,42 +16,39 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: deploy-hosting
+  cancel-in-progress: false
 
 jobs:
   build-deploy:
     # Si vino por workflow_run, correr solo si el upstream pasó en verde
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
 
       - name: Build dashboard
-        run: npm run build
+        env:
+          HTPASSWD_PATH: ${{ secrets.HTPASSWD_PATH }}
+        run: |
+          if [ -z "$HTPASSWD_PATH" ]; then echo "::error::Falta el secret HTPASSWD_PATH"; exit 1; fi
+          node scripts/build.js
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Subir dist/ por FTPS
+        uses: SamKirkland/FTP-Deploy-Action@a51268f67f6605236975928ae28b0f7e9971d50a # v4.3.6
         with:
-          path: ./dist
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./dist/
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          dangerous-clean-slate: false

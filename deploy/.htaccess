@@ -1,0 +1,34 @@
+# Plantilla: scripts/build.js la copia a dist/.htaccess y rellena la ruta de claves y la CSP.
+# No editar en el servidor: cada deploy la sobrescribe.
+# Requisito en cPanel: Dominios > "Forzar redireccion HTTPS" activado, para que la clave nunca viaje por HTTP.
+
+Options -Indexes
+
+# ── Acceso: una cuenta por cliente, validada por Apache ───────────────────────
+AuthType Basic
+AuthName "Royal Baby - Lima Retail"
+AuthUserFile "__HTPASSWD_PATH__"
+Require valid-user
+
+# ── Solo se sirven los archivos del tablero ──────────────────────────────────
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
+<FilesMatch "\.(csv|gs|py|md|log|db|sqlite|zip|bak|env|lock)$">
+  Require all denied
+</FilesMatch>
+
+# ── Cabeceras de seguridad ───────────────────────────────────────────────────
+<IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=31536000"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set X-Robots-Tag "noindex, nofollow"
+  Header always set Content-Security-Policy "__CSP__"
+  # Datos de cliente: que no queden guardados en proxies ni en cache compartida.
+  <FilesMatch "\.(html|json)$">
+    Header set Cache-Control "private, no-store"
+  </FilesMatch>
+</IfModule>

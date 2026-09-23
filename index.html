@@ -11,34 +11,13 @@
 <link rel="stylesheet" href="css/ds.css">
 <link rel="stylesheet" href="css/dashboard-minimal.css">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js" integrity="sha512-ZwR1/gSZM3ai6vCdI+LVF1zSq/5HznD3ZSTk7kajkaj4D292NLuduDCO1c/NT8Id+jE58KYLKT7hXnbtryGmMg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js" integrity="sha512-JPcRR8yFa8mmCsfrw4TNte1ZvF1e3+1SdGMslZvmrzDYxS69J7J49vkFL8u6u8PlPJK+H3voElBtUCzaXj+6ig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
 
-<!-- ══ PANTALLA DE ACCESO ══════════════════════════════════════ -->
-<div id="auth-overlay">
-  <div id="auth-panel">
-    <div id="auth-panel-inner">
-      <div id="auth-brand">Lima Retail</div>
-      <div id="auth-title">Centro de<br>Control</div>
-      <div id="auth-divider"></div>
-      <form id="auth-form" autocomplete="off">
-        <input
-          id="auth-input"
-          type="password"
-          placeholder="Contraseña"
-          autocomplete="new-password"
-          autofocus
-        />
-        <button type="submit" id="auth-btn">Ingresar</button>
-      </form>
-      <div id="auth-error">Contraseña incorrecta</div>
-    </div>
-  </div>
-  <div id="auth-bg"></div>
-</div>
+<!-- El acceso lo controla el servidor (deploy/.htaccess + HTTP Basic Auth). -->
 
 <div class="shell">
 
@@ -141,12 +120,9 @@
         <span class="topbar-pill sync" id="sync-indicator">
           <span class="sync-dot"></span><span>cargando…</span>
         </span>
-        <button class="btn ghost" id="btn-refresh" title="Forzar sincronización">
+        <button class="btn ghost" id="btn-refresh" title="Recargar los datos publicados">
           <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
           Actualizar
-        </button>
-        <button class="btn ghost" id="btn-settings" title="Configurar token">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
       </div>
     </div>
@@ -584,26 +560,6 @@
   </main>
 </div>
 
-<!-- Modal: PAT de GitHub para forzar sync -->
-<div class="modal-overlay" id="modal-pat">
-  <div class="modal">
-    <h3>Configurar sincronización</h3>
-    <p>
-      Para disparar el workflow de sincronización desde el dashboard, pegá un
-      <strong>Personal Access Token</strong> de GitHub con permiso <code>workflow</code>.
-      El token se guarda solo en tu navegador (<code>localStorage</code>).
-    </p>
-    <input class="inp" type="password" placeholder="ghp_..." autocomplete="off">
-    <p style="margin-top:10px;font-size:11px;color:var(--muted);">
-      Si no tenés token, la data sigue actualizándose cada lunes vía el cron del workflow.
-    </p>
-    <div class="modal-actions">
-      <button class="btn danger" data-action="clear">Borrar</button>
-      <button class="btn ghost"  data-action="cancel">Cancelar</button>
-      <button class="btn primary" data-action="save">Guardar y sincronizar</button>
-    </div>
-  </div>
-</div>
 
 <script src="js/data-static.js"></script>
 <script src="js/data-live.js"></script>
@@ -615,36 +571,5 @@
 <script src="js/projections.js"></script>
 <script src="js/main.js"></script>
 
-<script>
-(function () {
-  const KEY = 'rb_auth';
-  const PWD = 'RB2026';
-  const overlay = document.getElementById('auth-overlay');
-  const form    = document.getElementById('auth-form');
-  const input   = document.getElementById('auth-input');
-  const errMsg  = document.getElementById('auth-error');
-
-  function unlock() {
-    overlay.classList.add('auth-hidden');
-    sessionStorage.setItem(KEY, '1');
-  }
-
-  if (sessionStorage.getItem(KEY) === '1') {
-    unlock();
-  }
-
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    if (input.value === PWD) {
-      errMsg.style.display = 'none';
-      unlock();
-    } else {
-      input.value = '';
-      errMsg.style.display = 'block';
-      input.focus();
-    }
-  });
-})();
-</script>
 </body>
 </html>

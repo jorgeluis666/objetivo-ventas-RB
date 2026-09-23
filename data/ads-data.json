@@ -1,0 +1,56 @@
+{
+  "version": "1",
+  "updated": "2026-09-23",
+  "nota": "Datos de campañas Meta Ads y Google Ads. Actualizar mensualmente.",
+  "meses": {
+    "Septiembre": {
+      "diasEnMes": 30,
+      "diasConDatos": 22,
+      "meta": {
+        "ecommerce": {
+          "nombre": "Ventas E-Commerce",
+          "canal": "Web",
+          "gasto": 1110.74,
+          "compras": 10,
+          "valor": 5646.78,
+          "pagosIniciados": 19,
+          "impresiones": 129248,
+          "alcance": 76406,
+          "presupuestoDiario": 50.49
+        },
+        "whatsapp": {
+          "nombre": "Tráfico a Mensajes",
+          "canal": "WhatsApp",
+          "gasto": 82.06,
+          "conversaciones": 129,
+          "compras": 4,
+          "impresiones": 11031,
+          "alcance": 9139,
+          "presupuestoDiario": 3.73
+        },
+        "interaccion": {
+          "nombre": "Campaña Interacción",
+          "canal": "Social",
+          "gasto": 105.25,
+          "impresiones": 44021,
+          "alcance": 38747,
+          "presupuestoDiario": 4.78
+        }
+      },
+      "google": {
+        "search": {
+          "nombre": "Search | LR",
+          "canal": "Web",
+          "gasto": 1136.97,
+          "conversiones": 9,
+          "valor": 2541.20,
+          "clics": 1175,
+          "impresiones": 11553,
+          "ctr": 10.17,
+          "cpc": 0.97,
+          "presupuestoDiario": 50.0
+        }
+      }
+    }
+  }
+}

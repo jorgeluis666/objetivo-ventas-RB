@@ -404,14 +404,13 @@
 
     if (p.brecha >= 0) {
       el.innerHTML = `<div class="recalc-box verde">
-        <div class="recalc-title">Ritmo actual — en camino al objetivo</div>
         <div class="recalc-row">
-          <div class="recalc-item"><span>Gasto diario actual</span><strong>${tasaActDia}/día</strong></div>
-          <div class="recalc-item"><span>Ventas generadas/día</span><strong>${ventasProyDia}/día</strong></div>
+          <div class="recalc-item"><span>Gasto diario</span><strong>${tasaActDia}/día</strong></div>
+          <div class="recalc-item"><span>Ventas/día</span><strong>${ventasProyDia}/día</strong></div>
           <div class="recalc-item"><span>Proyección cierre</span><strong style="color:var(--green-text)">${fmtS(p.ventasProyectadas)}</strong></div>
           <div class="recalc-item"><span>Objetivo mes</span><strong>${fmtS(p.objTotal)}</strong></div>
+          <div class="recalc-item"><span>Superávit estimado</span><strong style="color:var(--green-text)">+${fmtS(p.brecha)}</strong></div>
         </div>
-        <div class="recalc-note">Mantén el presupuesto actual para superar el objetivo en <strong>${fmtS(p.brecha)}</strong>.</div>
       </div>`;
       return;
     }
@@ -421,19 +420,13 @@
     const ventasFaltantes = p.objTotal - p.ventasProyectadas;
 
     el.innerHTML = `<div class="recalc-box alerta">
-      <div class="recalc-title">Recálculo de inversión — para cerrar la brecha</div>
       <div class="recalc-row">
         <div class="recalc-item"><span>Gasto diario actual</span><strong>${tasaActDia}/día</strong></div>
         <div class="recalc-item"><span>Días restantes</span><strong>${p.diasRestantes} días</strong></div>
-        <div class="recalc-item"><span>Ventas que faltan</span><strong style="color:var(--red-text)">${fmtS(ventasFaltantes)}</strong></div>
-        <div class="recalc-item"><span>ROAS actual</span><strong>${fmtR(p.roasActual)}</strong></div>
+        <div class="recalc-item"><span>Faltan</span><strong style="color:var(--red-text)">${fmtS(ventasFaltantes)}</strong></div>
+        <div class="recalc-item"><span>ROAS</span><strong>${fmtR(p.roasActual)}</strong></div>
+        <div class="recalc-item recalc-item-recom"><span>Presupuesto recomendado</span><strong style="color:var(--brand)">${fmtS(nuevoPresupuesto)}/día <em>(+${fmtS(aumento)})</em></strong></div>
       </div>
-      <div class="recalc-accion">
-        <span class="recalc-accion-label">Presupuesto diario recomendado</span>
-        <span class="recalc-accion-valor">${fmtS(nuevoPresupuesto)}<small>/día</small></span>
-        <span class="recalc-accion-delta">+${fmtS(aumento)}/día adicional en los próximos ${p.diasRestantes} días</span>
-      </div>
-      <div class="recalc-note">Con ROAS ${fmtR(p.roasActual)}, aumentar la inversión en <strong>${fmtS(aumento)}/día</strong> generará las <strong>${fmtS(ventasFaltantes)}</strong> en ventas que faltan para cerrar el mes en objetivo.</div>
     </div>`;
   }
 

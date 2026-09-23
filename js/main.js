@@ -13,7 +13,7 @@
     'view-dist': 'Distribución por canal',
     'view-obj':  'Objetivos 2026',
     'view-meta': 'Planificador Meta Ads',
-    'view-proj': 'Proyecciones 2026',
+    'view-proj': 'Proyecciones mensuales',
     'view-config': 'Usuarios y Claves',
   };
 
@@ -24,7 +24,7 @@
     'view-dist':   'Ventas por canal de distribución',
     'view-obj':    'Seguimiento de metas mensuales',
     'view-meta':   'Presupuesto Web y WhatsApp',
-    'view-proj':   'Cierre estimado vs objetivo anual',
+    'view-proj':   'Inversión publicitaria · ritmo mensual',
     'view-config': 'Gestión de accesos y alertas',
   };
 
@@ -45,6 +45,7 @@
     transactions: null,
     weekly2025: null,
     generated: null,
+    adsData: null,
     renderedProducts: false,
     configInited: false,
     metaInited: false,
@@ -81,13 +82,13 @@
     }
 
     if (id === 'view-proj') {
-      if (!state.projInited && state.d2026) {
+      if (!state.projInited && state.adsData) {
         state.projInited = true;
-        window.Projections?.render({ d2026: state.d2026, targets: ds.defaultTargets });
-      } else if (!state.d2026) {
+        window.Projections?.render({ d2026: state.d2026, targets: ds.defaultTargets, adsData: state.adsData });
+      } else if (!state.adsData) {
         const kpi = document.getElementById('kpi-proj');
         if (kpi && !kpi.childElementCount) {
-          kpi.innerHTML = '<div class="insight info" style="grid-column:1/-1;">Cargando datos… Si persiste, usa <strong>Actualizar</strong> en la barra superior.</div>';
+          kpi.innerHTML = '<div class="insight info" style="grid-column:1/-1;">Cargando datos de campañas…</div>';
         }
       }
     }
@@ -365,8 +366,8 @@
     window.Objectives.wireObjToolbar?.();
 
     if (state.renderedProducts) renderProducts();
-    if (state.projInited) {
-      window.Projections?.render({ d2026: state.d2026, targets: ds.defaultTargets });
+    if (state.projInited && state.adsData) {
+      window.Projections?.render({ d2026: state.d2026, targets: ds.defaultTargets, adsData: state.adsData });
     }
     window.Sheets.updateGenerated(state.generated);
   }
@@ -395,7 +396,13 @@
     const hashView = window.location.hash.slice(1);
     showView(Object.keys(VIEW_TITLES).includes(hashView) ? hashView : 'view-yoy');
 
-    const live = await window.DataLive.load();
+    // Carga paralela: datos de ventas + datos de campañas publicitarias
+    const [live] = await Promise.all([
+      window.DataLive.load(),
+      fetch('data/ads-data.json').then(r => r.ok ? r.json() : null)
+        .then(ads => { state.adsData = ads; })
+        .catch(() => {}),
+    ]);
     if (live.source === 'fallback') {
       const host = document.getElementById('kpi-yoy');
       if (host) host.insertAdjacentHTML('beforebegin', `

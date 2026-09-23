@@ -509,20 +509,29 @@
 
       <!-- ══ VIEW: Proyecciones ══════════════════════════ -->
       <section class="view" id="view-proj">
-        <div class="sec-lbl">07 — Proyecciones</div>
-        <div class="section-title">Proyección de cierre anual · 2026</div>
+        <div class="sec-lbl">02 — Proyecciones</div>
+        <div class="section-title">Proyecciones mensuales · Inversión publicitaria</div>
         <div class="section-desc">
-          Estimación de cierre al 31 de diciembre basada en la tasa de ventas acumulada. Compara cada canal con su objetivo anual y detecta brechas a cubrir.
+          Seguimiento de ritmo de inversión vs objetivo mensual. Recálculo automático del presupuesto diario necesario para cerrar la brecha.
+        </div>
+
+        <!-- Selector de mes -->
+        <div class="proj-mes-wrap">
+          <span class="proj-mes-label">Mes</span>
+          <div class="proj-mes-selector" id="proj-mes-selector"></div>
         </div>
 
         <!-- KPI strip -->
         <div id="kpi-proj" style="margin-bottom:20px;"></div>
 
-        <!-- Cards por canal / tipo de campaña -->
+        <!-- Recálculo de inversión -->
+        <div id="proj-recalculo" style="margin-bottom:24px;display:none;"></div>
+
+        <!-- Cards por fuente -->
         <div class="panel-head" style="margin-bottom:10px;">
           <div>
-            <div class="panel-title">Proyección por tipo de campaña</div>
-            <div class="panel-sub">YTD acumulado · tasa mensual · estimado diciembre</div>
+            <div class="panel-title">Resultados por fuente de tráfico</div>
+            <div class="panel-sub">Meta Ads · Google Ads · WhatsApp — gasto, ventas y ROAS acumulados</div>
           </div>
         </div>
         <div class="proj-ch-grid" id="proj-channels" style="margin-bottom:24px;"></div>
@@ -532,22 +541,20 @@
           <div class="panel">
             <div class="panel-head">
               <div>
-                <div class="panel-title">Campaña de ventas vs objetivo de facturación</div>
-                <div class="panel-sub">Facturación real mensual vs meta por canal</div>
+                <div class="panel-title">Ritmo de ventas vs objetivo mensual</div>
+                <div class="panel-sub">Acumulado real · proyección al cierre · curva objetivo</div>
               </div>
             </div>
-            <div class="proj-selector" id="proj-selector"></div>
             <div class="chart-wrap h-260"><canvas id="chart-proj-vs-obj"></canvas></div>
-            <div class="proj-gap-row" id="proj-gap-row" style="display:none;"></div>
           </div>
           <div class="panel">
             <div class="panel-head">
               <div>
-                <div class="panel-title">Proyección anual por canal</div>
-                <div class="panel-sub">Real YTD + estimado restante vs objetivo anual</div>
+                <div class="panel-title">Gasto y ventas por fuente</div>
+                <div class="panel-sub">Comparativo de inversión vs retorno por campaña</div>
               </div>
             </div>
-            <div class="chart-wrap h-300"><canvas id="chart-proj-annual"></canvas></div>
+            <div class="chart-wrap h-260"><canvas id="chart-proj-annual"></canvas></div>
           </div>
         </div>
       </section>

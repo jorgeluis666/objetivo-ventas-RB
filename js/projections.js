@@ -263,7 +263,7 @@
         </div>
       </div>`;
 
-    el.innerHTML = cardEcom + cardGoogle + cardWa + cardInt;
+    el.innerHTML = cardEcom + cardWa + cardGoogle + cardInt;
   }
 
   function srcCard({ color, nombre, subtitulo, gasto, ventas, roas, stat1, stat2, stat3, presupuestoDiario, diasRestantes }) {

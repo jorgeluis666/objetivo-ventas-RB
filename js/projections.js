@@ -199,56 +199,36 @@
       </div>`;
   }
 
-  // ── Cards por fuente ─────────────────────────────────────────
+  // ── Cards por fuente con gráfico + slider ───────────────────
+  const _chartsSrc = {};
+
   function renderFuentes(p) {
     const el = document.getElementById('proj-channels');
     if (!el || !p) { if (el) el.innerHTML = ''; return; }
 
-    const f = p.fuentes;
+    const md = (_adsData?.meses || {})[_mesActivo] || {};
+    const f  = p.fuentes;
 
-    const cardEcom = srcCard({
-      color: f.metaEcommerce.color,
-      nombre: 'Meta E-Commerce',
-      subtitulo: 'Ventas digitales · Facebook / Instagram',
-      gasto: f.metaEcommerce.gasto,
-      ventas: f.metaEcommerce.ventas,
-      roas: f.metaEcommerce.roas,
-      stat1: { label: 'Compras', val: f.metaEcommerce.compras },
-      stat2: { label: 'Pagos iniciados', val: f.metaEcommerce.pagosIniciados },
-      stat3: { label: 'Alcance', val: fmt(f.metaEcommerce.alcance) },
-      presupuestoDiario: f.metaEcommerce.presupuestoDiario,
-      diasRestantes: p.diasRestantes,
-    });
+    // Destruir charts anteriores
+    Object.values(_chartsSrc).forEach(c => c?.destroy());
+    Object.keys(_chartsSrc).forEach(k => delete _chartsSrc[k]);
 
-    const cardGoogle = srcCard({
-      color: f.googleSearch.color,
-      nombre: 'Google Search',
-      subtitulo: 'Búsquedas pagas · Search | LR',
-      gasto: f.googleSearch.gasto,
-      ventas: f.googleSearch.ventas,
-      roas: f.googleSearch.roas,
-      stat1: { label: 'Conversiones', val: f.googleSearch.conversiones },
-      stat2: { label: 'Clics', val: fmt(f.googleSearch.clics) },
-      stat3: { label: 'CPC prom.', val: 'S/. ' + f.googleSearch.cpc.toFixed(2) },
-      presupuestoDiario: f.googleSearch.presupuestoDiario,
-      diasRestantes: p.diasRestantes,
-    });
-
-    const cardWa = srcCard({
-      color: f.metaWhatsapp.color,
-      nombre: 'Meta → WhatsApp',
-      subtitulo: 'Tráfico a mensajes directos',
-      gasto: f.metaWhatsapp.gasto,
-      ventas: f.metaWhatsapp.ventas,
-      roas: f.metaWhatsapp.roas,
-      stat1: { label: 'Conversaciones', val: fmt(f.metaWhatsapp.conversaciones) },
-      stat2: { label: 'Compras attr.', val: f.metaWhatsapp.compras },
-      stat3: { label: 'Alcance', val: fmt(f.metaWhatsapp.alcance) },
-      presupuestoDiario: f.metaWhatsapp.presupuestoDiario,
-      diasRestantes: p.diasRestantes,
-    });
-
-    const cardInt = `
+    el.innerHTML = `
+      ${srcCardHTML('ecom', f.metaEcommerce.color, 'Meta E-Commerce', 'Ventas digitales · Facebook / Instagram', f.metaEcommerce, p, [
+        {label:'Compras', val: f.metaEcommerce.compras},
+        {label:'Ventas', val: fmtS(f.metaEcommerce.ventas)},
+        {label:'Alcance', val: fmt(f.metaEcommerce.alcance)},
+      ])}
+      ${srcCardHTML('wa', f.metaWhatsapp.color, 'Meta → WhatsApp', 'Tráfico a mensajes directos', f.metaWhatsapp, p, [
+        {label:'Conversaciones', val: fmt(f.metaWhatsapp.conversaciones)},
+        {label:'Compras attr.', val: f.metaWhatsapp.compras},
+        {label:'Alcance', val: fmt(f.metaWhatsapp.alcance)},
+      ])}
+      ${srcCardHTML('goog', f.googleSearch.color, 'Google Search', 'Búsquedas pagas · Search | LR', f.googleSearch, p, [
+        {label:'Conversiones', val: f.googleSearch.conversiones},
+        {label:'Clics', val: fmt(f.googleSearch.clics)},
+        {label:'CPC prom.', val: 'S/. ' + f.googleSearch.cpc.toFixed(2)},
+      ])}
       <div class="proj-ch-card">
         <div class="proj-ch-header">
           <span class="proj-ch-pip" style="background:${f.metaInteraccion.color};"></span>
@@ -263,32 +243,146 @@
         </div>
       </div>`;
 
-    el.innerHTML = cardEcom + cardWa + cardGoogle + cardInt;
+    // Montar charts y sliders después de insertar HTML
+    mountSrcChart('ecom', md.meta?.ecommerce, f.metaEcommerce, p);
+    mountSrcChart('wa',   md.meta?.whatsapp,  f.metaWhatsapp,  p);
+    mountSrcChartGoogle('goog', md.google?.search, f.googleSearch, p);
   }
 
-  function srcCard({ color, nombre, subtitulo, gasto, ventas, roas, stat1, stat2, stat3, presupuestoDiario, diasRestantes }) {
-    const roasBadgeClass = roas >= 3 ? 'green' : roas >= 1.5 ? 'amber' : 'red';
-    const gastoRestante = presupuestoDiario * diasRestantes;
+  function srcCardHTML(id, color, nombre, subtitulo, fSrc, p, stats) {
+    const roasBadgeClass = fSrc.roas >= 3 ? 'green' : fSrc.roas >= 1.5 ? 'amber' : 'red';
+    const presMin  = Math.round(fSrc.presupuestoDiario * 0.5);
+    const presMax  = Math.round(fSrc.presupuestoDiario * 3);
+    const presStep = Math.max(1, Math.round(fSrc.presupuestoDiario * 0.05));
     return `
-      <div class="proj-ch-card">
+      <div class="proj-ch-card" data-src="${id}">
         <div class="proj-ch-header">
           <span class="proj-ch-pip" style="background:${color};"></span>
           <span class="proj-ch-name">${nombre}</span>
-          <span class="proj-ch-badge ${roasBadgeClass}">ROAS ${fmtR(roas)}</span>
+          <span class="proj-ch-badge ${roasBadgeClass}">ROAS ${fmtR(fSrc.roas)}</span>
         </div>
-        <div class="proj-ch-val">${fmtS(ventas)}</div>
+        <div class="proj-ch-val">${fmtS(fSrc.ventas)}</div>
         <div class="proj-ch-sub">${subtitulo}</div>
         <div class="proj-ch-stats">
-          <div class="proj-ch-stat"><span>${stat1.label}</span><strong>${stat1.val}</strong></div>
-          <div class="proj-ch-stat"><span>${stat2.label}</span><strong>${stat2.val}</strong></div>
-          <div class="proj-ch-stat"><span>${stat3.label}</span><strong>${stat3.val}</strong></div>
+          ${stats.map(s => `<div class="proj-ch-stat"><span>${s.label}</span><strong>${s.val}</strong></div>`).join('')}
         </div>
-        <div class="proj-ch-budget">
-          <span>Gasto acumulado</span>
-          <strong>${fmtS(gasto)}</strong>
-          ${diasRestantes > 0 ? `<span class="proj-ch-budget-rest">+${fmtS(gastoRestante)} estimado restante</span>` : ''}
+        <div class="proj-src-chart-wrap"><canvas id="chart-src-${id}"></canvas></div>
+        <div class="proj-slider-wrap">
+          <div class="proj-slider-label">
+            <span>Presupuesto diario</span>
+            <strong id="slider-val-${id}">${fmtS(fSrc.presupuestoDiario)}/día</strong>
+          </div>
+          <input type="range" class="proj-slider" id="slider-${id}"
+            min="${presMin}" max="${presMax}" step="${presStep}"
+            value="${Math.round(fSrc.presupuestoDiario)}">
+          <div class="proj-slider-result" id="slider-result-${id}"></div>
         </div>
       </div>`;
+  }
+
+  function mountSrcChart(id, raw, fSrc, p) {
+    const canvas = document.getElementById(`chart-src-${id}`);
+    if (!canvas || !raw?.diario) return;
+    const color = fSrc.color;
+    const dias  = raw.diario;
+    const labels = dias.map(d => d.dia.slice(8)); // día del mes
+    const gastos = dias.map(d => d.gasto || 0);
+    const ventas = dias.map(d => d.ventas || d.conversaciones || 0);
+    const hasVentas = dias.some(d => (d.ventas || 0) > 0);
+
+    const datasets = [
+      { label: 'Gasto S/.', data: gastos, borderColor: color, backgroundColor: color + '22',
+        borderWidth: 1.5, pointRadius: 2, fill: true, tension: 0.3, yAxisID: 'y' },
+    ];
+    if (hasVentas) {
+      datasets.push({ label: 'Ventas S/.', data: ventas, borderColor: '#f59e0b', backgroundColor: 'transparent',
+        borderWidth: 1.5, pointRadius: 2, fill: false, tension: 0.3, yAxisID: 'y2' });
+    }
+
+    _chartsSrc[id] = new Chart(canvas, {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: hasVentas, position: 'top', labels: { boxWidth: 8, font: { size: 9 } } }, datalabels: { display: false },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: S/. ${fmt(ctx.raw || 0)}` } } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 8 }, maxTicksLimit: 8 } },
+          y: { position: 'left', ticks: { font: { size: 8 }, callback: v => fmtS(v) }, grid: { color: '#f1f5f9' } },
+          ...(hasVentas ? { y2: { position: 'right', ticks: { font: { size: 8 }, callback: v => fmtS(v) }, grid: { display: false } } } : {}),
+        },
+      },
+    });
+
+    wireSlider(id, fSrc, p);
+  }
+
+  function mountSrcChartGoogle(id, raw, fSrc, p) {
+    const canvas = document.getElementById(`chart-src-${id}`);
+    if (!canvas || !raw?.semanal) return;
+    const color  = fSrc.color;
+    const semanas = raw.semanal;
+    const labels  = semanas.map(s => s.semana);
+
+    _chartsSrc[id] = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Gasto S/.', data: semanas.map(s => s.gasto), backgroundColor: color + '88', borderRadius: 3, yAxisID: 'y' },
+          { label: 'Ventas S/.', type: 'line', data: semanas.map(s => s.ventas), borderColor: '#f59e0b',
+            borderWidth: 2, pointRadius: 3, fill: false, tension: 0.3, yAxisID: 'y2' },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 8, font: { size: 9 } } }, datalabels: { display: false },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: S/. ${fmt(ctx.raw || 0)}` } } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 8 } } },
+          y: { position: 'left', ticks: { font: { size: 8 }, callback: v => fmtS(v) }, grid: { color: '#f1f5f9' } },
+          y2: { position: 'right', ticks: { font: { size: 8 }, callback: v => fmtS(v) }, grid: { display: false } },
+        },
+      },
+    });
+
+    wireSlider(id, fSrc, p);
+  }
+
+  function wireSlider(id, fSrc, p) {
+    const slider = document.getElementById(`slider-${id}`);
+    const valEl  = document.getElementById(`slider-val-${id}`);
+    const resEl  = document.getElementById(`slider-result-${id}`);
+    if (!slider || !resEl) return;
+
+    const updateSlider = () => {
+      const nuevoPres = parseFloat(slider.value);
+      valEl.textContent = `S/. ${fmt(nuevoPres)}/día`;
+
+      if (p.diasRestantes <= 0) { resEl.innerHTML = ''; return; }
+
+      // Nueva proyección con el presupuesto ajustado
+      const gastoAdicional  = nuevoPres * p.diasRestantes;
+      const ventasAdicional = gastoAdicional * fSrc.roas;
+      const nuevaProyeccion = fSrc.ventas + ventasAdicional;
+
+      // Objetivo proporcional de esta fuente (simplificado: usa ROAS actual)
+      const objFuente = fSrc.roas > 0 ? (p.objTotal / p.roasActual) * fSrc.roas : 0;
+      const gap = nuevaProyeccion - (p.objTotal * (fSrc.ventas / Math.max(p.ventasTotal, 1)));
+
+      const color  = gap >= 0 ? 'var(--green-text)' : 'var(--red-text)';
+      const signo  = gap >= 0 ? '+' : '';
+      const pctObj = p.objTotal > 0 ? (nuevaProyeccion / p.objTotal * 100).toFixed(0) : '—';
+
+      resEl.innerHTML = `
+        <span>Proyección al cierre</span>
+        <strong>${fmtS(nuevaProyeccion)}</strong>
+        <span style="color:${color};font-weight:600;">${signo}${fmtS(gap)} vs obj</span>
+        <span class="proj-slider-pct">${pctObj}% del objetivo total</span>`;
+    };
+
+    slider.addEventListener('input', updateSlider);
+    updateSlider();
   }
 
   // ── Recálculo de inversión ───────────────────────────────────

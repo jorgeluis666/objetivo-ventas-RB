@@ -1386,6 +1386,55 @@
   font-weight: 700;
   color: var(--text);
 }
+/* Mini chart dentro de card de fuente */
+.proj-src-chart-wrap {
+  height: 90px;
+  margin: 10px 0 8px;
+}
+
+/* Slider de inversión */
+.proj-slider-wrap {
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.proj-slider-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.proj-slider-label strong {
+  color: var(--brand);
+  font-weight: 700;
+}
+.proj-slider {
+  width: 100%;
+  accent-color: var(--brand);
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+.proj-slider-result {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--muted);
+  min-height: 18px;
+}
+.proj-slider-result strong {
+  color: var(--text);
+  font-weight: 700;
+  font-size: 12px;
+}
+.proj-slider-pct {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--muted);
+}
+
 /* Budget row */
 .proj-ch-budget {
   display: flex;

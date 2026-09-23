@@ -19,7 +19,7 @@ const DIST_HTML = path.join(DIST_DIR, 'index.html');
 // Único dato que el tablero pide por fetch (js/data-live.js). Lista blanca: los demás JSON de
 // data/ son configuración interna (destinatarios de alertas, registro de envíos) o insumos del
 // pipeline, y no deben quedar descargables.
-const PUBLIC_DATA = ['ventas-2026.json'];
+const PUBLIC_DATA = ['ventas-2026.json', 'ads-data.json'];
 
 function readFile(rel) {
   return fs.readFileSync(path.join(ROOT, rel), 'utf8');

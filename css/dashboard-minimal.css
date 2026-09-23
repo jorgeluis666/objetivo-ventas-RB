@@ -50,12 +50,76 @@
   font-weight: 500;
 }
 
-/* KPIs YoY se expanden de 4 a N meses según haya datos.
-   auto-fit + minmax mantiene cards parejas y baja a 2x2 / 3x2 si hace falta. */
+/* KPIs YoY — cards compactas con minmax menor */
 #kpi-yoy {
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+}
+#kpi-yoy .kpi-card {
+  padding: 10px 12px;
+}
+#kpi-yoy .kpi-lbl {
+  font-size: 9px;
+  padding-right: 28px;
+  margin-bottom: 4px;
+}
+#kpi-yoy .kpi-val {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+#kpi-yoy .kpi-sub {
+  font-size: 10px;
+  gap: 3px;
+}
+#kpi-yoy .kpi-icon {
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  font-size: 10px;
+  border-radius: 5px;
+}
+/* Card de total anual — destacada */
+#kpi-yoy .kpi-card-anual {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  padding: 12px 16px;
+  border-top: 2px solid var(--brand);
+  background: var(--brand-soft);
+}
+#kpi-yoy .kpi-card-anual .anual-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 12px;
+  border-right: 1px solid var(--border);
+}
+#kpi-yoy .kpi-card-anual .anual-item:first-child { padding-left: 0; }
+#kpi-yoy .kpi-card-anual .anual-item:last-child  { border-right: none; }
+#kpi-yoy .kpi-card-anual .anual-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--muted);
+}
+#kpi-yoy .kpi-card-anual .anual-val {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+#kpi-yoy .kpi-card-anual .anual-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 5px;
+  width: fit-content;
 }
 
 .section-sub {

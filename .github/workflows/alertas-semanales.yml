@@ -53,6 +53,8 @@ jobs:
         run: node scripts/alertas.js
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          # URL del tablero en el hosting (variable del repo); si falta se usa la de alertas-config.json.
+          DASHBOARD_URL: ${{ vars.DASHBOARD_URL }}
           # En dispatch manual, respeta el input dry_run. En schedule/workflow_run, envía real.
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == 'true' && 'true' || 'false' }}
 

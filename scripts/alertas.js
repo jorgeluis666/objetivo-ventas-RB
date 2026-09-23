@@ -69,6 +69,8 @@ const CANAL_ICONS = {
 const salesData  = readJson(path.join(ROOT, 'data/ventas-2026.json'));
 const objData    = readJson(path.join(ROOT, 'data/objetivos-2026.json'));
 const config     = readJson(path.join(ROOT, 'data/alertas-config.json'));
+// La URL del tablero cambia al pasar al hosting de Lima Retail: la variable DASHBOARD_URL del repo manda sobre el JSON.
+if (process.env.DASHBOARD_URL) config.url_dashboard = process.env.DASHBOARD_URL;
 const enviosPath = path.join(ROOT, 'data/alertas-envios.json');
 const enviosData = readJson(enviosPath);
 

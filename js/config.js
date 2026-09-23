@@ -69,6 +69,11 @@
   }
 
   // ── Helpers UI ────────────────────────────────────────────────
+  // Nombre, email y rol vienen del formulario o de localStorage: se escapan antes de ir a innerHTML.
+  function esc(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  }
+
   function showMsg(html, type) {
     const el = document.getElementById('cfg-msg');
     if (!el) return;
@@ -94,7 +99,7 @@
       'Viewer'    : 'muted',
     };
     const cls = map[rol] || 'muted';
-    return `<span class="cfg-pill cfg-pill-${cls}">${rol}</span>`;
+    return `<span class="cfg-pill cfg-pill-${cls}">${esc(rol)}</span>`;
   }
 
   function estadoPill(estado) {
@@ -139,14 +144,14 @@
     <div class="panel cfg-user-card" id="cfg-card-${CSS.escape(u.email)}" style="margin-bottom:12px;">
       <div class="cfg-user-head">
         <div class="cfg-user-info">
-          <div class="cfg-user-name">${u.nombre}</div>
-          <div class="cfg-user-email">${u.email}</div>
+          <div class="cfg-user-name">${esc(u.nombre)}</div>
+          <div class="cfg-user-email">${esc(u.email)}</div>
         </div>
         <div class="cfg-user-actions">
           ${estadoPill(u.estado)}
           ${rolPill(u.rol || 'Admin')}
           ${alertasPill(u.alertas)}
-          <button class="btn ghost btn-sm cfg-edit-btn" data-email="${u.email}">
+          <button class="btn ghost btn-sm cfg-edit-btn" data-email="${esc(u.email)}">
             ${isEditing ? 'Cancelar' : 'Editar'}
           </button>
         </div>
@@ -157,19 +162,19 @@
         <div class="cfg-edit-grid">
           <div class="cfg-field">
             <label class="cfg-label">Clave (email)</label>
-            <input class="inp" type="email" id="cfg-edit-email-${u.email}" value="${u.email}" autocomplete="off">
+            <input class="inp" type="email" id="cfg-edit-email-${esc(u.email)}" value="${esc(u.email)}" autocomplete="off">
           </div>
           <div class="cfg-field">
             <label class="cfg-label">Nombre</label>
-            <input class="inp" type="text" id="cfg-edit-nombre-${u.email}" value="${u.nombre}" autocomplete="off">
+            <input class="inp" type="text" id="cfg-edit-nombre-${esc(u.email)}" value="${esc(u.nombre)}" autocomplete="off">
           </div>
           <div class="cfg-field cfg-field-sm">
             <label class="cfg-label">Orden</label>
-            <input class="inp" type="number" id="cfg-edit-orden-${u.email}" value="${u.orden || 1}" min="1" max="99">
+            <input class="inp" type="number" id="cfg-edit-orden-${esc(u.email)}" value="${esc(u.orden || 1)}" min="1" max="99">
           </div>
           <div class="cfg-field">
             <label class="cfg-label">Rol</label>
-            <select class="inp" id="cfg-edit-rol-${u.email}">
+            <select class="inp" id="cfg-edit-rol-${esc(u.email)}">
               <option value="Superadmin"  ${u.rol === 'Superadmin' ? 'selected' : ''}>Superadmin</option>
               <option value="Admin"       ${u.rol === 'Admin'      ? 'selected' : ''}>Admin</option>
               <option value="Editor"      ${u.rol === 'Editor'     ? 'selected' : ''}>Editor</option>
@@ -179,14 +184,14 @@
           <div class="cfg-field cfg-field-check">
             <label class="cfg-label">Alertas</label>
             <label class="cfg-check-label">
-              <input type="checkbox" id="cfg-edit-alertas-${u.email}" ${u.alertas !== false ? 'checked' : ''}>
+              <input type="checkbox" id="cfg-edit-alertas-${esc(u.email)}" ${u.alertas !== false ? 'checked' : ''}>
               Recibir alerta semanal por email
             </label>
           </div>
         </div>
         <div class="cfg-edit-actions">
-          <button class="btn primary cfg-guardar-btn" data-email="${u.email}">Guardar</button>
-          <button class="btn danger cfg-eliminar-btn" data-email="${u.email}">Eliminar</button>
+          <button class="btn primary cfg-guardar-btn" data-email="${esc(u.email)}">Guardar</button>
+          <button class="btn danger cfg-eliminar-btn" data-email="${esc(u.email)}">Eliminar</button>
         </div>
       </div>` : ''}
     </div>`;
@@ -277,7 +282,7 @@
       document.getElementById('cfg-orden').value  = '';
 
       render();
-      showMsg(`Usuario <strong>${nombre}</strong> agregado.`, 'ok');
+      showMsg(`Usuario <strong>${esc(nombre)}</strong> agregado.`, 'ok');
     });
   }
 

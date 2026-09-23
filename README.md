@@ -28,10 +28,12 @@ Los datos de 2026 se sincronizan automáticamente desde un Google Sheet mediante
     ventas-2026.json      Generado por el pipeline (no editar a mano)
   scripts/
     fetch-data.js         Lee Google Sheets → escribe data/ventas-2026.json
-    build.js              Inlines css+js en dist/index.html para deploy
+    build.js              Inlines css+js en dist/index.html y genera dist/.htaccess
+  deploy/
+    .htaccess             Plantilla de acceso (Basic Auth) y cabeceras de seguridad
   .github/workflows/
     update-data.yml       Sync horario del sheet + workflow_dispatch
-    deploy.yml            Build + deploy a GitHub Pages en cada push a main
+    deploy.yml            Build + deploy al hosting de Lima Retail (FTPS) en cada push a main
 ```
 
 ## Desarrollo local
@@ -60,24 +62,29 @@ El workflow `update-data.yml` corre cada hora y ejecuta `node scripts/fetch-data
 
 Opción A — desde GitHub: `Actions → Actualizar datos de ventas → Run workflow`.
 
-Opción B — desde el dashboard: el botón **Actualizar** dispara el workflow vía la GitHub API si guardaste un Personal Access Token en el modal de ajustes. El token (scope `workflow`) se guarda sólo en tu `localStorage`.
+El botón **Actualizar** del dashboard solo recarga `data/ventas-2026.json` ya publicado. Ya no dispara el workflow: eso exigía guardar un Personal Access Token con scope `workflow` en el navegador, y el tablero lo abren clientes.
 
 ## Deploy
 
 `deploy.yml` corre en cada push a `main`:
 
-1. `npm run build` → genera `dist/index.html` con todos los `.css` y `.js` inlined.
-2. Sube el artifact y publica en GitHub Pages.
+1. `node scripts/build.js` → genera `dist/index.html` con todos los `.css` y `.js` inlined, `dist/data/ventas-2026.json` y `dist/.htaccess`.
+2. Sube `dist/` por FTPS a la carpeta del cliente.
 
-La URL pública queda expuesta en la pestaña `Settings → Pages` del repositorio.
+También corre después de cada actualización de datos. Solo se publica `ventas-2026.json`: `alertas-*.json`, `objetivos-2026.json` y `csv-backups/` nunca salen del repo.
+
+El acceso lo controla Apache con HTTP Basic Auth (una cuenta por cliente); no hay contraseña en el HTML. `dist/.htaccess` se genera desde `deploy/.htaccess` con la ruta del archivo de claves y una CSP con el hash de cada script.
 
 ## Configuración inicial (una vez)
 
 1. En Google Cloud Console: habilitar **Sheets API** y crear un service account.
 2. Descargar el JSON de credenciales y pegar su contenido completo como secret `SERVICE_ACCOUNT_JSON` en `Settings → Secrets → Actions`.
 3. Compartir el spreadsheet con el email del service account (permiso lector).
-4. En `Settings → Pages`, seleccionar source = `GitHub Actions`.
-5. Pushear a main — el primer deploy corre solo.
+4. En cPanel: **Dominios** > activar **Forzar redireccion HTTPS**; **Privacidad de directorios** > carpeta del cliente > activar proteccion y crear el usuario con una contraseña larga y aleatoria. cPanel crea el archivo de claves en `/home/<usuario_cpanel>/.htpasswds/<ruta_de_la_carpeta>/passwd`.
+5. Secrets de Actions: `HTPASSWD_PATH` (ruta del paso 4), `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD` (cuenta FTP limitada a la carpeta del cliente) y `FTP_SERVER_DIR` (carpeta destino terminada en `/`).
+6. Variable de Actions `DASHBOARD_URL`: URL del tablero en el hosting, usada en los correos de alerta.
+7. Desactivar GitHub Pages (`Settings → Pages`) y dejar el repositorio en privado: los datos de ventas no deben quedar publicos.
+8. Pushear a main — el primer deploy corre solo.
 
 ### Ciclo comercial de objetivos
 

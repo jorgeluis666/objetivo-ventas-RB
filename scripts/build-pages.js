@@ -57,6 +57,9 @@ function main() {
     }
   }
 
+  // Imágenes estáticas (logo, favicon)
+  fs.cpSync(path.join(ROOT, 'img'), path.join(DIST_DIR, 'img'), { recursive: true });
+
   const size = (fs.statSync(DIST_HTML).size / 1024).toFixed(1);
   console.log(`[build] dist/index.html (${size} KB)`);
 }

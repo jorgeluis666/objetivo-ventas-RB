@@ -104,6 +104,8 @@ function main() {
   ensureDir(DIST_DIR);
   fs.writeFileSync(DIST_HTML, html, 'utf8');
   copyPublicData();
+  // Imágenes estáticas (logo, favicon)
+  fs.cpSync(path.join(ROOT, 'img'), path.join(DIST_DIR, 'img'), { recursive: true });
   writeHtaccess(html);
 
   const size = (fs.statSync(DIST_HTML).size / 1024).toFixed(1);

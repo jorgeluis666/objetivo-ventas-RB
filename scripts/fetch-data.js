@@ -55,7 +55,8 @@ const COLS_2026 = [
 
 // Cada año con su sheet, meses y layout. 2025 = histórico (año completo),
 // 2026 = en curso. Para 2026 leemos los meses hasta el actual + 1 (cierra
-// margen para meses recién creados). Tabs inexistentes caen al fallback de zeros.
+// margen para meses recién creados). Un tab inexistente del mes en curso o del siguiente cae a zeros
+// (todavía no hay ventas); en un mes cerrado es un error y el pipeline no publica (ver fetchYear).
 function monthsUpToCurrent(year) {
   const all = monthsForYear(year);
   const today = new Date();
@@ -283,11 +284,19 @@ function parseArgs(argv) {
   return args;
 }
 
+// Un mes está cerrado si es de un año anterior o de un mes anterior al actual del año en curso.
+// Sus ventas ya existen: si no se pueden leer, publicar 0 falsearía el tablero.
+function isClosedMonth(year, monthIndex) {
+  const today = new Date();
+  return year < today.getFullYear() || (year === today.getFullYear() && monthIndex < today.getMonth());
+}
+
 async function fetchYear(source, args) {
   const totals = {};
   const weekly = {};
   const transactions = {};
   const dailyRows = [];
+  const failures = [];
 
   // Diagnóstico: tabs que efectivamente existen en el spreadsheet
   let availableTabs = null;
@@ -298,6 +307,7 @@ async function fetchYear(source, args) {
       console.log(`[fetch ${source.year}] tabs en el sheet: ${probe.map(t => `"${t}"`).join(', ')}`);
     } else {
       console.error(`[fetch ${source.year}] no pude listar tabs: ${probe.error}`);
+      failures.push(`${source.year}: no se pudieron listar las pestañas (${probe.error})`);
     }
   }
 
@@ -309,6 +319,7 @@ async function fetchYear(source, args) {
 
     if (availableTabs && !resolvedSheet) {
       console.error(`  ! ${source.year} ${m.sheet}: no hay tab que coincida (case-insensitive)`);
+      if (isClosedMonth(source.year, m.monthIndex)) failures.push(`${source.year} ${m.sheet}: falta la pestaña de un mes cerrado`);
       totals[m.name] = Object.fromEntries(source.cols.map(c => [c.title, 0]));
       transactions[m.name] = Object.fromEntries(source.cols.map(c => [c.upper, 0]));
       weekly[m.name] = [];
@@ -324,6 +335,11 @@ async function fetchYear(source, args) {
         : await loadRowsFromApi(effectiveMonth, source.id, source.range);
     } catch (err) {
       console.error(`  ! ${source.year} ${effectiveMonth.sheet}: ${err.message}`);
+      // En la API el tab existe (se resolvió arriba), así que cualquier error es real. Con --csv-dir un
+      // CSV ausente del mes en curso o del siguiente solo significa que aún no se exportó.
+      if (!args.csvDir || isClosedMonth(source.year, m.monthIndex)) {
+        failures.push(`${source.year} ${effectiveMonth.sheet}: ${err.message}`);
+      }
       totals[m.name] = Object.fromEntries(source.cols.map(c => [c.title, 0]));
       transactions[m.name] = Object.fromEntries(source.cols.map(c => [c.upper, 0]));
       weekly[m.name] = [];
@@ -340,7 +356,7 @@ async function fetchYear(source, args) {
     console.log(`  ${source.year} · ${m.name}: S/. ${monthTotal.toLocaleString('es-PE')} · ${parsed.weeklyTotals.length} semanas`);
   }
 
-  return { totals, weekly, transactions, dailyRows };
+  return { totals, weekly, transactions, dailyRows, failures };
 }
 
 function commercialPeriodDays(year, targetMonthIndex) {
@@ -427,6 +443,15 @@ async function main() {
   const results = {};
   for (const src of SOURCES) {
     results[src.year] = await fetchYear(src, args);
+  }
+
+  // Si alguna lectura falló, no se reescribe el JSON: queda publicado el último dato válido y el
+  // workflow termina en rojo (no hay commit ni deploy). Antes el mes fallido se publicaba en S/. 0.
+  const failures = Object.values(results).flatMap(result => result.failures);
+  if (failures.length) {
+    console.error(`[fetch] ${failures.length} lectura(s) fallida(s); se conserva ${OUTPUT_PATH} sin cambios:`);
+    failures.forEach(failure => console.error(`  - ${failure}`));
+    process.exit(1);
   }
 
   // Timestamp en hora Lima (UTC-5). Perú no aplica horario de verano.

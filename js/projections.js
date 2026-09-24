@@ -31,7 +31,7 @@
   }
 
   // ── Cálculo de ritmo mensual ──────────────────────────────────
-  function calcPacing(mes, adsData, targets) {
+  function calcPacing(mes, adsData, targets, wooData) {
     const md = (adsData?.meses || {})[mes];
     if (!md) return null;
 
@@ -44,10 +44,17 @@
     const metaIn = md.meta?.interaccion || {};
     const gSearch = md.google?.search || {};
 
-    // Ventas digitales acumuladas (Meta E-Com + Google Search + WhatsApp atribuido)
+    // Fuente 1: Meta E-Commerce — ventas atribuidas por Meta Ads
     const ventasMetaEc = metaEc.valor  || 0;
+    // Fuente 3: Google Ads — ventas atribuidas por Google
     const ventasGoogle = gSearch.valor || 0;
-    const ventasWa     = (metaWa.compras || 0) * (metaEc.valor && metaEc.compras ? metaEc.valor / metaEc.compras : 285);
+    // Fuente 2: WhatsApp — inversión de Meta Ads + ventas reales de WooCommerce
+    const wooMes = wooData?.[mes] || {};
+    const ventasWa = wooMes.WhatsApp > 0 ? wooMes.WhatsApp
+      : (metaWa.compras || 0) * (metaEc.valor && metaEc.compras ? metaEc.valor / metaEc.compras : 285);
+    // Fuente 4: WooCommerce total (dato duro)
+    const wooTotal = Object.values(wooMes).reduce((s, v) => s + (typeof v === 'number' ? v : 0), 0);
+    const wooWeb   = wooMes.Web || 0;
 
     const gastoTotal  = (metaEc.gasto || 0) + (metaWa.gasto || 0) + (metaIn.gasto || 0) + (gSearch.gasto || 0);
     const ventasTotal = ventasMetaEc + ventasGoogle + ventasWa;
@@ -82,10 +89,13 @@
 
     return {
       mes, diasEnMes, diasConDatos, diasRestantes,
+      // WooCommerce real
+      wooTotal, wooWeb, wooMes,
       // Fuentes individuales
       fuentes: {
         metaEcommerce: {
           nombre: metaEc.nombre || 'Meta E-Commerce',
+          fuente: 'Meta Ads',
           gasto: metaEc.gasto || 0,
           ventas: ventasMetaEc,
           compras: metaEc.compras || 0,
@@ -95,9 +105,11 @@
           impresiones: metaEc.impresiones || 0,
           alcance: metaEc.alcance || 0,
           color: '#1877F2',
+          roasSource: 'Meta Ads',
         },
         googleSearch: {
           nombre: gSearch.nombre || 'Google Search',
+          fuente: 'Google Ads',
           gasto: gSearch.gasto || 0,
           ventas: ventasGoogle,
           conversiones: gSearch.conversiones || 0,
@@ -108,11 +120,15 @@
           impresiones: gSearch.impresiones || 0,
           clics: gSearch.clics || 0,
           color: '#4285F4',
+          roasSource: 'Google Ads',
         },
         metaWhatsapp: {
           nombre: metaWa.nombre || 'Meta WhatsApp',
+          // inversión de Meta Ads, ventas de WooCommerce
+          fuente: 'Meta Ads (gasto) · WooCommerce (ventas)',
           gasto: metaWa.gasto || 0,
           ventas: ventasWa,
+          ventasWoo: wooMes.WhatsApp || 0,
           conversaciones: metaWa.conversaciones || 0,
           compras: metaWa.compras || 0,
           roas: metaWa.gasto > 0 ? ventasWa / metaWa.gasto : 0,
@@ -120,9 +136,11 @@
           impresiones: metaWa.impresiones || 0,
           alcance: metaWa.alcance || 0,
           color: '#25D366',
+          roasSource: 'WooCommerce',
         },
         metaInteraccion: {
           nombre: metaIn.nombre || 'Campaña Interacción',
+          fuente: 'Meta Ads',
           gasto: metaIn.gasto || 0,
           impresiones: metaIn.impresiones || 0,
           alcance: metaIn.alcance || 0,
@@ -156,12 +174,12 @@
       btn.addEventListener('click', () => {
         _mesActivo = btn.dataset.mes;
         el.querySelectorAll('.proj-mes-btn').forEach(b => b.classList.toggle('active', b.dataset.mes === _mesActivo));
-        renderMes(_adsData, _targets);
+        renderMes(_adsData, _targets, _d2026);
       });
     });
   }
 
-  // ── KPI strip ────────────────────────────────────────────────
+  // ── KPI strip — 4 fuentes ───────────────────────────────────
   function renderKpis(p) {
     const el = document.getElementById('kpi-proj');
     if (!el) return;
@@ -172,30 +190,46 @@
       return;
     }
 
-    const progColor = p.progresoPct >= 1 ? 'var(--green-text)' : p.progresoPct >= 0.8 ? 'var(--amber-text)' : 'var(--red-text)';
+    const f = p.fuentes;
     const brechaColor = p.brecha >= 0 ? 'var(--green-text)' : 'var(--red-text)';
     const brechaSign  = p.brecha >= 0 ? '+' : '';
 
-    el.innerHTML = `
-      <div class="kpi-pill">
-        <span>Gasto acumulado</span>
-        <strong>${fmtS(p.gastoTotal)}</strong>
-        <small>Día ${p.diasConDatos} de ${p.diasEnMes} · ${p.diasRestantes} días restantes</small>
-      </div>
-      <div class="kpi-pill">
-        <span>Ventas generadas</span>
-        <strong>${fmtS(p.ventasTotal)}</strong>
-        <small>ROAS ${fmtR(p.roasActual)} · ~${fmtS(p.tasaVentasDia)}/día</small>
-      </div>
-      <div class="kpi-pill">
-        <span>Proyección fin de mes</span>
-        <strong style="color:${progColor};">${fmtS(p.ventasProyectadas)}</strong>
-        <small>${(p.progresoPct * 100).toFixed(1)}% del objetivo · obj: ${fmtS(p.objTotal)}</small>
-      </div>
-      <div class="kpi-pill">
-        <span>Brecha vs objetivo</span>
-        <strong style="color:${brechaColor};">${brechaSign}${fmtS(p.brecha)}</strong>
-        <small>${p.brecha >= 0 ? 'Por encima del objetivo' : 'Por debajo — ver recálculo'}</small>
+    // Pill helper
+    const pill = (num, color, label, sublabel, val, sub1, sub2) => `
+      <div class="kpi-pill proj-kpi-src">
+        <div class="proj-kpi-num" style="background:${color};">${num}</div>
+        <div class="proj-kpi-body">
+          <span class="proj-kpi-label">${label} <em>${sublabel}</em></span>
+          <strong>${val}</strong>
+          <small>${sub1}</small>
+          ${sub2 ? `<small>${sub2}</small>` : ''}
+        </div>
+      </div>`;
+
+    el.innerHTML =
+      pill(1, '#1877F2', 'Meta E-Commerce', '· Meta Ads',
+        fmtS(f.metaEcommerce.ventas),
+        `Gasto ${fmtS(f.metaEcommerce.gasto)} · ROAS ${fmtR(f.metaEcommerce.roas)}`,
+        `${f.metaEcommerce.compras} compras atribuidas por Meta`) +
+
+      pill(2, '#25D366', 'WhatsApp', '· Meta Ads + WooCommerce',
+        fmtS(f.metaWhatsapp.ventas),
+        `Gasto Meta ${fmtS(f.metaWhatsapp.gasto)} · ROAS real ${fmtR(f.metaWhatsapp.roas)}`,
+        `Ventas WooCommerce canal WhatsApp`) +
+
+      pill(3, '#4285F4', 'Google Search', '· Google Ads',
+        fmtS(f.googleSearch.ventas),
+        `Gasto ${fmtS(f.googleSearch.gasto)} · ROAS ${fmtR(f.googleSearch.roas)}`,
+        `${f.googleSearch.conversiones} conv. · ${fmt(f.googleSearch.clics)} clics`) +
+
+      `<div class="kpi-pill proj-kpi-src">
+        <div class="proj-kpi-num" style="background:#7c3aed;">4</div>
+        <div class="proj-kpi-body">
+          <span class="proj-kpi-label">WooCommerce Total <em>· dato real</em></span>
+          <strong>${fmtS(p.wooTotal)}</strong>
+          <small>Web ${fmtS(p.wooWeb)} · WA ${fmtS(p.wooMes.WhatsApp||0)} · IG ${fmtS(p.wooMes.Instagram||0)}</small>
+          <small style="color:${brechaColor};">${brechaSign}${fmtS(p.brecha)} vs objetivo ${fmtS(p.objTotal)}</small>
+        </div>
       </div>`;
   }
 
@@ -219,9 +253,9 @@
         {label:'Ventas', val: fmtS(f.metaEcommerce.ventas)},
         {label:'Alcance', val: fmt(f.metaEcommerce.alcance)},
       ])}
-      ${srcCardHTML('wa', f.metaWhatsapp.color, 'Meta → WhatsApp', 'Tráfico a mensajes directos', f.metaWhatsapp, p, [
+      ${srcCardHTML('wa', f.metaWhatsapp.color, 'Meta → WhatsApp', 'Gasto: Meta Ads · Ventas: WooCommerce', f.metaWhatsapp, p, [
         {label:'Conversaciones', val: fmt(f.metaWhatsapp.conversaciones)},
-        {label:'Compras attr.', val: f.metaWhatsapp.compras},
+        {label:'Ventas WooCommerce', val: fmtS(f.metaWhatsapp.ventasWoo || f.metaWhatsapp.ventas)},
         {label:'Alcance', val: fmt(f.metaWhatsapp.alcance)},
       ])}
       ${srcCardHTML('goog', f.googleSearch.color, 'Google Search', 'Búsquedas pagas · Search | LR', f.googleSearch, p, [
@@ -575,8 +609,8 @@
   }
 
   // ── Render del mes activo ────────────────────────────────────
-  function renderMes(adsData, targets) {
-    const p = calcPacing(_mesActivo, adsData, targets);
+  function renderMes(adsData, targets, d2026) {
+    const p = calcPacing(_mesActivo, adsData, targets, d2026);
     renderKpis(p);
     renderFuentes(p);
     renderChartPace(p);
@@ -584,15 +618,18 @@
     renderRecalculo(p);
   }
 
+  let _d2026 = null;
+
   // ── Render público ───────────────────────────────────────────
   function render({ d2026, targets, adsData }) {
     _adsData  = adsData  || _adsData;
     _targets  = targets  || _targets;
+    _d2026    = d2026    || _d2026;
 
     if (!_mesActivo) _mesActivo = detectMesActivo(_adsData);
 
     renderMesSelector(_adsData);
-    renderMes(_adsData, _targets);
+    renderMes(_adsData, _targets, _d2026);
   }
 
   global.Projections = { render };

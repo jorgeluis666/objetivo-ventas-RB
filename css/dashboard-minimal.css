@@ -1305,6 +1305,56 @@
   font-size: 10px;
 }
 
+/* ── KPI pills por fuente (4 orígenes) ── */
+.proj-kpi-src {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: unset;
+  padding: 12px 14px;
+}
+.proj-kpi-num {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+.proj-kpi-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.proj-kpi-label {
+  display: block !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .04em !important;
+  color: var(--muted) !important;
+}
+.proj-kpi-label em {
+  font-style: normal;
+  font-weight: 500;
+  color: var(--muted);
+  opacity: .75;
+}
+.proj-kpi-body strong {
+  margin-top: 4px !important;
+  font-size: 18px !important;
+}
+.proj-kpi-body small {
+  margin-top: 2px !important;
+}
+
 /* ── Canal cards ── */
 .proj-ch-grid {
   display: grid;

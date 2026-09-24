@@ -2063,3 +2063,105 @@ tbody tr:hover td {
 .pb-ruler .pb-close-pin:last-child {
   transform: translateX(-100%);
 }
+
+/* ── Sidebar minimizable ──────────────────────────────────────
+   .shell.sidebar-collapsed → en escritorio queda un riel de iconos;
+   en móvil (<900px) el panel se oculta por completo. */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.sidebar-toggle {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.sidebar-toggle:hover {
+  background: #f8fbff;
+  border-color: #bfdbfe;
+  color: var(--brand);
+}
+
+.sidebar-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .25);
+}
+
+.sidebar-toggle svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sidebar-toggle .st-arrow {
+  transform-origin: 13.5px 12px;
+  transition: transform .2s ease;
+}
+
+.shell.sidebar-collapsed .sidebar-toggle .st-arrow {
+  transform: scaleX(-1);
+}
+
+.sidebar {
+  transition: width .2s ease, min-width .2s ease, padding .2s ease;
+}
+
+@media (min-width: 901px) {
+  .shell.sidebar-collapsed .sidebar {
+    width: 88px;
+    min-width: 88px;
+    padding: 20px 12px;
+    overflow-x: hidden;
+  }
+
+  .shell.sidebar-collapsed .s-brand {
+    grid-template-columns: 48px;
+    padding: 0 0 16px;
+    justify-content: center;
+  }
+
+  .shell.sidebar-collapsed .s-brand .s-title,
+  .shell.sidebar-collapsed .s-brand .s-sub,
+  .shell.sidebar-collapsed .s-group-lbl,
+  .shell.sidebar-collapsed .s-text,
+  .shell.sidebar-collapsed .s-chevron,
+  .shell.sidebar-collapsed .s-modulo-activo {
+    display: none;
+  }
+
+  .shell.sidebar-collapsed .s-group-lbl[style*="margin-top:auto"] {
+    display: block;
+    visibility: hidden;
+    height: 0;
+    padding: 0;
+  }
+
+  .shell.sidebar-collapsed .s-item {
+    grid-template-columns: 44px;
+    justify-content: center;
+    min-height: 0;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 900px) {
+  .shell.sidebar-collapsed .sidebar {
+    display: none;
+  }
+}

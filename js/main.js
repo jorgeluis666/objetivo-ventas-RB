@@ -114,6 +114,33 @@
     });
   }
 
+  // ── Sidebar minimizable (estado recordado por navegador) ──
+  const SIDEBAR_KEY = 'rb-sidebar-collapsed';
+
+  function setSidebarCollapsed(collapsed) {
+    document.querySelector('.shell')?.classList.toggle('sidebar-collapsed', collapsed);
+    const btn = document.getElementById('sidebar-toggle');
+    if (btn) {
+      btn.setAttribute('aria-expanded', String(!collapsed));
+      btn.title = collapsed ? 'Expandir panel' : 'Minimizar panel';
+    }
+    try { localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0'); } catch (e) { /* storage no disponible */ }
+  }
+
+  function wireSidebarToggle() {
+    // En modo minimizado solo se ven los iconos: el nombre del módulo va como tooltip
+    document.querySelectorAll('.s-item[data-view]').forEach(btn => {
+      const name = btn.querySelector('.s-title-nav')?.textContent;
+      if (name && !btn.title) btn.title = name;
+    });
+    let collapsed = false;
+    try { collapsed = localStorage.getItem(SIDEBAR_KEY) === '1'; } catch (e) { /* storage no disponible */ }
+    setSidebarCollapsed(collapsed);
+    document.getElementById('sidebar-toggle')?.addEventListener('click', () => {
+      setSidebarCollapsed(!document.querySelector('.shell').classList.contains('sidebar-collapsed'));
+    });
+  }
+
   // ── YoY ──
   const tot = o => channels.reduce((s, c) => s + (o[c] || 0), 0);
   const fmt = n => Math.round(n).toLocaleString('es-PE');
@@ -435,6 +462,7 @@
     Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif';
 
     wireNav();
+    wireSidebarToggle();
     const hashView = window.location.hash.slice(1);
     showView(Object.keys(VIEW_TITLES).includes(hashView) ? hashView : 'view-yoy');
 

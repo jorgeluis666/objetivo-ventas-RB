@@ -435,7 +435,8 @@
     window.Objectives.wireObjToolbar?.();
 
     if (state.renderedProducts) renderProducts();
-    if (state.projInited && state.adsData) {
+    if (state.adsData) {
+      state.projInited = true;
       window.Projections?.render({ d2026: state.d2026, targets: ds.defaultTargets, adsData: state.adsData });
     }
     window.Sheets.updateGenerated(state.generated);
@@ -470,7 +471,17 @@
     const [live] = await Promise.all([
       window.DataLive.load(),
       fetch('data/ads-data.json').then(r => r.ok ? r.json() : null)
-        .then(ads => { state.adsData = ads; })
+        .then(ads => {
+          state.adsData = ads;
+          // Si ya estamos en la vista de proyecciones y aún no se inicializó, hacerlo ahora
+          if (ads && !state.projInited) {
+            const projView = document.getElementById('view-proj');
+            if (projView && projView.classList.contains('visible')) {
+              state.projInited = true;
+              window.Projections?.render({ d2026: state.d2026, targets: ds.defaultTargets, adsData: ads });
+            }
+          }
+        })
         .catch(() => {}),
     ]);
     if (live.source === 'fallback') {

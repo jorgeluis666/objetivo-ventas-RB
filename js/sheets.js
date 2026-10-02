@@ -62,6 +62,11 @@
   // ── Recarga data/ventas-2026.json (la última versión publicada) ──
   async function reload() {
     setLoading(true);
+    // Publicado, los datos vienen dentro de la página: la última versión llega recargándola.
+    if (global.DataLive.embedded) {
+      global.location.reload();
+      return;
+    }
     try {
       const live = await global.DataLive.load();
       if (live.source !== 'live') throw new Error(live.error || 'sin datos');

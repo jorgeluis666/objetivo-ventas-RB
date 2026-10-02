@@ -467,10 +467,14 @@
     const hashView = window.location.hash.slice(1);
     showView(Object.keys(VIEW_TITLES).includes(hashView) ? hashView : 'view-yoy');
 
-    // Carga paralela: datos de ventas + datos de campañas publicitarias
+    // Carga paralela: datos de ventas + datos de campañas publicitarias.
+    // Publicado, ads-data.json viene incrustado por scripts/build.js; en local se lee de data/.
+    const adsRequest = window.RB_ADS_DATA
+      ? Promise.resolve(window.RB_ADS_DATA)
+      : fetch('data/ads-data.json').then(r => r.ok ? r.json() : null);
     const [live] = await Promise.all([
       window.DataLive.load(),
-      fetch('data/ads-data.json').then(r => r.ok ? r.json() : null)
+      adsRequest
         .then(ads => {
           state.adsData = ads;
           // Si ya estamos en la vista de proyecciones y aún no se inicializó, hacerlo ahora

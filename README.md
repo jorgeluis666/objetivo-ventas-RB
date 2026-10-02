@@ -1,4 +1,4 @@
-# Lima Retail · Dashboard de Ventas 2026
+# Royal Baby · Dashboard de Ventas 2026
 
 Dashboard de ventas por canal (Tienda, Web, WhatsApp, Showroom, Instagram, Facebook) con comparativo YoY, distribución, análisis de productos web y simulador de objetivos.
 
@@ -8,32 +8,45 @@ resumen copiable y exportación a Excel.
 
 Los datos de 2026 se sincronizan automáticamente desde un Google Sheet mediante un pipeline que corre en GitHub Actions.
 
+Publicado en **https://royalbaby.limaretail.com**, con clave.
+
 ## Estructura
 
 ```
 /
   index.html              Shell HTML (carga módulos separados)
+  CNAME                   Dominio del sitio (el build lo copia a dist/)
+  assets/
+    logo-royal-baby.jpg   Logo y favicon
+    login-bg.jpg          Fondo de la pantalla de acceso
   css/
     ds.css                Design system (tokens + componentes)
-    dashboard.css         Estilos específicos del dashboard
+    dashboard-minimal.css Estilos del dashboard
   js/
     data-static.js        Datos 2025, productos web, targets por defecto
-    data-live.js          Fetcher de data/ventas-2026.json
+    data-live.js          Datos 2026: incrustados en el sitio publicado, data/ventas-2026.json en local
     charts.js             Instancias de Chart.js
     objectives.js         Vista de Objetivos (pace tracker, weekly charts)
+    config.js             Usuarios y destinatarios de alertas
+    sheets.js             Indicador de sync + botón Actualizar
     meta-planner.js       Planificador Meta Ads por cliente
-    sheets.js             Indicador de sync + trigger de workflow
+    projections.js        Módulo Proyecciones
     main.js               Orquestación: init, navegación, render
   data/
     ventas-2026.json      Generado por el pipeline (no editar a mano)
+    ads-data.json         Inversión publicitaria para Proyecciones
   scripts/
     fetch-data.js         Lee Google Sheets → escribe data/ventas-2026.json
-    build.js              Inlines css+js en dist/index.html y genera dist/.htaccess
+    build.js              Arma dist/ (HTML con todo incrustado, cifrado con la clave)
+    alertas.js            Correo semanal de alertas
+    weekly-check.js       Revisión semanal del pipeline
   deploy/
-    .htaccess             Plantilla de acceso (Basic Auth) y cabeceras de seguridad
+    pages-gate.html       Pantalla de acceso que descifra el tablero
   .github/workflows/
-    update-data.yml       Sync horario del sheet + workflow_dispatch
-    deploy.yml            Build + deploy al hosting de Lima Retail (FTPS) en cada push a main
+    update-data.yml       Sync del sheet (lunes) + workflow_dispatch
+    deploy.yml            Build cifrado + deploy a GitHub Pages
+    alertas-semanales.yml Correo semanal después de cada actualización
+    weekly-check.yml      Revisión semanal del pipeline
 ```
 
 ## Desarrollo local
@@ -43,7 +56,7 @@ npm install
 npm run dev          # live-server en http://localhost:3000
 ```
 
-Si el navegador no tiene `data/ventas-2026.json`, el dashboard muestra un banner de error. Para generarlo desde un sheet privado (una sola vez):
+En local el tablero se abre sin clave y lee `data/ventas-2026.json` y `data/ads-data.json`. Si falta `data/ventas-2026.json`, muestra un banner de error. Para generarlo desde el sheet privado (una sola vez):
 
 1. Crear un service account en Google Cloud Console con permiso de lectura de Sheets API.
 2. Descargar el JSON y guardarlo en `credentials/service-account.json` (ignorado por git).
@@ -56,35 +69,45 @@ npm run fetch
 
 ## Pipeline de datos
 
-El workflow `update-data.yml` corre cada hora y ejecuta `node scripts/fetch-data.js` usando el secreto `SERVICE_ACCOUNT_JSON` (JSON del service account pegado entero como secreto del repo). Si hay cambios en `data/ventas-2026.json`, commitea a `main`, lo que dispara el deploy.
+El workflow `update-data.yml` corre los lunes (tres pasadas, para cubrir distintos horarios de carga del sheet) y ejecuta `node scripts/fetch-data.js` con el secret `SERVICE_ACCOUNT_JSON` (JSON del service account pegado entero). Si hay cambios en `data/ventas-2026.json`, commitea a `main`. Ese commit lo hace `GITHUB_TOKEN`, que no dispara otros workflows: el deploy y las alertas se encadenan con `workflow_run` al terminar la actualización.
 
-### Forzar una sincronización inmediata
+Si la lectura de un mes cerrado falla, el script se detiene sin escribir: queda publicado el último JSON válido y el workflow termina en rojo.
 
-Opción A — desde GitHub: `Actions → Actualizar datos de ventas → Run workflow`.
+Para forzar una sincronización: `Actions → Actualizar datos de ventas → Run workflow`.
 
-El botón **Actualizar** del dashboard solo recarga `data/ventas-2026.json` ya publicado. Ya no dispara el workflow: eso exigía guardar un Personal Access Token con scope `workflow` en el navegador, y el tablero lo abren clientes.
+El botón **Actualizar** del dashboard recarga la página para traer la última versión publicada. No dispara el workflow: eso exigiría guardar un token de GitHub en el navegador, y el tablero lo abren clientes.
 
-## Deploy
+## Publicación y acceso
 
-`deploy.yml` corre en cada push a `main`:
+`deploy.yml` corre en cada push a `main`, después de cada actualización de datos y a mano (`Run workflow`):
 
-1. `node scripts/build.js` → genera `dist/index.html` con todos los `.css` y `.js` inlined, `dist/data/ventas-2026.json` y `dist/.htaccess`.
-2. Sube `dist/` por FTPS a la carpeta del cliente.
+1. `node scripts/build.js` incrusta en `dist/index.html` el CSS, todos los `js/` y los datos (`ventas-2026.json` y `ads-data.json`). Falla si `index.html` carga algún archivo local que no se pueda incrustar o publicar.
+2. Con el secret `RB_PAGE_PASSWORD` cifra ese HTML (AES-256-GCM, llave PBKDF2-SHA256 de 600 000 iteraciones) dentro de `deploy/pages-gate.html`. El navegador lo descifra con la clave; sin ella, el HTML publicado no muestra nada del tablero.
+3. Sube `dist/` a GitHub Pages: solo `index.html`, `assets/` y `CNAME`. `data/`, `scripts/`, los CSV y este README no se publican.
 
-También corre después de cada actualización de datos. Solo se publica `ventas-2026.json`: `alertas-*.json`, `objetivos-2026.json` y `csv-backups/` nunca salen del repo.
+El workflow falla si falta el secret o si `dist/index.html` sale sin cifrar.
 
-El acceso lo controla Apache con HTTP Basic Auth (una cuenta por cliente); no hay contraseña en el HTML. `dist/.htaccess` se genera desde `deploy/.htaccess` con la ruta del archivo de claves y una CSP con el hash de cada script.
+Al entrar, la llave derivada (no la clave) queda en `sessionStorage`: la clave se pide en cada pestaña nueva y otra vez después de cada deploy.
+
+El repositorio es público: lo que está en `data/` y en el historial se puede ver en GitHub aunque el sitio tenga clave.
+
+### Cambiar la clave
+
+1. `Settings → Secrets and variables → Actions → RB_PAGE_PASSWORD → Update secret`.
+2. `Actions → Deploy a GitHub Pages → Run workflow`.
+
+Las sesiones abiertas con la clave anterior siguen hasta que se cierre la pestaña o haya otro deploy.
 
 ## Configuración inicial (una vez)
 
 1. En Google Cloud Console: habilitar **Sheets API** y crear un service account.
-2. Descargar el JSON de credenciales y pegar su contenido completo como secret `SERVICE_ACCOUNT_JSON` en `Settings → Secrets → Actions`.
+2. Pegar el JSON de credenciales completo como secret `SERVICE_ACCOUNT_JSON` en `Settings → Secrets and variables → Actions`.
 3. Compartir el spreadsheet con el email del service account (permiso lector).
-4. En cPanel: **Dominios** > activar **Forzar redireccion HTTPS**; **Privacidad de directorios** > carpeta del cliente > activar proteccion y crear el usuario con una contraseña larga y aleatoria. cPanel crea el archivo de claves en `/home/<usuario_cpanel>/.htpasswds/<ruta_de_la_carpeta>/passwd`.
-5. Secrets de Actions: `HTPASSWD_PATH` (ruta del paso 4), `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD` (cuenta FTP limitada a la carpeta del cliente) y `FTP_SERVER_DIR` (carpeta destino terminada en `/`).
-6. Variable de Actions `DASHBOARD_URL`: URL del tablero en el hosting, usada en los correos de alerta.
-7. Desactivar GitHub Pages (`Settings → Pages`) y dejar el repositorio en privado: los datos de ventas no deben quedar publicos.
-8. Pushear a main — el primer deploy corre solo.
+4. Secret `RB_PAGE_PASSWORD`: clave de acceso al tablero (16 caracteres o más).
+5. Secret `RESEND_API_KEY` para el correo de alertas. Opcional: variable `DASHBOARD_URL` si el enlace del correo debe ser otro que el de `data/alertas-config.json`.
+6. DNS de `limaretail.com`: registro CNAME `royalbaby` → `jorgeluis666.github.io`.
+7. `Settings → Pages`: Source **GitHub Actions**, Custom domain `royalbaby.limaretail.com` y **Enforce HTTPS**.
+8. Pushear a `main`: el deploy corre solo.
 
 ### Ciclo comercial de objetivos
 

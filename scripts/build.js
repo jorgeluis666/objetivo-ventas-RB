@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 /**
- * build.js — concatena index.html + css/ + js/ en un único archivo
- * dist/index.html para publicar en el hosting de Lima Retail.
+ * build.js — arma dist/ para GitHub Pages (https://royalbaby.limaretail.com).
  *
- * Uso: HTPASSWD_PATH=/home/<usuario>/.htpasswds/<carpeta>/passwd node scripts/build.js
- * Salida: dist/index.html, dist/data/ventas-2026.json y dist/.htaccess.
- * Nada más: csv-backups, alertas-*.json y objetivos-2026.json no se publican.
+ * Salida: dist/index.html, dist/assets/ y dist/CNAME. Nada más: data/, scripts/ y README no se publican.
+ * index.html lleva incrustados el CSS, todos los js/ y los datos (ventas-2026.json y ads-data.json).
+ *
+ * Con RB_PAGE_PASSWORD el tablero se cifra (AES-256-GCM, llave PBKDF2-SHA256 de 600 000 iteraciones)
+ * dentro de deploy/pages-gate.html, que lo descifra en el navegador con la clave. Sin la variable,
+ * dist/index.html queda en claro: sirve solo para probar en local (el workflow no publica sin clave).
+ *
+ * Uso: RB_PAGE_PASSWORD=<clave> node scripts/build.js
  */
 
 const crypto = require('crypto');
@@ -16,101 +20,112 @@ const ROOT      = path.join(__dirname, '..');
 const DIST_DIR  = path.join(ROOT, 'dist');
 const DIST_HTML = path.join(DIST_DIR, 'index.html');
 
-// Único dato que el tablero pide por fetch (js/data-live.js). Lista blanca: los demás JSON de
-// data/ son configuración interna (destinatarios de alertas, registro de envíos) o insumos del
-// pipeline, y no deben quedar descargables.
-const PUBLIC_DATA = ['ventas-2026.json', 'ads-data.json'];
+const PBKDF2_ITERATIONS = 600000;
+
+// Datos que usa el tablero: viajan dentro del HTML (cifrado), nunca como archivos sueltos en dist/.
+// Los demás JSON de data/ (destinatarios y registro de alertas, objetivos) y los CSV no se publican.
+const EMBEDDED_DATA = {
+  RB_VENTAS_DATA: 'data/ventas-2026.json',
+  RB_ADS_DATA:    'data/ads-data.json',
+};
 
 function readFile(rel) {
   return fs.readFileSync(path.join(ROOT, rel), 'utf8');
 }
 
+// Un "</script>" o "</style>" dentro de un archivo incrustado cerraría la etiqueta antes de tiempo.
+function assertEmbeddable(rel, content, tag) {
+  if (new RegExp(`</${tag}`, 'i').test(content)) throw new Error(`${rel} contiene </${tag}> y no se puede incrustar`);
+  return content;
+}
+
+// Todos los reemplazos usan funciones: con una cadena de reemplazo, un "$&" o "$'" dentro del
+// código o de los datos se interpretaría como patrón y rompería el resultado.
 function inlineCss(html) {
-  return html.replace(
-    /<link\s+rel="stylesheet"\s+href="([^"]+)"\s*>/g,
-    (match, href) => {
-      if (/^https?:\/\//.test(href)) return match;
-      const css = readFile(href);
-      return `<style>\n/* ${href} */\n${css}\n</style>`;
-    }
-  );
+  return html.replace(/<link rel="stylesheet" href="(css\/[\w.-]+\.css)">/g, (_, href) => {
+    // Incrustado, el CSS se resuelve desde dist/index.html: '../assets/' pasa a 'assets/'.
+    const css = assertEmbeddable(href, readFile(href), 'style').replaceAll('../assets/', 'assets/');
+    return `<style>\n/* ${href} */\n${css}\n</style>`;
+  });
 }
 
+// Se incrustan en el orden de index.html todos los js/ que carga: no hay otra lista que mantener.
 function inlineScripts(html) {
-  return html.replace(
-    /<script\s+src="([^"]+)"\s*><\/script>/g,
-    (match, src) => {
-      if (/^https?:\/\//.test(src)) return match;
-      const js = readFile(src);
-      // Mantener los scripts en orden: reemplazar por bloques inline
-      return `<script>\n/* ${src} */\n${js}\n</script>`;
-    }
-  );
+  return html.replace(/<script src="(js\/[\w.-]+\.js)"><\/script>/g, (_, src) => {
+    const js = assertEmbeddable(src, readFile(src), 'script');
+    return `<script>\n/* ${src} */\n${js}\n</script>`;
+  });
 }
 
-function ensureDir(dir) {
-  fs.mkdirSync(dir, { recursive: true });
+function embedData(html) {
+  const assignments = Object.entries(EMBEDDED_DATA).map(([name, rel]) => {
+    // JSON.parse valida el archivo; '<' es el texto "<" escapado para que nada cierre el <script>.
+    const json = JSON.stringify(JSON.parse(readFile(rel))).replace(/</g, '\\u003c');
+    return `window.${name} = ${json};`;
+  });
+  if (html.split('</head>').length !== 2) throw new Error('index.html debe tener un solo </head>');
+  return html.replace('</head>', () => `<script>\n${assignments.join('\n')}\n</script>\n</head>`);
 }
 
-function copyPublicData() {
-  const destData = path.join(DIST_DIR, 'data');
-  ensureDir(destData);
-  for (const name of PUBLIC_DATA) {
-    fs.copyFileSync(path.join(ROOT, 'data', name), path.join(destData, name));
+// dist/ solo lleva index.html, assets/ y CNAME: cualquier otro archivo local quedaría roto al publicar.
+function checkLocalReferences(rawHtml, html) {
+  if (/<link[^>]*rel="stylesheet"[^>]*href="(?!https:)|<script[^>]*src="(?!https:)/.test(html)) {
+    throw new Error('index.html carga un css o js local que el build no incrusta');
+  }
+  for (const [, ref] of rawHtml.matchAll(/\s(?:src|href)="([^"]*)"/g)) {
+    if (/^(https:|#|data:|mailto:|css\/|js\/)/.test(ref)) continue;
+    if (!ref.startsWith('assets/')) throw new Error(`index.html usa ${ref}, que no se publica (solo assets/)`);
+    if (!fs.existsSync(path.join(ROOT, ref))) throw new Error(`falta ${ref}`);
   }
 }
 
-// El acceso lo controla Apache (HTTP Basic Auth), no el navegador. HTPASSWD_PATH es la ruta absoluta
-// del archivo de claves en el servidor (la que crea cPanel > Privacidad de directorios). Si falta,
-// se deja un marcador: Apache responde 500 en vez de servir el tablero sin clave.
-function writeHtaccess(html) {
-  const htpasswdPath = (process.env.HTPASSWD_PATH || '').trim();
-  if (!htpasswdPath) console.warn('[build] falta HTPASSWD_PATH; dist/.htaccess queda con un marcador y el sitio no abrira');
-  // CSP con el hash de cada <script> inline, porque el build mete todo el JS dentro del HTML.
-  const hashes = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)]
-    .map(match => `'sha256-${crypto.createHash('sha256').update(match[1], 'utf8').digest('base64')}'`);
-  const csp = [
-    "default-src 'self'",
-    `script-src 'self' https://cdnjs.cloudflare.com ${hashes.join(' ')}`,
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    'font-src https://fonts.gstatic.com',
-    "img-src 'self' data: blob:",
-    "connect-src 'self'",
-    "frame-ancestors 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "object-src 'none'",
-  ].join('; ');
-  const template = readFile('deploy/.htaccess');
-  for (const token of ['__HTPASSWD_PATH__', '__CSP__']) {
-    if (template.split(token).length !== 2) throw new Error(`deploy/.htaccess debe contener ${token} exactamente una vez`);
-  }
-  const output = template
-    .replace('__HTPASSWD_PATH__', htpasswdPath || '/RUTA/NO/CONFIGURADA/.htpasswd')
-    .replace('__CSP__', csp);
-  fs.writeFileSync(path.join(DIST_DIR, '.htaccess'), output, 'utf8');
+// La salida es compatible con WebCrypto: el tag de GCM va pegado al final del texto cifrado.
+function encryptPage(html, password) {
+  const salt = crypto.randomBytes(16);
+  const iv   = crypto.randomBytes(12);
+  const key  = crypto.pbkdf2Sync(password.normalize('NFC'), salt, PBKDF2_ITERATIONS, 32, 'sha256');
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const data = Buffer.concat([cipher.update(html, 'utf8'), cipher.final(), cipher.getAuthTag()]);
+  const payload = JSON.stringify({
+    iterations: PBKDF2_ITERATIONS,
+    salt: salt.toString('base64'),
+    iv:   iv.toString('base64'),
+    data: data.toString('base64'),
+  });
+  const template = readFile('deploy/pages-gate.html');
+  if (template.split('__PAYLOAD__').length !== 2) throw new Error('deploy/pages-gate.html debe contener __PAYLOAD__ exactamente una vez');
+  return template.replace('__PAYLOAD__', () => payload).replace(/\r\n?/g, '\n');
 }
 
 function main() {
   const rawHtml = readFile('index.html');
   let html = inlineCss(rawHtml);
   html = inlineScripts(html);
-  // El navegador convierte CRLF en LF antes de calcular el hash CSP de cada <script>; si el HTML
-  // conserva CRLF (archivos editados en Windows) los hashes no coinciden y el tablero no carga.
+  checkLocalReferences(rawHtml, html);
+  html = embedData(html);
   html = html.replace(/\r\n?/g, '\n');
 
-  // dist/ se regenera entero para que no queden archivos de builds anteriores (JSON internos, assets viejos).
+  const cname = readFile('CNAME').trim();
+  if (!cname) throw new Error('CNAME está vacío');
+
   fs.rmSync(DIST_DIR, { recursive: true, force: true });
-  ensureDir(DIST_DIR);
-  fs.writeFileSync(DIST_HTML, html, 'utf8');
-  copyPublicData();
-  // Imágenes estáticas (logo, favicon)
-  fs.cpSync(path.join(ROOT, 'img'), path.join(DIST_DIR, 'img'), { recursive: true });
-  writeHtaccess(html);
+  fs.mkdirSync(DIST_DIR, { recursive: true });
+
+  const password = process.env.RB_PAGE_PASSWORD || '';
+  const output = password ? encryptPage(html, password) : html;
+  if (password && Object.keys(EMBEDDED_DATA).some(name => output.includes(name))) {
+    throw new Error('dist/index.html quedó con los datos en claro');
+  }
+  fs.writeFileSync(DIST_HTML, output, 'utf8');
+  if (password) console.log('[build] dist/index.html cifrado con RB_PAGE_PASSWORD');
+  else console.warn('[build] sin RB_PAGE_PASSWORD: dist/index.html queda sin clave (solo para uso local)');
+
+  // El logo y el fondo del acceso se referencian por URL: son lo único que se publica fuera del HTML.
+  fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST_DIR, 'assets'), { recursive: true });
+  fs.writeFileSync(path.join(DIST_DIR, 'CNAME'), `${cname}\n`, 'utf8');
 
   const size = (fs.statSync(DIST_HTML).size / 1024).toFixed(1);
-  console.log(`[build] escrito ${path.relative(ROOT, DIST_HTML)} (${size} KB)`);
-  console.log(`[build] data publicada: ${PUBLIC_DATA.join(', ')}`);
+  console.log(`[build] dist/index.html (${size} KB), assets/ y CNAME (${cname})`);
 }
 
 try {

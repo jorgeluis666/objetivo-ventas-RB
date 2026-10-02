@@ -1,5 +1,12 @@
 name: Deploy a GitHub Pages
 
+# Publica el tablero en https://royalbaby.limaretail.com (dominio configurado en Settings > Pages;
+# con Actions GitHub no lee el archivo CNAME, que va igual en dist/). Cifra dist/index.html con el secret
+# RB_PAGE_PASSWORD: sin esa clave el HTML publicado no se puede leer. Solo se sube dist/
+# (index.html, assets/ y CNAME): data/, scripts/ y README no se publican.
+#
+# workflow_run: el commit de datos de "Actualizar datos de ventas" lo hace GITHUB_TOKEN y esos push
+# no disparan otros workflows, así que el deploy se encadena al terminar ese workflow.
 on:
   push:
     branches: [main]
@@ -31,7 +38,16 @@ jobs:
         with:
           node-version: '20'
       - name: Build
-        run: node scripts/build-pages.js
+        env:
+          RB_PAGE_PASSWORD: ${{ secrets.RB_PAGE_PASSWORD }}
+        run: |
+          # Sin clave no se publica: el tablero quedaría abierto a cualquiera con el enlace.
+          if [ -z "$RB_PAGE_PASSWORD" ]; then echo "::error::Falta el secret RB_PAGE_PASSWORD"; exit 1; fi
+          node scripts/build.js
+          # Último control: lo que se sube tiene que ser la pantalla de acceso, no el tablero en claro.
+          grep -q 'id="gate-payload"' dist/index.html || { echo "::error::dist/index.html no salió cifrado"; exit 1; }
+          if grep -qE 'RB_(VENTAS|ADS)_DATA' dist/index.html; then echo "::error::dist/index.html trae los datos en claro"; exit 1; fi
+          if [ -e dist/data ]; then echo "::error::dist/ no debe llevar data/"; exit 1; fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

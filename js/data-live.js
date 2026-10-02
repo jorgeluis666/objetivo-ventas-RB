@@ -1,11 +1,15 @@
 /* ============================================================
-   Datos vivos — cargan data/ventas-2026.json generado por el
-   pipeline scripts/fetch-data.js (GitHub Actions / local).
+   Datos vivos — data/ventas-2026.json generado por el pipeline
+   scripts/fetch-data.js (GitHub Actions / local).
+   En el sitio publicado no hay carpeta data/: scripts/build.js
+   incrusta el JSON en window.RB_VENTAS_DATA, dentro del HTML cifrado.
+   En local (npm run dev) se lee el archivo.
    Expone window.DataLive.load() → { d2026, weeklyData, transactions, generated }
    ============================================================ */
 
 (function (global) {
   const DATA_URL = 'data/ventas-2026.json';
+  const embedded = global.RB_VENTAS_DATA || null;
 
   const MONTHS_12 = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
@@ -41,9 +45,12 @@
 
   async function load() {
     try {
-      const res = await fetch(DATA_URL, { cache: 'no-store' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const json = await res.json();
+      let json = embedded;
+      if (!json) {
+        const res = await fetch(DATA_URL, { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        json = await res.json();
+      }
       return {
         generated:         json.generated || null,
         d2026:             json.d2026,
@@ -68,5 +75,5 @@
     }
   }
 
-  global.DataLive = { load, DATA_URL };
+  global.DataLive = { load, DATA_URL, embedded: !!embedded };
 })(window);

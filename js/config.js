@@ -48,7 +48,7 @@
   function exportarConfig() {
     const payload = {
       workspace    : 'Lima Retail · Dashboard Ventas',
-      url_dashboard: 'https://jorgeluis666.github.io/objetivo-canales-ventas/',
+      url_dashboard: 'https://royalbaby.limaretail.com/',
       from_name    : 'Lima Retail Alertas',
       from_email   : 'alertas@limaretail.com',
       destinatarios: state.usuarios

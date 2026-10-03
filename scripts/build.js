@@ -3,7 +3,7 @@
  * build.js — arma dist/ para GitHub Pages (https://royalbaby.limaretail.com).
  *
  * Salida: dist/index.html, dist/assets/ y dist/CNAME. Nada más: data/, scripts/ y README no se publican.
- * index.html lleva incrustados el CSS, todos los js/ y los datos (ventas-2026.json y ads-data.json).
+ * index.html lleva incrustados el CSS, todos los js/ y los datos (ventas-2026.json, ads-data.json y objetivos-2026.json).
  *
  * Con RB_PAGE_PASSWORD el tablero se cifra (AES-256-GCM, llave PBKDF2-SHA256 de 600 000 iteraciones)
  * dentro de deploy/pages-gate.html, que lo descifra en el navegador con la clave. Sin la variable,
@@ -23,10 +23,11 @@ const DIST_HTML = path.join(DIST_DIR, 'index.html');
 const PBKDF2_ITERATIONS = 600000;
 
 // Datos que usa el tablero: viajan dentro del HTML (cifrado), nunca como archivos sueltos en dist/.
-// Los demás JSON de data/ (destinatarios y registro de alertas, objetivos) y los CSV no se publican.
+// Los demás JSON de data/ (destinatarios y registro de alertas) y los CSV no se publican.
 const EMBEDDED_DATA = {
-  RB_VENTAS_DATA: 'data/ventas-2026.json',
-  RB_ADS_DATA:    'data/ads-data.json',
+  RB_VENTAS_DATA:    'data/ventas-2026.json',
+  RB_ADS_DATA:       'data/ads-data.json',
+  RB_OBJETIVOS_DATA: 'data/objetivos-2026.json',
 };
 
 function readFile(rel) {

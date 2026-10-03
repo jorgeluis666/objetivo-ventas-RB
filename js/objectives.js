@@ -1,13 +1,15 @@
 /* ============================================================
    objectives.js — vista de Objetivos 2026.
-   Renderiza month-tabs, pace cards, weekly charts y tabla editable.
-   Expone window.Objectives.render({ d2026, weeklyData, transactions }).
+   Cruza el plan del cliente (data/objetivos-2026.json: canales y metas
+   mínima +10% / ideal +20%) con las ventas del Sheet en ciclo 26-25.
+   Renderiza el cuadro anual, month-tabs, pace cards y detalle semanal.
+   Expone window.Objectives.render({ d2026, weeklyData, transactions, plan, … }).
    ============================================================ */
 
 (function (global) {
   const ds = global.DataStatic;
   const {
-    channels, palette, d2025, defaultTargets, monthDays, months, STEP, chToUpper,
+    channels, palette, d2025, monthDays, months, chToUpper,
   } = ds;
 
   const fmt = n => Math.round(n).toLocaleString('es-PE');
@@ -58,7 +60,8 @@
 
   // Estado interno
   const state = {
-    targets: JSON.parse(JSON.stringify(defaultTargets)),
+    plan: null,            // data/objetivos-2026.json
+    scenario: 'minima',    // escenario de meta: 'minima' (+10%) o 'ideal' (+20%)
     d2026: null,
     weeklyData: null,
     transactions: null,
@@ -68,99 +71,39 @@
     cycleLabel: 'calendario',
   };
 
-  // ── localStorage — clave de almacenamiento ──
-  const LS_KEY = 'lr_objetivos_2026';
-  const TARGET_POLICY = '2025_PLUS_10';
+  // Las metas vienen fijas del plan; el navegador solo recuerda el escenario elegido.
+  const SCENARIO_KEY = 'rb_objetivos_escenario';
+  try {
+    const saved = localStorage.getItem(SCENARIO_KEY);
+    if (saved === 'minima' || saved === 'ideal') state.scenario = saved;
+  } catch (e) { /* storage no disponible */ }
 
-  function loadFromStorage() {
-    try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (!raw) return false;
-      const saved = JSON.parse(raw);
-      if (!saved || !saved.targets) return false;
-      if (saved.policy !== TARGET_POLICY) {
-        localStorage.removeItem(LS_KEY);
-        return false;
-      }
-      months.forEach(m => {
-        if (saved.targets[m]) {
-          channels.forEach(ch => {
-            if (typeof saved.targets[m][ch] === 'number') {
-              state.targets[m][ch] = saved.targets[m][ch];
-            }
-          });
-        }
-      });
-      return true;
-    } catch (e) {
-      return false;
-    }
+  function setScenario(scenario) {
+    state.scenario = scenario;
+    try { localStorage.setItem(SCENARIO_KEY, scenario); } catch (e) { /* storage no disponible */ }
+    renderPlanSection();
   }
 
-  function saveToStorage() {
-    try {
-      localStorage.setItem(LS_KEY, JSON.stringify({
-        version : '1',
-        policy  : TARGET_POLICY,
-        updated : new Date().toISOString().slice(0, 10),
-        targets : state.targets,
-      }));
-      _updateStorageLabel();
-    } catch (e) { /* ignore */ }
-  }
+  // ── Plan: cada canal del plan suma una o más columnas del Sheet ──
+  // (Redes y WhatsApp = WhatsApp + Instagram + Facebook)
+  const planChannels = () => state.plan?.canales || [];
+  const chColor      = c => palette[c.sheet[0]] || '#64748B';
+  const chReal       = (monthObj, c) => c.sheet.reduce((s, col) => s + ((monthObj || {})[col] || 0), 0);
+  const chWeekReal   = (wk, c) => c.sheet.reduce((s, col) => s + (wk[chToUpper[col]] || 0), 0);
+  const target       = (m, key) => state.plan?.metas?.[state.scenario]?.[m]?.[key] || 0;
+  const monthTarget  = m => planChannels().reduce((s, c) => s + target(m, c.key), 0);
+  const ref2025      = (m, key) => state.plan?.real2025?.[m]?.[key] || 0;
+  const monthRef2025 = m => planChannels().reduce((s, c) => s + ref2025(m, c.key), 0);
+  const scenarioName = () => state.plan?.escenarios?.[state.scenario]?.label || 'Meta';
 
-  function _updateStorageLabel() {
-    const el = document.getElementById('obj-guardado-label');
-    if (!el) return;
-    try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (raw) {
-        const saved = JSON.parse(raw);
-        el.textContent = `Objetivos guardados en navegador · ${saved.updated || ''}`;
-      } else {
-        el.textContent = 'Objetivos por defecto (sin cambios guardados)';
-      }
-    } catch (e) { el.textContent = ''; }
-  }
-
-  function exportarObjetivos() {
-    const payload = {
-      version  : '1',
-      anio     : YEAR,
-      updated  : new Date().toISOString().slice(0, 10),
-      nota     : 'Este archivo es la fuente de verdad para el sistema de alertas. El browser lo actualiza via "Exportar objetivos" y se commitea al repo.',
-      targets  : state.targets,
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = 'objetivos-2026.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
-  function restablecerObjetivos() {
-    if (!confirm('¿Restaurar todos los objetivos a los valores originales?\nSe perderán los cambios guardados en este navegador.')) return;
-    state.targets = JSON.parse(JSON.stringify(defaultTargets));
-    localStorage.removeItem(LS_KEY);
-    // Actualizar todos los inputs y la UI
-    months.forEach(m => {
-      channels.forEach(ch => {
-        const inp = document.getElementById(`inp-${m}-${ch}`);
-        if (inp) inp.value = state.targets[m][ch];
-        renderRowUI(m, ch);
-      });
-      refreshObjTotal(m);
-      refreshPaceCards(m);
-    });
-    _updateStorageLabel();
-  }
-
-  // Carga inicial desde localStorage (una vez al cargar el módulo)
-  loadFromStorage();
+  // Montos compactos para el cuadro anual (miles de soles)
+  const fmtK = n => {
+    const a = Math.abs(n);
+    if (a >= 1e6) return (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M';
+    if (a >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
+    return String(Math.round(n));
+  };
+  const monthShort = m => m.slice(0, 3);
 
   // ── Calendar helpers (año en curso = 2026) ──
   const YEAR = 2026;
@@ -253,23 +196,25 @@
     return !!d && channels.some(ch => (d[ch] || 0) > 0);
   }
 
-  // ── Actualizar DOM de una fila (barra + % + brecha) sin cascada ──
-  // Usa state.targets[m][ch] directamente. Llamar desde el render inicial
-  // para evitar N×refreshObjTotal + N×refreshPaceCards por mes.
-  function renderRowUI(m, ch) {
-    const real   = state.d2026?.[m]?.[ch] || 0;
-    const tgt    = state.targets[m][ch] || 0;
+  // ── Actualizar DOM de una fila (barra + % + brecha) ──
+  function renderRowUI(m, c) {
+    const real   = chReal(state.d2026?.[m], c);
+    const tgt    = target(m, c.key);
     const p      = tgt > 0 ? real / tgt * 100 : 0;
     const status = monthStatus(m);
 
-    const pb = document.getElementById(`pb-${m}-${ch}`);
-    const pv = document.getElementById(`pv-${m}-${ch}`);
-    const gv = document.getElementById(`gv-${m}-${ch}`);
+    const pb = document.getElementById(`pb-${m}-${c.key}`);
+    const pv = document.getElementById(`pv-${m}-${c.key}`);
+    const gv = document.getElementById(`gv-${m}-${c.key}`);
     if (!pb || !pv || !gv) return;
 
     if (status === 'future' || (status === 'current' && !isLiveMonth(m))) {
       pb.style.width = '0%'; pv.textContent = '—'; pv.style.color = 'var(--muted)';
       gv.textContent = status === 'future' ? 'futuro' : '—';
+      gv.className = 'gap-val'; gv.style.color = 'var(--muted)';
+    } else if (tgt === 0) {
+      pb.style.width = '0%'; pv.textContent = 'sin meta'; pv.style.color = 'var(--muted)';
+      gv.textContent = '—';
       gv.className = 'gap-val'; gv.style.color = 'var(--muted)';
     } else {
       setProgressFill(pb, p);
@@ -282,22 +227,10 @@
     }
   }
 
-  // Versión interactiva: lee el input, actualiza state y dispara cascada completa.
-  // Usada por los event listeners de stepper e input.
-  function refreshObjRow(m, ch) {
-    state.targets[m][ch] = parseFloat(document.getElementById(`inp-${m}-${ch}`).value) || 0;
-    renderRowUI(m, ch);
-    refreshObjTotal(m);
-    refreshPaceCards(m);
-    rebuildChannelWeeklyDetail(m, ch);
-    refreshAlertPanel(m);
-    saveToStorage();
-  }
-
+  // Total del mes: toda la venta registrada contra la suma de metas de los canales.
   function refreshObjTotal(m) {
-    const d2026Month = state.d2026?.[m] || {};
-    const tr = channels.reduce((s, ch) => s + (d2026Month[ch] || 0), 0);
-    const tt = channels.reduce((s, ch) => s + (state.targets[m][ch] || 0), 0);
+    const tr = tot(state.d2026?.[m] || {});
+    const tt = monthTarget(m);
     const p = tt > 0 ? tr / tt * 100 : 0;
     const status = monthStatus(m);
 
@@ -328,8 +261,8 @@
     if (!el) return;
 
     const d2026Month = state.d2026?.[m] || {};
-    const tt        = channels.reduce((s, ch) => s + (state.targets[m][ch] || 0), 0);
-    const real      = channels.reduce((s, ch) => s + (d2026Month[ch] || 0), 0);
+    const tt        = monthTarget(m);
+    const real      = tot(d2026Month);
     const status    = monthStatus(m);
     const remDays   = daysRemaining(m);
     const passed    = daysPassed(m);
@@ -355,11 +288,11 @@
           </div>
           <div class="pace-card">
             <div class="pace-card-head">
-              <div class="pace-lbl">Meta propuesta</div>
-              <span class="pace-badge muted">editable</span>
+              <div class="pace-lbl">${scenarioName()}</div>
+              <span class="pace-badge muted">plan</span>
             </div>
             <div class="pace-val brand">S/. ${fmt(tt)}</div>
-            <div class="pace-sub">ajustable abajo</div>
+            <div class="pace-sub">plan del cliente</div>
           </div>
           <div class="pace-card">
             <div class="pace-card-head">
@@ -374,8 +307,8 @@
               <div class="pace-lbl">Ref. ${m} 2025</div>
               <span class="pace-badge muted">referencia</span>
             </div>
-            <div class="pace-val">S/. ${fmt(tot(state.d2025Ref[m] || {}))}</div>
-            <div class="pace-sub">cierre año anterior</div>
+            <div class="pace-val">S/. ${fmt(monthRef2025(m))}</div>
+            <div class="pace-sub">cierre 2025 según el plan</div>
           </div>
         </div>`;
       return;
@@ -406,7 +339,7 @@
               <span class="pace-badge ${faltante > 0 ? 'red' : 'green'}">${faltante > 0 ? '▼ ' + pctMissing + '%' : '✓ cubierto'}</span>
             </div>
             <div class="pace-val ${faltante > 0 ? 'red' : 'green'}">S/. ${fmt(faltante)}</div>
-            <div class="pace-sub">Meta total: S/. ${fmt(tt)}</div>
+            <div class="pace-sub">${scenarioName()}: S/. ${fmt(tt)}</div>
           </div>
           <div class="pace-card">
             <div class="pace-card-head">
@@ -483,15 +416,14 @@
     return `${start}–${end} ${MONTH_ABR[m]}`;
   }
 
-  // Construye el HTML interno del desplegable semanal de un canal concreto.
+  // Construye el HTML interno del desplegable semanal de un canal del plan.
   // Incluye meta efectiva con arrastre de brecha semana a semana.
-  function buildChannelWeeklyHTML(m, ch, status) {
+  function buildChannelWeeklyHTML(m, c, status) {
     const weeks = state.weeklyData?.[m];
     if (!weeks || !weeks.length) {
       return '<div style="padding:8px 4px;font-size:12px;color:var(--muted);">Sin datos semanales para este canal.</div>';
     }
-    const chKey       = chToUpper[ch];
-    const monthChTgt  = state.targets[m][ch] || 0;
+    const monthChTgt  = target(m, c.key);
     const baseWeekTgt = monthChTgt > 0 ? monthChTgt * 7 / objectiveDays(m) : 0;
     const curWeekNum  = status === 'current' ? Math.ceil(new Date().getDate() / 7) : -1;
 
@@ -499,7 +431,7 @@
 
     const weekRows = weeks.map((wk, i) => {
       const weekNum       = wk.w;
-      const real          = wk[chKey] || 0;
+      const real          = chWeekReal(wk, c);
       const isCurrentWeek = status === 'current' && weekNum === curWeekNum;
       const isFuture      = status === 'current' && weekNum > curWeekNum;
 
@@ -561,7 +493,7 @@
 
     const metaHdr = baseWeekTgt > 0 ? `meta sem. base ≈ S/. ${fmt(baseWeekTgt)}` : 'sin objetivo definido';
     return `
-      <div class="ch-weeks-header">${ch} · ${m} · ${metaHdr}</div>
+      <div class="ch-weeks-header">${c.label} · ${m} · ${metaHdr}</div>
       <div class="ch-wk-col-head">
         <span>Semana</span><span></span>
         <span>Real / Meta efectiva</span>
@@ -582,13 +514,13 @@
     const passed     = daysPassed(m);
     const totalDays  = objectiveDays(m);
 
-    // Estadísticas por canal
-    const stats = channels.map(ch => {
-      const real = d2026Month[ch] || 0;
-      const tgt  = state.targets[m][ch] || 0;
+    // Estadísticas por canal del plan
+    const stats = planChannels().map(c => {
+      const real = chReal(d2026Month, c);
+      const tgt  = target(m, c.key);
       const pct  = tgt > 0 ? real / tgt * 100 : 0;
       const expectedReal = tgt > 0 ? tgt * passed / totalDays : 0;
-      return { ch, real, tgt, pct, expectedReal, surplus: real - tgt, gap: tgt - real };
+      return { ch: c.label, color: chColor(c), real, tgt, pct, expectedReal, surplus: real - tgt, gap: tgt - real };
     }).filter(s => s.tgt > 0);
 
     // Canales que superaron el objetivo mensual
@@ -621,7 +553,7 @@
               <div class="obj-alert-title">Objetivo alcanzado</div>
               <div class="obj-alert-sub">
                 ${achieved.map(a =>
-                  `<span class="ch-pip" style="background:${palette[a.ch]};display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:3px;"></span>
+                  `<span class="ch-pip" style="background:${a.color};display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:3px;"></span>
                    <strong>${a.ch}</strong> ${a.pct.toFixed(0)}% · excedente S/. ${fmt(a.surplus)}`
                 ).join(' &nbsp;·&nbsp; ')}
               </div>
@@ -656,7 +588,7 @@
           <div class="obj-alert-rows">
             ${lagging.map(b => `
               <div class="obj-alert-row">
-                <span class="ch-pip" style="background:${palette[b.ch]};display:inline-block;width:7px;height:7px;border-radius:2px;flex-shrink:0;"></span>
+                <span class="ch-pip" style="background:${b.color};display:inline-block;width:7px;height:7px;border-radius:2px;flex-shrink:0;"></span>
                 <span>
                   <strong>${b.ch}</strong>:
                   real S/. ${fmt(b.real)} ·
@@ -682,159 +614,8 @@
     el.innerHTML = html;
   }
 
-  // Actualiza solo el contenido del desplegable cuando cambia el objetivo de un canal.
-  function rebuildChannelWeeklyDetail(m, ch) {
-    const detailRow = document.getElementById(`ch-weeks-${m}-${ch}`);
-    if (!detailRow) return;
-    const inner = detailRow.querySelector('.ch-weeks-inner');
-    if (inner) inner.innerHTML = buildChannelWeeklyHTML(m, ch, monthStatus(m));
-  }
-
-  function refreshWeeklyAlert(m) {
-    const el = document.getElementById(`weekly-alert-${m}`);
-    if (!el) return;
-
-    const status = monthStatus(m);
-    if (status === 'future' || !isLiveMonth(m)) { el.innerHTML = ''; return; }
-
-    const weeks = state.weeklyData?.[m];
-    if (!weeks || !weeks.length) { el.innerHTML = ''; return; }
-
-    const monthTarget = channels.reduce((s, ch) => s + (state.targets[m][ch] || 0), 0);
-    if (monthTarget === 0) { el.innerHTML = ''; return; }
-
-    // Meta semanal prorrateada: objetivo mensual × 7 / días del mes
-    const weekTarget = monthTarget * 7 / objectiveDays(m);
-
-    // Semana actual dentro del mes (1-based): ceil(día/7)
-    const curWeekNum = status === 'current' ? Math.ceil(new Date().getDate() / 7) : -1;
-
-    const rows = weeks.map((wk, i) => {
-      const weekNum = wk.w;  // número de semana dentro del mes (1, 2, 3…)
-      const real    = (wk.TOTAL != null && wk.TOTAL > 0)
-                        ? wk.TOTAL
-                        : channels.reduce((s, ch) => s + (wk[chToUpper[ch]] || 0), 0);
-
-      const isCurrentWeek = status === 'current' && weekNum === curWeekNum;
-      const isFuture      = status === 'current' && weekNum > curWeekNum;
-      const pct           = weekTarget > 0 ? real / weekTarget * 100 : 0;
-      const gap           = real - weekTarget;
-      const detailId      = `wa-d-${m.replace(/\s/g,'')}-${weekNum}`;
-
-      let cls, badge;
-      if (isFuture)          { cls = 'muted';  badge = 'próxima'; }
-      else if (isCurrentWeek){ cls = 'brand';  badge = '→ en curso'; }
-      else if (pct >= 90)    { cls = 'green';  badge = '✓ en track'; }
-      else if (pct >= 70)    { cls = 'amber';  badge = '⚠ atención'; }
-      else                   { cls = 'red';    badge = '▼ brecha'; }
-
-      const barColor  = { muted:'#e2e8f0', brand:'var(--brand)',
-                          green:'var(--green)', amber:'var(--amber)', red:'var(--red)' }[cls];
-      const textColor = { muted:'var(--muted)', brand:'var(--brand-text)',
-                          green:'var(--green-text)', amber:'var(--amber-text)', red:'var(--red-text)' }[cls];
-
-      const barW     = isFuture ? 0 : Math.min(pct, 100).toFixed(0);
-      const gapLabel = (isFuture || isCurrentWeek) ? '' : (gap >= 0 ? '+' : '') + 'S/. ' + fmt(gap);
-      const dateRange = weekDateRange(m, weekNum);
-
-      // ── Detalle por canal (visible al expandir) ──
-      const chRows = channels
-        .filter(ch => (state.targets[m][ch] || 0) > 0 || (wk[chToUpper[ch]] || 0) > 0)
-        .map(ch => {
-          const chReal   = wk[chToUpper[ch]] || 0;
-          const chTarget = (state.targets[m][ch] || 0) * 7 / objectiveDays(m);
-          const chPct    = chTarget > 0 ? chReal / chTarget * 100 : 0;
-          const chColor  = chPct >= 90 ? 'var(--green)' : chPct >= 70 ? 'var(--amber)' : (chReal > 0 ? 'var(--red)' : '#e2e8f0');
-          return `
-            <div class="wa-ch-row">
-              <span class="ch-pip" style="background:${palette[ch]};width:8px;height:8px;border-radius:2px;flex-shrink:0;display:inline-block;"></span>
-              <span class="wa-ch-name">${ch}</span>
-              <div class="wa-ch-track">
-                <div class="wa-ch-fill" style="width:${isFuture ? 0 : Math.min(chPct,100).toFixed(0)}%;background:${chColor};"></div>
-              </div>
-              <span class="wa-ch-amt">S/. ${fmt(chReal)}</span>
-              <span class="wa-ch-pct" style="color:${chColor};">${chTarget > 0 ? chPct.toFixed(0) + '%' : '—'}</span>
-              <span class="wa-ch-tgt" style="color:var(--muted);">/ S/. ${fmt(chTarget)}</span>
-            </div>`;
-        }).join('');
-
-      return `
-        <div class="wa-row${isCurrentWeek ? ' wa-row-current' : ''}${isFuture ? ' wa-row-future' : ''}"
-             data-detail="${detailId}" role="button" tabindex="0" aria-expanded="false">
-          <div class="wa-lbl">
-            <span class="wa-sem">Sem. ${i + 1}</span>
-            <span class="wa-wnum">${dateRange}</span>
-          </div>
-          <div class="wa-track">
-            <div class="wa-fill" style="width:${barW}%;background:${barColor};"></div>
-          </div>
-          <div class="wa-amount">${isFuture ? '<span class="muted">—</span>' : 'S/. ' + fmt(real)}</div>
-          <div class="wa-pct" style="color:${textColor};">
-            ${isFuture ? '—' : (isCurrentWeek ? 'parcial' : pct.toFixed(0) + '%')}
-          </div>
-          <div class="wa-gap">${gapLabel ? `<span style="color:${textColor};font-size:11px;">${gapLabel}</span>` : ''}</div>
-          <span class="pace-badge ${cls}">${badge}</span>
-          <span class="wa-chevron${isFuture ? ' wa-chevron-hide' : ''}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                 stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </span>
-        </div>
-        <div class="wa-detail" id="${detailId}">
-          <div class="wa-detail-inner">
-            <div class="wa-ch-head">
-              <span></span><span>Canal</span><span></span>
-              <span class="r">Real sem.</span><span class="r">%</span>
-              <span class="r">Meta sem.</span>
-            </div>
-            ${chRows}
-            <div class="wa-detail-footer">
-              Total semana: <strong>S/. ${fmt(real)}</strong> &nbsp;·&nbsp;
-              Meta: <strong>S/. ${fmt(weekTarget)}</strong>
-              ${!isFuture && !isCurrentWeek ? ` &nbsp;·&nbsp; <strong style="color:${textColor};">${pct.toFixed(1)}% alcanzado</strong>` : ''}
-            </div>
-          </div>
-        </div>`;
-    }).join('');
-
-    el.innerHTML = `
-      <div class="panel wa-panel">
-        <div class="panel-head">
-          <div>
-            <div class="panel-title">Alerta semanal
-              <span style="font-weight:400;color:var(--muted);font-size:12px;">· ${m} ${YEAR}</span>
-            </div>
-            <div class="panel-sub">
-              Meta semanal ≈ S/. ${fmt(weekTarget)} &nbsp;·&nbsp;
-              objetivo mensual S/. ${fmt(monthTarget)} / ${objectiveDays(m)} días &nbsp;·&nbsp;
-              <em>Clic en una semana para ver el detalle por canal</em>
-            </div>
-          </div>
-        </div>
-        <div class="wa-rows">${rows}</div>
-      </div>`;
-
-    // ── Event listeners de expand/collapse ──
-    el.querySelectorAll('.wa-row[data-detail]').forEach(row => {
-      if (row.classList.contains('wa-row-future')) return; // no expandir futuras
-      row.addEventListener('click', () => {
-        const detail   = document.getElementById(row.dataset.detail);
-        const chevron  = row.querySelector('.wa-chevron');
-        if (!detail) return;
-        const isOpen = detail.classList.contains('wa-detail-open');
-        detail.classList.toggle('wa-detail-open', !isOpen);
-        chevron?.classList.toggle('wa-chevron-open', !isOpen);
-        row.setAttribute('aria-expanded', String(!isOpen));
-      });
-      row.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); row.click(); }
-      });
-    });
-  }
-
   // ── Render principal de la vista ──
-  function render({ d2026, weeklyData, transactions, weekly2025, d2025Ref, periodDays, cycleLabel }) {
+  function render({ d2026, weeklyData, transactions, weekly2025, d2025Ref, periodDays, cycleLabel, plan }) {
     state.d2026        = d2026;
     state.weeklyData   = weeklyData;
     state.transactions = transactions;
@@ -843,6 +624,7 @@
     state.periodDays   = periodDays || monthDays;
     state.cycleLabel   = cycleLabel || 'calendario';
     state.avgTickets   = computeAvgTickets(d2026, transactions);
+    state.plan         = plan || null;
 
     // Chart combinado arriba de los month tabs (52 semanas 2025 + 2026 disponibles)
     if (global.Charts?.combinedWeeklyChart) {
@@ -1062,9 +844,219 @@
       }
     }
 
+    wireScenarioToggle();
+    renderPlanSection();
+  }
+
+  // ── Plan vs ventas: escenario, KPIs, cuadro anual y meses ──
+  function renderPlanSection() {
+    const host          = document.getElementById('plan-section');
+    const monthTabsEl   = document.getElementById('month-tabs');
+    const monthPanelsEl = document.getElementById('month-panels');
+    if (!host || !monthTabsEl || !monthPanelsEl) return;
+
+    document.querySelectorAll('#scenario-toggle .vt-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.scenario === state.scenario));
+
+    if (!state.plan) {
+      host.innerHTML = `<div class="insight err" style="margin-bottom:20px;">
+        <b>Plan de metas no disponible:</b> no se pudo cargar <code>data/objetivos-2026.json</code>.</div>`;
+      monthTabsEl.innerHTML = '';
+      monthPanelsEl.innerHTML = '';
+      return;
+    }
+    renderPlanKpis();
+    renderAnnualTable();
+    renderMonthPanels();
+  }
+
+  function wireScenarioToggle() {
+    const el = document.getElementById('scenario-toggle');
+    if (!el || el.dataset.wired) return;
+    el.dataset.wired = '1';
+    el.querySelectorAll('.vt-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.scenario !== state.scenario) setScenario(btn.dataset.scenario);
+      });
+    });
+  }
+
+  // Rango legible de meses: "Ene–Sep", "Ene" o ''.
+  const monthRange = list =>
+    list.length === 0 ? '' : list.length === 1
+      ? monthShort(list[0])
+      : `${monthShort(list[0])}–${monthShort(list[list.length - 1])}`;
+
+  // KPIs: acumulado de meses cerrados contra la meta del mismo período, y el año completo.
+  function renderPlanKpis() {
+    const el = document.getElementById('plan-kpis');
+    if (!el) return;
+    const closed     = months.filter(m => monthStatus(m) === 'past');
+    const pending    = months.length - closed.length;
+    const realClosed = closed.reduce((s, m) => s + tot(state.d2026?.[m] || {}), 0);
+    const metaClosed = closed.reduce((s, m) => s + monthTarget(m), 0);
+    const realYear   = months.reduce((s, m) => s + tot(state.d2026?.[m] || {}), 0);
+    const metaYear   = months.reduce((s, m) => s + monthTarget(m), 0);
+    const pctClosed  = metaClosed > 0 ? realClosed / metaClosed * 100 : 0;
+    const pctYear    = metaYear > 0 ? realYear / metaYear * 100 : 0;
+    const gapClosed  = realClosed - metaClosed;
+    const falta      = Math.max(0, metaYear - realYear);
+    const range      = monthRange(closed);
+
+    const closedCards = closed.length ? `
+      <div class="cum-kpi-card cum-kpi-card-current">
+        <div class="cum-kpi-lbl">Venta 2026 · ${range}</div>
+        <div class="cum-kpi-val">S/. ${fmt(realClosed)}</div>
+        <div class="cum-kpi-sub">meses cerrados · ciclo 26-25</div>
+      </div>
+      <div class="cum-kpi-card">
+        <div class="cum-kpi-lbl">${scenarioName()} · ${range}</div>
+        <div class="cum-kpi-val" style="color:${pctColor(pctClosed)};">${pctClosed.toFixed(1)}%</div>
+        <div class="cum-kpi-sub">${gapClosed >= 0 ? '+' : '−'}S/. ${fmt(Math.abs(gapClosed))} vs meta S/. ${fmt(metaClosed)}</div>
+      </div>` : '';
+
+    el.innerHTML = `
+      <div class="cum-kpi-strip plan-kpi-strip">
+        ${closedCards}
+        <div class="cum-kpi-card">
+          <div class="cum-kpi-lbl">${scenarioName()} · año</div>
+          <div class="cum-kpi-val">S/. ${fmt(metaYear)}</div>
+          <div class="cum-kpi-sub">venta del año S/. ${fmt(realYear)} · ${pctYear.toFixed(1)}%</div>
+        </div>
+        <div class="cum-kpi-card">
+          <div class="cum-kpi-lbl">Falta para la meta anual</div>
+          <div class="cum-kpi-val" style="color:${falta > 0 ? 'var(--red-text)' : 'var(--green-text)'};">S/. ${fmt(falta)}</div>
+          <div class="cum-kpi-sub">${falta > 0 && pending > 0 ? `≈ S/. ${fmt(falta / pending)} por mes en ${pending} ${pending === 1 ? 'mes' : 'meses'}` : falta > 0 ? 'año cerrado' : 'meta anual cubierta'}</div>
+        </div>
+      </div>`;
+  }
+
+  // Celda del cuadro anual: venta, meta y avance del mes.
+  function planCell(m, real, tgt) {
+    const status   = monthStatus(m);
+    const hasSales = status === 'past' || (status === 'current' && isLiveMonth(m));
+    const metaTxt  = tgt > 0 ? fmtK(tgt) : 'sin meta';
+    const cls      = 'r pc' + (status === 'current' ? ' pc-current' : '');
+    if (!hasSales) {
+      return `<td class="${cls}" title="Meta S/. ${fmt(tgt)}">
+        <span class="pc-real muted">—</span><span class="pc-meta">${metaTxt}</span><span class="pc-pct">&nbsp;</span></td>`;
+    }
+    const p = tgt > 0 ? real / tgt * 100 : null;
+    return `<td class="${cls}" title="Venta S/. ${fmt(real)} · meta S/. ${fmt(tgt)}">
+      <span class="pc-real">${fmtK(real)}</span>
+      <span class="pc-meta">/ ${metaTxt}</span>
+      <span class="pc-pct" style="color:${p === null ? 'var(--muted)' : pctColor(p)};">${p === null ? '—' : p.toFixed(0) + '%'}</span></td>`;
+  }
+
+  // Celda de acumulado o de año: suma de venta y meta sobre una lista de meses.
+  function planSumCell(list, realOf, tgtOf, extraCls) {
+    if (!list.length) return `<td class="r pc ${extraCls}"><span class="pc-real muted">—</span></td>`;
+    const real = list.reduce((s, m) => s + realOf(m), 0);
+    const tgt  = list.reduce((s, m) => s + tgtOf(m), 0);
+    const p    = tgt > 0 ? real / tgt * 100 : null;
+    return `<td class="r pc ${extraCls}" title="Venta S/. ${fmt(real)} · meta S/. ${fmt(tgt)}">
+      <span class="pc-real">${fmtK(real)}</span>
+      <span class="pc-meta">/ ${tgt > 0 ? fmtK(tgt) : 'sin meta'}</span>
+      <span class="pc-pct" style="color:${p === null ? 'var(--muted)' : pctColor(p)};">${p === null ? '—' : p.toFixed(0) + '%'}</span></td>`;
+  }
+
+  function renderAnnualTable() {
+    const table = document.getElementById('plan-annual');
+    const sub   = document.getElementById('plan-annual-sub');
+    const notes = document.getElementById('plan-notes');
+    if (!table) return;
+
+    const closed = months.filter(m => monthStatus(m) === 'past');
+    const range  = monthRange(closed);
+    if (sub) sub.textContent = `${scenarioName()} · venta del Sheet en ciclo comercial 26-25 · montos en miles de S/.`;
+
+    const head = `<thead><tr>
+      <th>Canal</th>
+      ${months.map(m => `<th class="r plan-month${monthStatus(m) === 'current' ? ' is-current' : ''}" data-month="${m}" title="Ver ${m}">${monthShort(m)}</th>`).join('')}
+      <th class="r plan-col-sum">${range ? 'Acum. ' + range : 'Acum.'}</th>
+      <th class="r plan-col-sum">Año</th>
+    </tr></thead>`;
+
+    const salesOf = (m, c) => chReal(state.d2026?.[m], c);
+    let body = '';
+    planChannels().forEach(c => {
+      const hasParts = c.sheet.length > 1;
+      body += `<tr class="plan-row">
+        <td>
+          <span class="ch-name">
+            ${hasParts ? `<button class="ch-weeks-toggle plan-parts-toggle" data-parts="${c.key}" title="Ver ${c.sheet.join(', ')}" aria-expanded="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                   style="width:12px;height:12px;pointer-events:none;display:block;"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>` : '<span class="plan-toggle-spacer"></span>'}
+            <span class="ch-pip" style="background:${chColor(c)}"></span>${c.label}
+          </span>
+        </td>
+        ${months.map(m => planCell(m, salesOf(m, c), target(m, c.key))).join('')}
+        ${planSumCell(closed, m => salesOf(m, c), m => target(m, c.key), 'plan-col-sum')}
+        ${planSumCell(months, m => salesOf(m, c), m => target(m, c.key), 'plan-col-sum')}
+      </tr>`;
+      if (hasParts) {
+        c.sheet.forEach(col => {
+          const live = m => monthStatus(m) === 'past' || (monthStatus(m) === 'current' && isLiveMonth(m));
+          const sumOf = list => list.reduce((s, m) => s + ((state.d2026?.[m] || {})[col] || 0), 0);
+          body += `<tr class="plan-sub" data-parts-of="${c.key}" hidden>
+            <td><span class="plan-sub-name">${col}</span></td>
+            ${months.map(m => `<td class="r pc">${live(m) ? fmtK((state.d2026?.[m] || {})[col] || 0) : '—'}</td>`).join('')}
+            <td class="r pc plan-col-sum">${closed.length ? fmtK(sumOf(closed)) : '—'}</td>
+            <td class="r pc plan-col-sum">${fmtK(sumOf(months))}</td>
+          </tr>`;
+        });
+      }
+    });
+
+    const totalOf = m => tot(state.d2026?.[m] || {});
+    body += `<tr class="plan-total">
+      <td><strong>Total</strong></td>
+      ${months.map(m => planCell(m, totalOf(m), monthTarget(m))).join('')}
+      ${planSumCell(closed, totalOf, monthTarget, 'plan-col-sum')}
+      ${planSumCell(months, totalOf, monthTarget, 'plan-col-sum')}
+    </tr>`;
+
+    table.innerHTML = head + `<tbody>${body}</tbody>`;
+
+    table.querySelectorAll('.plan-parts-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const open = btn.getAttribute('aria-expanded') !== 'true';
+        btn.setAttribute('aria-expanded', String(open));
+        btn.classList.toggle('open', open);
+        table.querySelectorAll(`tr[data-parts-of="${btn.dataset.parts}"]`).forEach(tr => { tr.hidden = !open; });
+      });
+    });
+    table.querySelectorAll('th.plan-month').forEach(th => {
+      th.addEventListener('click', () => {
+        selectMonth(th.dataset.month);
+        document.getElementById('month-tabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    if (notes) {
+      const chNotes = planChannels().filter(c => c.nota).map(c => `<div><strong>${c.label}:</strong> ${c.nota}</div>`).join('');
+      notes.innerHTML = `
+        ${chNotes}
+        <div>El total suma toda la venta registrada, también la de canales sin meta en ese mes.</div>
+        <div>El mes en curso va en cursiva: su avance es parcial. Clic en un mes para ver su detalle.</div>`;
+    }
+  }
+
+  function selectMonth(m) {
     const monthTabsEl   = document.getElementById('month-tabs');
     const monthPanelsEl = document.getElementById('month-panels');
     if (!monthTabsEl || !monthPanelsEl) return;
+    monthTabsEl.querySelectorAll('.month-tab').forEach(t => t.classList.toggle('active', t.dataset.month === m));
+    monthPanelsEl.querySelectorAll('.mpanel').forEach(p => p.classList.toggle('visible', p.id === 'mpanel-' + m));
+  }
+
+  function renderMonthPanels() {
+    const monthTabsEl   = document.getElementById('month-tabs');
+    const monthPanelsEl = document.getElementById('month-panels');
+    if (!monthTabsEl || !monthPanelsEl) return;
+    // Al cambiar de escenario se vuelve a dibujar todo: se conserva el mes abierto.
+    const openMonth = monthTabsEl.querySelector('.month-tab.active')?.dataset.month;
     monthTabsEl.innerHTML   = '';
     monthPanelsEl.innerHTML = '';
 
@@ -1077,12 +1069,13 @@
         if (isLiveMonth(months[i])) { defaultIdx = i; break; }
       }
     }
+    if (openMonth && months.includes(openMonth)) defaultIdx = months.indexOf(openMonth);
 
     months.forEach((m, i) => {
       const status     = monthStatus(m);
-      const d2026Month = d2026[m] || {};
-      const monthTotal = channels.reduce((s, ch) => s + (d2026Month[ch] || 0), 0);
-      const total2025  = tot(state.d2025Ref[m] || {});
+      const d2026Month = state.d2026?.[m] || {};
+      const monthTotal = tot(d2026Month);
+      const total2025  = monthRef2025(m);
 
       // Panel HTML
       const panel = document.createElement('div');
@@ -1102,20 +1095,17 @@
              <div class="pb-today-tri"></div>
            </div>`
         : '';
-      const closePin = state.cycleLabel === '26-25'
-        ? `<div class="pb-close-pin" style="left:100%" title="Cierre comercial: día 25">
-             <span class="pb-close-day">25</span>
-             <span class="pb-close-label">cierre</span>
-             <div class="pb-close-line"></div>
-           </div>`
-        : '';
 
       let rows = '';
-      channels.forEach(ch => {
-        const real       = d2026Month[ch] || 0;
-        const ref25      = (state.d2025Ref[m] || {})[ch] || 0;
+      planChannels().forEach(c => {
+        const real       = chReal(d2026Month, c);
+        const tgt        = target(m, c.key);
         const share      = showReal && monthTotal > 0 ? (real / monthTotal * 100).toFixed(1) : '—';
-        const wkDetailId = `ch-weeks-${m}-${ch}`;
+        const wkDetailId = `ch-weeks-${m}-${c.key}`;
+        // Canales que agrupan varias columnas del Sheet muestran el desglose bajo el nombre.
+        const parts = c.sheet.length > 1 && showReal
+          ? `<div class="ch-parts">${c.sheet.map(col => `${col} S/. ${fmt(d2026Month[col] || 0)}`).join(' · ')}</div>`
+          : '';
         rows += `<tr class="ch-obj-row">
           <td>
             <div class="ch-cell">
@@ -1127,44 +1117,41 @@
                   <polyline points="9 18 15 12 9 6"/>
                 </svg>
               </button>
-              <span class="ch-name"><span class="ch-pip" style="background:${palette[ch]}"></span>${ch}</span>
+              <span class="ch-name"><span class="ch-pip" style="background:${chColor(c)}"></span>${c.label}</span>
             </div>
+            ${parts}
           </td>
-          <td class="r mono text-2">S/. ${fmt(ref25)}</td>
+          <td class="r mono text-2">S/. ${fmt(ref2025(m, c.key))}</td>
           <td class="r mono">${showReal ? 'S/. ' + fmt(real) : '<span class="muted">—</span>'}</td>
           <td class="r">${showReal ? share + '%' : '—'}</td>
-          <td class="r"><div class="stepper">
-            <button class="step-btn" data-step="-${STEP}" data-month="${m}" data-ch="${ch}">−</button>
-            <input class="obj-input" type="number" id="inp-${m}-${ch}" value="${state.targets[m][ch]}" min="0" step="${STEP}">
-            <button class="step-btn" data-step="${STEP}" data-month="${m}" data-ch="${ch}">+</button>
-          </div></td>
+          <td class="r mono">${tgt > 0 ? 'S/. ' + fmt(tgt) : '<span class="muted">sin meta</span>'}</td>
           <td class="r" style="min-width:150px;">
             <div class="pb-wrap">
               <div class="pb-outer">
                 <div class="pb-ruler">
-                  <div class="pb-bg"><div class="pb-fill" id="pb-${m}-${ch}"></div></div>
+                  <div class="pb-bg"><div class="pb-fill" id="pb-${m}-${c.key}"></div></div>
                   ${todayPin}
                 </div>
                 <div class="pb-day-scale"><span>${visualRulerStart(m)}</span><span>${visualRulerEnd(m)}</span></div>
               </div>
-              <span class="pct-val" id="pv-${m}-${ch}"></span>
+              <span class="pct-val" id="pv-${m}-${c.key}"></span>
             </div>
           </td>
-          <td class="r" id="gv-${m}-${ch}"></td>
+          <td class="r" id="gv-${m}-${c.key}"></td>
         </tr>
         <tr class="ch-weeks-row" id="${wkDetailId}" style="display:none;">
           <td colspan="7" style="padding:0;">
             <div class="ch-weeks-inner">
-              ${buildChannelWeeklyHTML(m, ch, status)}
+              ${buildChannelWeeklyHTML(m, c, status)}
             </div>
           </td>
         </tr>`;
       });
 
       const statusNote = status === 'current'
-        ? `<div class="period-note">${m} 2026 esta en curso · ciclo comercial 26-25 · dia ${daysPassed(m)} de ${objectiveDays(m)} · Referencia 2025 comercial: <strong>S/. ${fmt(total2025)}</strong></div>`
+        ? `<div class="period-note">${m} 2026 está en curso · ciclo comercial 26-25 · día ${daysPassed(m)} de ${objectiveDays(m)} · Referencia 2025 (plan): <strong>S/. ${fmt(total2025)}</strong></div>`
         : status === 'future'
-          ? `<div class="period-note" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-text);">${m} 2026 es mes futuro · Referencia 2025: <strong>S/. ${fmt(total2025)}</strong> · los objetivos se pueden planificar desde ya.</div>`
+          ? `<div class="period-note" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-text);">${m} 2026 es mes futuro · ${scenarioName().toLowerCase()} <strong>S/. ${fmt(monthTarget(m))}</strong> · referencia 2025 (plan) S/. ${fmt(total2025)}.</div>`
           : '';
 
       panel.innerHTML = `
@@ -1175,16 +1162,16 @@
           <div class="panel-head">
             <div>
               <div class="panel-title">Avance por canal</div>
-              <div class="panel-sub">${m} 2026 · ajustable</div>
+              <div class="panel-sub">${m} 2026 · ${scenarioName().toLowerCase()} del plan</div>
             </div>
           </div>
-          <table>
+          <div class="plan-table-wrap"><table class="month-table">
             <thead><tr>
               <th>Canal</th>
               <th class="r">Ref. 2025</th>
               <th class="r">Real 2026</th>
               <th class="r">Participación</th>
-              <th class="r">Objetivo S/.</th>
+              <th class="r">${scenarioName()}</th>
               <th class="r" style="min-width:140px;">Avance</th>
               <th class="r">Brecha</th>
             </tr></thead>
@@ -1210,25 +1197,12 @@
                 <td class="r" id="gv-tot-${m}"></td>
               </tr>
             </tbody>
-          </table>
+          </table></div>
         </div>`;
 
       monthPanelsEl.appendChild(panel);
 
-      // Bind stepper + input
-      panel.querySelectorAll('.step-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const m2 = btn.dataset.month, ch = btn.dataset.ch, step = parseFloat(btn.dataset.step);
-          const inp = document.getElementById(`inp-${m2}-${ch}`);
-          const cur = parseFloat(inp.value || 0);
-          inp.value = Math.max(0, Math.round((cur + step) / STEP) * STEP);
-          refreshObjRow(m2, ch);
-        });
-      });
-      channels.forEach(ch => {
-        document.getElementById(`inp-${m}-${ch}`).addEventListener('input', () => refreshObjRow(m, ch));
-        renderRowUI(m, ch);
-      });
+      planChannels().forEach(c => renderRowUI(m, c));
       refreshObjTotal(m);
       refreshPaceCards(m);
       refreshAlertPanel(m);
@@ -1255,32 +1229,12 @@
       if (status === 'future') classes.push('future');
       if (status === 'past')   classes.push('past');
       tab.className = classes.join(' ');
+      tab.dataset.month = m;
       tab.textContent = m + (isCurrent ? ' ◉' : '');
-      tab.addEventListener('click', () => {
-        monthTabsEl.querySelectorAll('.month-tab').forEach(t => t.classList.remove('active'));
-        monthPanelsEl.querySelectorAll('.mpanel').forEach(p => p.classList.remove('visible'));
-        tab.classList.add('active');
-        panel.classList.add('visible');
-      });
+      tab.addEventListener('click', () => selectMonth(m));
       monthTabsEl.appendChild(tab);
     });
   }
 
-  // ── Toolbar de objetivos: exportar y restablecer ──
-  // Ejecutar una vez tras el primer render (los botones ya deben existir en el DOM).
-  function wireObjToolbar() {
-    const btnExp = document.getElementById('btn-exportar-obj');
-    const btnRst = document.getElementById('btn-restablecer-obj');
-    if (btnExp && !btnExp.dataset.wired) {
-      btnExp.dataset.wired = '1';
-      btnExp.addEventListener('click', exportarObjetivos);
-    }
-    if (btnRst && !btnRst.dataset.wired) {
-      btnRst.dataset.wired = '1';
-      btnRst.addEventListener('click', restablecerObjetivos);
-    }
-    _updateStorageLabel();
-  }
-
-  global.Objectives = { render, state, exportarObjetivos, restablecerObjetivos, wireObjToolbar };
+  global.Objectives = { render, state };
 })(window);

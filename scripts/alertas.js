@@ -4,7 +4,7 @@
 
    Lee:
      data/ventas-2026.json     → ventas reales acumuladas por canal
-     data/objetivos-2026.json  → metas por mes / canal
+     data/objetivos-2026.json  → plan del cliente: canales y metas por mes
      data/alertas-config.json  → destinatarios y config de envío
 
    Envía email HTML via Resend API.
@@ -59,10 +59,8 @@ const MONTH_DAYS = {
   Enero:31,Febrero:28,Marzo:31,Abril:30,Mayo:31,Junio:30,
   Julio:31,Agosto:31,Septiembre:30,Octubre:31,Noviembre:30,Diciembre:31,
 };
-const CHANNELS = ['Tienda','Web','WhatsApp','Showroom','Instagram','Facebook'];
-
 const CANAL_ICONS = {
-  Tienda:'🏪', Web:'🌐', WhatsApp:'💬', Showroom:'🛍️', Instagram:'📸', Facebook:'📘',
+  Tienda:'🏪', Web:'🌐', Redes:'💬', Outlet:'🛍️',
 };
 
 // ── Cargar archivos ──────────────────────────────────────────
@@ -100,22 +98,26 @@ if (!FORCE && !DRY_RUN && enviosData.enviados[weekKey]) {
 }
 
 // ── Cálculo de métricas ──────────────────────────────────────
-const d2026   = salesData.d2026  || {};
-const targets = objData.targets  || {};
+// Canales del plan del cliente: cada uno suma una o más columnas del Sheet
+// (Redes y WhatsApp = WhatsApp + Instagram + Facebook). Meta: escenario mínimo.
+const d2026   = salesData.d2026 || {};
+const canales = objData.canales;
+const targets = objData.metas.minima;
 
 function calcMonth(m) {
   const data = d2026[m]   || {};
   const tgt  = targets[m] || {};
-  const real = CHANNELS.reduce((s, ch) => s + (data[ch] || 0), 0);
-  const meta = CHANNELS.reduce((s, ch) => s + (tgt[ch]  || 0), 0);
-  const byChannel = CHANNELS
-    .filter(ch => (tgt[ch] || 0) > 0)   // omitir canales sin objetivo
-    .map(ch => ({
-      ch,
-      real : data[ch] || 0,
-      meta : tgt[ch]  || 0,
-      pct  : pctOf(data[ch] || 0, tgt[ch] || 0),
-    }));
+  const rows = canales.map(c => ({
+    ch   : c.label,
+    icon : CANAL_ICONS[c.key] || '',
+    real : c.sheet.reduce((s, col) => s + (data[col] || 0), 0),
+    meta : tgt[c.key] || 0,
+  }));
+  const real = rows.reduce((s, r) => s + r.real, 0);
+  const meta = rows.reduce((s, r) => s + r.meta, 0);
+  const byChannel = rows
+    .filter(r => r.meta > 0)   // omitir canales sin objetivo
+    .map(r => ({ ...r, pct: pctOf(r.real, r.meta) }));
   return { real, meta, byChannel };
 }
 
@@ -180,7 +182,7 @@ if (faltante > 0) {
 }
 console.log('\n   Por canal:');
 cur.byChannel.forEach(r => {
-  console.log(`     ${r.ch.padEnd(12)} real: S/. ${fmt(r.real).padStart(8)}  /  meta: S/. ${fmt(r.meta).padStart(8)}  →  ${r.pct.toFixed(1)}%`);
+  console.log(`     ${r.ch.padEnd(18)} real: S/. ${fmt(r.real).padStart(8)}  /  meta: S/. ${fmt(r.meta).padStart(8)}  →  ${r.pct.toFixed(1)}%`);
 });
 if (achievedChannels.length > 0) {
   console.log(`\n🎯 Objetivo alcanzado: ${achievedChannels.map(r => r.ch).join(', ')}  |  Excedente: S/. ${fmt(totalSurplus)}`);
@@ -188,7 +190,7 @@ if (achievedChannels.length > 0) {
 if (laggingChannels.length > 0) {
   console.log(`\n⚠️  Brecha a mitad de mes (día ${dayOfMonth}/${curMonthDays}):`);
   laggingChannels.forEach(r => {
-    console.log(`     ${r.ch.padEnd(12)} lag: S/. ${fmt(Math.abs(r.lag))}`);
+    console.log(`     ${r.ch.padEnd(18)} lag: S/. ${fmt(Math.abs(r.lag))}`);
   });
 }
 
@@ -209,7 +211,7 @@ function channelRows(m) {
     const gap   = r.real - r.meta;
     return `
       <tr>
-        <td style="padding:8px 12px;font-size:13px;color:#374151;">${CANAL_ICONS[r.ch] || ''} ${r.ch}</td>
+        <td style="padding:8px 12px;font-size:13px;color:#374151;">${r.icon} ${r.ch}</td>
         <td style="padding:8px 12px;text-align:right;font-size:13px;color:#374151;">S/. ${fmt(r.real)}</td>
         <td style="padding:8px 12px;text-align:right;font-size:12px;color:#9ca3af;">/ S/. ${fmt(r.meta)}</td>
         <td style="padding:8px 12px;text-align:right;">
@@ -385,7 +387,7 @@ const htmlEmail = `<!DOCTYPE html>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:12px;">
             ${laggingChannels.map(r => `
             <tr>
-              <td style="padding:5px 0;color:#374151;font-weight:600;">${CANAL_ICONS[r.ch] || ''} ${r.ch}</td>
+              <td style="padding:5px 0;color:#374151;font-weight:600;">${r.icon} ${r.ch}</td>
               <td style="padding:5px 8px;text-align:right;color:#374151;">real S/. ${fmt(r.real)}</td>
               <td style="padding:5px 8px;text-align:right;color:#9ca3af;">esperado S/. ${fmt(r.expectedReal)}</td>
               <td style="padding:5px 0;text-align:right;color:#dc2626;font-weight:700;">brecha S/. ${fmt(Math.abs(r.lag))}</td>

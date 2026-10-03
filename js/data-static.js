@@ -2,7 +2,7 @@
    Datos estáticos — no cambian con el pipeline de Sheets.
    Expone window.DataStatic con:
      - channels, palette, palette de tipos de prenda
-     - d2025, defaultTargets, monthDays
+     - d2025, monthDays (las metas viven en data/objetivos-2026.json)
      - productos: top unidades / ingreso / ticket / tipos
      - copurchase, nextSales, multiData, bundleIdeas
    ============================================================ */
@@ -38,21 +38,6 @@
     Diciembre:  { Tienda: 0, Web: 0, WhatsApp: 0, Showroom: 0, Instagram: 0, Facebook: 0 },
   };
 
-  const defaultTargets = {
-    Enero:      { Tienda: 49220, Web:  9016, WhatsApp: 1341, Showroom: 0, Instagram:  250, Facebook: 0 },
-    Febrero:    { Tienda: 53491, Web: 10699, WhatsApp: 3862, Showroom: 0, Instagram:    0, Facebook: 0 },
-    Marzo:      { Tienda: 70248, Web: 14870, WhatsApp: 3806, Showroom: 0, Instagram:  201, Facebook: 0 },
-    Abril:      { Tienda: 60239, Web: 10248, WhatsApp: 5904, Showroom: 0, Instagram:    0, Facebook: 0 },
-    Mayo:       { Tienda: 57970, Web: 18809, WhatsApp: 1328, Showroom: 0, Instagram:  486, Facebook: 0 },
-    Junio:      { Tienda: 75987, Web: 15394, WhatsApp:  356, Showroom: 0, Instagram:  164, Facebook: 0 },
-    Julio:      { Tienda: 53784, Web: 11402, WhatsApp: 4636, Showroom: 0, Instagram:  758, Facebook: 0 },
-    Agosto:     { Tienda: 74564, Web: 19449, WhatsApp: 4334, Showroom: 0, Instagram:  999, Facebook: 0 },
-    Septiembre: { Tienda: 66740, Web: 22677, WhatsApp: 6172, Showroom: 0, Instagram:    0, Facebook: 0 },
-    Octubre:    { Tienda: 70703, Web: 11653, WhatsApp: 3843, Showroom: 0, Instagram:  674, Facebook: 0 },
-    Noviembre:  { Tienda: 87765, Web: 22501, WhatsApp: 6452, Showroom: 0, Instagram: 2005, Facebook: 0 },
-    Diciembre:  { Tienda: 85443, Web: 18049, WhatsApp: 6380, Showroom: 0, Instagram: 1122, Facebook: 0 },
-  };
-
   const monthDays = {
     Enero: 31, Febrero: 28, Marzo: 31, Abril: 30,
     Mayo: 31, Junio: 30, Julio: 31, Agosto: 31,
@@ -66,8 +51,6 @@
   // Meses de 2026 que ya tienen datos cerrados/en curso (el pipeline solo
   // lee estos del sheet). Se expanden conforme 2026 avanza.
   const monthsWith2026Data = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio'];
-
-  const STEP = 500;
 
   // ── Productos web ────────────────────────────────────────────────
   const prodTopUnits = [
@@ -204,8 +187,7 @@
 
   global.DataStatic = {
     channels, palette, typeColors,
-    d2025, defaultTargets, monthDays, months, monthsWith2026Data,
-    STEP,
+    d2025, monthDays, months, monthsWith2026Data,
     prodTopUnits, prodTopRev, prodTopTicket, prodTypes,
     copurchaseData, nextSales, multiData, bundleIdeas,
     chToUpper,

@@ -22,7 +22,7 @@
     'view-yoy':    'Evolución interanual · 2025 vs 2026',
     'view-prod':   'Ranking y ventas por producto',
     'view-dist':   'Ventas por canal de distribución',
-    'view-obj':    'Seguimiento de metas mensuales',
+    'view-obj':    'Plan del cliente vs ventas',
     'view-meta':   'Presupuesto Web y WhatsApp',
     'view-proj':   'Inversión publicitaria · ritmo mensual',
     'view-config': 'Gestión de accesos y alertas',
@@ -46,6 +46,7 @@
     weekly2025: null,
     generated: null,
     adsData: null,
+    plan: null,          // data/objetivos-2026.json: canales y metas del plan del cliente
     renderedProducts: false,
     configInited: false,
     metaInited: false,
@@ -84,7 +85,7 @@
     if (id === 'view-proj') {
       if (!state.projInited && state.adsData) {
         state.projInited = true;
-        window.Projections?.render({ d2026: state.d2026, targets: ds.defaultTargets, adsData: state.adsData });
+        window.Projections?.render({ d2026: state.d2026, targets: planTargets(), adsData: state.adsData });
       } else if (!state.adsData) {
         const kpi = document.getElementById('kpi-proj');
         if (kpi && !kpi.childElementCount) {
@@ -140,6 +141,9 @@
       setSidebarCollapsed(!document.querySelector('.shell').classList.contains('sidebar-collapsed'));
     });
   }
+
+  // Proyecciones y el KPI anual miden contra la meta mínima del plan.
+  const planTargets = () => state.plan?.metas?.minima || null;
 
   // ── YoY ──
   const tot = o => channels.reduce((s, c) => s + (o[c] || 0), 0);
@@ -199,7 +203,8 @@
       const total25   = months.reduce((s, m) => s + tot(d2025[m]), 0);
       const diffPct   = total25 > 0 ? (proyAnual - total25) / total25 * 100 : 0;
       const up        = diffPct >= 0;
-      const obj2026   = months.reduce((s, m) => s + Object.values((ds.defaultTargets[m] || {})).reduce((a, b) => a + b, 0), 0);
+      const targets   = planTargets() || {};
+      const obj2026   = months.reduce((s, m) => s + Object.values(targets[m] || {}).reduce((a, b) => a + b, 0), 0);
       const vsObj     = obj2026 > 0 ? (proyAnual / obj2026 * 100).toFixed(1) : null;
 
       el.insertAdjacentHTML('beforeend', `
@@ -220,7 +225,7 @@
             <span class="anual-pill" style="background:${up ? 'var(--green-soft)' : 'var(--red-soft)'};color:${up ? 'var(--green-text)' : 'var(--red-text)'};">2025 · S/. ${fmt(total25)}</span>
           </div>
           ${vsObj ? `<div class="anual-item">
-            <span class="anual-label">vs objetivo 2026</span>
+            <span class="anual-label">vs meta mínima 2026</span>
             <span class="anual-val" style="color:${parseFloat(vsObj)>=100?'var(--green-text)':'var(--red-text)'};">${vsObj}%</span>
             <span class="anual-pill" style="background:var(--brand-soft);color:var(--brand-text);">obj S/. ${fmt(obj2026)}</span>
           </div>` : ''}
@@ -431,13 +436,13 @@
       d2025Ref: liveData.d2025_commercial || ds.d2025,
       periodDays: liveData.commercialPeriodDays,
       cycleLabel: liveData.commercialCycleLabel || '26-25',
+      plan: state.plan,
     });
-    window.Objectives.wireObjToolbar?.();
 
     if (state.renderedProducts) renderProducts();
     if (state.adsData) {
       state.projInited = true;
-      window.Projections?.render({ d2026: state.d2026, targets: ds.defaultTargets, adsData: state.adsData });
+      window.Projections?.render({ d2026: state.d2026, targets: planTargets(), adsData: state.adsData });
     }
     window.Sheets.updateGenerated(state.generated);
   }
@@ -472,8 +477,13 @@
     const adsRequest = window.RB_ADS_DATA
       ? Promise.resolve(window.RB_ADS_DATA)
       : fetch('data/ads-data.json').then(r => r.ok ? r.json() : null);
-    const [live] = await Promise.all([
+    // El plan de metas llega igual: incrustado al publicar, data/objetivos-2026.json en local.
+    const planRequest = window.RB_OBJETIVOS_DATA
+      ? Promise.resolve(window.RB_OBJETIVOS_DATA)
+      : fetch('data/objetivos-2026.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null);
+    const [live, plan] = await Promise.all([
       window.DataLive.load(),
+      planRequest.catch(err => { console.warn('[main] no se pudo cargar data/objetivos-2026.json', err); return null; }),
       adsRequest
         .then(ads => {
           state.adsData = ads;
@@ -482,12 +492,13 @@
             const projView = document.getElementById('view-proj');
             if (projView && projView.classList.contains('visible')) {
               state.projInited = true;
-              window.Projections?.render({ d2026: state.d2026, targets: ds.defaultTargets, adsData: ads });
+              window.Projections?.render({ d2026: state.d2026, targets: planTargets(), adsData: ads });
             }
           }
         })
         .catch(() => {}),
     ]);
+    state.plan = plan;
     if (live.source === 'fallback') {
       const host = document.getElementById('kpi-yoy');
       if (host) host.insertAdjacentHTML('beforebegin', `

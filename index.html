@@ -37,7 +37,7 @@
       </div>
       <div class="s-text">
         <div class="s-title-nav">Objetivos 2026</div>
-        <div class="s-desc-nav">Seguimiento de metas mensuales</div>
+        <div class="s-desc-nav">Plan del cliente vs ventas</div>
       </div>
       <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
     </button>
@@ -109,7 +109,7 @@
     <div class="s-modulo-activo" id="s-modulo-activo">
       <div class="s-ma-label">MÓDULO ACTIVO</div>
       <div class="s-ma-name" id="s-ma-name">Objetivos 2026</div>
-      <div class="s-ma-desc" id="s-ma-desc">Seguimiento de metas mensuales</div>
+      <div class="s-ma-desc" id="s-ma-desc">Plan del cliente vs ventas</div>
     </div>
   </aside>
 
@@ -263,9 +263,31 @@
       <!-- ══ VIEW: Objetivos ═══════════════════════════ -->
       <section class="view" id="view-obj">
         <div class="sec-lbl">04 — Planeación</div>
-        <div class="section-title">Objetivos 2026 · Simulador por canal</div>
+        <div class="section-title">Objetivos 2026 · Plan vs ventas</div>
         <div class="section-desc">
-          Usa <strong>+</strong> / <strong>−</strong> para ajustar el objetivo en pasos de S/. 500, o escribe el valor directo. La columna <em>Ref. 2025</em> muestra el cierre real del año anterior.
+          Metas del plan del cliente frente a la venta registrada en el Sheet, en ciclo comercial 26–25. La meta mínima es +10% sobre 2025 y la ideal +20%. La columna <em>Ref. 2025</em> muestra el cierre 2025 del plan.
+        </div>
+
+        <div class="obj-toolbar">
+          <span class="obj-toolbar-info">Escenario de meta · se aplica al cuadro anual y a cada mes</span>
+          <div class="view-toggle" id="scenario-toggle" role="group" aria-label="Escenario de meta">
+            <button class="vt-btn" data-scenario="minima">Mínima +10%</button>
+            <button class="vt-btn" data-scenario="ideal">Ideal +20%</button>
+          </div>
+        </div>
+
+        <div id="plan-section">
+          <div id="plan-kpis" style="margin-bottom:14px;"></div>
+          <div class="panel" style="margin-bottom:20px;">
+            <div class="panel-head">
+              <div>
+                <div class="panel-title">Plan anual · venta vs meta</div>
+                <div class="panel-sub" id="plan-annual-sub"></div>
+              </div>
+            </div>
+            <div class="plan-table-wrap"><table class="plan-table" id="plan-annual"></table></div>
+            <div class="plan-notes" id="plan-notes"></div>
+          </div>
         </div>
 
         <div class="panel" style="margin-bottom:20px;">
@@ -299,20 +321,6 @@
 
           <!-- Strip de KPIs acumulados (visible solo en modo Acumulado) -->
           <div id="cum-kpi-strip" style="display:none;"></div>
-        </div>
-
-        <div class="obj-toolbar" id="obj-toolbar">
-          <span class="obj-toolbar-info" id="obj-guardado-label">Objetivos guardados en navegador</span>
-          <div class="obj-toolbar-actions">
-            <button class="btn ghost btn-sm" id="btn-exportar-obj" title="Descarga objetivos-2026.json para commitear al repo y actualizar las alertas semanales">
-              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Exportar objetivos
-            </button>
-            <button class="btn ghost btn-sm" id="btn-restablecer-obj" title="Vuelve a los valores originales del sistema">
-              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
-              Restablecer
-            </button>
-          </div>
         </div>
 
         <div class="month-tabs" id="month-tabs"></div>

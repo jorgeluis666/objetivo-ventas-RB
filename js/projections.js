@@ -68,9 +68,9 @@
     const ventasProyectadas = ventasTotal + tasaVentasDia * diasRestantes;
     const gastoProyectado   = gastoTotal  + tasaGastoDia  * diasRestantes;
 
-    // Objetivo del mes: Web + WhatsApp
-    const objWeb = ((targets || {})[mes] || {}).Web      || 0;
-    const objWa  = ((targets || {})[mes] || {}).WhatsApp || 0;
+    // Objetivo del mes: Web + Redes y WhatsApp (meta mínima del plan; Redes incluye Instagram y Facebook)
+    const objWeb = ((targets || {})[mes] || {}).Web   || 0;
+    const objWa  = ((targets || {})[mes] || {}).Redes || 0;
     const objTotal = objWeb + objWa;
 
     // Brecha y recálculo de inversión

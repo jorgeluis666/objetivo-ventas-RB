@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "live-server --port=3000 --open=index.html --no-browser",
     "fetch": "node scripts/fetch-data.js",
+    "sync:ads": "node scripts/sync-ads.js",
     "build": "node scripts/build.js"
   },
   "engines": {

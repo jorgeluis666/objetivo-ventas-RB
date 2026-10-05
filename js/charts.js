@@ -462,7 +462,7 @@
 
   global.Charts = {
     evoChart, distCharts, absChart, productCharts, combinedWeeklyChart,
-    destroy, replay,
+    mount, destroy, replay,
     destroyAll: () => { instances.forEach(c => c.destroy()); instances.clear(); },
     getInstance: id => instances.get(id),
     tot, fmt,

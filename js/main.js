@@ -14,6 +14,7 @@
     'view-obj':  'Objetivos 2026',
     'view-meta': 'Planificador Meta Ads',
     'view-proj': 'Proyecciones mensuales',
+    'view-rep':  'Gasto publicitario',
     'view-config': 'Usuarios y Claves',
   };
 
@@ -25,6 +26,7 @@
     'view-obj':    'Plan del cliente vs ventas',
     'view-meta':   'Presupuesto Web y WhatsApp',
     'view-proj':   'Inversión publicitaria · ritmo mensual',
+    'view-rep':    'Meta Ads y Google Ads',
     'view-config': 'Gestión de accesos y alertas',
   };
 
@@ -36,6 +38,7 @@
     'view-obj':    ['chart-weekly-combined'],
     'view-meta':   [],
     'view-proj':   [],
+    'view-rep':    [],  // Gasto.init() re-anima los charts de la pestaña activa
     'view-config': [],
   };
 
@@ -93,6 +96,9 @@
         }
       }
     }
+
+    // Init perezoso del gasto publicitario (sus charts se crean ya visibles)
+    if (id === 'view-rep') window.Gasto?.init();
 
     // Render perezoso de productos para no bloquear primera pantalla
     if (id === 'view-prod' && !state.renderedProducts) {

@@ -1,0 +1,66 @@
+name: Sincronizar inversión publicitaria
+
+# Lee las carpetas de Drive de Meta Ads ("Meta Files") y Google Ads ("Google Files")
+# con scripts/sync-ads.js y commitea data/ads-2026.json si cambió. Lo usa el módulo
+# Gasto publicitario del tablero.
+#
+# Corre todos los días a las 07:00 de Lima y a mano (Run workflow). No hay botón en
+# el tablero: dispararlo desde el navegador exigiría un token de GitHub y el tablero
+# lo abren clientes.
+#
+# Las carpetas están compartidas como "Cualquier persona con el enlace": sin
+# credenciales el script usa la vista pública. Con el secret opcional RB_DRIVE_API_KEY
+# usa la API de Drive.
+#
+# Si un archivo no se puede descargar o leer, el script no escribe nada y sale con
+# código 1: el workflow queda en rojo, se conserva el JSON anterior y el deploy no
+# se dispara (deploy.yml solo sigue a corridas en verde).
+
+on:
+  schedule:
+    # 07:00 Lima = 12:00 UTC
+    - cron: '0 12 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-ads
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Leer las carpetas de Meta Ads y Google Ads
+        env:
+          RB_DRIVE_API_KEY: ${{ secrets.RB_DRIVE_API_KEY }}
+        run: node scripts/sync-ads.js
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/ads-2026.json
+          if git diff --cached --quiet; then
+            echo "Sin cambios en data/ads-2026.json"
+            exit 0
+          fi
+          TODAY=$(TZ='America/Lima' date +'%Y-%m-%d')
+          git commit -m "data: inversión publicitaria ${TODAY}"
+          # Por si otro workflow de datos commiteó mientras tanto
+          git pull --rebase origin main
+          git push

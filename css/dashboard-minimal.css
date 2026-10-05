@@ -2232,3 +2232,203 @@ tbody tr:hover td {
     display: none;
   }
 }
+
+/* ============================================================
+   Gasto publicitario (Meta Ads y Google Ads)
+   Portado de Casiopia al tema claro de Royal Baby: tarjetas blancas con
+   borde --border y selección en azul suave, como los módulos del sidebar.
+   Reusa .kpi-strip/.kpi-pill y el selector de mes .proj-mes-* de
+   Proyecciones. El color de cada plataforma llega en --gp-c desde
+   js/gasto.js: el mismo en la pestaña, las barras y los gráficos.
+   ============================================================ */
+#view-rep .section-desc a { color: var(--brand); text-decoration: none; }
+#view-rep .section-desc a:hover { text-decoration: underline; }
+
+/* Franjas de sincronización y de fuente */
+.gp-sync,
+.gp-source {
+  display: flex;
+  align-items: center;
+  gap: 10px 12px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--sh);
+  font-size: 12px;
+  color: var(--text-2);
+}
+.gp-sync { flex-wrap: nowrap; margin: 0 0 14px; }
+.gp-source { justify-content: space-between; margin-bottom: 16px; }
+.gp-source-l,
+.gp-source-r { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.gp-source-r { flex-wrap: wrap; }
+.gp-sync b,
+.gp-source b { color: var(--text); font-weight: 600; }
+.gp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.gp-dot.ok   { background: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+.gp-dot.warn { background: var(--amber); box-shadow: 0 0 0 3px var(--amber-soft); }
+
+/* Pestañas por fuente */
+.gp-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 14px;
+}
+.gp-tab {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  transition: background .15s, border-color .15s;
+}
+.gp-tab:hover { background: #f8fbff; border-color: #bfdbfe; }
+.gp-tab.active { background: #eff6ff; border-color: #bfdbfe; }
+.gp-tab:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, .25); }
+.gp-tab-ic {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+.gp-tab-name { display: block; font-size: 14px; font-weight: 700; color: var(--text); }
+.gp-tab-src { display: block; margin-top: 1px; font-size: 12px; color: var(--text-2); }
+
+/* Mes + periodo */
+.rep-toolbar { display: flex; align-items: center; gap: 8px 16px; flex-wrap: wrap; margin-bottom: 16px; }
+.rep-toolbar .proj-mes-wrap { margin-bottom: 0; }
+.rep-period-meta { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12px; color: var(--text-2); }
+.rep-stack { display: grid; gap: 16px; }
+/* Sin esto, una tabla ancha estira la columna de la grilla en vez de hacer scroll dentro de su panel */
+.rep-stack > *,
+.rep-stack .grid-2 > * { min-width: 0; }
+
+/* KPIs: .kpi-pill pinta todos sus <span> como etiqueta; las píldoras de variación no */
+.gp-kpis { margin-bottom: 0; }
+.gp-kpis .kpi-pill .pill {
+  display: inline-flex;
+  margin-right: 4px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Avisos del sync */
+.gp-alerts { display: grid; gap: 8px; }
+.gp-alert-list { display: grid; gap: 2px; margin: 4px 0 0 18px; }
+
+/* Tablas */
+.gp-table-wrap { overflow-x: auto; }
+.gp-camp-table { min-width: 820px; }
+.gp-camp-table th { white-space: normal; }
+.rep-table { font-size: 12px; }
+.rep-table th { padding: 8px 10px; font-size: 10px; letter-spacing: .08em; white-space: nowrap; }
+.rep-table td { padding: 9px 10px; vertical-align: middle; }
+.rep-table td.r { white-space: nowrap; }
+.rep-table td:first-child { min-width: 170px; }
+.rep-table .sub-val { font-size: 11px; }
+.rep-camp-name { font-weight: 600; }
+.rep-bar { max-width: 220px; height: 4px; margin-top: 6px; overflow: hidden; border-radius: 3px; background: #eef3fa; }
+.rep-bar > div { height: 100%; border-radius: 3px; background: var(--gp-c, var(--brand)); }
+.rep-star { margin-right: 6px; color: var(--amber); }
+.gp-type { display: inline-flex; align-items: center; gap: 7px; }
+.gp-pip { width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; }
+.gp-cats { white-space: nowrap; color: var(--text-2); }
+.gp-note { margin-top: 12px; font-size: 12px; line-height: 1.55; color: var(--text-2); }
+.gp-note-top { margin-top: -4px; }
+
+.rep-subttl {
+  margin: 16px 0 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.rep-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; }
+.rep-metrics > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #edf2f7;
+}
+.rep-metrics > div:last-child { border-bottom: none; }
+.rep-metrics dt { font-size: 12px; color: var(--text-2); }
+.rep-metrics dd { margin: 0; font-size: 12px; font-weight: 600; color: var(--text); text-align: right; }
+.rep-metrics-wide { grid-template-columns: 1fr; }
+
+/* Embudo */
+.gp-funnel-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 76px 70px;
+  gap: 10px;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 12px;
+}
+.gp-funnel-row:last-of-type { border-bottom: none; }
+.gp-funnel-name { color: var(--text-2); }
+.gp-funnel-bar,
+.gp-aud-bar { height: 10px; overflow: hidden; border-radius: 5px; background: #eef3fa; }
+.gp-funnel-bar > div,
+.gp-aud-bar > div { height: 100%; border-radius: 5px; background: var(--gp-c, var(--brand)); }
+.gp-funnel-val { font-weight: 600; color: var(--text); text-align: right; }
+.gp-funnel-rate { font-size: 11px; color: var(--muted); text-align: right; }
+.gp-funnel-row.is-off .gp-funnel-name,
+.gp-funnel-row.is-off .gp-funnel-val { color: var(--muted); }
+.gp-funnel-row.is-off .gp-funnel-rate { color: var(--amber-text); }
+
+/* Público */
+.gp-aud-row { display: grid; grid-template-columns: 64px 1fr 130px; gap: 10px; align-items: center; padding: 5px 0; font-size: 12px; }
+.gp-aud-name { color: var(--text-2); }
+.gp-aud-val { white-space: nowrap; text-align: right; }
+
+/* Estado vacío */
+.gp-empty { padding: 40px 24px; text-align: center; }
+.gp-empty-ic {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+.gp-empty-ic svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.gp-empty-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.gp-empty-text { max-width: 560px; margin: 8px auto 16px; font-size: 13px; line-height: 1.6; color: var(--text-2); }
+.gp-empty .btn { display: inline-flex; }
+
+@media (max-width: 760px) {
+  .gp-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gp-kpis .kpi-pill strong { font-size: 19px; }
+  .gp-tab { gap: 10px; padding: 10px; }
+  .gp-tab-ic { width: 30px; height: 30px; }
+  .gp-tab-src { display: none; }
+  .gp-funnel-row { grid-template-columns: 96px 1fr 60px 58px; gap: 8px; }
+  .gp-aud-row { grid-template-columns: 52px 1fr 112px; }
+  .rep-metrics > div { flex-direction: column; gap: 2px; }
+  .rep-metrics dd { text-align: left; }
+}

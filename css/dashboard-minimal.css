@@ -1812,6 +1812,9 @@ body {
   transform: none;
 }
 
+/* Módulos ocultos del menú: el display de .s-item pisaría el atributo hidden */
+.s-item[hidden] { display: none; }
+
 .s-item:hover {
   background: #f8fbff;
   border-color: #bfdbfe;

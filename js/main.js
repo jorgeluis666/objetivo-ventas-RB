@@ -475,8 +475,10 @@
 
     wireNav();
     wireSidebarToggle();
+    // Un módulo oculto en el menú tampoco se abre por enlace (#view-…)
     const hashView = window.location.hash.slice(1);
-    showView(Object.keys(VIEW_TITLES).includes(hashView) ? hashView : 'view-yoy');
+    const hashBtn  = hashView && document.querySelector(`.s-item[data-view="${hashView}"]`);
+    showView(hashBtn && !hashBtn.hidden ? hashView : 'view-obj');
 
     // Carga paralela: datos de ventas + datos de campañas publicitarias.
     // Publicado, ads-data.json viene incrustado por scripts/build.js; en local se lee de data/.

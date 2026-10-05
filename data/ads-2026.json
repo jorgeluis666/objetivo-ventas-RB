@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-05T18:24:38.813Z",
+  "generatedAt": "2026-10-05T22:23:45.828Z",
   "currency": "PEN",
   "rules": [
     "Google Ads llega mensual: sin serie diaria real. Meta Ads llega por día y la serie diaria es real.",
@@ -17,16 +17,16 @@
       "folderUrl": "https://drive.google.com/drive/folders/1TT5KTVZuGlFc7OqvGAz9nuRVyJFvwJpd",
       "discovery": "pública",
       "files": [
-        { "id": "1dG2LGZ9TOmbV3cUYmthfSrHlNwvYlVZYCaS_kmK2VBE", "name": "Royal Baby GA - Abril 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1bfRUOnZ_uV7pESLchCFBWmM9PVk0uSsWT0jIZlS5J4s", "name": "Royal Baby GA - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "18tnZYwrv0dTlUVbqS07oR4yzswqUCDvRV4qE0KX42qg", "name": "Royal Baby GA - Enero 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1Wtk22if7bnTjTbNJOJ2PLx2BbZsLi5gDCnPDsXGuGTk", "name": "Royal Baby GA - Febrero 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1sBftH-2Rav_Plk_-pUydsjnmH9MPFUfTd4dLfsqJy5s", "name": "Royal Baby GA - Julio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1g16heacy_jVnZARQJ9msa4n8N3DSfeLMlhB9oHboFtI", "name": "Royal Baby GA - Junio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1-f4cD7wESkW0fAn_aT2OX0mX81GKrdywS4oIXNcr0i4", "name": "Royal Baby GA - Marzo 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1BB503eNW2lO17DM68ieE848sW9bn_p-5nD7vNeWVB90", "name": "Royal Baby GA - Mayo 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1697Quxzv6sGICYSyW9Wv6m9Ak3EjRTV68RCpuRiY2Ig", "name": "Royal Baby GA - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1Ebb7XuRlbSRttLSHVDV6Ktxy0EuuB7P4FdYSuFr1icg", "name": "Royal Baby GA - Setiembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null }
+        { "id": "1sQgs4qZdT00185GvZy9HbmLkuU6uyTKcRA3L2jsQY_k", "name": "Royal Baby GA - Abril 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        { "id": "1OHSr4s-6WkU-I3Q_qGrd0AGQPweQ48w3CR1hsTcRQ20", "name": "Royal Baby GA - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        { "id": "1f7JO8c-ZvTc0dRRHgHdxPL9__YTnAwTyPlydJxnbTyA", "name": "Royal Baby GA - Enero 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        { "id": "1UvlLEHZfKivrqiELpOe6L6EZAyd5tqqAbYCtRawvCMU", "name": "Royal Baby GA - Febrero 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        { "id": "1aSS6JVQ9xpWO2t1LWvXJvbOeTtON0yJkWfvFxuhjwOw", "name": "Royal Baby GA - Julio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        { "id": "160JACjaLoc7XQj-Ap1BHyIdHCPLMDOJzM4_JhtiQHsw", "name": "Royal Baby GA - Junio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        { "id": "1nK4cx0NatJU2zESUlgdZ1xO_QXlQGfzpjdcNbPVTSE0", "name": "Royal Baby GA - Marzo 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        { "id": "1Ca2FUgC6UNC0hOrD48GbZtcASqpfIxDyqkJ5NS0mcec", "name": "Royal Baby GA - Mayo 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        { "id": "1eM8ZjVYSK3vSdE3w423j-IK2Ri0Gg2qFDT3mu5LZ7j4", "name": "Royal Baby GA - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        { "id": "1WYRDmKazdzG8kiOzgbI3pmuvmoeELPbuT_HF5GcCpBw", "name": "Royal Baby GA - Setiembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null }
       ]
     },
     "meta": {
@@ -47,126 +47,38 @@
       ]
     }
   },
-  "pending": [
-    "Google Ads: exportar de nuevo el informe de campaña sin segmentar por «Categoría de conversión», con Campaña, Costo, Impr., CTR, Clics, Prom. CPC, Conversiones, Costo/conv., Conversiones por compras y Valor de conv. por campaña, y reemplazar las hojas de Enero 2026, Febrero 2026, Marzo 2026, Abril 2026, Mayo 2026, Junio 2026, Julio 2026, Agosto 2026, Septiembre 2026, Octubre 2026."
-  ],
+  "pending": [],
   "warnings": [
-    "Google Ads Enero 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta.",
-    "Google Ads Enero 2026: 1 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Total: Máximo rendimiento» \"51,39\" → 51,390); cuadran con los totales.",
-    "Google Ads Febrero 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta.",
-    "Google Ads Febrero 2026: 2 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Total: Búsqueda» \"1,31\" → 1,310; Impr. de «Total: Compras» \"24,72\" → 24,720); cuadran con los totales.",
-    "Google Ads Marzo 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta.",
-    "Google Ads Marzo 2026: 3 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Total: Cuenta» \"235,11\" → 235,110; Clics de «Total: Máximo rendimiento» \"1,22\" → 1,220; Impr. de «Total: Búsqueda» \"2,03\" → 2,030); cuadran con los totales.",
-    "Google Ads Abril 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta.",
-    "Google Ads Mayo 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta.",
-    "Google Ads Mayo 2026: 1 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Total: Cuenta» \"122,2\" → 122,200); cuadran con los totales.",
-    "Google Ads Junio 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta.",
-    "Google Ads Julio 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta.",
-    "Google Ads Agosto 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta.",
-    "Google Ads Septiembre 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta.",
-    "Google Ads Octubre 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta."
+    "Google Ads Enero 2026: 2 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Pmax B | Objetivo | LR» \"51,39\" → 51,390; Impr. de «Total: Máximo rendimiento» \"51,39\" → 51,390); cuadran con los totales.",
+    "Google Ads Febrero 2026: 4 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Search | LR» \"1,31\" → 1,310; Impr. de «Shopping Manual | Compras | LR» \"24,72\" → 24,720; Impr. de «Total: Compras» \"24,72\" → 24,720); cuadran con los totales.",
+    "Google Ads Marzo 2026: 6 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Search | LR» \"2,03\" → 2,030; Clics de «Pmax B | Objetivo | LR» \"1,22\" → 1,220; Impr. de «Total: Campañas filtradas» \"235,11\" → 235,110); cuadran con los totales.",
+    "Google Ads Mayo 2026: 2 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Total: Campañas filtradas» \"122,2\" → 122,200; Impr. de «Total: Cuenta» \"122,2\" → 122,200); cuadran con los totales."
   ],
   "months": [
     {
       "id": "2026-01",
       "label": "Enero 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Enero 2026", "id": "18tnZYwrv0dTlUVbqS07oR4yzswqUCDvRV4qE0KX42qg", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby GA - Enero 2026", "id": "1f7JO8c-ZvTc0dRRHgHdxPL9__YTnAwTyPlydJxnbTyA", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-01-01", "end": "2026-01-31", "days": null, "daysInMonth": 31, "complete": true },
-        "segmentation": "Categoría de conversión",
-        "campaignsComplete": false,
+        "segmentation": null,
+        "campaignsComplete": true,
         "totalsSource": "Total: Cuenta",
         "totals": { "cost": 1396.12, "impressions": 275318, "clicks": 5525, "conversions": 121.67, "purchases": 19.75, "allConversions": 180.91, "conversionValue": 0, "ctr": 0.020068, "cpc": 0.25, "costPerConversion": 11.47, "costPerPurchase": 70.69, "roas": 0 },
-        "conversionsByCategory": { "Contacto": 101.92, "Compra": 19.75 },
+        "conversionsByCategory": null,
         "byType": [
-          { "type": "Compras", "cost": 572.45, "impressions": 163677, "clicks": 2044, "conversions": 7.75, "purchases": 7.75, "allConversions": 37.79, "conversionValue": 0, "ctr": 0.012488, "cpc": 0.28, "costPerConversion": 73.86, "costPerPurchase": 73.86, "roas": 0 },
           { "type": "Búsqueda", "cost": 152.13, "impressions": 1657, "clicks": 253, "conversions": 9, "purchases": 0, "allConversions": 10.25, "conversionValue": 0, "ctr": 0.152686, "cpc": 0.6, "costPerConversion": 16.9, "costPerPurchase": null, "roas": 0 },
+          { "type": "Shopping", "cost": 572.45, "impressions": 163677, "clicks": 2044, "conversions": 7.75, "purchases": 7.75, "allConversions": 37.79, "conversionValue": 0, "ctr": 0.012488, "cpc": 0.28, "costPerConversion": 73.86, "costPerPurchase": 73.86, "roas": 0 },
           { "type": "Máximo rendimiento", "cost": 471.34, "impressions": 51390, "clicks": 737, "conversions": 12, "purchases": 12, "allConversions": 39.94, "conversionValue": 0, "ctr": 0.014341, "cpc": 0.64, "costPerConversion": 39.28, "costPerPurchase": 39.28, "roas": 0 },
-          { "type": "Video", "cost": 200.21, "impressions": 58594, "clicks": 2491, "conversions": 92.92, "purchases": 0, "allConversions": 92.92, "conversionValue": 0, "ctr": 0.042513, "cpc": 0.08, "costPerConversion": 2.15, "costPerPurchase": null, "roas": 0 }
+          { "type": "Video", "cost": 200.21, "impressions": 58594, "clicks": 2491, "conversions": 92.92, "purchases": 0, "allConversions": 92.92, "conversionValue": 0, "ctr": 0.042513, "cpc": 0.08, "costPerConversion": 2.15, "costPerPurchase": null, "roas": 0, "fromCampaigns": true }
         ],
         "campaigns": [
-          {
-            "campaign": "Shopping Manual | Compras | LR",
-            "status": "Detenida",
-            "type": "Compras",
-            "dailyBudget": 50,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 7.75,
-            "purchases": 7.75,
-            "allConversions": 37.79,
-            "conversionValue": 0,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 7.75, "Contacto": 0 }
-          },
-          {
-            "campaign": "Videos Reels | Mensajes | LR",
-            "status": "Quitada",
-            "type": "Video",
-            "dailyBudget": null,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 92.92,
-            "purchases": 0,
-            "allConversions": 92.92,
-            "conversionValue": 0,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Contacto": 92.92 }
-          },
-          {
-            "campaign": "Pmax B | Objetivo | LR",
-            "status": "Habilitada",
-            "type": "Máximo rendimiento",
-            "dailyBudget": 20,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 12,
-            "purchases": 12,
-            "allConversions": 39.94,
-            "conversionValue": 0,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 12, "Contacto": 0 }
-          },
-          {
-            "campaign": "Search | LR",
-            "status": "Habilitada",
-            "type": "Búsqueda",
-            "dailyBudget": 50,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 9,
-            "purchases": 0,
-            "allConversions": 10.25,
-            "conversionValue": 0,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 0, "Contacto": 9 }
-          }
+          { "campaign": "Pmax B | Objetivo | LR", "status": "Habilitada", "type": "Máximo rendimiento", "dailyBudget": 20, "complete": true, "cost": 471.34, "impressions": 51390, "clicks": 737, "conversions": 12, "purchases": 12, "allConversions": 39.94, "conversionValue": 0, "ctr": 0.014341, "cpc": 0.64, "costPerConversion": 39.28, "costPerPurchase": 39.28, "roas": 0, "conversionsByCategory": null },
+          { "campaign": "Shopping Manual | Compras | LR", "status": "Detenida", "type": "Shopping", "dailyBudget": 50, "complete": true, "cost": 572.45, "impressions": 163677, "clicks": 2044, "conversions": 7.75, "purchases": 7.75, "allConversions": 37.79, "conversionValue": 0, "ctr": 0.012488, "cpc": 0.28, "costPerConversion": 73.86, "costPerPurchase": 73.86, "roas": 0, "conversionsByCategory": null },
+          { "campaign": "Videos Reels | Mensajes | LR", "status": "Quitada", "type": "Video", "dailyBudget": null, "complete": true, "cost": 200.21, "impressions": 58594, "clicks": 2491, "conversions": 92.92, "purchases": 0, "allConversions": 92.92, "conversionValue": 0, "ctr": 0.042513, "cpc": 0.08, "costPerConversion": 2.15, "costPerPurchase": null, "roas": 0, "conversionsByCategory": null },
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": 50, "complete": true, "cost": 152.13, "impressions": 1657, "clicks": 253, "conversions": 9, "purchases": 0, "allConversions": 10.25, "conversionValue": 0, "ctr": 0.152686, "cpc": 0.6, "costPerConversion": 16.9, "costPerPurchase": null, "roas": 0, "conversionsByCategory": null }
         ],
         "checks": [
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "cost", "expected": 1396.12, "actual": 1396.13, "ok": true },
@@ -176,13 +88,17 @@
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "purchases", "expected": 19.75, "actual": 19.75, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "allConversions", "expected": 180.91, "actual": 180.9, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "conversionValue", "expected": 0, "actual": 0, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "cost", "expected": 1396.12, "actual": 1396.13, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "impressions", "expected": 275318, "actual": 275318, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "clicks", "expected": 5525, "actual": 5525, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversions", "expected": 121.67, "actual": 121.67, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "purchases", "expected": 19.75, "actual": 19.75, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "allConversions", "expected": 180.91, "actual": 180.9, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversionValue", "expected": 0, "actual": 0, "ok": true },
-          { "check": "Conversiones por categoría vs Total: Cuenta", "field": "conversions", "expected": 121.67, "actual": 121.67, "ok": true }
+          { "check": "Total: Campañas filtradas vs Total: Cuenta", "field": "cost", "expected": 1396.12, "actual": 1396.12, "ok": true }
         ],
         "repairs": [
+          { "row": "Pmax B | Objetivo | LR", "column": "Impr.", "raw": "51,39", "value": 51390 },
           { "row": "Total: Máximo rendimiento", "column": "Impr.", "raw": "51,39", "value": 51390 }
         ]
       },
@@ -315,110 +231,33 @@
         ]
       },
       "warnings": [
-        "Google Ads Enero 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta.",
-        "Google Ads Enero 2026: 1 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Total: Máximo rendimiento» \"51,39\" → 51,390); cuadran con los totales."
+        "Google Ads Enero 2026: 2 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Pmax B | Objetivo | LR» \"51,39\" → 51,390; Impr. de «Total: Máximo rendimiento» \"51,39\" → 51,390); cuadran con los totales."
       ]
     },
     {
       "id": "2026-02",
       "label": "Febrero 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Febrero 2026", "id": "1Wtk22if7bnTjTbNJOJ2PLx2BbZsLi5gDCnPDsXGuGTk", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby GA - Febrero 2026", "id": "1UvlLEHZfKivrqiELpOe6L6EZAyd5tqqAbYCtRawvCMU", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-02-01", "end": "2026-02-28", "days": null, "daysInMonth": 28, "complete": true },
-        "segmentation": "Categoría de conversión",
-        "campaignsComplete": false,
+        "segmentation": null,
+        "campaignsComplete": true,
         "totalsSource": "Total: Cuenta",
         "totals": { "cost": 1540.1, "impressions": 198818, "clicks": 7059, "conversions": 136.61, "purchases": 21.11, "allConversions": 227.62, "conversionValue": 93.74, "ctr": 0.035505, "cpc": 0.22, "costPerConversion": 11.27, "costPerPurchase": 72.96, "roas": 0.06 },
-        "conversionsByCategory": { "Compra": 21.11, "Contacto": 115.5 },
+        "conversionsByCategory": null,
         "byType": [
-          { "type": "Búsqueda", "cost": 74.17, "impressions": 1310, "clicks": 184, "conversions": 17.5, "purchases": 0, "allConversions": 24.5, "conversionValue": 0, "ctr": 0.140458, "cpc": 0.4, "costPerConversion": 4.24, "costPerPurchase": null, "roas": 0 },
-          { "type": "Compras", "cost": 99.77, "impressions": 24720, "clicks": 315, "conversions": 0, "purchases": 0, "allConversions": 1, "conversionValue": 0, "ctr": 0.012743, "cpc": 0.32, "costPerConversion": null, "costPerPurchase": null, "roas": 0 },
+          { "type": "Generación de demanda", "cost": 272.65, "impressions": 73651, "clicks": 4472, "conversions": 98, "purchases": 0, "allConversions": 98, "conversionValue": 0, "ctr": 0.060719, "cpc": 0.06, "costPerConversion": 2.78, "costPerPurchase": null, "roas": 0 },
+          { "type": "Shopping", "cost": 99.77, "impressions": 24720, "clicks": 315, "conversions": 0, "purchases": 0, "allConversions": 1, "conversionValue": 0, "ctr": 0.012743, "cpc": 0.32, "costPerConversion": null, "costPerPurchase": null, "roas": 0 },
           { "type": "Máximo rendimiento", "cost": 1093.51, "impressions": 99137, "clicks": 2088, "conversions": 21.11, "purchases": 21.11, "allConversions": 104.12, "conversionValue": 93.74, "ctr": 0.021062, "cpc": 0.52, "costPerConversion": 51.8, "costPerPurchase": 51.8, "roas": 0.09 },
-          { "type": "Generación de demanda", "cost": 272.65, "impressions": 73651, "clicks": 4472, "conversions": 98, "purchases": 0, "allConversions": 98, "conversionValue": 0, "ctr": 0.060719, "cpc": 0.06, "costPerConversion": 2.78, "costPerPurchase": null, "roas": 0 }
+          { "type": "Búsqueda", "cost": 74.17, "impressions": 1310, "clicks": 184, "conversions": 17.5, "purchases": 0, "allConversions": 24.5, "conversionValue": 0, "ctr": 0.140458, "cpc": 0.4, "costPerConversion": 4.24, "costPerPurchase": null, "roas": 0 }
         ],
         "campaigns": [
-          {
-            "campaign": "Video | WhatsApp | Promo 15%",
-            "status": "Detenida",
-            "type": "Generación de demanda",
-            "dailyBudget": 100,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 98,
-            "purchases": 0,
-            "allConversions": 98,
-            "conversionValue": 0,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Contacto": 98 }
-          },
-          {
-            "campaign": "Shopping Manual | Compras | LR",
-            "status": "Detenida",
-            "type": "Compras",
-            "dailyBudget": 50,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 0,
-            "purchases": 0,
-            "allConversions": 1,
-            "conversionValue": 0,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Contacto": 0 }
-          },
-          {
-            "campaign": "Pmax B | Objetivo | LR",
-            "status": "Habilitada",
-            "type": "Máximo rendimiento",
-            "dailyBudget": 20,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 21.11,
-            "purchases": 21.11,
-            "allConversions": 104.12,
-            "conversionValue": 93.74,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 21.11, "Contacto": 0 }
-          },
-          {
-            "campaign": "Search | LR",
-            "status": "Habilitada",
-            "type": "Búsqueda",
-            "dailyBudget": 50,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 17.5,
-            "purchases": 0,
-            "allConversions": 24.5,
-            "conversionValue": 0,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 0, "Contacto": 17.5 }
-          }
+          { "campaign": "Video | WhatsApp | Promo 15%", "status": "Detenida", "type": "Generación de demanda", "dailyBudget": 100, "complete": true, "cost": 272.65, "impressions": 73651, "clicks": 4472, "conversions": 98, "purchases": 0, "allConversions": 98, "conversionValue": 0, "ctr": 0.060719, "cpc": 0.06, "costPerConversion": 2.78, "costPerPurchase": null, "roas": 0, "conversionsByCategory": null },
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": 50, "complete": true, "cost": 74.17, "impressions": 1310, "clicks": 184, "conversions": 17.5, "purchases": 0, "allConversions": 24.5, "conversionValue": 0, "ctr": 0.140458, "cpc": 0.4, "costPerConversion": 4.24, "costPerPurchase": null, "roas": 0, "conversionsByCategory": null },
+          { "campaign": "Pmax B | Objetivo | LR", "status": "Habilitada", "type": "Máximo rendimiento", "dailyBudget": 20, "complete": true, "cost": 1093.51, "impressions": 99137, "clicks": 2088, "conversions": 21.11, "purchases": 21.11, "allConversions": 104.12, "conversionValue": 93.74, "ctr": 0.021062, "cpc": 0.52, "costPerConversion": 51.8, "costPerPurchase": 51.8, "roas": 0.09, "conversionsByCategory": null },
+          { "campaign": "Shopping Manual | Compras | LR", "status": "Detenida", "type": "Shopping", "dailyBudget": 50, "complete": true, "cost": 99.77, "impressions": 24720, "clicks": 315, "conversions": 0, "purchases": 0, "allConversions": 1, "conversionValue": 0, "ctr": 0.012743, "cpc": 0.32, "costPerConversion": null, "costPerPurchase": null, "roas": 0, "conversionsByCategory": null }
         ],
         "checks": [
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "cost", "expected": 1540.1, "actual": 1540.1, "ok": true },
@@ -428,15 +267,20 @@
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "purchases", "expected": 21.11, "actual": 21.11, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "allConversions", "expected": 227.62, "actual": 227.62, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "conversionValue", "expected": 93.74, "actual": 93.74, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "cost", "expected": 1540.1, "actual": 1540.1, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "impressions", "expected": 198818, "actual": 198818, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "clicks", "expected": 7059, "actual": 7059, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversions", "expected": 136.61, "actual": 136.61, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "purchases", "expected": 21.11, "actual": 21.11, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "allConversions", "expected": 227.62, "actual": 227.62, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversionValue", "expected": 93.74, "actual": 93.74, "ok": true },
-          { "check": "Conversiones por categoría vs Total: Cuenta", "field": "conversions", "expected": 136.61, "actual": 136.61, "ok": true }
+          { "check": "Total: Campañas filtradas vs Total: Cuenta", "field": "cost", "expected": 1540.1, "actual": 1540.1, "ok": true }
         ],
         "repairs": [
-          { "row": "Total: Búsqueda", "column": "Impr.", "raw": "1,31", "value": 1310 },
-          { "row": "Total: Compras", "column": "Impr.", "raw": "24,72", "value": 24720 }
+          { "row": "Search | LR", "column": "Impr.", "raw": "1,31", "value": 1310 },
+          { "row": "Shopping Manual | Compras | LR", "column": "Impr.", "raw": "24,72", "value": 24720 },
+          { "row": "Total: Compras", "column": "Impr.", "raw": "24,72", "value": 24720 },
+          { "row": "Total: Búsqueda", "column": "Impr.", "raw": "1,31", "value": 1310 }
         ]
       },
       "meta": {
@@ -573,89 +417,31 @@
         ]
       },
       "warnings": [
-        "Google Ads Febrero 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta.",
-        "Google Ads Febrero 2026: 2 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Total: Búsqueda» \"1,31\" → 1,310; Impr. de «Total: Compras» \"24,72\" → 24,720); cuadran con los totales."
+        "Google Ads Febrero 2026: 4 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Search | LR» \"1,31\" → 1,310; Impr. de «Shopping Manual | Compras | LR» \"24,72\" → 24,720; Impr. de «Total: Compras» \"24,72\" → 24,720); cuadran con los totales."
       ]
     },
     {
       "id": "2026-03",
       "label": "Marzo 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Marzo 2026", "id": "1-f4cD7wESkW0fAn_aT2OX0mX81GKrdywS4oIXNcr0i4", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby GA - Marzo 2026", "id": "1nK4cx0NatJU2zESUlgdZ1xO_QXlQGfzpjdcNbPVTSE0", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-03-01", "end": "2026-03-31", "days": null, "daysInMonth": 31, "complete": true },
-        "segmentation": "Categoría de conversión",
-        "campaignsComplete": false,
+        "segmentation": null,
+        "campaignsComplete": true,
         "totalsSource": "Total: Cuenta",
         "totals": { "cost": 1220.11, "impressions": 235110, "clicks": 13097, "conversions": 362.83, "purchases": 10.22, "allConversions": 413.83, "conversionValue": 2442.66, "ctr": 0.055706, "cpc": 0.09, "costPerConversion": 3.36, "costPerPurchase": 119.38, "roas": 2 },
-        "conversionsByCategory": { "Compra": 10.22, "Contacto": 352.6 },
+        "conversionsByCategory": null,
         "byType": [
-          { "type": "Máximo rendimiento", "cost": 631.31, "impressions": 53175, "clicks": 1220, "conversions": 9.89, "purchases": 9.89, "allConversions": 59.89, "conversionValue": 2310.86, "ctr": 0.022943, "cpc": 0.52, "costPerConversion": 63.83, "costPerPurchase": 63.83, "roas": 3.66 },
           { "type": "Generación de demanda", "cost": 494.21, "impressions": 179905, "clicks": 11609, "conversions": 340.1, "purchases": 0, "allConversions": 340.1, "conversionValue": 0, "ctr": 0.064529, "cpc": 0.04, "costPerConversion": 1.45, "costPerPurchase": null, "roas": 0 },
-          { "type": "Búsqueda", "cost": 94.59, "impressions": 2030, "clicks": 268, "conversions": 12.83, "purchases": 0.33, "allConversions": 13.83, "conversionValue": 131.8, "ctr": 0.13202, "cpc": 0.35, "costPerConversion": 7.37, "costPerPurchase": 286.64, "roas": 1.39 }
+          { "type": "Búsqueda", "cost": 94.59, "impressions": 2030, "clicks": 268, "conversions": 12.83, "purchases": 0.33, "allConversions": 13.83, "conversionValue": 131.8, "ctr": 0.13202, "cpc": 0.35, "costPerConversion": 7.37, "costPerPurchase": 286.64, "roas": 1.39 },
+          { "type": "Máximo rendimiento", "cost": 631.31, "impressions": 53175, "clicks": 1220, "conversions": 9.89, "purchases": 9.89, "allConversions": 59.89, "conversionValue": 2310.86, "ctr": 0.022943, "cpc": 0.52, "costPerConversion": 63.83, "costPerPurchase": 63.83, "roas": 3.66 }
         ],
         "campaigns": [
-          {
-            "campaign": "Video | WhatsApp | Promo 15%",
-            "status": "Detenida",
-            "type": "Generación de demanda",
-            "dailyBudget": 100,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 340.1,
-            "purchases": 0,
-            "allConversions": 340.1,
-            "conversionValue": 0,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Contacto": 340.1 }
-          },
-          {
-            "campaign": "Pmax B | Objetivo | LR",
-            "status": "Habilitada",
-            "type": "Máximo rendimiento",
-            "dailyBudget": 20,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 9.89,
-            "purchases": 9.89,
-            "allConversions": 59.89,
-            "conversionValue": 2310.86,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 9.89, "Contacto": 0 }
-          },
-          {
-            "campaign": "Search | LR",
-            "status": "Habilitada",
-            "type": "Búsqueda",
-            "dailyBudget": 50,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 12.83,
-            "purchases": 0.33,
-            "allConversions": 13.83,
-            "conversionValue": 131.8,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 0.33, "Contacto": 12.5 }
-          }
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": 50, "complete": true, "cost": 94.59, "impressions": 2030, "clicks": 268, "conversions": 12.83, "purchases": 0.33, "allConversions": 13.83, "conversionValue": 131.8, "ctr": 0.13202, "cpc": 0.35, "costPerConversion": 7.37, "costPerPurchase": 286.64, "roas": 1.39, "conversionsByCategory": null },
+          { "campaign": "Pmax B | Objetivo | LR", "status": "Habilitada", "type": "Máximo rendimiento", "dailyBudget": 20, "complete": true, "cost": 631.31, "impressions": 53175, "clicks": 1220, "conversions": 9.89, "purchases": 9.89, "allConversions": 59.89, "conversionValue": 2310.86, "ctr": 0.022943, "cpc": 0.52, "costPerConversion": 63.83, "costPerPurchase": 63.83, "roas": 3.66, "conversionsByCategory": null },
+          { "campaign": "Video | WhatsApp | Promo 15%", "status": "Detenida", "type": "Generación de demanda", "dailyBudget": 100, "complete": true, "cost": 494.21, "impressions": 179905, "clicks": 11609, "conversions": 340.1, "purchases": 0, "allConversions": 340.1, "conversionValue": 0, "ctr": 0.064529, "cpc": 0.04, "costPerConversion": 1.45, "costPerPurchase": null, "roas": 0, "conversionsByCategory": null }
         ],
         "checks": [
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "cost", "expected": 1220.11, "actual": 1220.11, "ok": true },
@@ -665,16 +451,22 @@
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "purchases", "expected": 10.22, "actual": 10.22, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "allConversions", "expected": 413.83, "actual": 413.82, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "conversionValue", "expected": 2442.66, "actual": 2442.66, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "cost", "expected": 1220.11, "actual": 1220.11, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "impressions", "expected": 235110, "actual": 235110, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "clicks", "expected": 13097, "actual": 13097, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversions", "expected": 362.83, "actual": 362.82, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "purchases", "expected": 10.22, "actual": 10.22, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "allConversions", "expected": 413.83, "actual": 413.82, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversionValue", "expected": 2442.66, "actual": 2442.66, "ok": true },
-          { "check": "Conversiones por categoría vs Total: Cuenta", "field": "conversions", "expected": 362.83, "actual": 362.82, "ok": true }
+          { "check": "Total: Campañas filtradas vs Total: Cuenta", "field": "cost", "expected": 1220.11, "actual": 1220.11, "ok": true }
         ],
         "repairs": [
+          { "row": "Search | LR", "column": "Impr.", "raw": "2,03", "value": 2030 },
+          { "row": "Pmax B | Objetivo | LR", "column": "Clics", "raw": "1,22", "value": 1220 },
+          { "row": "Total: Campañas filtradas", "column": "Impr.", "raw": "235,11", "value": 235110 },
           { "row": "Total: Cuenta", "column": "Impr.", "raw": "235,11", "value": 235110 },
-          { "row": "Total: Máximo rendimiento", "column": "Clics", "raw": "1,22", "value": 1220 },
-          { "row": "Total: Búsqueda", "column": "Impr.", "raw": "2,03", "value": 2030 }
+          { "row": "Total: Búsqueda", "column": "Impr.", "raw": "2,03", "value": 2030 },
+          { "row": "Total: Máximo rendimiento", "column": "Clics", "raw": "1,22", "value": 1220 }
         ]
       },
       "meta": {
@@ -804,89 +596,31 @@
         ]
       },
       "warnings": [
-        "Google Ads Marzo 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta.",
-        "Google Ads Marzo 2026: 3 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Total: Cuenta» \"235,11\" → 235,110; Clics de «Total: Máximo rendimiento» \"1,22\" → 1,220; Impr. de «Total: Búsqueda» \"2,03\" → 2,030); cuadran con los totales."
+        "Google Ads Marzo 2026: 6 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Search | LR» \"2,03\" → 2,030; Clics de «Pmax B | Objetivo | LR» \"1,22\" → 1,220; Impr. de «Total: Campañas filtradas» \"235,11\" → 235,110); cuadran con los totales."
       ]
     },
     {
       "id": "2026-04",
       "label": "Abril 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Abril 2026", "id": "1dG2LGZ9TOmbV3cUYmthfSrHlNwvYlVZYCaS_kmK2VBE", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby GA - Abril 2026", "id": "1sQgs4qZdT00185GvZy9HbmLkuU6uyTKcRA3L2jsQY_k", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-04-01", "end": "2026-04-30", "days": null, "daysInMonth": 30, "complete": true },
-        "segmentation": "Categoría de conversión",
-        "campaignsComplete": false,
+        "segmentation": null,
+        "campaignsComplete": true,
         "totalsSource": "Total: Cuenta",
         "totals": { "cost": 1060.6, "impressions": 293599, "clicks": 20446, "conversions": 468.87, "purchases": 19.67, "allConversions": 514.95, "conversionValue": 4290.32, "ctr": 0.069639, "cpc": 0.05, "costPerConversion": 2.26, "costPerPurchase": 53.92, "roas": 4.05 },
-        "conversionsByCategory": { "Contacto": 449.21, "Compra": 19.67 },
+        "conversionsByCategory": null,
         "byType": [
-          { "type": "Máximo rendimiento", "cost": 455.82, "impressions": 34247, "clicks": 1021, "conversions": 15, "purchases": 15, "allConversions": 61.08, "conversionValue": 2835.72, "ctr": 0.029813, "cpc": 0.45, "costPerConversion": 30.39, "costPerPurchase": 30.39, "roas": 6.22 },
           { "type": "Generación de demanda", "cost": 529.47, "impressions": 257583, "clicks": 19164, "conversions": 441.07, "purchases": 0, "allConversions": 441.07, "conversionValue": 0, "ctr": 0.074399, "cpc": 0.03, "costPerConversion": 1.2, "costPerPurchase": null, "roas": 0 },
+          { "type": "Máximo rendimiento", "cost": 455.82, "impressions": 34247, "clicks": 1021, "conversions": 15, "purchases": 15, "allConversions": 61.08, "conversionValue": 2835.72, "ctr": 0.029813, "cpc": 0.45, "costPerConversion": 30.39, "costPerPurchase": 30.39, "roas": 6.22 },
           { "type": "Búsqueda", "cost": 75.31, "impressions": 1769, "clicks": 261, "conversions": 12.8, "purchases": 4.67, "allConversions": 12.8, "conversionValue": 1454.6, "ctr": 0.147541, "cpc": 0.29, "costPerConversion": 5.88, "costPerPurchase": 16.13, "roas": 19.31 }
         ],
         "campaigns": [
-          {
-            "campaign": "Video | WhatsApp | Promo 15%",
-            "status": "Detenida",
-            "type": "Generación de demanda",
-            "dailyBudget": 100,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 441.07,
-            "purchases": 0,
-            "allConversions": 441.07,
-            "conversionValue": 0,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Contacto": 441.07 }
-          },
-          {
-            "campaign": "Pmax B | Objetivo | LR",
-            "status": "Habilitada",
-            "type": "Máximo rendimiento",
-            "dailyBudget": 20,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 15,
-            "purchases": 15,
-            "allConversions": 61.08,
-            "conversionValue": 2835.72,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 15, "Contacto": 0 }
-          },
-          {
-            "campaign": "Search | LR",
-            "status": "Habilitada",
-            "type": "Búsqueda",
-            "dailyBudget": 50,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 12.81,
-            "purchases": 4.67,
-            "allConversions": 12.81,
-            "conversionValue": 1454.6,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 4.67, "Contacto": 8.14 }
-          }
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": 50, "complete": true, "cost": 75.31, "impressions": 1769, "clicks": 261, "conversions": 12.8, "purchases": 4.67, "allConversions": 12.8, "conversionValue": 1454.6, "ctr": 0.147541, "cpc": 0.29, "costPerConversion": 5.88, "costPerPurchase": 16.13, "roas": 19.31, "conversionsByCategory": null },
+          { "campaign": "Pmax B | Objetivo | LR", "status": "Habilitada", "type": "Máximo rendimiento", "dailyBudget": 20, "complete": true, "cost": 455.82, "impressions": 34247, "clicks": 1021, "conversions": 15, "purchases": 15, "allConversions": 61.08, "conversionValue": 2835.72, "ctr": 0.029813, "cpc": 0.45, "costPerConversion": 30.39, "costPerPurchase": 30.39, "roas": 6.22, "conversionsByCategory": null },
+          { "campaign": "Video | WhatsApp | Promo 15%", "status": "Detenida", "type": "Generación de demanda", "dailyBudget": 100, "complete": true, "cost": 529.47, "impressions": 257583, "clicks": 19164, "conversions": 441.07, "purchases": 0, "allConversions": 441.07, "conversionValue": 0, "ctr": 0.074399, "cpc": 0.03, "costPerConversion": 1.2, "costPerPurchase": null, "roas": 0, "conversionsByCategory": null }
         ],
         "checks": [
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "cost", "expected": 1060.6, "actual": 1060.6, "ok": true },
@@ -896,11 +630,14 @@
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "purchases", "expected": 19.67, "actual": 19.67, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "allConversions", "expected": 514.95, "actual": 514.95, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "conversionValue", "expected": 4290.32, "actual": 4290.32, "ok": true },
-          { "check": "Suma de campañas vs Total: Cuenta", "field": "conversions", "expected": 468.87, "actual": 468.88, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "cost", "expected": 1060.6, "actual": 1060.6, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "impressions", "expected": 293599, "actual": 293599, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "clicks", "expected": 20446, "actual": 20446, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "conversions", "expected": 468.87, "actual": 468.87, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "purchases", "expected": 19.67, "actual": 19.67, "ok": true },
-          { "check": "Suma de campañas vs Total: Cuenta", "field": "allConversions", "expected": 514.95, "actual": 514.96, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "allConversions", "expected": 514.95, "actual": 514.95, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversionValue", "expected": 4290.32, "actual": 4290.32, "ok": true },
-          { "check": "Conversiones por categoría vs Total: Cuenta", "field": "conversions", "expected": 468.87, "actual": 468.88, "ok": true }
+          { "check": "Total: Campañas filtradas vs Total: Cuenta", "field": "cost", "expected": 1060.6, "actual": 1060.6, "ok": true }
         ],
         "repairs": []
       },
@@ -1027,110 +764,32 @@
           "La serie diaria mezcla Meta (cifras diarias reales) con Google Ads (total del mes repartido entre los días, estimado)."
         ]
       },
-      "warnings": [
-        "Google Ads Abril 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta."
-      ]
+      "warnings": []
     },
     {
       "id": "2026-05",
       "label": "Mayo 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Mayo 2026", "id": "1BB503eNW2lO17DM68ieE848sW9bn_p-5nD7vNeWVB90", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby GA - Mayo 2026", "id": "1Ca2FUgC6UNC0hOrD48GbZtcASqpfIxDyqkJ5NS0mcec", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-05-01", "end": "2026-05-31", "days": null, "daysInMonth": 31, "complete": true },
-        "segmentation": "Categoría de conversión",
-        "campaignsComplete": false,
+        "segmentation": null,
+        "campaignsComplete": true,
         "totalsSource": "Total: Cuenta",
         "totals": { "cost": 1015.75, "impressions": 122200, "clicks": 5331, "conversions": 92.93, "purchases": 6, "allConversions": 140.95, "conversionValue": 1401.3, "ctr": 0.043625, "cpc": 0.19, "costPerConversion": 10.93, "costPerPurchase": 169.29, "roas": 1.38 },
-        "conversionsByCategory": { "Contacto": 86.93, "Compra": 6 },
+        "conversionsByCategory": null,
         "byType": [
           { "type": "Búsqueda", "cost": 71.43, "impressions": 1802, "clicks": 264, "conversions": 13.93, "purchases": 2, "allConversions": 13.93, "conversionValue": 435.6, "ctr": 0.146504, "cpc": 0.27, "costPerConversion": 5.13, "costPerPurchase": 35.72, "roas": 6.1 },
           { "type": "Generación de demanda", "cost": 114.04, "impressions": 40957, "clicks": 3407, "conversions": 75, "purchases": 0, "allConversions": 75, "conversionValue": 0, "ctr": 0.083185, "cpc": 0.03, "costPerConversion": 1.52, "costPerPurchase": null, "roas": 0 },
-          { "type": "Compras", "cost": 69.86, "impressions": 24519, "clicks": 428, "conversions": 2, "purchases": 2, "allConversions": 5.99, "conversionValue": 408.9, "ctr": 0.017456, "cpc": 0.16, "costPerConversion": 34.93, "costPerPurchase": 34.93, "roas": 5.85 },
+          { "type": "Shopping", "cost": 69.86, "impressions": 24519, "clicks": 428, "conversions": 2, "purchases": 2, "allConversions": 5.99, "conversionValue": 408.9, "ctr": 0.017456, "cpc": 0.16, "costPerConversion": 34.93, "costPerPurchase": 34.93, "roas": 5.85 },
           { "type": "Máximo rendimiento", "cost": 760.42, "impressions": 54922, "clicks": 1232, "conversions": 2, "purchases": 2, "allConversions": 46.03, "conversionValue": 556.8, "ctr": 0.022432, "cpc": 0.62, "costPerConversion": 380.21, "costPerPurchase": 380.21, "roas": 0.73 }
         ],
         "campaigns": [
-          {
-            "campaign": "Video | WhatsApp | Promo 15%",
-            "status": "Detenida",
-            "type": "Generación de demanda",
-            "dailyBudget": 100,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 75,
-            "purchases": 0,
-            "allConversions": 75,
-            "conversionValue": 0,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Contacto": 75 }
-          },
-          {
-            "campaign": "Shopping Manual | Compras | LR",
-            "status": "Detenida",
-            "type": "Compras",
-            "dailyBudget": 50,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 2,
-            "purchases": 2,
-            "allConversions": 5.99,
-            "conversionValue": 408.9,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 2, "Contacto": 0 }
-          },
-          {
-            "campaign": "Pmax B | Objetivo | LR",
-            "status": "Habilitada",
-            "type": "Máximo rendimiento",
-            "dailyBudget": 20,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 2,
-            "purchases": 2,
-            "allConversions": 46.03,
-            "conversionValue": 556.8,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 2, "Contacto": 0 }
-          },
-          {
-            "campaign": "Search | LR",
-            "status": "Habilitada",
-            "type": "Búsqueda",
-            "dailyBudget": 50,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 13.93,
-            "purchases": 2,
-            "allConversions": 13.93,
-            "conversionValue": 435.6,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 2, "Contacto": 11.93 }
-          }
+          { "campaign": "Shopping Manual | Compras | LR", "status": "Detenida", "type": "Shopping", "dailyBudget": 50, "complete": true, "cost": 69.86, "impressions": 24519, "clicks": 428, "conversions": 2, "purchases": 2, "allConversions": 5.99, "conversionValue": 408.9, "ctr": 0.017456, "cpc": 0.16, "costPerConversion": 34.93, "costPerPurchase": 34.93, "roas": 5.85, "conversionsByCategory": null },
+          { "campaign": "Video | WhatsApp | Promo 15%", "status": "Detenida", "type": "Generación de demanda", "dailyBudget": 100, "complete": true, "cost": 114.04, "impressions": 40957, "clicks": 3407, "conversions": 75, "purchases": 0, "allConversions": 75, "conversionValue": 0, "ctr": 0.083185, "cpc": 0.03, "costPerConversion": 1.52, "costPerPurchase": null, "roas": 0, "conversionsByCategory": null },
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": 50, "complete": true, "cost": 71.43, "impressions": 1802, "clicks": 264, "conversions": 13.93, "purchases": 2, "allConversions": 13.93, "conversionValue": 435.6, "ctr": 0.146504, "cpc": 0.27, "costPerConversion": 5.13, "costPerPurchase": 35.72, "roas": 6.1, "conversionsByCategory": null },
+          { "campaign": "Pmax B | Objetivo | LR", "status": "Habilitada", "type": "Máximo rendimiento", "dailyBudget": 20, "complete": true, "cost": 760.42, "impressions": 54922, "clicks": 1232, "conversions": 2, "purchases": 2, "allConversions": 46.03, "conversionValue": 556.8, "ctr": 0.022432, "cpc": 0.62, "costPerConversion": 380.21, "costPerPurchase": 380.21, "roas": 0.73, "conversionsByCategory": null }
         ],
         "checks": [
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "cost", "expected": 1015.75, "actual": 1015.75, "ok": true },
@@ -1140,13 +799,17 @@
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "purchases", "expected": 6, "actual": 6, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "allConversions", "expected": 140.95, "actual": 140.95, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "conversionValue", "expected": 1401.3, "actual": 1401.3, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "cost", "expected": 1015.75, "actual": 1015.75, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "impressions", "expected": 122200, "actual": 122200, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "clicks", "expected": 5331, "actual": 5331, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversions", "expected": 92.93, "actual": 92.93, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "purchases", "expected": 6, "actual": 6, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "allConversions", "expected": 140.95, "actual": 140.95, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversionValue", "expected": 1401.3, "actual": 1401.3, "ok": true },
-          { "check": "Conversiones por categoría vs Total: Cuenta", "field": "conversions", "expected": 92.93, "actual": 92.93, "ok": true }
+          { "check": "Total: Campañas filtradas vs Total: Cuenta", "field": "cost", "expected": 1015.75, "actual": 1015.75, "ok": true }
         ],
         "repairs": [
+          { "row": "Total: Campañas filtradas", "column": "Impr.", "raw": "122,2", "value": 122200 },
           { "row": "Total: Cuenta", "column": "Impr.", "raw": "122,2", "value": 122200 }
         ]
       },
@@ -1302,89 +965,31 @@
         ]
       },
       "warnings": [
-        "Google Ads Mayo 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta.",
-        "Google Ads Mayo 2026: 1 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Total: Cuenta» \"122,2\" → 122,200); cuadran con los totales."
+        "Google Ads Mayo 2026: 2 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Total: Campañas filtradas» \"122,2\" → 122,200; Impr. de «Total: Cuenta» \"122,2\" → 122,200); cuadran con los totales."
       ]
     },
     {
       "id": "2026-06",
       "label": "Junio 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Junio 2026", "id": "1g16heacy_jVnZARQJ9msa4n8N3DSfeLMlhB9oHboFtI", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby GA - Junio 2026", "id": "160JACjaLoc7XQj-Ap1BHyIdHCPLMDOJzM4_JhtiQHsw", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-06-01", "end": "2026-06-30", "days": null, "daysInMonth": 30, "complete": true },
-        "segmentation": "Categoría de conversión",
-        "campaignsComplete": false,
+        "segmentation": null,
+        "campaignsComplete": true,
         "totalsSource": "Total: Cuenta",
         "totals": { "cost": 1387.72, "impressions": 173855, "clicks": 7978, "conversions": 171.64, "purchases": 9, "allConversions": 208.64, "conversionValue": 2453.2, "ctr": 0.045889, "cpc": 0.17, "costPerConversion": 8.09, "costPerPurchase": 154.19, "roas": 1.77 },
-        "conversionsByCategory": { "Contacto": 162.64, "Compra": 9 },
+        "conversionsByCategory": null,
         "byType": [
+          { "type": "Generación de demanda", "cost": 379.4, "impressions": 90069, "clicks": 6205, "conversions": 153, "purchases": 0, "allConversions": 153, "conversionValue": 0, "ctr": 0.068892, "cpc": 0.06, "costPerConversion": 2.48, "costPerPurchase": null, "roas": 0 },
           { "type": "Máximo rendimiento", "cost": 941.02, "impressions": 81932, "clicks": 1451, "conversions": 4, "purchases": 4, "allConversions": 41, "conversionValue": 1459.8, "ctr": 0.01771, "cpc": 0.65, "costPerConversion": 235.26, "costPerPurchase": 235.26, "roas": 1.55 },
-          { "type": "Búsqueda", "cost": 67.3, "impressions": 1854, "clicks": 322, "conversions": 14.64, "purchases": 5, "allConversions": 14.64, "conversionValue": 993.4, "ctr": 0.173679, "cpc": 0.21, "costPerConversion": 4.6, "costPerPurchase": 13.46, "roas": 14.76 },
-          { "type": "Generación de demanda", "cost": 379.4, "impressions": 90069, "clicks": 6205, "conversions": 153, "purchases": 0, "allConversions": 153, "conversionValue": 0, "ctr": 0.068892, "cpc": 0.06, "costPerConversion": 2.48, "costPerPurchase": null, "roas": 0 }
+          { "type": "Búsqueda", "cost": 67.3, "impressions": 1854, "clicks": 322, "conversions": 14.64, "purchases": 5, "allConversions": 14.64, "conversionValue": 993.4, "ctr": 0.173679, "cpc": 0.21, "costPerConversion": 4.6, "costPerPurchase": 13.46, "roas": 14.76 }
         ],
         "campaigns": [
-          {
-            "campaign": "Video | WhatsApp | Promo 15%",
-            "status": "Detenida",
-            "type": "Generación de demanda",
-            "dailyBudget": 100,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 153,
-            "purchases": 0,
-            "allConversions": 153,
-            "conversionValue": 0,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Contacto": 153 }
-          },
-          {
-            "campaign": "Pmax B | Objetivo | LR",
-            "status": "Habilitada",
-            "type": "Máximo rendimiento",
-            "dailyBudget": 20,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 4,
-            "purchases": 4,
-            "allConversions": 41,
-            "conversionValue": 1459.8,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 4, "Contacto": 0 }
-          },
-          {
-            "campaign": "Search | LR",
-            "status": "Habilitada",
-            "type": "Búsqueda",
-            "dailyBudget": 50,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 14.64,
-            "purchases": 5,
-            "allConversions": 14.64,
-            "conversionValue": 993.4,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 5, "Contacto": 9.64 }
-          }
+          { "campaign": "Pmax B | Objetivo | LR", "status": "Habilitada", "type": "Máximo rendimiento", "dailyBudget": 20, "complete": true, "cost": 941.02, "impressions": 81932, "clicks": 1451, "conversions": 4, "purchases": 4, "allConversions": 41, "conversionValue": 1459.8, "ctr": 0.01771, "cpc": 0.65, "costPerConversion": 235.26, "costPerPurchase": 235.26, "roas": 1.55, "conversionsByCategory": null },
+          { "campaign": "Video | WhatsApp | Promo 15%", "status": "Detenida", "type": "Generación de demanda", "dailyBudget": 100, "complete": true, "cost": 379.4, "impressions": 90069, "clicks": 6205, "conversions": 153, "purchases": 0, "allConversions": 153, "conversionValue": 0, "ctr": 0.068892, "cpc": 0.06, "costPerConversion": 2.48, "costPerPurchase": null, "roas": 0, "conversionsByCategory": null },
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": 50, "complete": true, "cost": 67.3, "impressions": 1854, "clicks": 322, "conversions": 14.64, "purchases": 5, "allConversions": 14.64, "conversionValue": 993.4, "ctr": 0.173679, "cpc": 0.21, "costPerConversion": 4.6, "costPerPurchase": 13.46, "roas": 14.76, "conversionsByCategory": null }
         ],
         "checks": [
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "cost", "expected": 1387.72, "actual": 1387.72, "ok": true },
@@ -1394,11 +999,14 @@
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "purchases", "expected": 9, "actual": 9, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "allConversions", "expected": 208.64, "actual": 208.64, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "conversionValue", "expected": 2453.2, "actual": 2453.2, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "cost", "expected": 1387.72, "actual": 1387.72, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "impressions", "expected": 173855, "actual": 173855, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "clicks", "expected": 7978, "actual": 7978, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversions", "expected": 171.64, "actual": 171.64, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "purchases", "expected": 9, "actual": 9, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "allConversions", "expected": 208.64, "actual": 208.64, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversionValue", "expected": 2453.2, "actual": 2453.2, "ok": true },
-          { "check": "Conversiones por categoría vs Total: Cuenta", "field": "conversions", "expected": 171.64, "actual": 171.64, "ok": true }
+          { "check": "Total: Campañas filtradas vs Total: Cuenta", "field": "cost", "expected": 1387.72, "actual": 1387.72, "ok": true }
         ],
         "repairs": []
       },
@@ -1546,47 +1154,26 @@
           "La serie diaria mezcla Meta (cifras diarias reales) con Google Ads (total del mes repartido entre los días, estimado)."
         ]
       },
-      "warnings": [
-        "Google Ads Junio 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta."
-      ]
+      "warnings": []
     },
     {
       "id": "2026-07",
       "label": "Julio 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Julio 2026", "id": "1sBftH-2Rav_Plk_-pUydsjnmH9MPFUfTd4dLfsqJy5s", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby GA - Julio 2026", "id": "1aSS6JVQ9xpWO2t1LWvXJvbOeTtON0yJkWfvFxuhjwOw", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-07-01", "end": "2026-07-31", "days": null, "daysInMonth": 31, "complete": true },
-        "segmentation": "Categoría de conversión",
-        "campaignsComplete": false,
+        "segmentation": null,
+        "campaignsComplete": true,
         "totalsSource": "Total: Cuenta",
         "totals": { "cost": 1275.68, "impressions": 14224, "clicks": 1407, "conversions": 25, "purchases": 15, "allConversions": 25, "conversionValue": 2784.44, "ctr": 0.098917, "cpc": 0.91, "costPerConversion": 51.03, "costPerPurchase": 85.05, "roas": 2.18 },
-        "conversionsByCategory": { "Compra": 15, "Contacto": 10 },
+        "conversionsByCategory": null,
         "byType": [
           { "type": "Búsqueda", "cost": 1275.68, "impressions": 14224, "clicks": 1407, "conversions": 25, "purchases": 15, "allConversions": 25, "conversionValue": 2784.44, "ctr": 0.098917, "cpc": 0.91, "costPerConversion": 51.03, "costPerPurchase": 85.05, "roas": 2.18 }
         ],
         "campaigns": [
-          {
-            "campaign": "Search | LR",
-            "status": "Habilitada",
-            "type": "Búsqueda",
-            "dailyBudget": 50,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 25,
-            "purchases": 15,
-            "allConversions": 25,
-            "conversionValue": 2784.44,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 15, "Contacto": 10 }
-          }
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": 50, "complete": true, "cost": 1275.68, "impressions": 14224, "clicks": 1407, "conversions": 25, "purchases": 15, "allConversions": 25, "conversionValue": 2784.44, "ctr": 0.098917, "cpc": 0.91, "costPerConversion": 51.03, "costPerPurchase": 85.05, "roas": 2.18, "conversionsByCategory": null }
         ],
         "checks": [
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "cost", "expected": 1275.68, "actual": 1275.68, "ok": true },
@@ -1596,11 +1183,14 @@
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "purchases", "expected": 15, "actual": 15, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "allConversions", "expected": 25, "actual": 25, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "conversionValue", "expected": 2784.44, "actual": 2784.44, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "cost", "expected": 1275.68, "actual": 1275.68, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "impressions", "expected": 14224, "actual": 14224, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "clicks", "expected": 1407, "actual": 1407, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversions", "expected": 25, "actual": 25, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "purchases", "expected": 15, "actual": 15, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "allConversions", "expected": 25, "actual": 25, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversionValue", "expected": 2784.44, "actual": 2784.44, "ok": true },
-          { "check": "Conversiones por categoría vs Total: Cuenta", "field": "conversions", "expected": 25, "actual": 25, "ok": true }
+          { "check": "Total: Campañas filtradas vs Total: Cuenta", "field": "cost", "expected": 1275.68, "actual": 1275.68, "ok": true }
         ],
         "repairs": []
       },
@@ -1766,68 +1356,28 @@
           "La serie diaria mezcla Meta (cifras diarias reales) con Google Ads (total del mes repartido entre los días, estimado)."
         ]
       },
-      "warnings": [
-        "Google Ads Julio 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta."
-      ]
+      "warnings": []
     },
     {
       "id": "2026-08",
       "label": "Agosto 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Agosto 2026", "id": "1bfRUOnZ_uV7pESLchCFBWmM9PVk0uSsWT0jIZlS5J4s", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby GA - Agosto 2026", "id": "1OHSr4s-6WkU-I3Q_qGrd0AGQPweQ48w3CR1hsTcRQ20", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-08-01", "end": "2026-08-31", "days": null, "daysInMonth": 31, "complete": true },
-        "segmentation": "Categoría de conversión",
-        "campaignsComplete": false,
+        "segmentation": null,
+        "campaignsComplete": true,
         "totalsSource": "Total: Cuenta",
         "totals": { "cost": 1249.14, "impressions": 21026, "clicks": 1686, "conversions": 41, "purchases": 41, "allConversions": 42, "conversionValue": 10156.8, "ctr": 0.080186, "cpc": 0.74, "costPerConversion": 30.47, "costPerPurchase": 30.47, "roas": 8.13 },
-        "conversionsByCategory": { "Compra": 41 },
+        "conversionsByCategory": null,
         "byType": [
-          { "type": "Búsqueda", "cost": 1199.3, "impressions": 10649, "clicks": 1303, "conversions": 41, "purchases": 41, "allConversions": 41, "conversionValue": 10156.8, "ctr": 0.122359, "cpc": 0.92, "costPerConversion": 29.25, "costPerPurchase": 29.25, "roas": 8.47 },
-          { "type": "Generación de demanda", "cost": 49.84, "impressions": 10377, "clicks": 383, "conversions": 0, "purchases": 0, "allConversions": 1, "conversionValue": 0, "ctr": 0.036909, "cpc": 0.13, "costPerConversion": null, "costPerPurchase": null, "roas": 0 }
+          { "type": "Generación de demanda", "cost": 49.84, "impressions": 10377, "clicks": 383, "conversions": 0, "purchases": 0, "allConversions": 1, "conversionValue": 0, "ctr": 0.036909, "cpc": 0.13, "costPerConversion": null, "costPerPurchase": null, "roas": 0 },
+          { "type": "Búsqueda", "cost": 1199.3, "impressions": 10649, "clicks": 1303, "conversions": 41, "purchases": 41, "allConversions": 41, "conversionValue": 10156.8, "ctr": 0.122359, "cpc": 0.92, "costPerConversion": 29.25, "costPerPurchase": 29.25, "roas": 8.47 }
         ],
         "campaigns": [
-          {
-            "campaign": "Videos Reels | Mensajes | LR #2",
-            "status": "Detenida",
-            "type": "Generación de demanda",
-            "dailyBudget": null,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 0,
-            "purchases": 0,
-            "allConversions": 1,
-            "conversionValue": 0,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 0 }
-          },
-          {
-            "campaign": "Search | LR",
-            "status": "Habilitada",
-            "type": "Búsqueda",
-            "dailyBudget": 50,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 41,
-            "purchases": 41,
-            "allConversions": 41,
-            "conversionValue": 10156.8,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 41 }
-          }
+          { "campaign": "Videos Reels | Mensajes | LR #2", "status": "Detenida", "type": "Generación de demanda", "dailyBudget": null, "complete": true, "cost": 49.84, "impressions": 10377, "clicks": 383, "conversions": 0, "purchases": 0, "allConversions": 1, "conversionValue": 0, "ctr": 0.036909, "cpc": 0.13, "costPerConversion": null, "costPerPurchase": null, "roas": 0, "conversionsByCategory": null },
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": 50, "complete": true, "cost": 1199.3, "impressions": 10649, "clicks": 1303, "conversions": 41, "purchases": 41, "allConversions": 41, "conversionValue": 10156.8, "ctr": 0.122359, "cpc": 0.92, "costPerConversion": 29.25, "costPerPurchase": 29.25, "roas": 8.47, "conversionsByCategory": null }
         ],
         "checks": [
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "cost", "expected": 1249.14, "actual": 1249.14, "ok": true },
@@ -1837,11 +1387,14 @@
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "purchases", "expected": 41, "actual": 41, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "allConversions", "expected": 42, "actual": 42, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "conversionValue", "expected": 10156.8, "actual": 10156.8, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "cost", "expected": 1249.14, "actual": 1249.14, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "impressions", "expected": 21026, "actual": 21026, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "clicks", "expected": 1686, "actual": 1686, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversions", "expected": 41, "actual": 41, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "purchases", "expected": 41, "actual": 41, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "allConversions", "expected": 42, "actual": 42, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversionValue", "expected": 10156.8, "actual": 10156.8, "ok": true },
-          { "check": "Conversiones por categoría vs Total: Cuenta", "field": "conversions", "expected": 41, "actual": 41, "ok": true }
+          { "check": "Total: Campañas filtradas vs Total: Cuenta", "field": "cost", "expected": 1249.14, "actual": 1249.14, "ok": true }
         ],
         "repairs": []
       },
@@ -2008,82 +1561,45 @@
           "La serie diaria mezcla Meta (cifras diarias reales) con Google Ads (total del mes repartido entre los días, estimado)."
         ]
       },
-      "warnings": [
-        "Google Ads Agosto 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta."
-      ]
+      "warnings": []
     },
     {
       "id": "2026-09",
       "label": "Septiembre 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Setiembre 2026", "id": "1Ebb7XuRlbSRttLSHVDV6Ktxy0EuuB7P4FdYSuFr1icg", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby GA - Setiembre 2026", "id": "1WYRDmKazdzG8kiOzgbI3pmuvmoeELPbuT_HF5GcCpBw", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-09-01", "end": "2026-09-30", "days": null, "daysInMonth": 30, "complete": true },
-        "segmentation": "Categoría de conversión",
-        "campaignsComplete": false,
+        "segmentation": null,
+        "campaignsComplete": true,
         "totalsSource": "Total: Cuenta",
-        "totals": { "cost": 1494.87, "impressions": 27324, "clicks": 1841, "conversions": 18, "purchases": 18, "allConversions": 18, "conversionValue": 4497.4, "ctr": 0.067377, "cpc": 0.81, "costPerConversion": 83.05, "costPerPurchase": 83.05, "roas": 3.01 },
-        "conversionsByCategory": { "Compra": 18 },
+        "totals": { "cost": 1494.87, "impressions": 27324, "clicks": 1841, "conversions": 21, "purchases": 21, "allConversions": 21, "conversionValue": 5220.9, "ctr": 0.067377, "cpc": 0.81, "costPerConversion": 71.18, "costPerPurchase": 71.18, "roas": 3.49 },
+        "conversionsByCategory": null,
         "byType": [
-          { "type": "Búsqueda", "cost": 1380.89, "impressions": 14855, "clicks": 1444, "conversions": 16, "purchases": 16, "allConversions": 16, "conversionValue": 3912.8, "ctr": 0.097206, "cpc": 0.96, "costPerConversion": 86.31, "costPerPurchase": 86.31, "roas": 2.83 },
-          { "type": "Máximo rendimiento", "cost": 113.99, "impressions": 12469, "clicks": 397, "conversions": 2, "purchases": 2, "allConversions": 2, "conversionValue": 584.6, "ctr": 0.031839, "cpc": 0.29, "costPerConversion": 57, "costPerPurchase": 57, "roas": 5.13 }
+          { "type": "Búsqueda", "cost": 1380.89, "impressions": 14855, "clicks": 1444, "conversions": 17, "purchases": 17, "allConversions": 17, "conversionValue": 4127.8, "ctr": 0.097206, "cpc": 0.96, "costPerConversion": 81.23, "costPerPurchase": 81.23, "roas": 2.99 },
+          { "type": "Máximo rendimiento", "cost": 113.99, "impressions": 12469, "clicks": 397, "conversions": 4, "purchases": 4, "allConversions": 4, "conversionValue": 1093.1, "ctr": 0.031839, "cpc": 0.29, "costPerConversion": 28.5, "costPerPurchase": 28.5, "roas": 9.59 }
         ],
         "campaigns": [
-          {
-            "campaign": "Pmax B | Objetivo | LR",
-            "status": "Habilitada",
-            "type": "Máximo rendimiento",
-            "dailyBudget": 20,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 2,
-            "purchases": 2,
-            "allConversions": 2,
-            "conversionValue": 584.6,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 2 }
-          },
-          {
-            "campaign": "Search | LR",
-            "status": "Habilitada",
-            "type": "Búsqueda",
-            "dailyBudget": 50,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 16,
-            "purchases": 16,
-            "allConversions": 16,
-            "conversionValue": 3912.8,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 16 }
-          }
+          { "campaign": "Pmax B | Objetivo | LR", "status": "Habilitada", "type": "Máximo rendimiento", "dailyBudget": 20, "complete": true, "cost": 113.99, "impressions": 12469, "clicks": 397, "conversions": 4, "purchases": 4, "allConversions": 4, "conversionValue": 1093.1, "ctr": 0.031839, "cpc": 0.29, "costPerConversion": 28.5, "costPerPurchase": 28.5, "roas": 9.59, "conversionsByCategory": null },
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": 50, "complete": true, "cost": 1380.89, "impressions": 14855, "clicks": 1444, "conversions": 17, "purchases": 17, "allConversions": 17, "conversionValue": 4127.8, "ctr": 0.097206, "cpc": 0.96, "costPerConversion": 81.23, "costPerPurchase": 81.23, "roas": 2.99, "conversionsByCategory": null }
         ],
         "checks": [
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "cost", "expected": 1494.87, "actual": 1494.88, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "impressions", "expected": 27324, "actual": 27324, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "clicks", "expected": 1841, "actual": 1841, "ok": true },
-          { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "conversions", "expected": 18, "actual": 18, "ok": true },
-          { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "purchases", "expected": 18, "actual": 18, "ok": true },
-          { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "allConversions", "expected": 18, "actual": 18, "ok": true },
-          { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "conversionValue", "expected": 4497.4, "actual": 4497.4, "ok": true },
-          { "check": "Suma de campañas vs Total: Cuenta", "field": "conversions", "expected": 18, "actual": 18, "ok": true },
-          { "check": "Suma de campañas vs Total: Cuenta", "field": "purchases", "expected": 18, "actual": 18, "ok": true },
-          { "check": "Suma de campañas vs Total: Cuenta", "field": "allConversions", "expected": 18, "actual": 18, "ok": true },
-          { "check": "Suma de campañas vs Total: Cuenta", "field": "conversionValue", "expected": 4497.4, "actual": 4497.4, "ok": true },
-          { "check": "Conversiones por categoría vs Total: Cuenta", "field": "conversions", "expected": 18, "actual": 18, "ok": true }
+          { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "conversions", "expected": 21, "actual": 21, "ok": true },
+          { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "purchases", "expected": 21, "actual": 21, "ok": true },
+          { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "allConversions", "expected": 21, "actual": 21, "ok": true },
+          { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "conversionValue", "expected": 5220.9, "actual": 5220.9, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "cost", "expected": 1494.87, "actual": 1494.88, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "impressions", "expected": 27324, "actual": 27324, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "clicks", "expected": 1841, "actual": 1841, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "conversions", "expected": 21, "actual": 21, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "purchases", "expected": 21, "actual": 21, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "allConversions", "expected": 21, "actual": 21, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "conversionValue", "expected": 5220.9, "actual": 5220.9, "ok": true },
+          { "check": "Total: Campañas filtradas vs Total: Cuenta", "field": "cost", "expected": 1494.87, "actual": 1494.87, "ok": true }
         ],
         "repairs": []
       },
@@ -2217,11 +1733,11 @@
         "spend": 3570.21,
         "impressions": 294503,
         "clicks": 6005,
-        "purchases": 37,
-        "purchaseValue": 11991.8,
+        "purchases": 40,
+        "purchaseValue": 12715.3,
         "cpm": 12.12,
-        "costPerPurchase": 96.49,
-        "roas": 3.36,
+        "costPerPurchase": 89.26,
+        "roas": 3.56,
         "spendShare": { "google": 0.4187, "meta": 0.5813 },
         "dailyBasis": "mixto",
         "notes": [
@@ -2230,67 +1746,26 @@
           "La serie diaria mezcla Meta (cifras diarias reales) con Google Ads (total del mes repartido entre los días, estimado)."
         ]
       },
-      "warnings": [
-        "Google Ads Septiembre 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta."
-      ]
+      "warnings": []
     },
     {
       "id": "2026-10",
       "label": "Octubre 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Octubre 2026", "id": "1697Quxzv6sGICYSyW9Wv6m9Ak3EjRTV68RCpuRiY2Ig", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby GA - Octubre 2026", "id": "1eM8ZjVYSK3vSdE3w423j-IK2Ri0Gg2qFDT3mu5LZ7j4", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-10-01", "end": "2026-10-04", "days": null, "daysInMonth": 31, "complete": false },
-        "segmentation": "Categoría de conversión",
-        "campaignsComplete": false,
+        "segmentation": null,
+        "campaignsComplete": true,
         "totalsSource": "Total: Cuenta",
         "totals": { "cost": 155.03, "impressions": 1729, "clicks": 147, "conversions": 1, "purchases": 1, "allConversions": 1, "conversionValue": 114.5, "ctr": 0.08502, "cpc": 1.05, "costPerConversion": 155.03, "costPerPurchase": 155.03, "roas": 0.74 },
-        "conversionsByCategory": { "Compra": 1 },
+        "conversionsByCategory": null,
         "byType": [
           { "type": "Búsqueda", "cost": 155.03, "impressions": 1729, "clicks": 147, "conversions": 1, "purchases": 1, "allConversions": 1, "conversionValue": 114.5, "ctr": 0.08502, "cpc": 1.05, "costPerConversion": 155.03, "costPerPurchase": 155.03, "roas": 0.74 }
         ],
         "campaigns": [
-          {
-            "campaign": "Pmax B | Objetivo | LR",
-            "status": "Habilitada",
-            "type": "Máximo rendimiento",
-            "dailyBudget": 20,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 0,
-            "purchases": 0,
-            "allConversions": 0,
-            "conversionValue": 0,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 0 }
-          },
-          {
-            "campaign": "Search | LR",
-            "status": "Habilitada",
-            "type": "Búsqueda",
-            "dailyBudget": 50,
-            "complete": false,
-            "cost": null,
-            "impressions": null,
-            "clicks": null,
-            "conversions": 1,
-            "purchases": 1,
-            "allConversions": 1,
-            "conversionValue": 114.5,
-            "ctr": null,
-            "cpc": null,
-            "costPerConversion": null,
-            "costPerPurchase": null,
-            "roas": null,
-            "conversionsByCategory": { "Compra": 1 }
-          }
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": 50, "complete": true, "cost": 155.03, "impressions": 1729, "clicks": 147, "conversions": 1, "purchases": 1, "allConversions": 1, "conversionValue": 114.5, "ctr": 0.08502, "cpc": 1.05, "costPerConversion": 155.03, "costPerPurchase": 155.03, "roas": 0.74, "conversionsByCategory": null }
         ],
         "checks": [
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "cost", "expected": 155.03, "actual": 155.03, "ok": true },
@@ -2300,11 +1775,14 @@
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "purchases", "expected": 1, "actual": 1, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "allConversions", "expected": 1, "actual": 1, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "conversionValue", "expected": 114.5, "actual": 114.5, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "cost", "expected": 155.03, "actual": 155.03, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "impressions", "expected": 1729, "actual": 1729, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "clicks", "expected": 147, "actual": 147, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversions", "expected": 1, "actual": 1, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "purchases", "expected": 1, "actual": 1, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "allConversions", "expected": 1, "actual": 1, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversionValue", "expected": 114.5, "actual": 114.5, "ok": true },
-          { "check": "Conversiones por categoría vs Total: Cuenta", "field": "conversions", "expected": 1, "actual": 1, "ok": true }
+          { "check": "Total: Campañas filtradas vs Total: Cuenta", "field": "cost", "expected": 155.03, "actual": 155.03, "ok": true }
         ],
         "repairs": []
       },
@@ -2386,9 +1864,7 @@
           "La serie diaria mezcla Meta (cifras diarias reales) con Google Ads (total del mes repartido entre los días, estimado)."
         ]
       },
-      "warnings": [
-        "Google Ads Octubre 2026: el informe viene segmentado por «Categoría de conversión»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «Total: Cuenta» y la tabla por campaña queda incompleta."
-      ]
+      "warnings": []
     }
   ]
 }

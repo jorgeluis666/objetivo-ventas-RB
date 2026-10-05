@@ -240,6 +240,10 @@ const GA_CONVERSION_SEGMENTS = [
   'tipo de accion de conversion',
   'origen de la conversion',
 ];
+// El export en español llama "Compras" a las campañas de Shopping. En Google Ads se ven como "Shopping",
+// y en el tablero "Compras" es el KPI de conversión: se guardan con el nombre de la interfaz.
+const GA_TYPE_LABELS = { compras: 'Shopping' };
+const campaignType = text => GA_TYPE_LABELS[normalize(text)] || text;
 const GA_FIELD_LABELS = {
   cost: 'costo', impressions: 'impresiones', clicks: 'clics', conversions: 'conversiones',
   purchases: 'conversiones por compras', allConversions: 'todas las conv.', conversionValue: 'valor de conv.',
@@ -330,7 +334,7 @@ function parseGoogleReport(text) {
         // "Total: Campañas" (informe sin filtro) o "Total: Campañas filtradas": suma de las filas de campaña, no un tipo.
         if (!category && !filtered) filtered = readMetrics(row, 'Total: Campañas filtradas');
       } else if (!category) {
-        byType.push({ type: label, ...readMetrics(row, `Total: ${label}`) });
+        byType.push({ type: campaignType(label), ...readMetrics(row, `Total: ${label}`) });
       }
       continue;
     }
@@ -344,7 +348,7 @@ function parseGoogleReport(text) {
       entry = {
         campaign: name,
         status: cleanText(cell(row, 'status')) || null,
-        type: cleanText(cell(row, 'type')) || null,
+        type: campaignType(cleanText(cell(row, 'type'))) || null,
         dailyBudget: !budgetType || normalize(budgetType).startsWith('diari') ? parseNumber(cell(row, 'budget')) : null,
         metrics: Object.fromEntries(GA_METRICS.map(field => [field, 0])),
         conversionsByCategory: {},
@@ -365,6 +369,21 @@ function parseGoogleReport(text) {
   const complete = !segmentation;
 
   const typeRows = byType.filter(row => GA_METRICS.some(field => row[field]));
+  // Google Ads no siempre exporta la fila "Total: <tipo>" (en enero de 2026 faltó la de Video, de una
+  // campaña quitada). Con las campañas completas, el tipo que falte se arma sumando sus campañas.
+  if (complete) {
+    const known = new Set(typeRows.map(row => normalize(row.type)));
+    const orphan = new Map();
+    for (const entry of campaignList) {
+      if (!entry.type || known.has(normalize(entry.type))) continue;
+      if (!orphan.has(entry.type)) orphan.set(entry.type, []);
+      orphan.get(entry.type).push(entry.metrics);
+    }
+    for (const [type, items] of orphan) {
+      const row = { type, ...Object.fromEntries(GA_METRICS.map(field => [field, sumField(items, field)])), fromCampaigns: true };
+      if (GA_METRICS.some(field => row[field])) typeRows.push(row);
+    }
+  }
   let totals = account;
   let totalsSource = 'Total: Cuenta';
   if (!totals && typeRows.length) {
@@ -405,7 +424,11 @@ function parseGoogleReport(text) {
     totalsSource,
     totals: googleRatios(roundGoogle(totals)),
     conversionsByCategory: Object.keys(accountByCategory).length ? accountByCategory : null,
-    byType: typeRows.map(row => ({ type: row.type, ...googleRatios(roundGoogle(row)) })),
+    byType: typeRows.map(row => ({
+      type: row.type,
+      ...googleRatios(roundGoogle(row)),
+      ...(row.fromCampaigns ? { fromCampaigns: true } : {}),
+    })),
     campaigns: campaignList.map(entry => {
       const metrics = roundGoogle(entry.metrics);
       // Sin el export completo el costo, las impresiones y los clics de cada campaña no se conocen: null, no 0.
@@ -986,7 +1009,8 @@ function printMonth(month) {
     const t = g.totals;
     const ctr = t.ctr === null ? '—' : `${(t.ctr * 100).toFixed(2)}%`;
     console.log(`    Google  ${money(t.cost)} · ${count(t.impressions)} impr · ${count(t.clicks)} clics · CTR ${ctr} · ${count(t.purchases)} compras · costo/compra ${money(t.costPerPurchase)} · valor ${money(t.conversionValue)} (conversiones con Contacto: ${count(t.conversions)})`);
-    console.log(`            ${g.campaignsComplete ? `${g.campaigns.length} campañas completas` : `tabla por campaña INCOMPLETA (segmentada por ${g.segmentation}); KPIs desde ${g.totalsSource}`}`);
+    const rebuilt = g.byType.filter(row => row.fromCampaigns).map(row => row.type);
+    console.log(`            ${g.campaignsComplete ? `${g.campaigns.length} campañas completas` : `tabla por campaña INCOMPLETA (segmentada por ${g.segmentation}); KPIs desde ${g.totalsSource}`}${rebuilt.length ? ` · sin fila de total en el informe, sumado desde sus campañas: ${rebuilt.join(', ')}` : ''}`);
   }
   if (m) {
     const t = m.totals;

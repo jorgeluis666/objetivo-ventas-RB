@@ -1,6 +1,6 @@
 # Royal Baby · Dashboard de Ventas 2026
 
-Dashboard de ventas por canal (Tienda, Web, WhatsApp, Showroom, Instagram, Facebook) con seguimiento del plan de objetivos del cliente, comparativo YoY, distribución y análisis de productos web.
+Dashboard de ventas por canal (Tienda, Web, WhatsApp, Showroom, Instagram, Facebook) con los objetivos comerciales de la marca frente a su histórico de ventas, comparativo YoY, distribución y análisis de productos web.
 
 Incluye además un módulo de planificación de pauta Meta Ads con modelos Web por
 CPA y WhatsApp por CPL, estados separados por cliente, historial de versiones,
@@ -8,7 +8,7 @@ resumen copiable y exportación a Excel, y el módulo **Gasto publicitario**, qu
 muestra la inversión y los resultados de Meta Ads y Google Ads desde sus carpetas
 de Drive.
 
-Los datos de 2026 se sincronizan automáticamente desde un Google Sheet mediante un pipeline que corre en GitHub Actions.
+Los objetivos y las ventas 2026 se leen de dos carpetas de Drive de la marca, todos los días, con workflows de GitHub Actions.
 
 Publicado en **https://royalbaby.limaretail.com**, con clave.
 
@@ -28,7 +28,8 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
     data-static.js        Datos 2025 y productos web
     data-live.js          Datos 2026: incrustados en el sitio publicado, data/ventas-2026.json en local
     charts.js             Instancias de Chart.js
-    objectives.js         Vista Objetivos 2026: plan del cliente vs ventas
+    fuentes-drive.js      Lectura de las hojas de Drive de objetivos y ventas (navegador y scripts)
+    objectives.js         Vista Objetivos 2026: objetivos de la marca e histórico de ventas
     config.js             Usuarios y destinatarios de alertas
     sheets.js             Indicador de sync + botón Actualizar
     meta-planner.js       Planificador Meta Ads por cliente
@@ -36,12 +37,14 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
     gasto.js              Módulo Gasto publicitario (Meta Ads y Google Ads desde Drive)
     main.js               Orquestación: init, navegación, render
   data/
-    ventas-2026.json      Generado por el pipeline (no editar a mano)
-    objetivos-2026.json   Plan de metas del cliente: canales y escenarios mínima e ideal
+    ventas-2026.json      Generado por fetch-data.js (no editar a mano)
+    objetivos-2026.json   Objetivos de la marca desde Drive, generado por sync-objetivos.js (no editar a mano)
     ads-data.json         Inversión publicitaria para Proyecciones
     ads-2026.json         Google Ads + Meta Ads desde Drive, para Gasto publicitario (generado por sync-ads.js)
   scripts/
-    fetch-data.js         Lee Google Sheets → escribe data/ventas-2026.json
+    fetch-data.js         Ventas: carpeta de Drive (2026) + Google Sheet (2025) → data/ventas-2026.json
+    sync-objetivos.js     Objetivos: carpeta de Drive → data/objetivos-2026.json
+    drive-publico.js      Encuentra la hoja de una carpeta de Drive compartida por enlace
     sync-ads.js           Lee las carpetas de Drive de Google Ads y Meta → data/ads-2026.json
     build.js              Arma dist/ (HTML con todo incrustado, cifrado con la clave)
     alertas.js            Correo semanal de alertas
@@ -49,7 +52,8 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
   deploy/
     pages-gate.html       Pantalla de acceso que descifra el tablero
   .github/workflows/
-    update-data.yml       Sync del sheet (lunes) + workflow_dispatch
+    update-data.yml       Ventas, todos los días a las 06:00 Lima + workflow_dispatch
+    sync-objetivos.yml    Objetivos, todos los días a las 06:05 Lima + workflow_dispatch
     sync-ads.yml          Sync diario de las carpetas de Meta Ads y Google Ads (07:00 Lima) + workflow_dispatch
     deploy.yml            Build cifrado + deploy a GitHub Pages
     alertas-semanales.yml Correo semanal después de cada actualización
@@ -63,26 +67,46 @@ npm install
 npm run dev          # live-server en http://localhost:3000
 ```
 
-En local el tablero se abre sin clave y lee `data/ventas-2026.json`, `data/ads-data.json`, `data/objetivos-2026.json` y `data/ads-2026.json`. Si falta `data/ventas-2026.json`, muestra un banner de error. Para generarlo desde el sheet privado (una sola vez):
+En local el tablero se abre sin clave y lee `data/ventas-2026.json`, `data/ads-data.json`, `data/objetivos-2026.json` y `data/ads-2026.json`. Si falta `data/ventas-2026.json`, muestra un banner de error.
+
+Para volver a generar los datos:
+
+```bash
+npm run sync:objetivos                      # objetivos desde Drive (sin credenciales)
+node scripts/fetch-data.js --solo-2026      # ventas 2026 desde Drive; 2025 se conserva del JSON actual
+npm run fetch                               # ventas 2026 desde Drive + 2025 desde su Google Sheet
+```
+
+`npm run fetch` necesita la cuenta de servicio para leer el Sheet de 2025 (una sola vez):
 
 1. Crear un service account en Google Cloud Console con permiso de lectura de Sheets API.
 2. Descargar el JSON y guardarlo en `credentials/service-account.json` (ignorado por git).
-3. Compartir el sheet con el email del service account.
-4. Ejecutar:
-
-```bash
-npm run fetch
-```
+3. Compartir el Sheet de 2025 con el email del service account.
 
 ## Pipeline de datos
 
-El workflow `update-data.yml` corre los lunes (tres pasadas, para cubrir distintos horarios de carga del sheet) y ejecuta `node scripts/fetch-data.js` con el secret `SERVICE_ACCOUNT_JSON` (JSON del service account pegado entero). Si hay cambios en `data/ventas-2026.json`, commitea a `main`. Ese commit lo hace `GITHUB_TOKEN`, que no dispara otros workflows: el deploy y las alertas se encadenan con `workflow_run` al terminar la actualización.
+Dos workflows leen las carpetas de Drive de la marca todos los días y commitean a `main`:
 
-Si la lectura de un mes cerrado falla, el script se detiene sin escribir: queda publicado el último JSON válido y el workflow termina en rojo.
+| Workflow | Hora (Lima) | Script | Escribe |
+|---|---|---|---|
+| `update-data.yml` · *Actualizar datos de ventas* | 06:00 | `fetch-data.js` | `data/ventas-2026.json` |
+| `sync-objetivos.yml` · *Sincronizar objetivos comerciales* | 06:05 | `sync-objetivos.js` | `data/objetivos-2026.json` |
 
-Para forzar una sincronización: `Actions → Actualizar datos de ventas → Run workflow`.
+- **Ventas 2026**: la hoja de la carpeta [Ventas Royal Baby - 2026](https://drive.google.com/drive/folders/1JJdjIzDu2CrhcBI9gBUTUuPAXnKYUQal). Es la fuente de 2026 de todo el tablero (Objetivos, YoY, Distribución, Proyecciones y correo). **2025** sigue saliendo de su Google Sheet con el secret `SERVICE_ACCOUNT_JSON` (JSON del service account pegado entero).
+- **Objetivos**: la hoja de la carpeta [Objetivos Royal Baby](https://drive.google.com/drive/folders/1wfOOM4F3TRcxehX_dfZWDYSTVBPrPgjg).
+- Las carpetas están compartidas como "Cualquier persona con el enlace": se leen sin credenciales (vista pública de la carpeta y exportación `.xlsx` de la hoja). Con el secret opcional `RB_DRIVE_API_KEY` la carpeta se lista con la API de Drive.
+- Cada carpeta debe tener **una sola** hoja de cálculo de Google. Si el archivo se reemplaza por otro, la corrida siguiente lo encuentra solo.
+- Si una lectura falla (archivo no compartido, falta la pestaña de un mes cerrado, falta la columna PROYECCIÓN, canal desconocido), el script no escribe nada: queda publicado el último JSON válido y el workflow termina en rojo.
 
-El botón **Actualizar** del dashboard recarga la página para traer la última versión publicada. No dispara el workflow: eso exigiría guardar un token de GitHub en el navegador, y el tablero lo abren clientes.
+Esos commits los hace `GITHUB_TOKEN`, que no dispara otros workflows: el deploy y las alertas se encadenan con `workflow_run` al terminar cada uno. Para forzar una corrida: `Actions → <workflow> → Run workflow`.
+
+### Botones Sincronizar
+
+Cada zona del módulo Objetivos tiene un botón **Sincronizar** que vuelve a leer su hoja de Drive en el navegador y redibuja la zona al instante (la de ventas, todo el tablero). Lo que se sincroniza así vale para quien lo presionó y hasta que recargue la página: para todos, el tablero publicado se actualiza con la corrida diaria. El botón lee la hoja de la que salió lo publicado; si en Drive se reemplazó el archivo por otro, lo toma recién la corrida diaria (el navegador no puede listar la carpeta).
+
+El navegador y los scripts leen las hojas con el mismo código (`js/fuentes-drive.js`, con SheetJS), así que dan las mismas cifras.
+
+El botón **Actualizar** de la barra superior recarga la página para traer la última versión publicada.
 
 ## Inversión publicitaria desde Drive
 
@@ -159,9 +183,9 @@ Las sesiones abiertas con la clave anterior siguen hasta que se cierre la pesta�
 
 1. En Google Cloud Console: habilitar **Sheets API** y crear un service account.
 2. Pegar el JSON de credenciales completo como secret `SERVICE_ACCOUNT_JSON` en `Settings → Secrets and variables → Actions`.
-3. Compartir el spreadsheet con el email del service account (permiso lector).
+3. Compartir el Google Sheet de 2025 con el email del service account (permiso lector).
 4. Secret `RB_PAGE_PASSWORD`: clave de acceso al tablero (16 caracteres o más).
-5. Opcional: secret `RB_DRIVE_API_KEY` (clave de API de Google con Drive API habilitada) para que `sync-ads.yml` liste las carpetas con la API en vez de la vista pública.
+5. Opcional: secret `RB_DRIVE_API_KEY` (clave de API de Google con Drive API habilitada) para que `sync-ads.yml`, `update-data.yml` y `sync-objetivos.yml` listen las carpetas con la API en vez de la vista pública.
 6. Secret `RESEND_API_KEY` para el correo de alertas. Opcional: variable `DASHBOARD_URL` si el enlace del correo debe ser otro que el de `data/alertas-config.json`.
 7. DNS de `limaretail.com`: registro CNAME `royalbaby` → `jorgeluis666.github.io`.
 8. `Settings → Pages`: Source **GitHub Actions**, Custom domain `royalbaby.limaretail.com` y **Enforce HTTPS**.
@@ -169,15 +193,24 @@ Las sesiones abiertas con la clave anterior siguen hasta que se cierre la pesta�
 
 ## Objetivos 2026
 
-El módulo cruza el plan de metas del cliente con la venta registrada en el Sheet. El plan vive en `data/objetivos-2026.json` y es la única fuente de metas: lo leen el módulo Objetivos 2026, Proyecciones, el KPI anual del Comparativo YoY y el correo semanal (`alertas.js`). Al publicar, el build lo incrusta en la página.
+El módulo tiene dos zonas, cada una con su fuente de Drive, su fecha de sincronización y su botón **Sincronizar**:
 
-- **Canales del plan**: Tienda Miraflores (`Tienda`), Página Web (`Web`), Redes y WhatsApp (`WhatsApp` + `Instagram` + `Facebook`) y Outlet (`Showroom`). Cada canal indica en `sheet` qué columnas del Sheet suma.
-- **Outlet** son los saldos, que se venden en la web y en el Showroom. El Sheet no separa la venta outlet de la web, así que el canal Outlet mide solo el Showroom y la venta outlet de la web queda en Página Web.
-- **Escenarios**: `minima` (+10% sobre 2025) e `ideal` (+20%). El módulo tiene un selector y cada navegador recuerda su elección. Proyecciones, el KPI anual y el correo usan siempre la mínima.
-- **Metas**: copiadas tal cual del plan del cliente (*Plan Campañas 2026 final*), sin recalcular. Las de Redes y WhatsApp en noviembre y diciembre no salen del real 2025 × 1.1 / × 1.2: así vienen en el plan. La meta anual es la suma de los canales: S/ 1,082,150 la mínima y S/ 1,177,343 la ideal.
-- **Total del mes**: suma toda la venta registrada, también la de canales sin meta ese mes (el Showroom de enero a junio).
-- **Cambios**: las metas no se editan desde el tablero. Se cambian en `data/objetivos-2026.json` y se publican con un push.
-- El módulo compara por ciclo comercial 26–25; el correo semanal, por mes calendario.
+1. **Objetivos comerciales** (arriba): las metas que fija la marca, con su avance. Cuadro de metas por canal y mes (meta, venta y avance, referencia del año anterior) y una pestaña por mes con ritmo, alertas y detalle semanal.
+2. **Ventas 2026 · histórico de la marca** (abajo): ventas por canal y mes, por mes calendario o por ciclo 26–25, y la evolución semanal 2025 vs 2026.
+
+`data/objetivos-2026.json` es la única fuente de metas: lo leen el módulo, Proyecciones, el KPI anual del Comparativo YoY y el correo semanal (`alertas.js`). Al publicar, el build lo incrusta en la página.
+
+**Formato del archivo de objetivos** (hoy *LIMA REATIL ULTIMO TRIMESTRE 2026*):
+
+- Una fila con los meses (OCTUBRE, NOVIEMBRE…) y debajo, en el bloque de cada mes, las columnas **PROYECCIÓN** y **VENTA**. La meta es la PROYECCIÓN.
+- Una fila por canal con su nombre a la izquierda: `WHATSAPP` (o `REDES`), `TIENDA`, `WEB`, `OUTLET` (o `SHOWROOM`). Un canal con otro nombre hace fallar la lectura, para no perderlo en silencio.
+- Arriba, opcional, un bloque con un título con año (`TRIMESTRE 2025`) y una fila de montos por canal en el mismo orden: es la referencia del año anterior.
+- Solo hay metas para los meses del archivo: la pestaña por mes, Proyecciones y el correo solo muestran objetivo en esos meses. El KPI anual del YoY compara contra objetivo solo si el archivo cubre los 12 meses.
+- La columna **VENTA** del archivo no se usa: la venta sale del histórico de ventas, siempre con el mismo criterio.
+
+**Canales**: Tienda Miraflores (`Tienda`), Página Web (`Web`), Redes y WhatsApp (`WhatsApp` + `Instagram` + `Facebook`; en el archivo, `WHATSAPP`) y Outlet (`Showroom`). Cada canal indica en `sheet` qué columnas del histórico suma. **Outlet** son los saldos, que se venden en la web y en el Showroom; el histórico no separa la venta outlet de la web, así que el canal Outlet mide solo el Showroom.
+
+El total de cada mes suma toda la venta registrada. El módulo compara por ciclo comercial 26–25; el correo semanal, por mes calendario.
 
 ### Ciclo comercial de objetivos
 

@@ -5,13 +5,13 @@ name: Deploy a GitHub Pages
 # RB_PAGE_PASSWORD: sin esa clave el HTML publicado no se puede leer. Solo se sube dist/
 # (index.html, assets/ y CNAME): data/, scripts/ y README no se publican.
 #
-# workflow_run: los commits de datos de "Actualizar datos de ventas" y "Sincronizar inversión publicitaria"
+# workflow_run: los commits de datos de "Actualizar datos de ventas", "Sincronizar objetivos comerciales" y "Sincronizar inversión publicitaria"
 # los hace GITHUB_TOKEN y esos push no disparan otros workflows, así que el deploy se encadena al terminar.
 on:
   push:
     branches: [main]
   workflow_run:
-    workflows: ["Actualizar datos de ventas", "Sincronizar inversión publicitaria"]
+    workflows: ["Actualizar datos de ventas", "Sincronizar objetivos comerciales", "Sincronizar inversión publicitaria"]
     types: [completed]
     branches: [main]
   workflow_dispatch: {}

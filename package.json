@@ -7,13 +7,15 @@
     "dev": "live-server --port=3000 --open=index.html --no-browser",
     "fetch": "node scripts/fetch-data.js",
     "sync:ads": "node scripts/sync-ads.js",
+    "sync:objetivos": "node scripts/sync-objetivos.js",
     "build": "node scripts/build.js"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
-    "googleapis": "^144.0.0"
+    "googleapis": "^144.0.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "live-server": "^1.2.2"

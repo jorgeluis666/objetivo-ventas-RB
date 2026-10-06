@@ -1,24 +1,17 @@
 {
-  "version": "2",
+  "version": "3",
   "anio": 2026,
-  "updated": "2026-10-02",
-  "fuente": "Plan Campañas 2026 final (cliente)",
-  "nota": "Fuente de verdad de las metas 2026: la leen el tablero (Objetivos, Proyecciones, KPI anual) y el correo de alertas. Valores copiados tal cual del plan del cliente; no se recalculan.",
+  "sincronizado": "2026-10-06T13:00:50",
+  "fuente": {
+    "carpeta": "1wfOOM4F3TRcxehX_dfZWDYSTVBPrPgjg",
+    "archivo": {
+      "id": "1kjygGtcL6HLFiDSltJX2eonouuMhsNpvBDa32_8lLCQ",
+      "nombre": "LIMA REATIL ULTIMO TRIMESTRE 2026"
+    },
+    "pestana": "Hoja1"
+  },
+  "nota": "Generado por scripts/sync-objetivos.js desde Drive (no editar a mano). La meta es la columna PROYECCIÓN de cada mes.",
   "canales": [
-    {
-      "key": "Tienda",
-      "label": "Tienda Miraflores",
-      "sheet": [
-        "Tienda"
-      ]
-    },
-    {
-      "key": "Web",
-      "label": "Página Web",
-      "sheet": [
-        "Web"
-      ]
-    },
     {
       "key": "Redes",
       "label": "Redes y WhatsApp",
@@ -26,7 +19,24 @@
         "WhatsApp",
         "Instagram",
         "Facebook"
-      ]
+      ],
+      "etiqueta": "WHATSAPP"
+    },
+    {
+      "key": "Tienda",
+      "label": "Tienda Miraflores",
+      "sheet": [
+        "Tienda"
+      ],
+      "etiqueta": "TIENDA"
+    },
+    {
+      "key": "Web",
+      "label": "Página Web",
+      "sheet": [
+        "Web"
+      ],
+      "etiqueta": "WEB"
     },
     {
       "key": "Outlet",
@@ -34,241 +44,58 @@
       "sheet": [
         "Showroom"
       ],
-      "nota": "Mide solo el Showroom: las ventas outlet de la web se registran en Web y el Sheet no las separa."
+      "nota": "Mide solo el Showroom: las ventas outlet de la web se registran en Web y el histórico no las separa.",
+      "etiqueta": "OUTLET"
     }
   ],
-  "escenarios": {
-    "minima": {
-      "label": "Meta mínima",
-      "factor": "+10% vs 2025"
-    },
-    "ideal": {
-      "label": "Meta ideal",
-      "factor": "+20% vs 2025"
-    }
-  },
-  "real2025": {
-    "Enero": {
-      "Tienda": 46195,
-      "Web": 9111,
-      "Redes": 1447,
-      "Outlet": 0
-    },
-    "Febrero": {
-      "Tienda": 49781,
-      "Web": 7466,
-      "Redes": 3509,
-      "Outlet": 0
-    },
-    "Marzo": {
-      "Tienda": 58224,
-      "Web": 13519,
-      "Redes": 3799,
-      "Outlet": 0
-    },
-    "Abril": {
-      "Tienda": 52844,
-      "Web": 9317,
-      "Redes": 5368,
-      "Outlet": 0
-    },
-    "Mayo": {
-      "Tienda": 48189,
-      "Web": 17098,
-      "Redes": 1578,
-      "Outlet": 0
-    },
-    "Junio": {
-      "Tienda": 69442,
-      "Web": 15316,
-      "Redes": 553,
-      "Outlet": 0
-    },
-    "Julio": {
-      "Tienda": 56333,
-      "Web": 10553,
-      "Redes": 4904,
-      "Outlet": 0
-    },
-    "Agosto": {
-      "Tienda": 62520,
-      "Web": 26586,
-      "Redes": 4001,
-      "Outlet": 0
-    },
-    "Septiembre": {
-      "Tienda": 55878,
-      "Web": 19802,
-      "Redes": 5611,
-      "Outlet": 0
-    },
+  "meses": [
+    "Octubre",
+    "Noviembre",
+    "Diciembre"
+  ],
+  "metas": {
     "Octubre": {
-      "Tienda": 62186,
-      "Web": 10447,
-      "Redes": 4035,
-      "Outlet": 0
+      "Redes": 4437.95,
+      "Tienda": 68405.04,
+      "Web": 11492.03,
+      "Outlet": 3000
     },
     "Noviembre": {
-      "Tienda": 78531,
-      "Web": 20445,
-      "Redes": 7660.05,
-      "Outlet": 1254.6
+      "Redes": 8426.06,
+      "Tienda": 86383.88,
+      "Web": 22489.16,
+      "Outlet": 4000
     },
     "Diciembre": {
-      "Tienda": 83757,
-      "Web": 16842,
-      "Redes": 6924.25,
-      "Outlet": 2932.9
+      "Redes": 7616.68,
+      "Tienda": 92132.15,
+      "Web": 18526.05,
+      "Outlet": 5000
     }
   },
-  "metas": {
-    "minima": {
-      "Enero": {
-        "Tienda": 50815,
-        "Web": 10022,
-        "Redes": 1592,
-        "Outlet": 0
-      },
-      "Febrero": {
-        "Tienda": 54759,
-        "Web": 8213,
-        "Redes": 3860,
-        "Outlet": 0
-      },
-      "Marzo": {
-        "Tienda": 64046,
-        "Web": 14871,
-        "Redes": 4179,
-        "Outlet": 0
-      },
-      "Abril": {
-        "Tienda": 58128,
-        "Web": 10249,
-        "Redes": 5905,
-        "Outlet": 0
-      },
-      "Mayo": {
-        "Tienda": 53008,
-        "Web": 18808,
-        "Redes": 1736,
-        "Outlet": 0
-      },
-      "Junio": {
-        "Tienda": 76386,
-        "Web": 16848,
-        "Redes": 608,
-        "Outlet": 0
-      },
-      "Julio": {
-        "Tienda": 61966,
-        "Web": 11608,
-        "Redes": 5394,
-        "Outlet": 5000
-      },
-      "Agosto": {
-        "Tienda": 68772,
-        "Web": 29245,
-        "Redes": 4401,
-        "Outlet": 5000
-      },
-      "Septiembre": {
-        "Tienda": 61466,
-        "Web": 21782,
-        "Redes": 6172,
-        "Outlet": 5000
-      },
+  "referencia": {
+    "anio": 2025,
+    "etiqueta": "TRIMESTRE 2025",
+    "valores": {
       "Octubre": {
-        "Tienda": 68405,
-        "Web": 11492,
-        "Redes": 4438,
-        "Outlet": 5000
+        "Redes": 4034.5,
+        "Tienda": 62186.4,
+        "Web": 10447.3,
+        "Outlet": 0
       },
       "Noviembre": {
-        "Tienda": 86384,
-        "Web": 22490,
-        "Redes": 7607,
-        "Outlet": 5000
+        "Redes": 7660.05,
+        "Tienda": 78530.8,
+        "Web": 20444.69,
+        "Outlet": 1254.6
       },
       "Diciembre": {
-        "Tienda": 92133,
-        "Web": 18526,
-        "Redes": 10836,
-        "Outlet": 10000
-      }
-    },
-    "ideal": {
-      "Enero": {
-        "Tienda": 55434,
-        "Web": 10933,
-        "Redes": 1736,
-        "Outlet": 0
-      },
-      "Febrero": {
-        "Tienda": 59737,
-        "Web": 8959,
-        "Redes": 4211,
-        "Outlet": 0
-      },
-      "Marzo": {
-        "Tienda": 69869,
-        "Web": 16223,
-        "Redes": 4559,
-        "Outlet": 0
-      },
-      "Abril": {
-        "Tienda": 63413,
-        "Web": 11180,
-        "Redes": 6442,
-        "Outlet": 0
-      },
-      "Mayo": {
-        "Tienda": 57827,
-        "Web": 20518,
-        "Redes": 1894,
-        "Outlet": 0
-      },
-      "Junio": {
-        "Tienda": 83330,
-        "Web": 18379,
-        "Redes": 664,
-        "Outlet": 0
-      },
-      "Julio": {
-        "Tienda": 67600,
-        "Web": 12664,
-        "Redes": 5885,
-        "Outlet": 5000
-      },
-      "Agosto": {
-        "Tienda": 75024,
-        "Web": 31903,
-        "Redes": 4801,
-        "Outlet": 5000
-      },
-      "Septiembre": {
-        "Tienda": 67054,
-        "Web": 23762,
-        "Redes": 6733,
-        "Outlet": 5000
-      },
-      "Octubre": {
-        "Tienda": 74623,
-        "Web": 12536,
-        "Redes": 4842,
-        "Outlet": 5000
-      },
-      "Noviembre": {
-        "Tienda": 94237,
-        "Web": 24534,
-        "Redes": 8298,
-        "Outlet": 5000
-      },
-      "Diciembre": {
-        "Tienda": 100508,
-        "Web": 20210,
-        "Redes": 11821,
-        "Outlet": 10000
+        "Redes": 6924.25,
+        "Tienda": 83756.5,
+        "Web": 16841.86,
+        "Outlet": 2932.9
       }
     }
-  }
+  },
+  "avisos": []
 }

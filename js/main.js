@@ -23,7 +23,7 @@
     'view-yoy':    'Evolución interanual · 2025 vs 2026',
     'view-prod':   'Ranking y ventas por producto',
     'view-dist':   'Ventas por canal de distribución',
-    'view-obj':    'Plan del cliente vs ventas',
+    'view-obj':    'Objetivos y ventas de la marca',
     'view-meta':   'Presupuesto Web y WhatsApp',
     'view-proj':   'Inversión publicitaria · ritmo mensual',
     'view-rep':    'Meta Ads y Google Ads',
@@ -49,7 +49,8 @@
     weekly2025: null,
     generated: null,
     adsData: null,
-    plan: null,          // data/objetivos-2026.json: canales y metas del plan del cliente
+    plan: null,          // data/objetivos-2026.json: objetivos de la marca (Drive)
+    live: null,          // último juego de datos de ventas renderizado (publicado o sincronizado)
     renderedProducts: false,
     configInited: false,
     metaInited: false,
@@ -148,8 +149,8 @@
     });
   }
 
-  // Proyecciones y el KPI anual miden contra la meta mínima del plan.
-  const planTargets = () => state.plan?.metas?.minima || null;
+  // Proyecciones y el KPI anual miden contra los objetivos de la marca.
+  const planTargets = () => state.plan?.metas || null;
 
   // ── YoY ──
   const tot = o => channels.reduce((s, c) => s + (o[c] || 0), 0);
@@ -209,7 +210,8 @@
       const total25   = months.reduce((s, m) => s + tot(d2025[m]), 0);
       const diffPct   = total25 > 0 ? (proyAnual - total25) / total25 * 100 : 0;
       const up        = diffPct >= 0;
-      const targets   = planTargets() || {};
+      // La comparación anual solo tiene sentido si los objetivos cubren los 12 meses.
+      const targets   = (state.plan?.meses || []).length === 12 ? planTargets() : {};
       const obj2026   = months.reduce((s, m) => s + Object.values(targets[m] || {}).reduce((a, b) => a + b, 0), 0);
       const vsObj     = obj2026 > 0 ? (proyAnual / obj2026 * 100).toFixed(1) : null;
 
@@ -231,7 +233,7 @@
             <span class="anual-pill" style="background:${up ? 'var(--green-soft)' : 'var(--red-soft)'};color:${up ? 'var(--green-text)' : 'var(--red-text)'};">2025 · S/. ${fmt(total25)}</span>
           </div>
           ${vsObj ? `<div class="anual-item">
-            <span class="anual-label">vs meta mínima 2026</span>
+            <span class="anual-label">vs objetivo 2026</span>
             <span class="anual-val" style="color:${parseFloat(vsObj)>=100?'var(--green-text)':'var(--red-text)'};">${vsObj}%</span>
             <span class="anual-pill" style="background:var(--brand-soft);color:var(--brand-text);">obj S/. ${fmt(obj2026)}</span>
           </div>` : ''}
@@ -408,6 +410,7 @@
     // Merge el 2025 live (12 meses) sobre el hardcoded (Ene-Abr).
     adoptLive2025(liveData.d2025_live);
 
+    state.live         = liveData;
     state.d2026        = liveData.d2026;
     state.weeklyData   = liveData.weeklyData;
     state.transactions = liveData.transactions;
@@ -443,6 +446,10 @@
       periodDays: liveData.commercialPeriodDays,
       cycleLabel: liveData.commercialCycleLabel || '26-25',
       plan: state.plan,
+      ventasCalendario: state.d2026,
+      ventasInfo: { generated: liveData.generated, fuente: liveData.fuente2026 || null },
+      onSyncVentas: syncVentas,
+      onPlanChange: planChanged,
     });
 
     if (state.renderedProducts) renderProducts();
@@ -451,6 +458,33 @@
       window.Projections?.render({ d2026: state.d2026, targets: planTargets(), adsData: state.adsData });
     }
     window.Sheets.updateGenerated(state.generated);
+  }
+
+  // Botón Sincronizar de las ventas (módulo Objetivos): relee la hoja de Drive de la que salió el
+  // publicado y vuelve a dibujar todo el tablero en este navegador. 2025 no cambia.
+  async function syncVentas() {
+    const fuente = state.live?.fuente2026;
+    if (!fuente?.archivo?.id) throw new Error('los datos publicados no indican qué hoja de Drive leer');
+    const tabs = await window.FuentesDrive.descargarLibro(fuente.archivo.id, { XLSX: window.XLSX });
+    const result = await window.FuentesDrive.ventas2026(tabs);
+    if (result.failures.length) throw new Error(result.failures.join(' · '));
+    renderAll({
+      ...state.live,
+      ...result.fields,
+      generated: window.FuentesDrive.ahoraLima(),
+      fuente2026: { ...fuente, ultimoDia: result.ultimoDia },
+      source: 'drive',
+    });
+  }
+
+  // Botón Sincronizar de los objetivos: el módulo ya tiene el plan nuevo; acá se actualizan las
+  // vistas que también lo usan.
+  function planChanged(plan) {
+    state.plan = plan;
+    renderKpisYoY(state.d2026);
+    if (state.projInited && state.adsData) {
+      window.Projections?.render({ d2026: state.d2026, targets: planTargets(), adsData: state.adsData });
+    }
   }
 
   // Si el pipeline trajo d2025_live con valores, lo preferimos sobre el
@@ -485,7 +519,7 @@
     const adsRequest = window.RB_ADS_DATA
       ? Promise.resolve(window.RB_ADS_DATA)
       : fetch('data/ads-data.json').then(r => r.ok ? r.json() : null);
-    // El plan de metas llega igual: incrustado al publicar, data/objetivos-2026.json en local.
+    // Los objetivos llegan igual: incrustados al publicar, data/objetivos-2026.json en local.
     const planRequest = window.RB_OBJETIVOS_DATA
       ? Promise.resolve(window.RB_OBJETIVOS_DATA)
       : fetch('data/objetivos-2026.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null);

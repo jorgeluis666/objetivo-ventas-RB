@@ -1,8 +1,11 @@
 /* ============================================================
-   objectives.js — vista de Objetivos 2026.
-   Cruza el plan del cliente (data/objetivos-2026.json: canales y metas
-   mínima +10% / ideal +20%) con las ventas del Sheet en ciclo 26-25.
-   Renderiza el cuadro anual, month-tabs, pace cards y detalle semanal.
+   objectives.js — vista de Objetivos 2026, en dos zonas con fuente en Drive:
+     1. Objetivos comerciales (data/objetivos-2026.json): KPIs, cuadro de
+        metas por canal y una pestaña por mes con ritmo y detalle semanal.
+     2. Ventas 2026, histórico de la marca: ventas por canal y mes y la
+        evolución semanal 2025 vs 2026.
+   La venta de los objetivos va en ciclo 26-25. Cada zona tiene un botón
+   Sincronizar que relee su hoja de Drive en el navegador (fuentes-drive.js).
    Expone window.Objectives.render({ d2026, weeklyData, transactions, plan, … }).
    ============================================================ */
 
@@ -60,43 +63,41 @@
 
   // Estado interno
   const state = {
-    plan: null,            // data/objetivos-2026.json
-    scenario: 'minima',    // escenario de meta: 'minima' (+10%) o 'ideal' (+20%)
-    d2026: null,
+    plan: null,            // data/objetivos-2026.json: objetivos de la marca (Drive)
+    d2026: null,           // ventas 2026 por ciclo comercial 26-25
+    ventasCal: null,       // ventas 2026 por mes calendario (histórico)
+    ventasInfo: null,      // { generated, fuente } de las ventas mostradas
+    ventasCiclo: 'calendario',
     weeklyData: null,
     transactions: null,
     avgTickets: {},
     d2025Ref: d2025,
     periodDays: monthDays,
     cycleLabel: 'calendario',
+    onSyncVentas: null,
+    onPlanChange: null,
   };
 
-  // Las metas vienen fijas del plan; el navegador solo recuerda el escenario elegido.
-  const SCENARIO_KEY = 'rb_objetivos_escenario';
-  try {
-    const saved = localStorage.getItem(SCENARIO_KEY);
-    if (saved === 'minima' || saved === 'ideal') state.scenario = saved;
-  } catch (e) { /* storage no disponible */ }
-
-  function setScenario(scenario) {
-    state.scenario = scenario;
-    try { localStorage.setItem(SCENARIO_KEY, scenario); } catch (e) { /* storage no disponible */ }
-    renderPlanSection();
-  }
-
-  // ── Plan: cada canal del plan suma una o más columnas del Sheet ──
-  // (Redes y WhatsApp = WhatsApp + Instagram + Facebook)
+  // ── Objetivos: cada canal suma una o más columnas del histórico de ventas ──
+  // (Redes y WhatsApp = WhatsApp + Instagram + Facebook). Solo hay metas para los meses del archivo.
   const planChannels = () => state.plan?.canales || [];
+  const objMonths    = () => (state.plan?.meses || []).filter(m => months.includes(m));
   const chColor      = c => palette[c.sheet[0]] || '#64748B';
   const chReal       = (monthObj, c) => c.sheet.reduce((s, col) => s + ((monthObj || {})[col] || 0), 0);
   const chWeekReal   = (wk, c) => c.sheet.reduce((s, col) => s + (wk[chToUpper[col]] || 0), 0);
-  const target       = (m, key) => state.plan?.metas?.[state.scenario]?.[m]?.[key] || 0;
+  const target       = (m, key) => state.plan?.metas?.[m]?.[key] || 0;
   const monthTarget  = m => planChannels().reduce((s, c) => s + target(m, c.key), 0);
-  const ref2025      = (m, key) => state.plan?.real2025?.[m]?.[key] || 0;
+  const ref2025      = (m, key) => state.plan?.referencia?.valores?.[m]?.[key] || 0;
   const monthRef2025 = m => planChannels().reduce((s, c) => s + ref2025(m, c.key), 0);
-  const scenarioName = () => state.plan?.escenarios?.[state.scenario]?.label || 'Meta';
+  const refLabel     = () => state.plan?.referencia?.anio ? `Ref. ${state.plan.referencia.anio}` : 'Ref.';
 
-  // Montos compactos para el cuadro anual (miles de soles)
+  // Textos que vienen de Drive (nombres de archivo, etiquetas, avisos) se escapan antes de ir al HTML.
+  const esc = v => String(v == null ? '' : v)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const FD = () => global.FuentesDrive;
+  const norm = v => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase();
+
+  // Montos compactos para el histórico (miles de soles)
   const fmtK = n => {
     const a = Math.abs(n);
     if (a >= 1e6) return (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M';
@@ -288,11 +289,11 @@
           </div>
           <div class="pace-card">
             <div class="pace-card-head">
-              <div class="pace-lbl">${scenarioName()}</div>
-              <span class="pace-badge muted">plan</span>
+              <div class="pace-lbl">Meta del mes</div>
+              <span class="pace-badge muted">archivo</span>
             </div>
             <div class="pace-val brand">S/. ${fmt(tt)}</div>
-            <div class="pace-sub">plan del cliente</div>
+            <div class="pace-sub">objetivos de la marca</div>
           </div>
           <div class="pace-card">
             <div class="pace-card-head">
@@ -308,7 +309,7 @@
               <span class="pace-badge muted">referencia</span>
             </div>
             <div class="pace-val">S/. ${fmt(monthRef2025(m))}</div>
-            <div class="pace-sub">cierre 2025 según el plan</div>
+            <div class="pace-sub">referencia del archivo de objetivos</div>
           </div>
         </div>`;
       return;
@@ -339,7 +340,7 @@
               <span class="pace-badge ${faltante > 0 ? 'red' : 'green'}">${faltante > 0 ? '▼ ' + pctMissing + '%' : '✓ cubierto'}</span>
             </div>
             <div class="pace-val ${faltante > 0 ? 'red' : 'green'}">S/. ${fmt(faltante)}</div>
-            <div class="pace-sub">${scenarioName()}: S/. ${fmt(tt)}</div>
+            <div class="pace-sub">Meta: S/. ${fmt(tt)}</div>
           </div>
           <div class="pace-card">
             <div class="pace-card-head">
@@ -615,7 +616,8 @@
   }
 
   // ── Render principal de la vista ──
-  function render({ d2026, weeklyData, transactions, weekly2025, d2025Ref, periodDays, cycleLabel, plan }) {
+  function render({ d2026, weeklyData, transactions, weekly2025, d2025Ref, periodDays, cycleLabel, plan,
+                   ventasCalendario, ventasInfo, onSyncVentas, onPlanChange }) {
     state.d2026        = d2026;
     state.weeklyData   = weeklyData;
     state.transactions = transactions;
@@ -625,6 +627,10 @@
     state.cycleLabel   = cycleLabel || 'calendario';
     state.avgTickets   = computeAvgTickets(d2026, transactions);
     state.plan         = plan || null;
+    state.ventasCal    = ventasCalendario || null;
+    state.ventasInfo   = ventasInfo || null;
+    state.onSyncVentas = onSyncVentas || null;
+    state.onPlanChange = onPlanChange || null;
 
     // Chart combinado arriba de los month tabs (52 semanas 2025 + 2026 disponibles)
     if (global.Charts?.combinedWeeklyChart) {
@@ -844,189 +850,190 @@
       }
     }
 
-    wireScenarioToggle();
+    wireSync();
     renderPlanSection();
+    renderVentasSection();
   }
 
-  // ── Plan vs ventas: escenario, KPIs, cuadro anual y meses ──
-  function renderPlanSection() {
-    const host          = document.getElementById('plan-section');
-    const monthTabsEl   = document.getElementById('month-tabs');
-    const monthPanelsEl = document.getElementById('month-panels');
-    if (!host || !monthTabsEl || !monthPanelsEl) return;
-
-    document.querySelectorAll('#scenario-toggle .vt-btn').forEach(b =>
-      b.classList.toggle('active', b.dataset.scenario === state.scenario));
-
-    if (!state.plan) {
-      host.innerHTML = `<div class="insight err" style="margin-bottom:20px;">
-        <b>Plan de metas no disponible:</b> no se pudo cargar <code>data/objetivos-2026.json</code>.</div>`;
-      monthTabsEl.innerHTML = '';
-      monthPanelsEl.innerHTML = '';
-      return;
+  // ── Botones Sincronizar ──
+  // Leen la hoja de Drive en este navegador: la zona se actualiza al instante para quien
+  // sincroniza. El tablero publicado se actualiza solo con la corrida diaria.
+  function wireSync() {
+    const wire = (id, fn) => {
+      const btn = document.getElementById(id);
+      if (!btn || btn.dataset.wired) return;
+      btn.dataset.wired = '1';
+      btn.addEventListener('click', fn);
+    };
+    wire('btn-sync-objetivos', () => runSync('objetivos', syncObjetivos));
+    wire('btn-sync-ventas', () => runSync('ventas', () => {
+      if (!state.onSyncVentas) throw new Error('sincronización no disponible');
+      return state.onSyncVentas();
+    }));
+    const toggle = document.getElementById('ventas-ciclo-toggle');
+    if (toggle && !toggle.dataset.wired) {
+      toggle.dataset.wired = '1';
+      toggle.querySelectorAll('.vt-btn').forEach(btn => btn.addEventListener('click', () => {
+        state.ventasCiclo = btn.dataset.ciclo;
+        renderVentasSection();
+      }));
     }
-    renderPlanKpis();
-    renderAnnualTable();
-    renderMonthPanels();
   }
 
-  function wireScenarioToggle() {
-    const el = document.getElementById('scenario-toggle');
-    if (!el || el.dataset.wired) return;
-    el.dataset.wired = '1';
-    el.querySelectorAll('.vt-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (btn.dataset.scenario !== state.scenario) setScenario(btn.dataset.scenario);
-      });
-    });
+  async function runSync(zona, fn) {
+    const btn    = document.getElementById(`btn-sync-${zona}`);
+    const status = document.getElementById(`${zona}-sync-status`);
+    if (!btn || btn.disabled) return;
+    btn.disabled = true;
+    btn.classList.add('loading');
+    if (status) { status.className = 'zone-status'; status.textContent = 'Leyendo Drive…'; }
+    try {
+      await fn();
+      if (status) { status.className = 'zone-status ok'; status.textContent = 'Actualizado desde Drive en este navegador'; }
+    } catch (err) {
+      console.error(`[objetivos] no se pudo sincronizar ${zona}`, err);
+      if (status) { status.className = 'zone-status err'; status.textContent = `No se pudo sincronizar: ${err.message}`; }
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove('loading');
+    }
   }
 
-  // Rango legible de meses: "Ene–Sep", "Ene" o ''.
+  async function syncObjetivos() {
+    const fuente = state.plan?.fuente;
+    if (!fuente?.archivo?.id) throw new Error('los objetivos publicados no indican qué hoja de Drive leer');
+    const tabs  = await FD().descargarLibro(fuente.archivo.id, { XLSX: global.XLSX });
+    const leido = FD().objetivosDelLibro(tabs);
+    state.plan = {
+      ...state.plan,
+      sincronizado: FD().ahoraLima(),
+      fuente: { ...fuente, pestana: leido.pestana },
+      canales: leido.canales,
+      meses: leido.meses,
+      metas: leido.metas,
+      referencia: leido.referencia,
+      avisos: leido.avisos,
+    };
+    renderPlanSection();
+    state.onPlanChange?.(state.plan);
+  }
+
+  // "Fuente: <archivo> (Drive) · sincronizado hace 2 h"
+  function fuenteHTML(fuente, fecha, extra = '') {
+    if (!fuente?.archivo?.id) return 'Fuente: Drive (sin datos de la última sincronización)';
+    const hace = global.Sheets?.formatRelative ? global.Sheets.formatRelative(fecha) : (fecha || '');
+    return `Fuente: <a href="${FD().urlHoja(fuente.archivo.id)}" target="_blank" rel="noopener">${esc(fuente.archivo.nombre)}</a>
+      (Drive) · sincronizado <span title="${esc(fecha || '')}">${esc(hace)}</span>${extra}`;
+  }
+
+  const fechaCorta = iso => {
+    if (!iso) return '';
+    const [y, mo, d] = iso.split('-').map(Number);
+    return `${d} ${MONTH_ABR[months[mo - 1]]} ${y}`;
+  };
+
+  // Rango legible de meses: "Oct–Dic", "Oct" o ''.
   const monthRange = list =>
     list.length === 0 ? '' : list.length === 1
       ? monthShort(list[0])
       : `${monthShort(list[0])}–${monthShort(list[list.length - 1])}`;
 
-  // KPIs: acumulado de meses cerrados contra la meta del mismo período, y el año completo.
-  function renderPlanKpis() {
-    const el = document.getElementById('plan-kpis');
-    if (!el) return;
-    const closed     = months.filter(m => monthStatus(m) === 'past');
-    const pending    = months.length - closed.length;
-    const realClosed = closed.reduce((s, m) => s + tot(state.d2026?.[m] || {}), 0);
-    const metaClosed = closed.reduce((s, m) => s + monthTarget(m), 0);
-    const realYear   = months.reduce((s, m) => s + tot(state.d2026?.[m] || {}), 0);
-    const metaYear   = months.reduce((s, m) => s + monthTarget(m), 0);
-    const pctClosed  = metaClosed > 0 ? realClosed / metaClosed * 100 : 0;
-    const pctYear    = metaYear > 0 ? realYear / metaYear * 100 : 0;
-    const gapClosed  = realClosed - metaClosed;
-    const falta      = Math.max(0, metaYear - realYear);
-    const range      = monthRange(closed);
+  const hasSales = m => monthStatus(m) === 'past' || (monthStatus(m) === 'current' && isLiveMonth(m));
 
-    const closedCards = closed.length ? `
-      <div class="cum-kpi-card cum-kpi-card-current">
-        <div class="cum-kpi-lbl">Venta 2026 · ${range}</div>
-        <div class="cum-kpi-val">S/. ${fmt(realClosed)}</div>
-        <div class="cum-kpi-sub">meses cerrados · ciclo 26-25</div>
-      </div>
-      <div class="cum-kpi-card">
-        <div class="cum-kpi-lbl">${scenarioName()} · ${range}</div>
-        <div class="cum-kpi-val" style="color:${pctColor(pctClosed)};">${pctClosed.toFixed(1)}%</div>
-        <div class="cum-kpi-sub">${gapClosed >= 0 ? '+' : '−'}S/. ${fmt(Math.abs(gapClosed))} vs meta S/. ${fmt(metaClosed)}</div>
-      </div>` : '';
+  // ── Zona 1: objetivos comerciales ──
+  function renderPlanSection() {
+    const fuenteEl      = document.getElementById('objetivos-fuente');
+    const host          = document.getElementById('plan-section');
+    const monthTabsEl   = document.getElementById('month-tabs');
+    const monthPanelsEl = document.getElementById('month-panels');
+    if (!host || !monthTabsEl || !monthPanelsEl) return;
+    if (fuenteEl) fuenteEl.innerHTML = fuenteHTML(state.plan?.fuente, state.plan?.sincronizado);
 
-    el.innerHTML = `
-      <div class="cum-kpi-strip plan-kpi-strip">
-        ${closedCards}
-        <div class="cum-kpi-card">
-          <div class="cum-kpi-lbl">${scenarioName()} · año</div>
-          <div class="cum-kpi-val">S/. ${fmt(metaYear)}</div>
-          <div class="cum-kpi-sub">venta del año S/. ${fmt(realYear)} · ${pctYear.toFixed(1)}%</div>
-        </div>
-        <div class="cum-kpi-card">
-          <div class="cum-kpi-lbl">Falta para la meta anual</div>
-          <div class="cum-kpi-val" style="color:${falta > 0 ? 'var(--red-text)' : 'var(--green-text)'};">S/. ${fmt(falta)}</div>
-          <div class="cum-kpi-sub">${falta > 0 && pending > 0 ? `≈ S/. ${fmt(falta / pending)} por mes en ${pending} ${pending === 1 ? 'mes' : 'meses'}` : falta > 0 ? 'año cerrado' : 'meta anual cubierta'}</div>
-        </div>
-      </div>`;
-  }
-
-  // Celda del cuadro anual: venta, meta y avance del mes.
-  function planCell(m, real, tgt) {
-    const status   = monthStatus(m);
-    const hasSales = status === 'past' || (status === 'current' && isLiveMonth(m));
-    const metaTxt  = tgt > 0 ? fmtK(tgt) : 'sin meta';
-    const cls      = 'r pc' + (status === 'current' ? ' pc-current' : '');
-    if (!hasSales) {
-      return `<td class="${cls}" title="Meta S/. ${fmt(tgt)}">
-        <span class="pc-real muted">—</span><span class="pc-meta">${metaTxt}</span><span class="pc-pct">&nbsp;</span></td>`;
+    const errorEl = document.getElementById('plan-error');
+    if (!state.plan || !objMonths().length) {
+      if (errorEl) {
+        errorEl.hidden = false;
+        errorEl.innerHTML = state.plan
+          ? '<b>Sin objetivos:</b> el archivo de objetivos de Drive no tiene meses con PROYECCIÓN.'
+          : '<b>Objetivos no disponibles:</b> no se pudo cargar <code>data/objetivos-2026.json</code>.';
+      }
+      ['plan-annual', 'plan-notes'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
+      monthTabsEl.innerHTML = '';
+      monthPanelsEl.innerHTML = '';
+      return;
     }
-    const p = tgt > 0 ? real / tgt * 100 : null;
-    return `<td class="${cls}" title="Venta S/. ${fmt(real)} · meta S/. ${fmt(tgt)}">
-      <span class="pc-real">${fmtK(real)}</span>
-      <span class="pc-meta">/ ${metaTxt}</span>
-      <span class="pc-pct" style="color:${p === null ? 'var(--muted)' : pctColor(p)};">${p === null ? '—' : p.toFixed(0) + '%'}</span></td>`;
+    if (errorEl) errorEl.hidden = true;
+    renderObjTable();
+    renderMonthPanels();
   }
 
-  // Celda de acumulado o de año: suma de venta y meta sobre una lista de meses.
-  function planSumCell(list, realOf, tgtOf, extraCls) {
-    if (!list.length) return `<td class="r pc ${extraCls}"><span class="pc-real muted">—</span></td>`;
-    const real = list.reduce((s, m) => s + realOf(m), 0);
-    const tgt  = list.reduce((s, m) => s + tgtOf(m), 0);
-    const p    = tgt > 0 ? real / tgt * 100 : null;
-    return `<td class="r pc ${extraCls}" title="Venta S/. ${fmt(real)} · meta S/. ${fmt(tgt)}">
-      <span class="pc-real">${fmtK(real)}</span>
-      <span class="pc-meta">/ ${tgt > 0 ? fmtK(tgt) : 'sin meta'}</span>
-      <span class="pc-pct" style="color:${p === null ? 'var(--muted)' : pctColor(p)};">${p === null ? '—' : p.toFixed(0) + '%'}</span></td>`;
+  // Celda del cuadro de objetivos: meta, venta con avance y referencia del año anterior.
+  function objCell(m, venta, meta, ref, extraCls = '') {
+    const ventaTxt = !hasSales(m)
+      ? '<span class="muted">venta —</span>'
+      : `venta S/. ${fmt(venta)} · <b style="color:${meta > 0 ? pctColor(venta / meta * 100) : 'var(--muted)'};">${meta > 0 ? (venta / meta * 100).toFixed(0) + '%' : '—'}</b>`;
+    return `<td class="r oc${monthStatus(m) === 'current' ? ' oc-current' : ''} ${extraCls}">
+      <span class="oc-meta">${meta > 0 ? 'S/. ' + fmt(meta) : '<span class="muted">sin meta</span>'}</span>
+      <span class="oc-venta">${ventaTxt}</span>
+      ${state.plan.referencia ? `<span class="oc-ref">${refLabel().replace('Ref. ', '')}: S/. ${fmt(ref)}</span>` : ''}
+    </td>`;
   }
 
-  function renderAnnualTable() {
+  // Celda de total del período: suma de metas y de la venta de los meses con ventas.
+  function objSumCell(meta, venta, ref) {
+    const pct = meta > 0 ? venta / meta * 100 : null;
+    return `<td class="r oc oc-sum">
+      <span class="oc-meta">S/. ${fmt(meta)}</span>
+      <span class="oc-venta">venta S/. ${fmt(venta)} · <b style="color:${pct === null ? 'var(--muted)' : pctColor(pct)};">${pct === null ? '—' : pct.toFixed(0) + '%'}</b></span>
+      ${state.plan.referencia ? `<span class="oc-ref">${refLabel().replace('Ref. ', '')}: S/. ${fmt(ref)}</span>` : ''}
+    </td>`;
+  }
+
+  function renderObjTable() {
     const table = document.getElementById('plan-annual');
     const sub   = document.getElementById('plan-annual-sub');
     const notes = document.getElementById('plan-notes');
     if (!table) return;
-
-    const closed = months.filter(m => monthStatus(m) === 'past');
-    const range  = monthRange(closed);
-    if (sub) sub.textContent = `${scenarioName()} · venta del Sheet en ciclo comercial 26-25 · montos en miles de S/.`;
+    const meses = objMonths();
+    const conVenta = meses.filter(hasSales);
+    if (sub) {
+      sub.textContent = state.plan.referencia
+        ? `Cada celda: meta (PROYECCIÓN) · venta del histórico en ciclo 26-25 y avance · referencia ${state.plan.referencia.anio}`
+        : 'Cada celda: meta (PROYECCIÓN) · venta del histórico en ciclo 26-25 y avance';
+    }
 
     const head = `<thead><tr>
       <th>Canal</th>
-      ${months.map(m => `<th class="r plan-month${monthStatus(m) === 'current' ? ' is-current' : ''}" data-month="${m}" title="Ver ${m}">${monthShort(m)}</th>`).join('')}
-      <th class="r plan-col-sum">${range ? 'Acum. ' + range : 'Acum.'}</th>
-      <th class="r plan-col-sum">Año</th>
+      ${meses.map(m => `<th class="r plan-month${monthStatus(m) === 'current' ? ' is-current' : ''}" data-month="${m}" title="Ver ${m}">${m}</th>`).join('')}
+      <th class="r plan-col-sum">Total ${monthRange(meses)}</th>
     </tr></thead>`;
 
-    const salesOf = (m, c) => chReal(state.d2026?.[m], c);
+    const ventaDe = (m, c) => chReal(state.d2026?.[m], c);
     let body = '';
     planChannels().forEach(c => {
-      const hasParts = c.sheet.length > 1;
-      body += `<tr class="plan-row">
+      body += `<tr>
         <td>
-          <span class="ch-name">
-            ${hasParts ? `<button class="ch-weeks-toggle plan-parts-toggle" data-parts="${c.key}" title="Ver ${c.sheet.join(', ')}" aria-expanded="false">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-                   style="width:12px;height:12px;pointer-events:none;display:block;"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>` : '<span class="plan-toggle-spacer"></span>'}
-            <span class="ch-pip" style="background:${chColor(c)}"></span>${c.label}
-          </span>
+          <span class="ch-name"><span class="ch-pip" style="background:${chColor(c)}"></span>${c.label}</span>
+          ${c.sheet.length > 1 ? `<div class="ch-parts">${c.sheet.join(' + ')}</div>` : ''}
         </td>
-        ${months.map(m => planCell(m, salesOf(m, c), target(m, c.key))).join('')}
-        ${planSumCell(closed, m => salesOf(m, c), m => target(m, c.key), 'plan-col-sum')}
-        ${planSumCell(months, m => salesOf(m, c), m => target(m, c.key), 'plan-col-sum')}
+        ${meses.map(m => objCell(m, ventaDe(m, c), target(m, c.key), ref2025(m, c.key))).join('')}
+        ${objSumCell(
+          meses.reduce((s, m) => s + target(m, c.key), 0),
+          conVenta.reduce((s, m) => s + ventaDe(m, c), 0),
+          meses.reduce((s, m) => s + ref2025(m, c.key), 0))}
       </tr>`;
-      if (hasParts) {
-        c.sheet.forEach(col => {
-          const live = m => monthStatus(m) === 'past' || (monthStatus(m) === 'current' && isLiveMonth(m));
-          const sumOf = list => list.reduce((s, m) => s + ((state.d2026?.[m] || {})[col] || 0), 0);
-          body += `<tr class="plan-sub" data-parts-of="${c.key}" hidden>
-            <td><span class="plan-sub-name">${col}</span></td>
-            ${months.map(m => `<td class="r pc">${live(m) ? fmtK((state.d2026?.[m] || {})[col] || 0) : '—'}</td>`).join('')}
-            <td class="r pc plan-col-sum">${closed.length ? fmtK(sumOf(closed)) : '—'}</td>
-            <td class="r pc plan-col-sum">${fmtK(sumOf(months))}</td>
-          </tr>`;
-        });
-      }
     });
-
-    const totalOf = m => tot(state.d2026?.[m] || {});
+    const totalDe = m => tot(state.d2026?.[m] || {});
     body += `<tr class="plan-total">
       <td><strong>Total</strong></td>
-      ${months.map(m => planCell(m, totalOf(m), monthTarget(m))).join('')}
-      ${planSumCell(closed, totalOf, monthTarget, 'plan-col-sum')}
-      ${planSumCell(months, totalOf, monthTarget, 'plan-col-sum')}
+      ${meses.map(m => objCell(m, totalDe(m), monthTarget(m), monthRef2025(m))).join('')}
+      ${objSumCell(
+        meses.reduce((s, m) => s + monthTarget(m), 0),
+        conVenta.reduce((s, m) => s + totalDe(m), 0),
+        meses.reduce((s, m) => s + monthRef2025(m), 0))}
     </tr>`;
 
     table.innerHTML = head + `<tbody>${body}</tbody>`;
-
-    table.querySelectorAll('.plan-parts-toggle').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const open = btn.getAttribute('aria-expanded') !== 'true';
-        btn.setAttribute('aria-expanded', String(open));
-        btn.classList.toggle('open', open);
-        table.querySelectorAll(`tr[data-parts-of="${btn.dataset.parts}"]`).forEach(tr => { tr.hidden = !open; });
-      });
-    });
     table.querySelectorAll('th.plan-month').forEach(th => {
       th.addEventListener('click', () => {
         selectMonth(th.dataset.month);
@@ -1035,14 +1042,18 @@
     });
 
     if (notes) {
+      const etiquetas = planChannels().filter(c => norm(c.etiqueta) !== norm(c.label))
+        .map(c => `«${esc(c.etiqueta)}» = ${c.label}`).join(' · ');
       const chNotes = planChannels().filter(c => c.nota).map(c => `<div><strong>${c.label}:</strong> ${c.nota}</div>`).join('');
+      const avisos = (state.plan.avisos || []).map(a => `<div class="plan-aviso">⚠ ${esc(a)}</div>`).join('');
       notes.innerHTML = `
+        ${avisos}
+        ${etiquetas ? `<div>Canales del archivo: ${etiquetas}.</div>` : ''}
         ${chNotes}
-        <div>El total suma toda la venta registrada, también la de canales sin meta en ese mes.</div>
+        <div>La venta sale del histórico de ventas (zona de abajo), no de la columna VENTA del archivo de objetivos.</div>
         <div>El mes en curso va en cursiva: su avance es parcial. Clic en un mes para ver su detalle.</div>`;
     }
   }
-
   function selectMonth(m) {
     const monthTabsEl   = document.getElementById('month-tabs');
     const monthPanelsEl = document.getElementById('month-panels');
@@ -1051,44 +1062,37 @@
     monthPanelsEl.querySelectorAll('.mpanel').forEach(p => p.classList.toggle('visible', p.id === 'mpanel-' + m));
   }
 
+  // Una pestaña por mes con objetivos: ritmo, alertas y avance por canal con detalle semanal.
   function renderMonthPanels() {
     const monthTabsEl   = document.getElementById('month-tabs');
     const monthPanelsEl = document.getElementById('month-panels');
     if (!monthTabsEl || !monthPanelsEl) return;
-    // Al cambiar de escenario se vuelve a dibujar todo: se conserva el mes abierto.
+    // Al volver a dibujar (sincronización) se conserva el mes abierto.
     const openMonth = monthTabsEl.querySelector('.month-tab.active')?.dataset.month;
     monthTabsEl.innerHTML   = '';
     monthPanelsEl.innerHTML = '';
 
-    // Tab activo por defecto: el mes en curso. Si today está fuera de 2026,
-    // el último mes con datos (o Enero como fallback).
-    const curIdx = currentMonthIdx();
-    let defaultIdx = (curIdx >= 0 && curIdx < months.length) ? curIdx : 0;
-    if (curIdx === 12) { // año ya pasado → último con datos reales
-      for (let i = months.length - 1; i >= 0; i--) {
-        if (isLiveMonth(months[i])) { defaultIdx = i; break; }
-      }
-    }
-    if (openMonth && months.includes(openMonth)) defaultIdx = months.indexOf(openMonth);
+    const meses = objMonths();
+    // Tab activo por defecto: el mes en curso; si no tiene objetivos, el último con ventas o el primero.
+    let defaultMonth = meses.find(m => monthStatus(m) === 'current')
+      || [...meses].reverse().find(m => monthStatus(m) === 'past')
+      || meses[0];
+    if (openMonth && meses.includes(openMonth)) defaultMonth = openMonth;
 
-    months.forEach((m, i) => {
+    meses.forEach(m => {
       const status     = monthStatus(m);
       const d2026Month = state.d2026?.[m] || {};
       const monthTotal = tot(d2026Month);
       const total2025  = monthRef2025(m);
 
-      // Panel HTML
       const panel = document.createElement('div');
-      panel.className = 'mpanel' + (i === defaultIdx ? ' visible' : '');
+      panel.className = 'mpanel' + (m === defaultMonth ? ' visible' : '');
       panel.id = 'mpanel-' + m;
 
-      const showReal = status === 'past' || (status === 'current' && isLiveMonth(m));
+      const showReal = hasSales(m);
 
       // ── Marcador del día actual sobre la barra ──
-      // Posición proporcional: día transcurrido / días del mes
-      const todayPct = status === 'current'
-        ? visualTodayPct(m)
-        : null;
+      const todayPct = status === 'current' ? visualTodayPct(m) : null;
       const todayPin = todayPct !== null
         ? `<div class="pb-today-pin" style="left:${todayPct}%" title="Día calendario ${currentCalendarDay()}">
              <span class="pb-today-day">${currentCalendarDay()}</span>
@@ -1102,7 +1106,7 @@
         const tgt        = target(m, c.key);
         const share      = showReal && monthTotal > 0 ? (real / monthTotal * 100).toFixed(1) : '—';
         const wkDetailId = `ch-weeks-${m}-${c.key}`;
-        // Canales que agrupan varias columnas del Sheet muestran el desglose bajo el nombre.
+        // Canales que agrupan varias columnas del histórico muestran el desglose bajo el nombre.
         const parts = c.sheet.length > 1 && showReal
           ? `<div class="ch-parts">${c.sheet.map(col => `${col} S/. ${fmt(d2026Month[col] || 0)}`).join(' · ')}</div>`
           : '';
@@ -1121,7 +1125,7 @@
             </div>
             ${parts}
           </td>
-          <td class="r mono text-2">S/. ${fmt(ref2025(m, c.key))}</td>
+          <td class="r mono text-2">${state.plan.referencia ? 'S/. ' + fmt(ref2025(m, c.key)) : '—'}</td>
           <td class="r mono">${showReal ? 'S/. ' + fmt(real) : '<span class="muted">—</span>'}</td>
           <td class="r">${showReal ? share + '%' : '—'}</td>
           <td class="r mono">${tgt > 0 ? 'S/. ' + fmt(tgt) : '<span class="muted">sin meta</span>'}</td>
@@ -1148,10 +1152,11 @@
         </tr>`;
       });
 
+      const refTxt = state.plan.referencia ? ` · ${refLabel().replace('Ref.', 'referencia')}: <strong>S/. ${fmt(total2025)}</strong>` : '';
       const statusNote = status === 'current'
-        ? `<div class="period-note">${m} 2026 está en curso · ciclo comercial 26-25 · día ${daysPassed(m)} de ${objectiveDays(m)} · Referencia 2025 (plan): <strong>S/. ${fmt(total2025)}</strong></div>`
+        ? `<div class="period-note">${m} 2026 está en curso · ciclo comercial 26-25 · día ${daysPassed(m)} de ${objectiveDays(m)}${refTxt}</div>`
         : status === 'future'
-          ? `<div class="period-note" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-text);">${m} 2026 es mes futuro · ${scenarioName().toLowerCase()} <strong>S/. ${fmt(monthTarget(m))}</strong> · referencia 2025 (plan) S/. ${fmt(total2025)}.</div>`
+          ? `<div class="period-note" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-text);">${m} 2026 es mes futuro · meta <strong>S/. ${fmt(monthTarget(m))}</strong>${refTxt}</div>`
           : '';
 
       panel.innerHTML = `
@@ -1162,23 +1167,23 @@
           <div class="panel-head">
             <div>
               <div class="panel-title">Avance por canal</div>
-              <div class="panel-sub">${m} 2026 · ${scenarioName().toLowerCase()} del plan</div>
+              <div class="panel-sub">${m} 2026 · meta del archivo de objetivos</div>
             </div>
           </div>
           <div class="plan-table-wrap"><table class="month-table">
             <thead><tr>
               <th>Canal</th>
-              <th class="r">Ref. 2025</th>
+              <th class="r">${refLabel()}</th>
               <th class="r">Real 2026</th>
               <th class="r">Participación</th>
-              <th class="r">${scenarioName()}</th>
+              <th class="r">Meta</th>
               <th class="r" style="min-width:140px;">Avance</th>
               <th class="r">Brecha</th>
             </tr></thead>
             <tbody>${rows}
               <tr style="background:#F8FAFC;">
                 <td><strong>Total</strong></td>
-                <td class="r mono text-2">S/. ${fmt(total2025)}</td>
+                <td class="r mono text-2">${state.plan.referencia ? 'S/. ' + fmt(total2025) : '—'}</td>
                 <td class="r mono">${showReal ? 'S/. ' + fmt(monthTotal) : '<span class="muted">—</span>'}</td>
                 <td class="r">${showReal ? '100%' : '—'}</td>
                 <td class="r mono text-2" id="mt-${m}"></td>
@@ -1224,7 +1229,7 @@
       const tab = document.createElement('button');
       const isCurrent = status === 'current';
       const classes = ['month-tab'];
-      if (i === defaultIdx) classes.push('active');
+      if (m === defaultMonth)  classes.push('active');
       if (isCurrent)           classes.push('active-current');
       if (status === 'future') classes.push('future');
       if (status === 'past')   classes.push('past');
@@ -1234,6 +1239,58 @@
       tab.addEventListener('click', () => selectMonth(m));
       monthTabsEl.appendChild(tab);
     });
+  }
+
+  // ── Zona 2: histórico de ventas de la marca ──
+  // Columnas en el orden del archivo de ventas.
+  const VENTAS_COLS = ['WhatsApp', 'Instagram', 'Facebook', 'Showroom', 'Web', 'Tienda'];
+
+  function renderVentasSection() {
+    const fuenteEl = document.getElementById('ventas-fuente');
+    const table    = document.getElementById('ventas-historico');
+    const sub      = document.getElementById('ventas-sub');
+    const notes    = document.getElementById('ventas-notes');
+    const info     = state.ventasInfo || {};
+    if (fuenteEl) {
+      const ultimo = info.fuente?.ultimoDia ? ` · último día con ventas: ${fechaCorta(info.fuente.ultimoDia)}` : '';
+      fuenteEl.innerHTML = fuenteHTML(info.fuente, info.generated, ultimo);
+    }
+    document.querySelectorAll('#ventas-ciclo-toggle .vt-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.ciclo === state.ventasCiclo));
+    if (!table) return;
+
+    const comercial = state.ventasCiclo === 'comercial';
+    const data = (comercial ? state.d2026 : state.ventasCal) || {};
+    if (sub) sub.textContent = comercial
+      ? 'Ciclo comercial 26-25: las ventas del 26 al fin de mes cuentan para el mes siguiente (el que usan los objetivos)'
+      : 'Mes calendario, como lo registra la marca';
+
+    const conDatos = m => tot(data[m] || {}) > 0;
+    const valor = (m, col) => conDatos(m) ? fmtK((data[m] || {})[col] || 0) : '—';
+    const titulo = (m, v) => conDatos(m) ? ` title="${m}: S/. ${fmt(v)}"` : '';
+    const totalCol = col => months.reduce((s, m) => s + ((data[m] || {})[col] || 0), 0);
+
+    const head = `<thead><tr>
+      <th>Canal</th>
+      ${months.map(m => `<th class="r">${monthShort(m)}</th>`).join('')}
+      <th class="r plan-col-sum">Total 2026</th>
+    </tr></thead>`;
+    const body = VENTAS_COLS.map(col => `<tr>
+        <td><span class="ch-name"><span class="ch-pip" style="background:${palette[col] || '#64748B'}"></span>${col}</span></td>
+        ${months.map(m => `<td class="r pc"${titulo(m, (data[m] || {})[col] || 0)}>${valor(m, col)}</td>`).join('')}
+        <td class="r pc plan-col-sum" title="S/. ${fmt(totalCol(col))}">${fmtK(totalCol(col))}</td>
+      </tr>`).join('') + `<tr class="plan-total">
+        <td><strong>Total</strong></td>
+        ${months.map(m => `<td class="r pc"${titulo(m, tot(data[m] || {}))}><strong>${conDatos(m) ? fmtK(tot(data[m] || {})) : '—'}</strong></td>`).join('')}
+        <td class="r pc plan-col-sum"><strong>${fmtK(months.reduce((s, m) => s + tot(data[m] || {}), 0))}</strong></td>
+      </tr>`;
+    table.innerHTML = head + `<tbody>${body}</tbody>`;
+
+    if (notes) {
+      notes.innerHTML = `
+        <div>Montos en miles de S/.; pasa el cursor sobre una celda para ver el monto exacto.</div>
+        <div>Se lee una pestaña por mes del archivo; las demás pestañas no se usan.</div>`;
+    }
   }
 
   global.Objectives = { render, state };

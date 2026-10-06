@@ -4,7 +4,7 @@
 
    Lee:
      data/ventas-2026.json     → ventas reales acumuladas por canal
-     data/objetivos-2026.json  → plan del cliente: canales y metas por mes
+     data/objetivos-2026.json  → objetivos de la marca (Drive): canales y metas por mes
      data/alertas-config.json  → destinatarios y config de envío
 
    Envía email HTML via Resend API.
@@ -98,11 +98,12 @@ if (!FORCE && !DRY_RUN && enviosData.enviados[weekKey]) {
 }
 
 // ── Cálculo de métricas ──────────────────────────────────────
-// Canales del plan del cliente: cada uno suma una o más columnas del Sheet
-// (Redes y WhatsApp = WhatsApp + Instagram + Facebook). Meta: escenario mínimo.
+// Canales de los objetivos de la marca: cada uno suma una o más columnas del histórico de
+// ventas (Redes y WhatsApp = WhatsApp + Instagram + Facebook). La meta es la PROYECCIÓN del
+// archivo de objetivos, que solo cubre algunos meses.
 const d2026   = salesData.d2026 || {};
 const canales = objData.canales;
-const targets = objData.metas.minima;
+const targets = objData.metas;
 
 function calcMonth(m) {
   const data = d2026[m]   || {};
@@ -123,7 +124,11 @@ function calcMonth(m) {
 
 // Mes en curso
 const cur       = calcMonth(curMonth);
-const ritmo     = dayOfMonth > 0 && cur.real > 0 ? cur.real / dayOfMonth : 0;
+if (cur.meta === 0) {
+  console.log(`\n⏭  ${curMonth} no tiene objetivos en data/objetivos-2026.json: no hay alerta que enviar.\n`);
+  process.exit(0);
+}
+const ritmo    = dayOfMonth > 0 && cur.real > 0 ? cur.real / dayOfMonth : 0;
 const proyeccion = ritmo > 0 ? ritmo * curMonthDays : 0;
 const proyPct    = pctOf(proyeccion, cur.meta);
 const diaPct     = Math.round(dayOfMonth / curMonthDays * 100);
@@ -138,12 +143,12 @@ const NIVEL_COLOR  = { verde:'#16a34a', ambar:'#d97706', rojo:'#dc2626' };
 const NIVEL_BG     = { verde:'#f0fdf4', ambar:'#fffbeb', rojo:'#fef2f2' };
 const NIVEL_BORDER = { verde:'#bbf7d0', ambar:'#fde68a', rojo:'#fecaca' };
 
-// Meses anteriores cerrados (hasta 3)
+// Meses anteriores cerrados con objetivo (hasta 3)
 const closedMonths = [];
 for (let i = monthIdx - 1; i >= 0 && closedMonths.length < 3; i--) {
   const m = MONTHS[i];
   const { real, meta } = calcMonth(m);
-  if (real > 0 || meta > 0) {
+  if (meta > 0) {
     closedMonths.push({ m, real, meta, pct: pctOf(real, meta) });
   }
 }

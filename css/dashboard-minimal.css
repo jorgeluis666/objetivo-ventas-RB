@@ -233,7 +233,7 @@
 /* ── Pace cards ── */
 .pace-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 12px;
 }
 .pace-card {
@@ -966,15 +966,58 @@
   gap: 5px;
 }
 
-/* ── Plan anual (Objetivos 2026): KPIs y cuadro venta vs meta ── */
-.plan-kpi-strip {
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  border-top: none;
-  margin-top: 0;
-  padding: 0;
+/* ── Objetivos 2026: zonas con fuente de Drive y botón Sincronizar ── */
+.obj-zone { margin-bottom: 32px; }
+.zone-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  border-bottom: 2px solid var(--border);
 }
+.zone-head-text { min-width: 0; }
+.zone-title {
+  font-size: 16px;
+  font-weight: 750;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.zone-meta {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+}
+.zone-meta a { color: var(--brand); font-weight: 600; text-decoration: none; }
+.zone-meta a:hover { text-decoration: underline; }
+.zone-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.zone-status { font-size: 11px; color: var(--muted); }
+.zone-status.ok  { color: var(--green-text); }
+.zone-status.err { color: var(--red-text); }
+.btn-sync:disabled { opacity: .7; cursor: progress; }
+
+/* Cuadro de metas: cada celda apila meta, venta con avance y referencia */
+.obj-table { min-width: 760px; }
+.obj-table td.oc span { display: block; line-height: 1.35; font-variant-numeric: tabular-nums; }
+.oc-meta  { font-weight: 700; color: var(--text); font-size: 13px; }
+.oc-venta { font-size: 11px; color: var(--text-2); }
+.oc-ref   { font-size: 11px; color: var(--muted); }
+.oc-current .oc-venta { font-style: italic; }
+.obj-table th.plan-month { text-transform: none; letter-spacing: 0; }
+.plan-aviso { color: var(--amber-text); font-weight: 600; }
+.ventas-table { min-width: 980px; }
+
+/* ── Objetivos 2026: tablas de metas e histórico ── */
 .plan-table-wrap { overflow-x: auto; }
-.plan-table { min-width: 1040px; }
 .plan-table th {
   white-space: nowrap;
   letter-spacing: .04em;
@@ -998,27 +1041,9 @@
 .plan-table th.plan-month:hover { color: var(--brand); }
 .plan-table th.plan-month.is-current { color: var(--amber-text); }
 .plan-table .plan-col-sum { border-left: 1px solid var(--border); }
-.plan-table td.pc span {
-  display: block;
-  line-height: 1.3;
-  font-variant-numeric: tabular-nums;
-}
-.pc-real { font-weight: 600; color: var(--text); }
-.pc-meta { font-size: 11px; color: var(--muted); }
-.pc-pct  { font-size: 11px; font-weight: 700; }
-.pc-current .pc-real { font-style: italic; }
+.plan-table td.pc { font-variant-numeric: tabular-nums; }
 .plan-table .ch-name { display: inline-flex; align-items: center; gap: 6px; }
-.plan-toggle-spacer { display: inline-block; width: 20px; flex-shrink: 0; }
-.plan-table tr.plan-sub td {
-  font-size: 11px;
-  color: var(--text-2);
-  padding-top: 4px;
-  padding-bottom: 4px;
-  font-variant-numeric: tabular-nums;
-}
-.plan-sub-name { padding-left: 40px; color: var(--text-2); }
 .plan-table tr.plan-total td { background: #F8FAFC; }
-.plan-table tr.plan-total .pc-real { font-weight: 700; }
 .plan-notes {
   margin-top: 12px;
   font-size: 11px;
@@ -1031,12 +1056,6 @@
   margin: 4px 0 0 30px;
 }
 .month-table { min-width: 680px; }
-@media (max-width: 760px) {
-  .pace-grid { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 480px) {
-  .pace-grid { grid-template-columns: 1fr; }
-}
 
 /* ── MÓDULO ACTIVO (sidebar) — estilos en bloque "Light minimal refresh" abajo ── */
 

@@ -1,0 +1,65 @@
+name: Sincronizar objetivos comerciales
+
+# Lee la hoja de la carpeta de Drive "Objetivos Royal Baby" con scripts/sync-objetivos.js y
+# commitea data/objetivos-2026.json. Es la zona de objetivos del módulo Objetivos 2026; también
+# la usan Proyecciones y el correo semanal.
+#
+# Corre todos los días a las 06:05 de Lima (después de las ventas) y a mano (Run workflow).
+# En el tablero, el botón Sincronizar de la zona de objetivos lee la misma hoja al instante,
+# solo en ese navegador.
+#
+# La carpeta está compartida como "Cualquier persona con el enlace": sin credenciales el script
+# usa la vista pública. Con el secret opcional RB_DRIVE_API_KEY usa la API de Drive.
+#
+# Si la hoja no se puede leer (no está compartida, faltan los meses o la columna PROYECCIÓN, o
+# aparece un canal desconocido), el script no escribe nada y sale con código 1: queda publicado
+# el último JSON válido y el deploy no se dispara.
+
+on:
+  schedule:
+    # 06:05 Lima = 11:05 UTC
+    - cron: '5 11 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-objetivos
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Leer la carpeta de objetivos
+        env:
+          RB_DRIVE_API_KEY: ${{ secrets.RB_DRIVE_API_KEY }}
+        run: node scripts/sync-objetivos.js
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/objetivos-2026.json
+          if git diff --cached --quiet; then
+            echo "Sin cambios en data/objetivos-2026.json"
+            exit 0
+          fi
+          TODAY=$(TZ='America/Lima' date +'%Y-%m-%d')
+          git commit -m "data: objetivos ${TODAY}"
+          # Por si otro workflow de datos commiteó mientras tanto
+          git pull --rebase origin main
+          git push

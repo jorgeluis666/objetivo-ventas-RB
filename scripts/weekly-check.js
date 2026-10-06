@@ -3,7 +3,7 @@
  * Chequeo semanal del pipeline de datos.
  *
  * Detecta:
- *   - Pipeline frío (generated > 30h, debería refrescar cada hora)
+ *   - Pipeline frío (generated > 48 h; el workflow de ventas corre todos los días)
  *   - Mes en curso sin movimiento la última semana
  *   - Canales que tenían ventas la semana pasada y desaparecieron
  *   - Tabs 2025 incompletos (faltan meses)
@@ -53,12 +53,11 @@ function checkFreshness(j, findings) {
   // generated viene en hora Lima (UTC-5) sin zona — lo trato como tal
   const then = new Date(gen + '-05:00');
   const hoursAgo = (Date.now() - then.getTime()) / 3600000;
-  // El sheet se actualiza los lunes; el JSON puede tener hasta ~7 días de antigüedad.
-  // Alerta si supera 10 días (240 h) sin actualizar — señal de que el pipeline falló.
-  if (hoursAgo > 240) {
+  // El workflow de ventas corre todos los días: más de 48 h sin actualizar es señal de que falló.
+  if (hoursAgo > 48) {
     findings.push({
       sev: 'err',
-      txt: `Pipeline frío: última actualización hace ${hoursAgo.toFixed(1)} h (debería ser < 240 h · 10 días). Revisar workflow \`update-data.yml\`.`,
+      txt: `Pipeline frío: última actualización hace ${hoursAgo.toFixed(1)} h (debería ser < 48 h: corre todos los días). Revisar workflow \`update-data.yml\`.`,
     });
   }
 }

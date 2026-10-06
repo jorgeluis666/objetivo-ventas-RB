@@ -37,7 +37,7 @@
       </div>
       <div class="s-text">
         <div class="s-title-nav">Objetivos 2026</div>
-        <div class="s-desc-nav">Plan del cliente vs ventas</div>
+        <div class="s-desc-nav">Objetivos y ventas de la marca</div>
       </div>
       <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
     </button>
@@ -119,7 +119,7 @@
     <div class="s-modulo-activo" id="s-modulo-activo">
       <div class="s-ma-label">MÓDULO ACTIVO</div>
       <div class="s-ma-name" id="s-ma-name">Objetivos 2026</div>
-      <div class="s-ma-desc" id="s-ma-desc">Plan del cliente vs ventas</div>
+      <div class="s-ma-desc" id="s-ma-desc">Objetivos y ventas de la marca</div>
     </div>
   </aside>
 
@@ -269,32 +269,74 @@
 
       <!-- ══ VIEW: Objetivos ═══════════════════════════ -->
       <section class="view visible" id="view-obj">
-        <div class="section-title">Objetivos 2026 · Plan vs ventas</div>
+        <div class="section-title">Objetivos 2026 · Objetivos y ventas de la marca</div>
         <div class="section-desc">
-          Metas del plan del cliente frente a la venta registrada en el Sheet, en ciclo comercial 26–25. La meta mínima es +10% sobre 2025 y la ideal +20%. La columna <em>Ref. 2025</em> muestra el cierre 2025 del plan.
+          Arriba, los objetivos comerciales que fija la marca; abajo, su histórico de ventas. Cada zona se lee de su carpeta de Drive y se actualiza sola todos los días a las 6:00 a. m. El botón <strong>Sincronizar</strong> la vuelve a leer al instante en este navegador.
         </div>
 
-        <div class="obj-toolbar">
-          <span class="obj-toolbar-info">Escenario de meta · se aplica al cuadro anual y a cada mes</span>
-          <div class="view-toggle" id="scenario-toggle" role="group" aria-label="Escenario de meta">
-            <button class="vt-btn" data-scenario="minima">Mínima +10%</button>
-            <button class="vt-btn" data-scenario="ideal">Ideal +20%</button>
+        <!-- Zona 1: objetivos comerciales (carpeta "Objetivos Royal Baby") -->
+        <section class="obj-zone" id="zona-objetivos" aria-labelledby="zona-objetivos-titulo">
+          <div class="zone-head">
+            <div class="zone-head-text">
+              <div class="zone-title" id="zona-objetivos-titulo">Objetivos comerciales</div>
+              <div class="zone-meta" id="objetivos-fuente"></div>
+            </div>
+            <div class="zone-actions">
+              <span class="zone-status" id="objetivos-sync-status" role="status"></span>
+              <button class="btn ghost btn-sm btn-sync" id="btn-sync-objetivos" type="button" title="Vuelve a leer el archivo de objetivos de Drive">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                Sincronizar
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div id="plan-section">
-          <div id="plan-kpis" style="margin-bottom:14px;"></div>
+          <div class="insight err" id="plan-error" hidden style="margin-bottom:14px;"></div>
+          <div id="plan-section">
+            <div class="panel" style="margin-bottom:20px;">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title">Metas por canal</div>
+                  <div class="panel-sub" id="plan-annual-sub"></div>
+                </div>
+              </div>
+              <div class="plan-table-wrap"><table class="plan-table obj-table" id="plan-annual"></table></div>
+              <div class="plan-notes" id="plan-notes"></div>
+            </div>
+            <div class="month-tabs" id="month-tabs"></div>
+            <div id="month-panels"></div>
+          </div>
+        </section>
+
+        <!-- Zona 2: histórico de ventas (carpeta "Ventas Royal Baby - 2026") -->
+        <section class="obj-zone" id="zona-ventas" aria-labelledby="zona-ventas-titulo">
+          <div class="zone-head">
+            <div class="zone-head-text">
+              <div class="zone-title" id="zona-ventas-titulo">Ventas 2026 · histórico de la marca</div>
+              <div class="zone-meta" id="ventas-fuente"></div>
+            </div>
+            <div class="zone-actions">
+              <span class="zone-status" id="ventas-sync-status" role="status"></span>
+              <button class="btn ghost btn-sm btn-sync" id="btn-sync-ventas" type="button" title="Vuelve a leer el archivo de ventas de Drive">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                Sincronizar
+              </button>
+            </div>
+          </div>
+
           <div class="panel" style="margin-bottom:20px;">
             <div class="panel-head">
               <div>
-                <div class="panel-title">Plan anual · venta vs meta</div>
-                <div class="panel-sub" id="plan-annual-sub"></div>
+                <div class="panel-title">Ventas por canal y mes</div>
+                <div class="panel-sub" id="ventas-sub"></div>
+              </div>
+              <div class="view-toggle" id="ventas-ciclo-toggle" role="group" aria-label="Cómo agrupar los meses">
+                <button class="vt-btn active" type="button" data-ciclo="calendario">Mes calendario</button>
+                <button class="vt-btn" type="button" data-ciclo="comercial">Ciclo 26–25</button>
               </div>
             </div>
-            <div class="plan-table-wrap"><table class="plan-table" id="plan-annual"></table></div>
-            <div class="plan-notes" id="plan-notes"></div>
+            <div class="plan-table-wrap"><table class="plan-table ventas-table" id="ventas-historico"></table></div>
+            <div class="plan-notes" id="ventas-notes"></div>
           </div>
-        </div>
 
         <div class="panel" style="margin-bottom:20px;">
           <div class="panel-head">
@@ -328,9 +370,7 @@
           <!-- Strip de KPIs acumulados (visible solo en modo Acumulado) -->
           <div id="cum-kpi-strip" style="display:none;"></div>
         </div>
-
-        <div class="month-tabs" id="month-tabs"></div>
-        <div id="month-panels"></div>
+        </section>
       </section>
 
       <!-- ══ VIEW: Usuarios y Claves ═══════════════════ -->
@@ -693,6 +733,7 @@
 <script src="js/data-static.js"></script>
 <script src="js/data-live.js"></script>
 <script src="js/charts.js"></script>
+<script src="js/fuentes-drive.js"></script>
 <script src="js/objectives.js"></script>
 <script src="js/config.js"></script>
 <script src="js/sheets.js"></script>

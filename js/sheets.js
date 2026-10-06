@@ -2,8 +2,9 @@
    sheets.js — indicador de sync + botón "Actualizar".
    Muestra cuándo fue la última generación del JSON y permite
    recargar los datos publicados sin refrescar la página.
-   Los datos nuevos llegan solos: el workflow "Actualizar datos
-   de ventas" corre cada lunes y vuelve a publicar el tablero.
+   Los datos nuevos llegan solos: los workflows "Actualizar datos
+   de ventas" y "Sincronizar objetivos comerciales" corren cada día
+   y vuelven a publicar el tablero.
    Antes el botón disparaba ese workflow con un Personal Access
    Token guardado en localStorage; se quitó porque el tablero lo
    abren clientes y un token con permiso `workflow` no debe vivir
@@ -95,5 +96,5 @@
     renderIndicator();
   }
 
-  global.Sheets = { init, reload, updateGenerated };
+  global.Sheets = { init, reload, updateGenerated, formatRelative };
 })(window);

@@ -53,6 +53,7 @@
       }
       return {
         generated:         json.generated || null,
+        fuente2026:        json.fuente2026 || null,  // hoja de Drive de la que salió 2026
         d2026:             json.d2026,
         weeklyData:        json.weeklyData,
         transactions:      json.transactions,

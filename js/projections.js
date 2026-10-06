@@ -68,7 +68,8 @@
     const ventasProyectadas = ventasTotal + tasaVentasDia * diasRestantes;
     const gastoProyectado   = gastoTotal  + tasaGastoDia  * diasRestantes;
 
-    // Objetivo del mes: Web + Redes y WhatsApp (meta mínima del plan; Redes incluye Instagram y Facebook)
+    // Objetivo del mes: Web + Redes y WhatsApp, de los objetivos de la marca (Redes incluye Instagram y
+    // Facebook). Los meses que el archivo de objetivos no cubre quedan sin objetivo (0).
     const objWeb = ((targets || {})[mes] || {}).Web   || 0;
     const objWa  = ((targets || {})[mes] || {}).Redes || 0;
     const objTotal = objWeb + objWa;
@@ -228,7 +229,9 @@
           <span class="proj-kpi-label">WooCommerce Total <em>· dato real</em></span>
           <strong>${fmtS(p.wooTotal)}</strong>
           <small>Web ${fmtS(p.wooWeb)} · WA ${fmtS(p.wooMes.WhatsApp||0)} · IG ${fmtS(p.wooMes.Instagram||0)}</small>
-          <small style="color:${brechaColor};">${brechaSign}${fmtS(p.brecha)} vs objetivo ${fmtS(p.objTotal)}</small>
+          ${p.objTotal > 0
+            ? `<small style="color:${brechaColor};">${brechaSign}${fmtS(p.brecha)} vs objetivo ${fmtS(p.objTotal)}</small>`
+            : '<small>sin objetivo para este mes</small>'}
         </div>
       </div>`;
   }
@@ -408,11 +411,14 @@
       const signo  = gap >= 0 ? '+' : '';
       const pctObj = p.objTotal > 0 ? (nuevaProyeccion / p.objTotal * 100).toFixed(0) : '—';
 
-      resEl.innerHTML = `
+      resEl.innerHTML = p.objTotal > 0 ? `
         <span>Proyección al cierre</span>
         <strong>${fmtS(nuevaProyeccion)}</strong>
         <span style="color:${color};font-weight:600;">${signo}${fmtS(gap)} vs obj</span>
-        <span class="proj-slider-pct">${pctObj}% del objetivo total</span>`;
+        <span class="proj-slider-pct">${pctObj}% del objetivo total</span>` : `
+        <span>Proyección al cierre</span>
+        <strong>${fmtS(nuevaProyeccion)}</strong>
+        <span class="proj-slider-pct">sin objetivo para este mes</span>`;
     };
 
     slider.addEventListener('input', updateSlider);
@@ -424,6 +430,14 @@
     const el = document.getElementById('proj-recalculo');
     if (!el || !p) { if (el) el.style.display = 'none'; return; }
     el.style.display = 'block';
+
+    if (!p.objTotal) {
+      el.innerHTML = `<div class="recalc-box cerrado">
+        <span class="recalc-icon">—</span>
+        <div><strong>Sin objetivo.</strong> ${p.mes} no está en el archivo de objetivos de la marca: no hay brecha que recalcular.</div>
+      </div>`;
+      return;
+    }
 
     if (p.diasRestantes === 0) {
       el.innerHTML = `<div class="recalc-box cerrado">
@@ -525,7 +539,7 @@
             tension: 0,
             order: 3,
           },
-        ],
+        ].filter(ds => p.objTotal > 0 || ds.label !== 'Objetivo mensual'),
       },
       options: {
         responsive: true,

@@ -1,18 +1,28 @@
 name: Actualizar datos de ventas
 
+# Genera data/ventas-2026.json con scripts/fetch-data.js:
+#   2026 → la hoja de la carpeta de Drive "Ventas Royal Baby - 2026" (compartida por enlace,
+#          sin credenciales). Es la zona de ventas del módulo Objetivos y la fuente de todo el tablero.
+#   2025 → el Google Sheet de 2025 por la API de Sheets (secret SERVICE_ACCOUNT_JSON).
+#
+# Corre todos los días a las 06:00 de Lima y a mano (Run workflow). En el tablero, el botón
+# Sincronizar de la zona de ventas lee la misma hoja al instante, solo en ese navegador.
+#
+# Si una lectura falla, el script no escribe nada y sale con código 1: queda publicado el último
+# JSON válido y el deploy no se dispara (deploy.yml solo sigue a corridas en verde).
+
 on:
   schedule:
-    # El sheet se actualiza los lunes. Tres pasadas para cubrir distintos horarios Lima:
-    #   Lunes 09:00 Lima = Lunes 14:00 UTC
-    - cron: '0 14 * * 1'
-    #   Lunes 14:00 Lima = Lunes 19:00 UTC
-    - cron: '0 19 * * 1'
-    #   Lunes 21:00 Lima = Martes 02:00 UTC (misma hora que weekly-check)
-    - cron: '0 2 * * 2'
+    # 06:00 Lima = 11:00 UTC
+    - cron: '0 11 * * *'
   workflow_dispatch: {}
 
 permissions:
   contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
 
 jobs:
   update:
@@ -37,7 +47,9 @@ jobs:
           mkdir -p credentials
           printf '%s' "$SERVICE_ACCOUNT_JSON" > credentials/service-account.json
 
-      - name: Fetch data from Google Sheets
+      - name: Leer ventas (Drive 2026 + Sheet 2025)
+        env:
+          RB_DRIVE_API_KEY: ${{ secrets.RB_DRIVE_API_KEY }}
         run: node scripts/fetch-data.js
 
       - name: Remove credentials (safety)
@@ -54,5 +66,7 @@ jobs:
             exit 0
           fi
           TODAY=$(TZ='America/Lima' date +'%Y-%m-%d')
-          git commit -m "data: actualización semanal ${TODAY}"
+          git commit -m "data: ventas ${TODAY}"
+          # Por si otro workflow de datos commiteó mientras tanto
+          git pull --rebase origin main
           git push

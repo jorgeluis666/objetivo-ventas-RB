@@ -23,10 +23,12 @@
   .title { margin: 0 0 28px; font-size: 38px; font-weight: 700; line-height: 1.1; letter-spacing: -.02em; color: #0f172a; }
   .divider { width: 40px; height: 3px; margin-bottom: 36px; border-radius: 2px; background: var(--accent); }
   form { display: flex; flex-direction: column; gap: 12px; }
-  input { width: 100%; padding: 12px 16px; border: 1.5px solid #dce3ef; border-radius: 8px; outline: none; background: #e8f0fe;
+  input[type=password] { width: 100%; padding: 12px 16px; border: 1.5px solid #dce3ef; border-radius: 8px; outline: none; background: #e8f0fe;
     color: #0f172a; font: inherit; font-size: 14px; transition: border-color .15s; }
-  input::placeholder { color: #64748b; }
-  input:focus { border-color: var(--accent); }
+  input[type=password]::placeholder { color: #64748b; }
+  input[type=password]:focus { border-color: var(--accent); }
+  .remember { display: flex; align-items: center; gap: 8px; color: #475569; font-size: 13px; cursor: pointer; }
+  .remember input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
   button { width: 100%; padding: 12px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; font: inherit;
     font-size: 14px; font-weight: 600; letter-spacing: .02em; cursor: pointer; transition: background .15s; }
   button:hover { background: var(--accent-dark); }
@@ -58,7 +60,8 @@
     <div class="divider"></div>
     <form id="gate" autocomplete="off">
       <input type="password" id="gate-password" aria-label="Contraseña" placeholder="Contraseña" autocomplete="current-password" required autofocus>
-      <button type="submit" id="gate-submit">Ingresar</button>
+      <label class="remember"><input type="checkbox" id="gate-remember"> Recordar en este equipo</label>
+      <button type="submit" id="gate-submit" disabled>Ingresar</button>
     </form>
     <div class="error" id="gate-error" role="alert"></div>
   </div>
@@ -69,8 +72,9 @@
 // IIFE: document.open() conserva el mismo window y un const global chocaría con los scripts del tablero.
 (function () {
   var payload = JSON.parse(document.getElementById('gate-payload').textContent);
-  // La sal cambia en cada build: después de un deploy la llave guardada ya no sirve y se pide la clave otra vez.
-  var storageKey = 'rb-gate-key-' + payload.salt;
+  // La llave (no la clave) se guarda con la sal del build, que es fija por marca (scripts/build.js): con
+  // "Recordar en este equipo" queda tambien en localStorage y sirve entre deploys hasta que cambie la clave.
+  var storageKey = 'rb-gate-key';
   var bytes = function (b64) { return Uint8Array.from(atob(b64), function (c) { return c.charCodeAt(0); }); };
   var toB64 = function (arr) { return btoa(String.fromCharCode.apply(null, arr)); };
 
@@ -82,12 +86,36 @@
       .then(function (bits) { return new Uint8Array(bits); });
   }
 
-  function show(rawKey) {
+  function readSaved() {
+    var stores = ['sessionStorage', 'localStorage'];
+    for (var i = 0; i < stores.length; i++) {
+      try {
+        var saved = JSON.parse(window[stores[i]].getItem(storageKey) || 'null');
+        if (saved && saved.salt === payload.salt && saved.key) return bytes(saved.key);
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  function forget() {
+    ['sessionStorage', 'localStorage'].forEach(function (name) {
+      try { window[name].removeItem(storageKey); } catch (e) {}
+    });
+  }
+
+  // persistent: true/false al ingresar con la clave; sin valor (llave ya recordada) no toca localStorage.
+  function show(rawKey, persistent) {
     return crypto.subtle.importKey('raw', rawKey, 'AES-GCM', false, ['decrypt'])
       .then(function (key) { return crypto.subtle.decrypt({ name: 'AES-GCM', iv: bytes(payload.iv) }, key, bytes(payload.data)); })
       .then(function (plain) {
-        // Se guarda la llave derivada (no la clave) para no pedirla en cada recarga de esta pestaña.
-        try { sessionStorage.setItem(storageKey, toB64(rawKey)); } catch (e) {}
+        var value = JSON.stringify({ salt: payload.salt, key: toB64(rawKey) });
+        try { sessionStorage.setItem(storageKey, value); } catch (e) {}
+        if (persistent !== undefined) {
+          try {
+            if (persistent) localStorage.setItem(storageKey, value);
+            else localStorage.removeItem(storageKey);
+          } catch (e) {}
+        }
         var html = new TextDecoder().decode(plain);
         document.open();
         document.write(html);
@@ -96,15 +124,19 @@
   }
 
   // El fondo se pone cuando terminó de cargar; si falla queda el degradado.
-  var background = new Image();
-  background.onload = function () {
-    var bg = document.getElementById('gate-bg');
-    if (bg) bg.style.backgroundImage = "url('assets/login-bg.jpg')";
-  };
-  background.src = 'assets/login-bg.jpg';
+  // Con una llave guardada no se pide: la imagen retrasaria el 'load' que espera la apertura automatica.
+  if (!readSaved()) {
+    var background = new Image();
+    background.onload = function () {
+      var bg = document.getElementById('gate-bg');
+      if (bg) bg.style.backgroundImage = "url('assets/login-bg.jpg')";
+    };
+    background.src = 'assets/login-bg.jpg';
+  }
 
   var form = document.getElementById('gate');
   var input = document.getElementById('gate-password');
+  var remember = document.getElementById('gate-remember');
   var submit = document.getElementById('gate-submit');
   var error = document.getElementById('gate-error');
   form.addEventListener('submit', function (event) {
@@ -112,22 +144,25 @@
     if (!window.crypto || !crypto.subtle) { error.textContent = 'Este navegador no puede abrir el tablero.'; return; }
     submit.disabled = true;
     error.textContent = '';
-    derive(input.value).then(show).catch(function () {
+    derive(input.value).then(function (rawKey) { return show(rawKey, remember.checked); }).catch(function () {
       submit.disabled = false;
       error.textContent = 'Contraseña incorrecta';
       input.select();
     });
   });
 
-  // Con la llave de esta sesión se abre solo, pero después de 'load': si document.open() corre con el parser
+  // El boton nace deshabilitado: mientras la pagina sigue bajando el tablero cifrado, Enter no envia el
+  // formulario (recargaria la pagina y se perderia lo escrito). Se habilita cuando ya se escucha el submit.
+  submit.disabled = false;
+
+  // Con una llave guardada (esta sesión o recordada) se abre solo, pero después de 'load': si document.open() corre con el parser
   // todavía activo no reemplaza la página y el tablero se mezcla con este formulario.
-  var saved = null;
-  try { saved = sessionStorage.getItem(storageKey); } catch (e) {}
+  var saved = readSaved();
   if (saved) {
     document.body.style.visibility = 'hidden';
     window.addEventListener('load', function () {
-      show(bytes(saved)).catch(function () {
-        try { sessionStorage.removeItem(storageKey); } catch (e) {}
+      show(saved).catch(function () {
+        forget();
         document.body.style.visibility = '';
       });
     }, { once: true });

@@ -219,29 +219,21 @@
 .mpanel { display: none; }
 .mpanel.visible { display: block; }
 
-/* ── Period note ── */
+/* ── Period note: texto en negrita, sin franja ── */
 .period-note {
-  background: var(--amber-soft);
-  border-left: 3px solid var(--amber);
-  border-radius: 0 var(--r-xs) var(--r-xs) 0;
-  padding: 10px 14px;
-  font-size: 12px;
-  color: var(--amber-text);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
   margin-bottom: 16px;
 }
 
-/* ── Pace cards ── */
+/* ── Pace cards: solo el contenido, sin recuadro ── */
 .pace-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 12px;
+  gap: 16px 24px;
 }
 .pace-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 16px 18px;
-  box-shadow: var(--sh);
   position: relative;
 }
 .pace-card-head {
@@ -292,13 +284,9 @@
 }
 
 .pace-footnote {
-  margin-top: 10px;
-  background: #F8FAFC;
-  border-radius: var(--r-sm);
-  padding: 10px 14px;
+  margin-top: 12px;
   font-size: 12px;
   color: var(--text-2);
-  border: 1px solid var(--border);
 }
 
 /* ── Bundle cards ── */
@@ -1939,7 +1927,6 @@ body {
 
 .panel,
 .kpi-card,
-.pace-card,
 .bundle-card,
 .copurchase-card,
 .next-sale-card,

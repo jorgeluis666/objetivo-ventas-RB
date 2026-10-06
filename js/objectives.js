@@ -1152,7 +1152,7 @@
       const statusNote = status === 'current'
         ? `<div class="period-note">${m} 2026 está en curso · día ${daysPassed(m)} de ${objectiveDays(m)}${refTxt}</div>`
         : status === 'future'
-          ? `<div class="period-note" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-text);">${m} 2026 es mes futuro · meta <strong>S/. ${fmt(monthTarget(m))}</strong>${refTxt}</div>`
+          ? `<div class="period-note">${m} 2026 es mes futuro · meta <strong>S/. ${fmt(monthTarget(m))}</strong>${refTxt}</div>`
           : '';
 
       panel.innerHTML = `

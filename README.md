@@ -196,7 +196,7 @@ Las sesiones abiertas con la clave anterior siguen hasta que se cierre la pesta�
 El módulo tiene dos zonas, cada una con su fuente de Drive, su fecha de sincronización y su botón **Sincronizar**:
 
 1. **Objetivos comerciales** (arriba): las metas que fija la marca, con su avance. Cuadro de metas por canal y mes (meta, venta y avance, referencia del año anterior) y una pestaña por mes con ritmo, alertas y detalle semanal.
-2. **Ventas 2026 · histórico de la marca** (abajo): ventas por canal y mes, por mes calendario o por ciclo 26–25, y la evolución semanal 2025 vs 2026.
+2. **Ventas 2026 · histórico de la marca** (abajo): ventas por canal y mes calendario, y la evolución semanal 2025 vs 2026.
 
 `data/objetivos-2026.json` es la única fuente de metas: lo leen el módulo, Proyecciones, el KPI anual del Comparativo YoY y el correo semanal (`alertas.js`). Al publicar, el build lo incrusta en la página.
 
@@ -210,10 +210,10 @@ El módulo tiene dos zonas, cada una con su fuente de Drive, su fecha de sincron
 
 **Canales**: Tienda Miraflores (`Tienda`), Página Web (`Web`), Redes y WhatsApp (`WhatsApp` + `Instagram` + `Facebook`; en el archivo, `WHATSAPP`) y Outlet (`Showroom`). Cada canal indica en `sheet` qué columnas del histórico suma. **Outlet** son los saldos, que se venden en la web y en el Showroom; el histórico no separa la venta outlet de la web, así que el canal Outlet mide solo el Showroom.
 
-El total de cada mes suma toda la venta registrada. El módulo compara por ciclo comercial 26–25; el correo semanal, por mes calendario.
+El total de cada mes suma toda la venta registrada.
 
-### Ciclo comercial de objetivos
+### Mes calendario
 
-El módulo **Objetivos 2026** usa ciclo comercial **26–25**: las ventas del día 26 al cierre calendario se acumulan al objetivo del mes siguiente. Los reportes comparativos generales conservan el mes calendario.
+Desde el 6 de octubre de 2026 el módulo compara por **mes calendario** (del 1 al último día del mes), igual que el histórico de la marca, Proyecciones y el correo semanal. Las semanas del detalle van de lunes a domingo, recortadas al mes; la meta de cada semana es proporcional a sus días.
 
-Hito de rollback antes de este cambio: `hito-pre-cierre-25-20260722`.
+Entre el 22 de julio y el 6 de octubre usó el ciclo comercial 26–25 (las ventas del 26 al fin de mes contaban para el mes siguiente). El pipeline sigue generando los campos `*_commercial` de `data/ventas-2026.json`, aunque el tablero ya no los usa. Hito de rollback antes del ciclo 26–25: `hito-pre-cierre-25-20260722`.

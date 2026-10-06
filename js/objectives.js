@@ -4,7 +4,7 @@
         metas por canal y una pestaña por mes con ritmo y detalle semanal.
      2. Ventas 2026, histórico de la marca: ventas por canal y mes y la
         evolución semanal 2025 vs 2026.
-   La venta de los objetivos va en ciclo 26-25. Cada zona tiene un botón
+   Todo va por mes calendario, como el histórico de la marca. Cada zona tiene un botón
    Sincronizar que relee su hoja de Drive en el navegador (fuentes-drive.js).
    Expone window.Objectives.render({ d2026, weeklyData, transactions, plan, … }).
    ============================================================ */
@@ -64,16 +64,12 @@
   // Estado interno
   const state = {
     plan: null,            // data/objetivos-2026.json: objetivos de la marca (Drive)
-    d2026: null,           // ventas 2026 por ciclo comercial 26-25
-    ventasCal: null,       // ventas 2026 por mes calendario (histórico)
+    d2026: null,           // ventas 2026 por mes calendario
     ventasInfo: null,      // { generated, fuente } de las ventas mostradas
-    ventasCiclo: 'calendario',
     weeklyData: null,
     transactions: null,
     avgTickets: {},
     d2025Ref: d2025,
-    periodDays: monthDays,
-    cycleLabel: 'calendario',
     onSyncVentas: null,
     onPlanChange: null,
   };
@@ -117,26 +113,19 @@
     const now = new Date();
     if (now.getFullYear() < YEAR) return -2;
     if (now.getFullYear() > YEAR) return 12;
-    const idx = now.getDate() > 25 ? now.getMonth() + 1 : now.getMonth();
-    return idx > 11 ? 12 : idx;
+    return now.getMonth();
   }
   function objectiveDays(m) {
-    return state.periodDays?.[m] || monthDays[m];
-  }
-  function currentCommercialDay() {
-    const now = new Date();
-    if (now.getDate() > 25) return now.getDate() - 25;
-    const previousMonthDays = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
-    return previousMonthDays - 25 + now.getDate();
+    return monthDays[m];
   }
   function currentCalendarDay() {
     return new Date().getDate();
   }
   function visualRulerStart(m) {
-    return state.cycleLabel === '26-25' ? '26' : '1';
+    return '1';
   }
   function visualRulerEnd(m) {
-    return state.cycleLabel === '26-25' ? '25' : String(objectiveDays(m));
+    return String(objectiveDays(m));
   }
   function visualTodayPct(m) {
     return (daysPassed(m) / objectiveDays(m) * 100).toFixed(1);
@@ -152,13 +141,13 @@
     const s = monthStatus(m);
     if (s === 'past')    return objectiveDays(m);
     if (s === 'future')  return 0;
-    return Math.min(objectiveDays(m), currentCommercialDay());
+    return Math.min(objectiveDays(m), currentCalendarDay());
   }
   function daysRemaining(m) {
     const s = monthStatus(m);
     if (s === 'past')    return 0;
     if (s === 'future')  return objectiveDays(m);
-    return Math.max(0, objectiveDays(m) - currentCommercialDay());
+    return Math.max(0, objectiveDays(m) - currentCalendarDay());
   }
 
   // ── ISO week number del año (1-53) ──
@@ -411,10 +400,23 @@
     Junio:'jun', Julio:'jul', Agosto:'ago', Septiembre:'sep', Octubre:'oct',
     Noviembre:'nov', Diciembre:'dic' };
 
+  // Semanas del mes como las arma el pipeline (fuentes-drive.js buildWeekMap): de lunes a
+  // domingo, recortadas al mes; la primera y la última pueden tener menos de 7 días.
+  function monthWeeks(m) {
+    const mi = months.indexOf(m);
+    const weeks = [];
+    for (let d = 1; d <= objectiveDays(m); d++) {
+      if (d === 1 || new Date(YEAR, mi, d).getDay() === 1) weeks.push({ w: weeks.length + 1, start: d, end: d });
+      weeks[weeks.length - 1].end = d;
+    }
+    weeks.forEach(wk => { wk.days = wk.end - wk.start + 1; });
+    return weeks;
+  }
+
   function weekDateRange(m, w) {
-    const start = (w - 1) * 7 + 1;
-    const end   = Math.min(w * 7, objectiveDays(m));
-    return `${start}–${end} ${MONTH_ABR[m]}`;
+    const wk = monthWeeks(m)[w - 1];
+    if (!wk) return '';
+    return wk.start === wk.end ? `${wk.start} ${MONTH_ABR[m]}` : `${wk.start}–${wk.end} ${MONTH_ABR[m]}`;
   }
 
   // Construye el HTML interno del desplegable semanal de un canal del plan.
@@ -425,13 +427,18 @@
       return '<div style="padding:8px 4px;font-size:12px;color:var(--muted);">Sin datos semanales para este canal.</div>';
     }
     const monthChTgt  = target(m, c.key);
-    const baseWeekTgt = monthChTgt > 0 ? monthChTgt * 7 / objectiveDays(m) : 0;
-    const curWeekNum  = status === 'current' ? Math.ceil(new Date().getDate() / 7) : -1;
+    // La meta de cada semana es proporcional a sus días (las semanas de borde son más cortas).
+    const semanas     = monthWeeks(m);
+    const weekTgt     = w => monthChTgt > 0 && semanas[w - 1] ? monthChTgt * semanas[w - 1].days / objectiveDays(m) : 0;
+    const fullWeekTgt = monthChTgt > 0 ? monthChTgt * 7 / objectiveDays(m) : 0;
+    const hoy         = currentCalendarDay();
+    const curWeekNum  = status === 'current' ? (semanas.find(s => hoy >= s.start && hoy <= s.end)?.w ?? -1) : -1;
 
     let carry = 0;   // brecha arrastrada de semanas anteriores
 
     const weekRows = weeks.map((wk, i) => {
       const weekNum       = wk.w;
+      const baseWeekTgt   = weekTgt(weekNum);
       const real          = chWeekReal(wk, c);
       const isCurrentWeek = status === 'current' && weekNum === curWeekNum;
       const isFuture      = status === 'current' && weekNum > curWeekNum;
@@ -469,7 +476,7 @@
       // Indicador de traspaso hacia la siguiente semana
       const traspasoHtml = (!isFuture && !isCurrentWeek && brecha < 0 && i < weeks.length - 1)
         ? `<div class="ch-wk-traspaso">
-             ↳ Brecha S/. ${fmt(Math.abs(brecha))} se traslada a sem. ${i + 2} · su nueva meta efectiva: S/. ${fmt(baseWeekTgt + Math.abs(brecha))}
+             ↳ Brecha S/. ${fmt(Math.abs(brecha))} se traslada a sem. ${i + 2} · su nueva meta efectiva: S/. ${fmt(weekTgt(weekNum + 1) + Math.abs(brecha))}
            </div>`
         : (!isFuture && !isCurrentWeek && brecha >= 0 && pct >= 90)
           ? `<div class="ch-wk-traspaso ch-wk-traspaso-ok">✓ Sem. ${i + 1} cubierta · no genera arrastre</div>`
@@ -492,7 +499,7 @@
         ${traspasoHtml}`;
     }).join('');
 
-    const metaHdr = baseWeekTgt > 0 ? `meta sem. base ≈ S/. ${fmt(baseWeekTgt)}` : 'sin objetivo definido';
+    const metaHdr = fullWeekTgt > 0 ? `meta por semana de 7 días ≈ S/. ${fmt(fullWeekTgt)}` : 'sin objetivo definido';
     return `
       <div class="ch-weeks-header">${c.label} · ${m} · ${metaHdr}</div>
       <div class="ch-wk-col-head">
@@ -616,18 +623,15 @@
   }
 
   // ── Render principal de la vista ──
-  function render({ d2026, weeklyData, transactions, weekly2025, d2025Ref, periodDays, cycleLabel, plan,
-                   ventasCalendario, ventasInfo, onSyncVentas, onPlanChange }) {
+  function render({ d2026, weeklyData, transactions, weekly2025, d2025Ref, plan,
+                   ventasInfo, onSyncVentas, onPlanChange }) {
     state.d2026        = d2026;
     state.weeklyData   = weeklyData;
     state.transactions = transactions;
     state.weekly2025   = weekly2025 || {};
     state.d2025Ref     = d2025Ref || d2025;
-    state.periodDays   = periodDays || monthDays;
-    state.cycleLabel   = cycleLabel || 'calendario';
     state.avgTickets   = computeAvgTickets(d2026, transactions);
     state.plan         = plan || null;
-    state.ventasCal    = ventasCalendario || null;
     state.ventasInfo   = ventasInfo || null;
     state.onSyncVentas = onSyncVentas || null;
     state.onPlanChange = onPlanChange || null;
@@ -870,14 +874,6 @@
       if (!state.onSyncVentas) throw new Error('sincronización no disponible');
       return state.onSyncVentas();
     }));
-    const toggle = document.getElementById('ventas-ciclo-toggle');
-    if (toggle && !toggle.dataset.wired) {
-      toggle.dataset.wired = '1';
-      toggle.querySelectorAll('.vt-btn').forEach(btn => btn.addEventListener('click', () => {
-        state.ventasCiclo = btn.dataset.ciclo;
-        renderVentasSection();
-      }));
-    }
   }
 
   async function runSync(zona, fn) {
@@ -998,8 +994,8 @@
     const conVenta = meses.filter(hasSales);
     if (sub) {
       sub.textContent = state.plan.referencia
-        ? `Cada celda: meta (PROYECCIÓN) · venta del histórico en ciclo 26-25 y avance · referencia ${state.plan.referencia.anio}`
-        : 'Cada celda: meta (PROYECCIÓN) · venta del histórico en ciclo 26-25 y avance';
+        ? `Cada celda: meta (PROYECCIÓN) · venta del mes en el histórico y avance · referencia ${state.plan.referencia.anio}`
+        : 'Cada celda: meta (PROYECCIÓN) · venta del mes en el histórico y avance';
     }
 
     const head = `<thead><tr>
@@ -1154,7 +1150,7 @@
 
       const refTxt = state.plan.referencia ? ` · ${refLabel().replace('Ref.', 'referencia')}: <strong>S/. ${fmt(total2025)}</strong>` : '';
       const statusNote = status === 'current'
-        ? `<div class="period-note">${m} 2026 está en curso · ciclo comercial 26-25 · día ${daysPassed(m)} de ${objectiveDays(m)}${refTxt}</div>`
+        ? `<div class="period-note">${m} 2026 está en curso · día ${daysPassed(m)} de ${objectiveDays(m)}${refTxt}</div>`
         : status === 'future'
           ? `<div class="period-note" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-text);">${m} 2026 es mes futuro · meta <strong>S/. ${fmt(monthTarget(m))}</strong>${refTxt}</div>`
           : '';
@@ -1255,15 +1251,10 @@
       const ultimo = info.fuente?.ultimoDia ? ` · último día con ventas: ${fechaCorta(info.fuente.ultimoDia)}` : '';
       fuenteEl.innerHTML = fuenteHTML(info.fuente, info.generated, ultimo);
     }
-    document.querySelectorAll('#ventas-ciclo-toggle .vt-btn').forEach(b =>
-      b.classList.toggle('active', b.dataset.ciclo === state.ventasCiclo));
     if (!table) return;
 
-    const comercial = state.ventasCiclo === 'comercial';
-    const data = (comercial ? state.d2026 : state.ventasCal) || {};
-    if (sub) sub.textContent = comercial
-      ? 'Ciclo comercial 26-25: las ventas del 26 al fin de mes cuentan para el mes siguiente (el que usan los objetivos)'
-      : 'Mes calendario, como lo registra la marca';
+    const data = state.d2026 || {};
+    if (sub) sub.textContent = 'Por mes calendario, como lo registra la marca';
 
     const conDatos = m => tot(data[m] || {}) > 0;
     const valor = (m, col) => conDatos(m) ? fmtK((data[m] || {})[col] || 0) : '—';

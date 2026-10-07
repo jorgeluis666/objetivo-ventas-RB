@@ -1434,10 +1434,25 @@
   margin-top: 2px !important;
 }
 
+/* ── Franja de fuentes: Objetivos 2026 y Gasto publicitario (reusa .gp-source) ── */
+.proj-src-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.proj-src-strip:empty { display: none; }
+.proj-src-strip .gp-source { margin-bottom: 0; flex-wrap: nowrap; }
+.proj-src-strip .gp-source-l { align-items: flex-start; }
+.proj-src-strip .gp-dot { margin-top: 5px; }
+.proj-src-strip .btn { flex-shrink: 0; }
+.proj-src-text { line-height: 1.5; }
+.proj-src-text small { display: block; font-size: 11px; color: var(--muted); }
+
 /* ── Canal cards ── */
 .proj-ch-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 20px;
 }
@@ -1486,10 +1501,45 @@
   line-height: 1;
   margin-bottom: 4px;
 }
+.proj-ch-val small {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+}
 .proj-ch-sub {
   font-size: 10px;
   color: var(--muted);
   margin-bottom: 10px;
+}
+.proj-ch-empty {
+  font-size: 12px;
+  color: var(--muted);
+}
+/* Ritmo con el que se proyecta la fuente (base elegida) */
+.proj-ch-base {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: -4px 0 10px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--brand-soft);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--brand-text);
+}
+.proj-ch-base span {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.proj-chart-note {
+  margin: -4px 0 8px;
+  font-size: 10px;
+  color: var(--muted);
 }
 /* Stats row dentro de card de fuente */
 .proj-ch-stats {
@@ -1517,7 +1567,7 @@
 }
 /* Mini chart dentro de card de fuente */
 .proj-src-chart-wrap {
-  height: 90px;
+  height: 110px;
   margin: 10px 0 8px;
 }
 
@@ -1624,7 +1674,12 @@
   opacity: .35;
   cursor: default;
 }
-.proj-mes-btn:hover:not(.sin-datos):not(.active) {
+/* Base de la proyección en un mes cerrado: se ve cuál era, pero no se cambia */
+#proj-base-selector .proj-mes-btn:disabled {
+  opacity: .5;
+  cursor: default;
+}
+.proj-mes-btn:hover:not(.sin-datos):not(.active):not(:disabled) {
   border-color: var(--brand);
   color: var(--brand);
   background: var(--brand-soft);
@@ -1716,6 +1771,98 @@
   font-size: 11px;
   color: var(--muted);
   line-height: 1.5;
+}
+.recalc-box .recalc-note { margin-top: 8px; color: var(--text-2); }
+.recalc-item strong em { font-style: normal; font-weight: 500; font-size: 11px; }
+
+/* ── Pestañas Ritmo del mes / Plan por campaña (estilo de .gp-tab, abajo) ── */
+.proj-tab .gp-tab-ic { background: var(--brand-soft); color: var(--brand); }
+.proj-tab.active .gp-tab-ic { background: var(--brand); color: #fff; }
+.proj-tab .gp-tab-ic svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── Plan por campaña (js/plan-campanas.js) ── */
+.plan-kpis,
+.plan-roas-strip { margin-bottom: 0; }
+.plan-kpis { margin-top: 0; }
+.kpi-pill .plan-pip,
+.plan-pip {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: 1px;
+}
+.plan-concepto { display: flex; align-items: flex-start; gap: 2px; }
+.plan-concepto .plan-pip { margin-top: 5px; }
+.plan-concepto b { font-weight: 600; color: var(--text); }
+.plan-concepto small,
+.plan-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-2);
+}
+.plan-camp-table td:first-child { min-width: 280px; }
+.plan-real { display: block; font-weight: 600; }
+.plan-ritmo { display: inline-flex; margin-top: 4px; font-size: 10px; cursor: help; }
+.rep-table tr.plan-total td { background: #f8fbff; border-top: 1px solid var(--border); }
+.rep-table tr.plan-sel td { background: #eff6ff; }
+.rep-table tr.plan-fuera b { color: var(--text-2); }
+.plan-ref {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin-top: 14px;
+}
+.plan-ref .proj-mes-wrap { margin-bottom: 0; }
+.plan-resumen-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 380px);
+  gap: 20px;
+  align-items: start;
+}
+/* Tablas angostas del plan: sin los 170px de la primera columna de .rep-table */
+#plan-resumen .rep-table td:first-child,
+#plan-wa .rep-table td:first-child,
+#plan-google .rep-table td:first-child,
+#plan-branding .rep-table td:first-child { min-width: 0; }
+/* Montos en una sola línea: que no se corten entre «S/.» y la cifra */
+#proj-pane-plan .rep-metrics dd { white-space: nowrap; }
+
+/* En laptops (1280–1366, con la barra de scroll) las tablas del plan no caben de a dos: una debajo de otra */
+@media (max-width: 1380px) {
+  .plan-resumen-grid,
+  #proj-pane-plan .grid-2 { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 1100px) {
+  #kpi-proj,
+  .plan-kpis,
+  .plan-roas-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .recalc-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .recalc-item-recom { grid-column: 1 / -1; border-left: none; padding-left: 0; }
+}
+@media (max-width: 760px) {
+  .proj-src-strip,
+  .proj-ch-grid { grid-template-columns: 1fr; }
+  .recalc-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .plan-camp-table td:first-child { min-width: 220px; }
+}
+@media (max-width: 480px) {
+  #kpi-proj,
+  .plan-kpis,
+  .plan-roas-strip { grid-template-columns: 1fr; }
 }
 
 /* ============================================================
@@ -2279,14 +2426,15 @@ tbody tr:hover td {
 .gp-dot.ok   { background: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
 .gp-dot.warn { background: var(--amber); box-shadow: 0 0 0 3px var(--amber-soft); }
 
-/* Pestañas por fuente */
+/* Pestañas por fuente (Proyecciones usa las mismas con .proj-tab: gasto.js maneja solo las .gp-tab) */
 .gp-tabs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin: 0 0 14px;
 }
-.gp-tab {
+.gp-tab,
+.proj-tab {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -2301,9 +2449,12 @@ tbody tr:hover td {
   font: inherit;
   transition: background .15s, border-color .15s;
 }
-.gp-tab:hover { background: #f8fbff; border-color: #bfdbfe; }
-.gp-tab.active { background: #eff6ff; border-color: #bfdbfe; }
-.gp-tab:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, .25); }
+.gp-tab:hover,
+.proj-tab:hover { background: #f8fbff; border-color: #bfdbfe; }
+.gp-tab.active,
+.proj-tab.active { background: #eff6ff; border-color: #bfdbfe; }
+.gp-tab:focus-visible,
+.proj-tab:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, .25); }
 .gp-tab-ic {
   width: 36px;
   height: 36px;
@@ -2325,6 +2476,8 @@ tbody tr:hover td {
 .rep-toolbar .proj-mes-wrap { margin-bottom: 0; }
 .rep-period-meta { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12px; color: var(--text-2); }
 .rep-stack { display: grid; gap: 16px; }
+/* display:grid le gana al [hidden] del navegador (p. ej. #plan-body en el estado vacío) */
+.rep-stack[hidden] { display: none; }
 /* Sin esto, una tabla ancha estira la columna de la grilla en vez de hacer scroll dentro de su panel */
 .rep-stack > *,
 .rep-stack .grid-2 > * { min-width: 0; }
@@ -2433,7 +2586,8 @@ tbody tr:hover td {
 @media (max-width: 760px) {
   .gp-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .gp-kpis .kpi-pill strong { font-size: 19px; }
-  .gp-tab { gap: 10px; padding: 10px; }
+  .gp-tab,
+  .proj-tab { gap: 10px; padding: 10px; }
   .gp-tab-ic { width: 30px; height: 30px; }
   .gp-tab-src { display: none; }
   .gp-funnel-row { grid-template-columns: 96px 1fr 60px 58px; gap: 8px; }

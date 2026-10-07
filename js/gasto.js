@@ -8,7 +8,8 @@
    viaja incrustado en el HTML cifrado (window.RB_GASTO_DATA, scripts/build.js).
    No hay botón para sincronizar: exigiría guardar un token de GitHub en el
    navegador y el tablero lo abren clientes (ver sheets.js).
-   Expone window.Gasto.init() (main.js lo llama al abrir la vista).
+   Expone window.Gasto.init() (main.js lo llama al abrir la vista) y Gasto.load(),
+   la misma carga de datos, que main.js le pasa a Proyecciones.
    ============================================================ */
 
 (function (global) {
@@ -95,7 +96,13 @@
     </div>`;
 
   // ── Carga: incrustado al publicar, data/ads-2026.json en local ──
-  async function loadData() {
+  // Una sola vez: Proyecciones (main.js) usa los mismos datos con Gasto.load().
+  let request = null;
+  function loadData() {
+    if (!request) request = fetchData();
+    return request;
+  }
+  async function fetchData() {
     if (global.RB_GASTO_DATA) return global.RB_GASTO_DATA;
     try {
       const res = await fetch(FILE, { cache: 'no-store' });
@@ -657,5 +664,5 @@
     showTab(state.tab);
   }
 
-  global.Gasto = { init };
+  global.Gasto = { init, load: loadData };
 })(window);

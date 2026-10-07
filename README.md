@@ -33,14 +33,14 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
     config.js             Usuarios y destinatarios de alertas
     sheets.js             Indicador de sync + botón Actualizar
     meta-planner.js       Planificador Meta Ads por cliente
-    projections.js        Módulo Proyecciones
+    projections.js        Módulo Proyecciones (datos de Objetivos y Gasto publicitario): pestaña Ritmo del mes
+    plan-campanas.js      Proyecciones · pestaña Plan por campaña (estrategia Plano + Picos)
     gasto.js              Módulo Gasto publicitario (Meta Ads y Google Ads desde Drive)
     main.js               Orquestación: init, navegación, render
   data/
     ventas-2026.json      Generado por fetch-data.js (no editar a mano)
     objetivos-2026.json   Objetivos de la marca desde Drive, generado por sync-objetivos.js (no editar a mano)
-    ads-data.json         Inversión publicitaria para Proyecciones
-    ads-2026.json         Google Ads + Meta Ads desde Drive, para Gasto publicitario (generado por sync-ads.js)
+    ads-2026.json         Google Ads + Meta Ads desde Drive, para Gasto publicitario y Proyecciones (generado por sync-ads.js)
   scripts/
     fetch-data.js         Ventas: carpeta de Drive (2026) + Google Sheet (2025) → data/ventas-2026.json
     sync-objetivos.js     Objetivos: carpeta de Drive → data/objetivos-2026.json
@@ -67,7 +67,7 @@ npm install
 npm run dev          # live-server en http://localhost:3000
 ```
 
-En local el tablero se abre sin clave y lee `data/ventas-2026.json`, `data/ads-data.json`, `data/objetivos-2026.json` y `data/ads-2026.json`. Si falta `data/ventas-2026.json`, muestra un banner de error.
+En local el tablero se abre sin clave y lee `data/ventas-2026.json`, `data/objetivos-2026.json` y `data/ads-2026.json`. Si falta `data/ventas-2026.json`, muestra un banner de error.
 
 Para volver a generar los datos:
 
@@ -139,7 +139,7 @@ Si un archivo falla, el workflow queda en rojo, el JSON anterior se conserva y n
 
 ## Gasto publicitario
 
-Módulo del grupo Reportes, después de Proyecciones (`js/gasto.js`, vista `view-rep`). Solo usa las carpetas de Drive **Meta Files** y **Google Files**, a través de `data/ads-2026.json`. Publicado, el JSON va incrustado en el HTML cifrado (`window.RB_GASTO_DATA`, sin `rules`, `checks`, `repairs` ni las columnas diarias que la vista no usa); en local se lee con `fetch`.
+Módulo del grupo Reportes, después de Proyecciones (`js/gasto.js`, vista `view-rep`). Solo usa las carpetas de Drive **Meta Files** y **Google Files**, a través de `data/ads-2026.json`. Publicado, el JSON va incrustado en el HTML cifrado (`window.RB_GASTO_DATA`, sin `rules`, `checks`, `repairs` ni las columnas diarias que el tablero no usa); en local se lee con `fetch`.
 
 - **Arriba**: la fecha de los datos y el aviso «se sincroniza sola todos los días a las 07:00 (Lima)». No hay botón para sincronizar: exigiría un token de GitHub en el navegador, y el tablero lo abren clientes.
 - **Pestañas Meta Ads y Google Ads**: cada una con su franja de fuente, el botón «Abrir carpeta», el selector de mes (compartido entre pestañas) y los avisos del sync (`pending` y los `warnings` del mes). Si la carpeta no tiene informes, muestra un estado vacío con el enlace a la carpeta.
@@ -156,15 +156,51 @@ Módulo del grupo Reportes, después de Proyecciones (`js/gasto.js`, vista `view
   - Inversión mensual. Google llega con un total por mes: no hay serie diaria.
 - **Diseño**: tema claro del tablero (`css/dashboard-minimal.css`); reusa `.kpi-strip`/`.kpi-pill` y el selector de mes de Proyecciones. Colores por plataforma, los mismos de Proyecciones: Meta `#1877F2`, Google `#4285F4`; los tipos de resultado de Meta usan los de sus fuentes (compras `#1877F2`, conversaciones `#25D366`, interacciones `#E1306C`).
 
+## Proyecciones
+
+Módulo del grupo Reportes (`js/projections.js`, vista `view-proj`). No tiene datos propios: los toma de otros dos módulos, y una franja arriba dice hasta qué día llega cada uno, con un botón para abrirlo.
+
+- **Objetivos 2026**: los objetivos de la marca (`data/objetivos-2026.json`) y su histórico de ventas por mes calendario (`data/ventas-2026.json`). Cuando se pulsa **Sincronizar** en Objetivos, Proyecciones se vuelve a dibujar con lo nuevo.
+- **Gasto publicitario**: la inversión y los resultados de Meta Ads y Google Ads (`data/ads-2026.json`, la misma carga que usa ese módulo con `Gasto.load()`).
+
+Cómo calcula:
+
+- **Por mes calendario**, como Gasto publicitario y Objetivos.
+- **Venta digital**: Web + Redes y WhatsApp, los canales que mueve la pauta, con las columnas del histórico que indica cada canal del archivo de objetivos (`sheet`). Se compara con la suma de los objetivos de esos dos canales; los meses que no están en el archivo quedan sin objetivo.
+- **Proyección**: lo que va del mes (real) más los días que quedan al ritmo de la **base** que se elige en «Proyectar con»: **Última semana** (los 7 días que terminan en el último día con datos), **Últimas 2 semanas** (14 días) o **Mes anterior** (completo). Las ventanas de 7 y 14 días cruzan al mes anterior cuando hace falta. La elección se recuerda en el navegador; en un mes cerrado no hay proyección y el selector queda inactivo.
+- **Ritmo de la base**: las ventas, hasta el último día con ventas del histórico (`fuente2026.ultimoDia`), salen de `daily2026` (ventas por día y canal; si el JSON no lo trae, el total del mes se reparte entre sus días). Cada plataforma, hasta donde llega su informe (`coverage`): Meta, con su serie diaria real; Google, con su total del mes repartido entre los días que cubre (estimado). Una franja bajo el selector dice qué días entraron y qué se estimó.
+- **ROAS de la marca** = venta digital ÷ inversión, ambas de la base. El recálculo da la inversión diaria para cerrar la brecha suponiendo que cada sol adicional rinde ese ROAS.
+- **Fuentes de tráfico**: las campañas de Meta se agrupan por tipo de resultado (compras en el sitio web → E-Commerce, conversaciones → WhatsApp, el resto → Alcance) y Google Ads va entero. Valor y ROAS de cada tarjeta son lo del mes, con la atribución de su plataforma; debajo va su ritmo en la base (inversión por día y ROAS, o costo por conversación). Meta trae la serie diaria real; Google, solo el total del mes, así que su tarjeta muestra la inversión por mes. El simulador de cada tarjeta cambia la inversión diaria de los días que le quedan al informe: en E-Commerce y Google mueve la venta digital al cierre con el ROAS de la base; en WhatsApp, las conversaciones al costo por conversación de la base.
+
+Todo lo anterior es la pestaña **Ritmo del mes**. La pestaña se recuerda en el navegador.
+
+### Plan por campaña
+
+Segunda pestaña de Proyecciones (`js/plan-campanas.js`). Lleva al tablero la *Estrategia de Inversión · Plano + Picos · Q4 2026* de Lima Retail con las cifras de las carpetas de Drive (a través de los mismos tres JSON), no con las del documento: cuando las carpetas se actualizan, el plan se recalcula solo.
+
+- **Meses del plan**: los del archivo de objetivos (hoy octubre a diciembre). Por mes: inversión, facturación proyectada, objetivo online y cuánto lo supera.
+- **Líneas del plan** (campañas de Drive):
+  - *Plano · Web*: las campañas de Meta con resultado «Compras en el sitio web». ROAS = venta Web del histórico ÷ su inversión en los meses normales; inversión = su promedio mensual en esos meses.
+  - *Plano · WhatsApp*: las campañas de Meta con resultado «Conversaciones con mensajes iniciadas». ROAS = venta de Redes y WhatsApp ÷ su inversión en los meses normales; inversión = la que cubre el objetivo promedio del canal en los meses del plan.
+  - *Plano · Google*: todo Google Ads. ROAS = valor de conversión ÷ costo de todos los meses cerrados; inversión = su promedio mensual.
+  - *Branding · Reconocimiento*: las campañas de Meta con objetivo Reconocimiento, sin ROAS (sostiene la Tienda física).
+  - *Pico*: inversión extra solo en la ventana del pico, al ROAS Web de los meses de pico.
+  - Facturación = inversión × ROAS. Las inversiones se redondean a S/. 10 (WhatsApp hacia arriba).
+- **Meses de referencia**: por defecto, junio y julio (normales, sin promo) para el plano y agosto (gran promo) para el pico, como la estrategia. Se cambian con los botones del panel de ROAS y se recuerdan en el navegador. Solo sirven los meses cerrados con el informe de Meta completo.
+- **Objetivo online**: la suma de los objetivos de todos los canales del archivo menos la Tienda (Web, Redes y WhatsApp, Outlet). La facturación suma el valor de conversión de Google, que puede contar ventas que también cuenta la Web: la vista lo avisa.
+- **Real**: en el mes en curso, la inversión de cada línea según Gasto publicitario y su ritmo mensual frente a la inversión plana; las campañas de Meta que no son de ninguna línea van aparte («fuera del plan»).
+- **Otros paneles**: resumen del trimestre con gráfico, escenarios de WhatsApp si su ROAS baja al escalar (mismas proporciones que 16x → 13x → 10x de la estrategia) con el ROAS del mes en curso, Google Ads por campaña en los meses cerrados (chats de WhatsApp = conversiones de contacto), Branding → Tienda (CPM de Reconocimiento e impresiones estimadas; Gasto publicitario no publica el alcance) y la curva semanal 2025 con las ventanas de los picos.
+- **Decisiones de la estrategia** (no están en Drive): las ventanas y montos de los picos (Black Days 24–28 nov y Push Navideño 13–16 dic, S/. 1.000 cada uno), el branding de S/. 300 al mes y los escenarios de WhatsApp. Están en `ESTRATEGIA`, al principio de `js/plan-campanas.js`.
+
 ## Publicación y acceso
 
 `deploy.yml` corre en cada push a `main`, después de cada actualización de datos y a mano (`Run workflow`):
 
-1. `node scripts/build.js` incrusta en `dist/index.html` el CSS, todos los `js/` y los datos (`ventas-2026.json`, `ads-data.json`, `objetivos-2026.json` y `ads-2026.json`, este último recortado a lo que lee el tablero). Falla si `index.html` carga algún archivo local que no se pueda incrustar o publicar.
+1. `node scripts/build.js` incrusta en `dist/index.html` el CSS, todos los `js/` y los datos (`ventas-2026.json`, `objetivos-2026.json` y `ads-2026.json`, este último recortado a lo que lee el tablero). Falla si `index.html` carga algún archivo local que no se pueda incrustar o publicar.
 2. Con el secret `RB_PAGE_PASSWORD` cifra ese HTML (AES-256-GCM, llave PBKDF2-SHA256 de 600 000 iteraciones) dentro de `deploy/pages-gate.html`. El navegador lo descifra con la clave; sin ella, el HTML publicado no muestra nada del tablero.
 3. Sube `dist/` a GitHub Pages: solo `index.html`, `assets/` y `CNAME`. `data/`, `scripts/`, los CSV y este README no se publican.
 
-El workflow falla si falta el secret o si `dist/index.html` sale sin cifrar o con alguno de los datos en claro (`RB_VENTAS_DATA`, `RB_ADS_DATA`, `RB_OBJETIVOS_DATA`, `RB_GASTO_DATA`).
+El workflow falla si falta el secret o si `dist/index.html` sale sin cifrar o con alguno de los datos en claro (`RB_VENTAS_DATA`, `RB_OBJETIVOS_DATA`, `RB_GASTO_DATA`).
 
 `deploy.yml` se encadena (`workflow_run`) a «Actualizar datos de ventas» y a «Sincronizar inversión publicitaria», solo cuando terminan en verde.
 

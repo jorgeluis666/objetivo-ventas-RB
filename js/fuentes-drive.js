@@ -462,6 +462,17 @@
     return { totals, weekly, transactions, dailyRows, failures };
   }
 
+  // Ventas por día, por mes calendario y canal: { Octubre: { Web: [día 1, día 2, …], … } }.
+  // Proyecciones mide con ellas el ritmo de los últimos 7 o 14 días.
+  function dailyByMonth(dailyRows, cols) {
+    const out = {};
+    for (const dr of dailyRows) {
+      const mes = out[MESES[dr.monthIndex]] ||= Object.fromEntries(cols.map(c => [c.title, []]));
+      cols.forEach(c => { mes[c.title][dr.day - 1] = dr.totals[c.title] || 0; });
+    }
+    return out;
+  }
+
   // Campos 2026 de data/ventas-2026.json a partir de las pestañas del libro de ventas.
   async function ventas2026(tabs, { today = new Date(), log } = {}) {
     const leido = await leerAnio({
@@ -488,6 +499,7 @@
         transactions_calendar:   leido.transactions,
         transactions_commercial: commercial.transactions,
         commercialPeriodDays:    commercial.periodDays,   // legacy → usado por pace cards
+        daily2026:               dailyByMonth(leido.dailyRows, COLS_2026),
       },
     };
   }
@@ -504,6 +516,6 @@
     toNumber, round2, descargarLibro,
     parseObjetivos, objetivosDelLibro,
     monthsForYear, monthsUpTo, isClosedMonth, resolveTabName,
-    parseSheet, buildCommercialYear, leerAnio, ventas2026,
+    parseSheet, buildCommercialYear, dailyByMonth, leerAnio, ventas2026,
   };
 });

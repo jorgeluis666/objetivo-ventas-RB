@@ -47,7 +47,7 @@
       </div>
       <div class="s-text">
         <div class="s-title-nav">Proyecciones</div>
-        <div class="s-desc-nav">Cierre estimado vs objetivo anual</div>
+        <div class="s-desc-nav">Ritmo del mes y plan por campaña</div>
       </div>
       <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
     </button>
@@ -566,26 +566,56 @@
       <section class="view" id="view-proj">
         <div class="section-title">Proyecciones mensuales · Inversión publicitaria</div>
         <div class="section-desc">
-          Seguimiento de ritmo de inversión vs objetivo mensual. Recálculo automático del presupuesto diario necesario para cerrar la brecha.
+          Las ventas y los objetivos salen del módulo <strong>Objetivos 2026</strong>; la inversión y los resultados de las campañas, del módulo <strong>Gasto publicitario</strong>. <strong>Ritmo del mes</strong> proyecta el cierre de la venta digital con el ritmo de la base elegida y recalcula la inversión diaria para cerrar la brecha. <strong>Plan por campaña</strong> arma la estrategia Plano + Picos del trimestre: la inversión de cada campaña por su ROAS real da la facturación, contra el objetivo online.
         </div>
 
-        <!-- Selector de mes -->
-        <div class="proj-mes-wrap">
-          <span class="proj-mes-label">Mes</span>
-          <div class="proj-mes-selector" id="proj-mes-selector"></div>
+        <!-- Pestañas: el ritmo del mes y el plan por campaña (mismo estilo que las de Gasto publicitario) -->
+        <div class="gp-tabs proj-tabs" role="tablist" aria-label="Vista de Proyecciones">
+          <button class="proj-tab active" type="button" role="tab" id="proj-tab-ritmo" aria-selected="true" aria-controls="proj-pane-ritmo" data-pane="ritmo">
+            <span class="gp-tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>
+            <span><span class="gp-tab-name">Ritmo del mes</span><span class="gp-tab-src">Cierre estimado y recálculo de la inversión</span></span>
+          </button>
+          <button class="proj-tab" type="button" role="tab" id="proj-tab-plan" aria-selected="false" aria-controls="proj-pane-plan" data-pane="plan" tabindex="-1">
+            <span class="gp-tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>
+            <span><span class="gp-tab-name">Plan por campaña</span><span class="gp-tab-src">Plano + picos del trimestre, por ROAS real</span></span>
+          </button>
         </div>
+
+        <!-- ── Pane: Ritmo del mes ── -->
+        <div class="proj-pane" id="proj-pane-ritmo" role="tabpanel" aria-labelledby="proj-tab-ritmo">
+
+        <!-- Selector de mes + periodo -->
+        <div class="rep-toolbar">
+          <div class="proj-mes-wrap">
+            <span class="proj-mes-label">Mes</span>
+            <div class="proj-mes-selector" id="proj-mes-selector" role="group" aria-label="Mes de la proyección"></div>
+          </div>
+          <span class="rep-period-meta" id="proj-periodo"></span>
+        </div>
+
+        <!-- Base de la proyección: con qué ritmo se proyectan los días que quedan -->
+        <div class="rep-toolbar">
+          <div class="proj-mes-wrap">
+            <span class="proj-mes-label">Proyectar con</span>
+            <div class="proj-mes-selector" id="proj-base-selector" role="group" aria-label="Base de la proyección"></div>
+          </div>
+          <span class="rep-period-meta" id="proj-base-rango"></span>
+        </div>
+
+        <!-- De dónde sale cada dato: Objetivos 2026 y Gasto publicitario -->
+        <div class="proj-src-strip" id="proj-fuentes"></div>
 
         <!-- KPI strip -->
-        <div id="kpi-proj" style="margin-bottom:20px;"></div>
+        <div class="kpi-strip" id="kpi-proj"></div>
 
         <!-- Recálculo de inversión -->
-        <div id="proj-recalculo" style="margin-bottom:24px;display:none;"></div>
+        <div id="proj-recalculo" style="margin-bottom:24px;" hidden></div>
 
         <!-- Cards por fuente -->
         <div class="panel-head" style="margin-bottom:10px;">
           <div>
             <div class="panel-title">Resultados por fuente de tráfico</div>
-            <div class="panel-sub">Meta Ads · Google Ads · WhatsApp — gasto, ventas y ROAS acumulados</div>
+            <div class="panel-sub">Campañas de Meta Ads agrupadas por tipo de resultado y Google Ads · el valor y el ROAS son la atribución de cada plataforma</div>
           </div>
         </div>
         <div class="proj-ch-grid" id="proj-channels" style="margin-bottom:24px;"></div>
@@ -595,20 +625,101 @@
           <div class="panel">
             <div class="panel-head">
               <div>
-                <div class="panel-title">Ritmo de ventas vs objetivo mensual</div>
-                <div class="panel-sub">Acumulado real · proyección al cierre · curva objetivo</div>
+                <div class="panel-title">Ritmo de la venta digital vs objetivo</div>
+                <div class="panel-sub">Acumulado del histórico · proyección con la base elegida · objetivo prorrateado por día</div>
               </div>
             </div>
-            <div class="chart-wrap h-260"><canvas id="chart-proj-vs-obj"></canvas></div>
+            <div class="chart-wrap h-260"><canvas id="chart-proj-ritmo" role="img" aria-label="Venta digital acumulada frente al objetivo del mes"></canvas></div>
           </div>
           <div class="panel">
             <div class="panel-head">
               <div>
-                <div class="panel-title">Gasto y ventas por fuente</div>
-                <div class="panel-sub">Comparativo de inversión vs retorno por campaña</div>
+                <div class="panel-title">Inversión y valor atribuido por fuente</div>
+                <div class="panel-sub">Meta y Google pueden contar la misma venta: no se suman con la venta digital</div>
               </div>
             </div>
-            <div class="chart-wrap h-260"><canvas id="chart-proj-annual"></canvas></div>
+            <div class="chart-wrap h-260"><canvas id="chart-proj-fuentes" role="img" aria-label="Inversión y valor atribuido por fuente de tráfico"></canvas></div>
+          </div>
+        </div>
+        </div>
+
+        <!-- ── Pane: Plan por campaña (js/plan-campanas.js) ── -->
+        <div class="proj-pane" id="proj-pane-plan" role="tabpanel" aria-labelledby="proj-tab-plan" hidden>
+          <div class="insight info" id="plan-empty" style="margin:0;">Cargando objetivos, ventas e inversión…</div>
+          <div class="rep-stack" id="plan-body" hidden>
+            <div>
+              <div class="rep-toolbar">
+                <div class="proj-mes-wrap">
+                  <span class="proj-mes-label">Mes</span>
+                  <div class="proj-mes-selector" id="plan-mes-selector" role="group" aria-label="Mes del plan"></div>
+                </div>
+                <span class="rep-period-meta" id="plan-periodo"></span>
+              </div>
+              <div class="proj-src-strip" id="plan-fuentes"></div>
+              <div class="kpi-strip plan-kpis" id="plan-kpis"></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><div>
+                <div class="panel-title" id="plan-tabla-titulo">Distribución del mes · plano + pico</div>
+                <div class="panel-sub">Inversión plana todo el mes por campaña; el pico, solo en su ventana · Facturación = inversión × ROAS real</div>
+              </div></div>
+              <div id="plan-tabla"></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><div>
+                <div class="panel-title">Resumen del trimestre · plano + picos</div>
+                <div class="panel-sub">Inversión y facturación proyectada de cada mes frente al objetivo online · en el gráfico, plano y pico apilados y el objetivo en línea</div>
+              </div></div>
+              <div class="plan-resumen-grid">
+                <div id="plan-resumen"></div>
+                <div class="chart-wrap h-260"><canvas id="chart-plan-resumen" role="img" aria-label="Facturación proyectada del plano y de los picos frente al objetivo online de cada mes"></canvas></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><div>
+                <div class="panel-title">ROAS real por campaña · 2026</div>
+                <div class="panel-sub">Ventas reales ÷ inversión en los meses de referencia · márcalos abajo para recalcular el plan</div>
+              </div></div>
+              <div id="plan-roas"></div>
+            </div>
+
+            <div class="grid-2">
+              <div class="panel">
+                <div class="panel-head"><div>
+                  <div class="panel-title">WhatsApp · escenarios de decrecimiento</div>
+                  <div class="panel-sub">Cuánto invertir si el ROAS baja al escalar · monitoreo del mes</div>
+                </div></div>
+                <div id="plan-wa"></div>
+              </div>
+              <div class="panel">
+                <div class="panel-head"><div>
+                  <div class="panel-title">Curva 2025 · ventanas de pico</div>
+                  <div class="panel-sub">Venta digital por día de cada semana (Web + Redes y WhatsApp) · en violeta, las semanas de los picos</div>
+                </div></div>
+                <div class="chart-wrap h-220"><canvas id="chart-plan-curva" role="img" aria-label="Venta digital por día de cada semana de 2025 en los meses del plan, con las semanas de los picos resaltadas"></canvas></div>
+                <p class="gp-note" id="plan-curva-nota"></p>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="panel">
+                <div class="panel-head"><div>
+                  <div class="panel-title">Google Ads · tráfico → remarketing</div>
+                  <div class="panel-sub">Genera demanda hacia la web; Meta la remarketea y cierra la conversión</div>
+                </div></div>
+                <div id="plan-google"></div>
+              </div>
+              <div class="panel">
+                <div class="panel-head"><div>
+                  <div class="panel-title">Branding → Tienda física</div>
+                  <div class="panel-sub">El reconocimiento sostiene la marca y el canal de mayor venta</div>
+                </div></div>
+                <div id="plan-branding"></div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -734,6 +845,7 @@
 <script src="js/config.js"></script>
 <script src="js/sheets.js"></script>
 <script src="js/meta-planner.js"></script>
+<script src="js/plan-campanas.js"></script>
 <script src="js/projections.js"></script>
 <script src="js/gasto.js"></script>
 <script src="js/main.js"></script>

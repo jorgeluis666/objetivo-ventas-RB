@@ -3,8 +3,8 @@
  * build.js — arma dist/ para GitHub Pages (https://royalbaby.limaretail.com).
  *
  * Salida: dist/index.html, dist/assets/ y dist/CNAME. Nada más: data/, scripts/ y README no se publican.
- * index.html lleva incrustados el CSS, todos los js/ y los datos (ventas-2026.json, ads-data.json, objetivos-2026.json
- * y ads-2026.json, este último sin los campos que el tablero no lee).
+ * index.html lleva incrustados el CSS, todos los js/ y los datos (ventas-2026.json, objetivos-2026.json y
+ * ads-2026.json, este último sin los campos que el tablero no lee).
  *
  * Con RB_PAGE_PASSWORD el tablero se cifra (AES-256-GCM, llave PBKDF2-SHA256 de 600 000 iteraciones)
  * dentro de deploy/pages-gate.html, que lo descifra en el navegador con la clave. Sin la variable,
@@ -27,7 +27,6 @@ const PBKDF2_ITERATIONS = 600000;
 // Los demás JSON de data/ (destinatarios y registro de alertas) y los CSV no se publican.
 const EMBEDDED_DATA = {
   RB_VENTAS_DATA:    'data/ventas-2026.json',
-  RB_ADS_DATA:       'data/ads-data.json',
   RB_OBJETIVOS_DATA: 'data/objetivos-2026.json',
   RB_GASTO_DATA:     'data/ads-2026.json',
 };
@@ -41,10 +40,11 @@ const TRIM_DATA = {
         delete month.google.checks;
         delete month.google.repairs;
       }
-      // La inversión diaria (js/gasto.js) usa por día y campaña solo inversión, compras y conversaciones.
+      // Por día y campaña, la inversión diaria (js/gasto.js) usa inversión, compras y conversaciones, y las
+      // tarjetas de Proyecciones (js/projections.js) además el valor de las compras.
       month.meta?.daily?.forEach(row => {
         for (const field of Object.keys(row)) {
-          if (!['day', 'campaign', 'spend', 'purchases', 'conversations'].includes(field)) delete row[field];
+          if (!['day', 'campaign', 'spend', 'purchases', 'purchaseValue', 'conversations'].includes(field)) delete row[field];
         }
       });
     }

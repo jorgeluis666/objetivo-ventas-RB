@@ -64,6 +64,7 @@
         d2025_commercial:        json.d2025_commercial        || null,
         commercialPeriodDays:    json.commercialPeriodDays    || null,
         commercialCycleLabel:    json.commercialCycleLabel    || null,
+        daily2026:               json.daily2026               || null,  // ventas por día (Proyecciones)
         // Nuevos (2025 live completo)
         weekly2025:        json.weekly2025       || {},
         d2025_live:        json.d2025_live       || {},

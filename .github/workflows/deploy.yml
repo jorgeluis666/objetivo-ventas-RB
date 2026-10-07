@@ -46,7 +46,7 @@ jobs:
           node scripts/build.js
           # Último control: lo que se sube tiene que ser la pantalla de acceso, no el tablero en claro.
           grep -q 'id="gate-payload"' dist/index.html || { echo "::error::dist/index.html no salió cifrado"; exit 1; }
-          if grep -qE 'RB_(VENTAS|ADS|OBJETIVOS|GASTO)_DATA' dist/index.html; then echo "::error::dist/index.html trae los datos en claro"; exit 1; fi
+          if grep -qE 'RB_(VENTAS|OBJETIVOS|GASTO)_DATA' dist/index.html; then echo "::error::dist/index.html trae los datos en claro"; exit 1; fi
           if [ -e dist/data ]; then echo "::error::dist/ no debe llevar data/"; exit 1; fi
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5

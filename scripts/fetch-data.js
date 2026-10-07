@@ -136,6 +136,7 @@ async function read2026(args) {
         weekly2026: leido.weekly, weekly2026_calendar: leido.weekly, weekly2026_commercial: commercial.weekly,
         transactions: leido.transactions, transactions_calendar: leido.transactions,
         transactions_commercial: commercial.transactions, commercialPeriodDays: commercial.periodDays,
+        daily2026: FD.dailyByMonth(leido.dailyRows, FD.COLS_2026),
       },
     };
   }

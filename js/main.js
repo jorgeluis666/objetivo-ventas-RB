@@ -25,7 +25,7 @@
     'view-dist':   'Ventas por canal de distribución',
     'view-obj':    'Objetivos y ventas de la marca',
     'view-meta':   'Presupuesto Web y WhatsApp',
-    'view-proj':   'Inversión publicitaria · ritmo mensual',
+    'view-proj':   'Ritmo del mes y plan por campaña',
     'view-rep':    'Meta Ads y Google Ads',
     'view-config': 'Gestión de accesos y alertas',
   };
@@ -37,7 +37,7 @@
     'view-dist':   ['chart-dist-2025', 'chart-dist-2026', 'chart-abs'],
     'view-obj':    ['chart-weekly-combined'],
     'view-meta':   [],
-    'view-proj':   [],
+    'view-proj':   ['chart-proj-ritmo', 'chart-proj-fuentes', 'chart-src-*', 'chart-plan-*'],
     'view-rep':    [],  // Gasto.init() re-anima los charts de la pestaña activa
     'view-config': [],
   };
@@ -48,13 +48,13 @@
     transactions: null,
     weekly2025: null,
     generated: null,
-    adsData: null,
+    gasto: null,         // data/ads-2026.json: Meta Ads y Google Ads (módulo Gasto publicitario)
     plan: null,          // data/objetivos-2026.json: objetivos de la marca (Drive)
     live: null,          // último juego de datos de ventas renderizado (publicado o sincronizado)
     renderedProducts: false,
     configInited: false,
     metaInited: false,
-    projInited: false,
+    projDirty: true,     // Proyecciones tiene datos nuevos sin dibujar
   };
 
   // ── Navegación ──
@@ -87,13 +87,12 @@
     }
 
     if (id === 'view-proj') {
-      if (!state.projInited && state.adsData) {
-        state.projInited = true;
-        window.Projections?.render({ d2026: state.d2026, targets: planTargets(), adsData: state.adsData });
-      } else if (!state.adsData) {
+      if (state.live && state.projDirty) {
+        renderProjections();
+      } else if (!state.live) {
         const kpi = document.getElementById('kpi-proj');
         if (kpi && !kpi.childElementCount) {
-          kpi.innerHTML = '<div class="insight info" style="grid-column:1/-1;">Cargando datos de campañas…</div>';
+          kpi.innerHTML = '<div class="insight info" style="grid-column:1/-1;margin:0;">Cargando ventas, objetivos e inversión…</div>';
         }
       }
     }
@@ -149,8 +148,32 @@
     });
   }
 
-  // Proyecciones y el KPI anual miden contra los objetivos de la marca.
+  // El KPI anual mide contra los objetivos de la marca.
   const planTargets = () => state.plan?.metas || null;
+
+  // Proyecciones toma sus datos de dos módulos: Objetivos (objetivos de la marca y el histórico de
+  // ventas por mes calendario, con las semanas de 2025 para el plan por campaña) y Gasto
+  // publicitario. Se dibuja con la vista visible; si los datos cambian con la vista oculta, se
+  // dibuja al abrirla.
+  function renderProjections() {
+    state.projDirty = false;
+    window.Projections?.render({
+      plan: state.plan,
+      ventas: {
+        meses: state.d2026,
+        semanas: state.weeklyData,
+        dias: state.live?.daily2026 || null,
+        ultimoDia: state.live?.fuente2026?.ultimoDia || null,
+        semanas2025: state.weekly2025,
+      },
+      gasto: state.gasto,
+    });
+  }
+
+  function refreshProjections() {
+    state.projDirty = true;
+    if (document.getElementById('view-proj')?.classList.contains('visible')) renderProjections();
+  }
 
   // ── YoY ──
   const tot = o => channels.reduce((s, c) => s + (o[c] || 0), 0);
@@ -451,10 +474,7 @@
     });
 
     if (state.renderedProducts) renderProducts();
-    if (state.adsData) {
-      state.projInited = true;
-      window.Projections?.render({ d2026: state.d2026, targets: planTargets(), adsData: state.adsData });
-    }
+    refreshProjections();
     window.Sheets.updateGenerated(state.generated);
   }
 
@@ -480,9 +500,7 @@
   function planChanged(plan) {
     state.plan = plan;
     renderKpisYoY(state.d2026);
-    if (state.projInited && state.adsData) {
-      window.Projections?.render({ d2026: state.d2026, targets: planTargets(), adsData: state.adsData });
-    }
+    refreshProjections();
   }
 
   // Si el pipeline trajo d2025_live con valores, lo preferimos sobre el
@@ -512,33 +530,19 @@
     const hashBtn  = hashView && document.querySelector(`.s-item[data-view="${hashView}"]`);
     showView(hashBtn && !hashBtn.hidden ? hashView : 'view-obj');
 
-    // Carga paralela: datos de ventas + datos de campañas publicitarias.
-    // Publicado, ads-data.json viene incrustado por scripts/build.js; en local se lee de data/.
-    const adsRequest = window.RB_ADS_DATA
-      ? Promise.resolve(window.RB_ADS_DATA)
-      : fetch('data/ads-data.json').then(r => r.ok ? r.json() : null);
-    // Los objetivos llegan igual: incrustados al publicar, data/objetivos-2026.json en local.
+    // Carga paralela: ventas, objetivos e inversión publicitaria. Publicados, los tres vienen
+    // incrustados por scripts/build.js; en local se leen de data/.
     const planRequest = window.RB_OBJETIVOS_DATA
       ? Promise.resolve(window.RB_OBJETIVOS_DATA)
       : fetch('data/objetivos-2026.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null);
-    const [live, plan] = await Promise.all([
+    const [live, plan, gasto] = await Promise.all([
       window.DataLive.load(),
       planRequest.catch(err => { console.warn('[main] no se pudo cargar data/objetivos-2026.json', err); return null; }),
-      adsRequest
-        .then(ads => {
-          state.adsData = ads;
-          // Si ya estamos en la vista de proyecciones y aún no se inicializó, hacerlo ahora
-          if (ads && !state.projInited) {
-            const projView = document.getElementById('view-proj');
-            if (projView && projView.classList.contains('visible')) {
-              state.projInited = true;
-              window.Projections?.render({ d2026: state.d2026, targets: planTargets(), adsData: ads });
-            }
-          }
-        })
-        .catch(() => {}),
+      // La misma carga que usa el módulo Gasto publicitario (data/ads-2026.json)
+      window.Gasto ? window.Gasto.load() : null,
     ]);
     state.plan = plan;
+    state.gasto = gasto;
     if (live.source === 'fallback') {
       const host = document.getElementById('kpi-yoy');
       if (host) host.insertAdjacentHTML('beforebegin', `

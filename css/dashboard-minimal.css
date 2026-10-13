@@ -2088,6 +2088,12 @@ body {
   font-weight: 700;
 }
 
+.topbar-caption {
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 11px;
+}
+
 .content {
   padding: 28px;
   gap: 26px;

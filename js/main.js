@@ -18,7 +18,7 @@
     'view-config': 'Usuarios y Claves',
   };
 
-  // Descripción corta para el panel MÓDULO ACTIVO del sidebar
+  // Descripción corta que va bajo el título de la barra superior
   const VIEW_DESCRIPTIONS = {
     'view-yoy':    'Evolución interanual · 2025 vs 2026',
     'view-prod':   'Ranking y ventas por producto',
@@ -67,13 +67,9 @@
     if (btn)  btn.classList.add('active');
     const title = document.getElementById('topbar-title');
     if (title) title.textContent = VIEW_TITLES[id] || '';
+    const caption = document.getElementById('topbar-caption');
+    if (caption) caption.textContent = VIEW_DESCRIPTIONS[id] || '';
     history.replaceState(null, '', '#' + id);
-
-    // Actualizar panel MÓDULO ACTIVO en el sidebar
-    const maName = document.getElementById('s-ma-name');
-    const maDesc = document.getElementById('s-ma-desc');
-    if (maName) maName.textContent = VIEW_TITLES[id]       || '';
-    if (maDesc) maDesc.textContent = VIEW_DESCRIPTIONS[id] || '';
 
     // Init perezoso del módulo de configuración
     if (id === 'view-config' && !state.configInited) {

@@ -2059,7 +2059,7 @@ body {
 }
 
 .section-title {
-  font-size: 26px;
+  font-size: 18px;
   font-weight: 750;
   letter-spacing: -.035em;
 }
@@ -2092,7 +2092,7 @@ body {
 
 .panel-title {
   color: var(--text);
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 750;
 }
 

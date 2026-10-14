@@ -302,13 +302,13 @@
           <div id="plan-section">
             <div class="month-tabs" id="month-tabs" role="group" aria-label="Mes"></div>
             <div id="month-panels"></div>
-            <div class="plan-notes" id="plan-notes"></div>
           </div>
         </section>
 
-        <!-- Evolución semanal de las ventas, 2025 vs 2026 -->
-        <section class="obj-zone" id="zona-ventas" aria-label="Evolución de las ventas">
-        <div class="panel" style="margin-bottom:20px;">
+        <!-- Notas y evolución semanal: objectives.js los monta dentro del recuadro del mes abierto -->
+        <div id="obj-shared" hidden>
+        <div class="plan-notes" id="plan-notes"></div>
+        <div class="obj-chart-block" id="weekly-block">
           <div class="panel-head">
             <div>
               <div class="panel-title" id="combined-chart-title">Evolución semanal · 2025 vs 2026</div>
@@ -340,7 +340,7 @@
           <!-- Strip de KPIs acumulados (visible solo en modo Acumulado) -->
           <div id="cum-kpi-strip" style="display:none;"></div>
         </div>
-        </section>
+        </div>
       </section>
 
       <!-- ══ VIEW: Usuarios y Claves ═══════════════════ -->

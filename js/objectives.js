@@ -577,7 +577,10 @@
     state.onSyncVentas = onSyncVentas || null;
     state.onPlanChange = onPlanChange || null;
 
-    // Chart combinado arriba de los month tabs (52 semanas 2025 + 2026 disponibles)
+    // Primero el cuadro del mes: monta el bloque del gráfico en su recuadro, así Chart.js lo crea con tamaño.
+    renderPlanSection();
+
+    // Evolución semanal (52 semanas 2025 + 2026 disponibles), dentro del recuadro del mes abierto
     if (global.Charts?.combinedWeeklyChart) {
       const initSelCh = document.getElementById('chart-channel-select')?.value || '';
       const initChKey = initSelCh ? chToUpper[initSelCh] : 'TOTAL';
@@ -796,7 +799,6 @@
     }
 
     wireSync();
-    renderPlanSection();
   }
 
   // ── Botones Sincronizar ──
@@ -950,6 +952,21 @@
       t.setAttribute('aria-pressed', String(t.dataset.month === m));
     });
     monthPanelsEl.querySelectorAll('.mpanel').forEach(p => p.classList.toggle('visible', p.id === 'mpanel-' + m));
+    mountShared(m);
+  }
+
+  // Las notas y la evolución semanal son una sola pieza (un solo gráfico): van al final del
+  // recuadro del mes abierto. Antes de redibujar los meses vuelven a #obj-shared para no perderse.
+  const SHARED_IDS = ['plan-notes', 'weekly-block'];
+  function mountShared(m) {
+    const slot = document.querySelector(`#mpanel-${m} .obj-shared-slot`);
+    if (!slot) return;
+    SHARED_IDS.forEach(id => { const n = document.getElementById(id); if (n) slot.appendChild(n); });
+  }
+  function parkShared() {
+    const holder = document.getElementById('obj-shared');
+    if (!holder) return;
+    SHARED_IDS.forEach(id => { const n = document.getElementById(id); if (n) holder.appendChild(n); });
   }
 
   // Vista del cuadro, la misma en todos los meses. Un mes sin metas (o Anual) solo tiene Ventas.
@@ -975,6 +992,7 @@
     if (!monthTabsEl || !monthPanelsEl) return;
     // Al volver a dibujar (sincronización) se conserva el mes abierto.
     const openMonth = monthTabsEl.querySelector('.month-tab.active')?.dataset.month;
+    parkShared();
     monthTabsEl.innerHTML   = '';
     monthPanelsEl.innerHTML = '';
 
@@ -1038,6 +1056,7 @@
       }));
     });
     applyVista();
+    if (defaultMonth) mountShared(defaultMonth);
   }
 
   // ── Un mes: estado, tarjetas, alertas y el cuadro con sus dos vistas ──
@@ -1069,6 +1088,7 @@
         </div>
         ${meta ? `<div class="plan-table-wrap" data-vista-tabla="avance">${avanceTableHTML(m)}</div>` : ''}
         <div class="plan-table-wrap" data-vista-tabla="ventas">${ventasTableHTML(m)}</div>
+        <div class="obj-shared-slot"></div>
       </div>`;
   }
 
@@ -1315,6 +1335,7 @@
           </tr></thead>
           <tbody>${rows}${fila('<strong>Total</strong>', VENTAS_COLS, 'plan-total', true)}</tbody>
         </table></div>
+        <div class="obj-shared-slot"></div>
       </div>`;
   }
 

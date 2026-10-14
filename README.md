@@ -149,8 +149,8 @@ Si un archivo falla, el workflow queda en rojo, el JSON anterior se conserva y n
 
 Módulo del grupo Reportes, después de Proyecciones (`js/gasto.js`, vista `view-rep`). Solo usa las carpetas de Drive **Meta Files** y **Google Files**, a través de `data/ads-2026.json`. Publicado, el JSON va incrustado en el HTML cifrado (`window.RB_GASTO_DATA`, sin `rules`, `checks`, `repairs` ni las columnas diarias que el tablero no usa); en local se lee con `fetch`.
 
-- **Arriba**: la fecha de los datos y el aviso «se sincroniza sola todos los días a las 07:00 (Lima)». No hay botón para sincronizar: exigiría un token de GitHub en el navegador, y el tablero lo abren clientes.
-- **Pestañas Meta Ads y Google Ads**: cada una con su franja de fuente, el botón «Abrir carpeta», el selector de mes (compartido entre pestañas) y los avisos del sync (`pending` y los `warnings` del mes). Si la carpeta no tiene informes, muestra un estado vacío con el enlace a la carpeta.
+- **Sincronización**: va en el desplegable de la píldora de la barra superior (`js/sheets.js`, mismo patrón que Terminal Pesquero). En esta vista muestra hasta qué día llega Meta y Google, cuándo cambiaron los datos (`generatedAt`), el próximo automático (10:30 Lima) y las dos carpetas con su número de archivos y el enlace «Abrir». En las demás vistas muestra lo mismo para las ventas. Si los datos no cambian hace más de 36 h, la píldora pasa a ámbar. No hay botón para sincronizar: exigiría un token de GitHub en el navegador, y el tablero lo abren clientes.
+- **Pestañas Meta Ads y Google Ads**: cada una con el selector de mes (compartido entre pestañas) y los avisos del sync (`pending` y los `warnings` del mes). Si la carpeta no tiene informes, muestra un estado vacío con el enlace a la carpeta.
 - **Meta Ads**:
   - KPIs: Inversión, Compras, Valor de conversión y Conversaciones iniciadas (WhatsApp), con su variación contra el mes anterior.
   - Embudo de impresiones a compras. Un paso en 0 con pasos posteriores mayores se marca «sin registro» (el evento no llega a Meta) y no corta el embudo.

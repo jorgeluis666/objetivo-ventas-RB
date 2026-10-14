@@ -69,6 +69,7 @@
     if (title) title.textContent = VIEW_TITLES[id] || '';
     const caption = document.getElementById('topbar-caption');
     if (caption) caption.textContent = VIEW_DESCRIPTIONS[id] || '';
+    window.Sheets?.setView(id);
     history.replaceState(null, '', '#' + id);
 
     // Init perezoso del módulo de configuración
@@ -472,6 +473,24 @@
     if (state.renderedProducts) renderProducts();
     refreshProjections();
     window.Sheets.updateGenerated(state.generated);
+    window.Sheets.setDetail('default', ventasSyncDetail(liveData));
+  }
+
+  // Desplegable de la barra superior en las vistas de ventas: de qué día son y de qué hoja salen.
+  function ventasSyncDetail(liveData) {
+    const fuente = liveData.fuente2026;
+    const ultimo = fuente?.ultimoDia;
+    const [, mm, dd] = ultimo ? ultimo.split('-') : [];
+    const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    return {
+      generated: liveData.generated,
+      rows: [{ label: 'Ventas', value: ultimo ? `hasta el ${+dd} ${meses[+mm - 1]}` : 'sin fecha' }],
+      sources: fuente?.carpeta ? [{
+        label: 'Ventas 2026',
+        value: fuente.archivo?.nombre || 'hoja de ventas',
+        href: `https://drive.google.com/drive/folders/${encodeURIComponent(fuente.carpeta)}`,
+      }] : [],
+    };
   }
 
   // Botón Sincronizar de las ventas (módulo Objetivos): relee la hoja de Drive de la que salió el

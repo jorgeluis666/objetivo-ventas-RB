@@ -136,9 +136,12 @@
         </div>
       </div>
       <div class="topbar-meta">
-        <span class="topbar-pill sync" id="sync-indicator">
-          <span class="sync-dot"></span><span>cargando…</span>
-        </span>
+        <div class="data-status">
+          <button type="button" class="topbar-pill sync" id="sync-indicator" aria-expanded="false" aria-controls="sync-card" title="Ver el detalle de la sincronización">
+            <span class="sync-dot"></span><span>cargando…</span>
+          </button>
+          <div class="data-status-card" id="sync-card" hidden></div>
+        </div>
         <button class="btn ghost" id="btn-refresh" title="Recargar los datos publicados">
           <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
           Actualizar
@@ -705,11 +708,6 @@
           Solo se toma en cuenta la información de las carpetas de pauta en Drive: <a href="https://drive.google.com/drive/folders/1kjz_QSgFpkd9semvyjrlLQi3ETH8-DPm" target="_blank" rel="noopener"><strong>Meta Files</strong></a> y <a href="https://drive.google.com/drive/folders/1TT5KTVZuGlFc7OqvGAz9nuRVyJFvwJpd" target="_blank" rel="noopener"><strong>Google Files</strong></a>. Los valores de conversión son atribución de cada plataforma.
         </div>
 
-        <div class="gp-sync" aria-live="polite">
-          <span class="gp-dot ok" id="gp-sync-dot"></span>
-          <span id="gp-sync-text">cargando…</span>
-        </div>
-
         <div class="gp-tabs" role="tablist" aria-label="Fuente de datos">
           <button class="gp-tab active" type="button" role="tab" id="gp-tab-meta" aria-selected="true" aria-controls="gp-pane-meta" data-pane="meta">
             <span class="gp-tab-ic">M</span>
@@ -723,7 +721,6 @@
 
         <!-- ── Pane: Meta Ads (carpeta Meta Files) ── -->
         <div class="gp-pane" id="gp-pane-meta" role="tabpanel" aria-labelledby="gp-tab-meta">
-          <div class="gp-source" id="gp-meta-source"></div>
           <div class="gp-body" id="gp-meta-body">
             <div class="rep-toolbar">
               <div class="proj-mes-wrap">
@@ -797,7 +794,6 @@
 
         <!-- ── Pane: Google Ads (carpeta Google Files) ── -->
         <div class="gp-pane" id="gp-pane-google" role="tabpanel" aria-labelledby="gp-tab-google" hidden>
-          <div class="gp-source" id="gp-google-source"></div>
           <div class="gp-body" id="gp-google-body"></div>
         </div>
       </section>

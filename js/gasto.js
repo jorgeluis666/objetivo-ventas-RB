@@ -4,8 +4,10 @@
      Meta Ads    carpeta "Meta Files"    (export diario del Administrador de anuncios)
      Google Ads  carpeta "Google Files"  (informe de campaña, un total por mes)
    scripts/sync-ads.js las lee y escribe data/ads-2026.json; el workflow
-   sync-ads.yml lo corre todos los días a las 07:00 (Lima). Publicado, el JSON
+   sync-ads.yml lo corre todos los días a las 10:30 (Lima). Publicado, el JSON
    viaja incrustado en el HTML cifrado (window.RB_GASTO_DATA, scripts/build.js).
+   La fecha de sincronización y las carpetas van en el desplegable de la barra
+   superior (Sheets.setDetail).
    No hay botón para sincronizar: exigiría guardar un token de GitHub en el
    navegador y el tablero lo abren clientes (ver sheets.js).
    Expone window.Gasto.init() (main.js lo llama al abrir la vista) y Gasto.load(),
@@ -64,16 +66,6 @@
   // Los enlaces vienen de los archivos de Drive: solo se usan si son https.
   const safeUrl = url => (/^https:\/\//i.test(String(url || '')) ? String(url) : null);
 
-  // Fechas con hora se muestran en hora de Lima (UTC-5, sin horario de verano).
-  function fechaHora(iso) {
-    if (!iso) return '—';
-    const t = Date.parse(iso);
-    if (/T\d{2}:\d{2}/.test(iso) && Number.isFinite(t)) iso = new Date(t - 5 * 3600 * 1000).toISOString();
-    const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/);
-    if (!m) return iso;
-    const d = `${+m[3]} ${SHORT[+m[2] - 1].toLowerCase()} ${m[1]}`;
-    return m[4] ? `${d}, ${m[4]}:${m[5]}` : d;
-  }
   const fechaCorta = iso => { const [, mm, dd] = iso.split('-'); return `${+dd} ${SHORT[+mm - 1].toLowerCase()}`; };
   const shortOf = id => SHORT[+id.slice(5, 7) - 1];
 
@@ -99,7 +91,7 @@
   // Una sola vez: Proyecciones (main.js) usa los mismos datos con Gasto.load().
   let request = null;
   function loadData() {
-    if (!request) request = fetchData();
+    if (!request) request = fetchData().then(data => { syncDetail(data); return data; });
     return request;
   }
   async function fetchData() {
@@ -118,27 +110,25 @@
   // El mes elegido se comparte entre pestañas; si una plataforma no lo tiene, muestra su último mes.
   const pickMonth = list => list.find(m => m.id === state.month) || list[list.length - 1];
 
-  // ── Franjas y estados comunes ──
-  function renderSync() {
-    const gen = state.data?.generatedAt;
-    document.getElementById('gp-sync-dot').className = `gp-dot ${gen ? 'ok' : 'warn'}`;
-    document.getElementById('gp-sync-text').innerHTML =
-      `<b>${gen ? 'Datos al ' + esc(fechaHora(gen)) : 'Aún no sincronizado'}</b> <span class="muted">· se sincroniza sola todos los días a las 07:00 (Lima)</span>`;
-  }
-
-  function renderSource(p) {
-    const cfg = PLATFORMS[p];
-    const src = state.data?.sources?.[p];
-    const files = src?.files?.length || 0;
-    const url = safeUrl(src?.folderUrl) || cfg.folder;
-    document.getElementById(`gp-${p}-source`).innerHTML = `
-      <div class="gp-source-l">
-        <span class="gp-dot ${monthsOf(p).length ? 'ok' : 'warn'}"></span>
-        <span><b>Fuente:</b> carpeta ${cfg.folderName} <span class="muted">· Google Drive · ${files} archivo${files === 1 ? '' : 's'}</span></span>
-      </div>
-      <div class="gp-source-r">
-        <a class="btn ghost btn-sm" href="${esc(url)}" target="_blank" rel="noopener">Abrir carpeta ↗</a>
-      </div>`;
+  // ── Desplegable de sincronización (barra superior) y estados comunes ──
+  // Hasta qué día llega cada plataforma y la carpeta de Drive de cada una.
+  function syncDetail(data) {
+    if (!global.Sheets) return;
+    const months = data?.months || [];
+    const rows = Object.keys(PLATFORMS).map(p => {
+      const last = months.filter(m => m[p]).pop();
+      const c = last?.[p].coverage;
+      return { label: PLATFORMS[p].label, value: !last ? 'sin informes' : c ? `hasta el ${fechaCorta(c.end)}` : last.label };
+    });
+    const sources = Object.entries(PLATFORMS).map(([p, cfg]) => {
+      const files = data?.sources?.[p]?.files?.length || 0;
+      return {
+        label: `Carpeta ${cfg.folderName}`,
+        value: `${files} archivo${files === 1 ? '' : 's'}`,
+        href: safeUrl(data?.sources?.[p]?.folderUrl) || cfg.folder,
+      };
+    });
+    global.Sheets.setDetail('view-rep', { generated: data?.generatedAt || null, rows, sources });
   }
 
   function emptyState(body, p) {
@@ -243,7 +233,6 @@
   }
 
   function renderMeta() {
-    renderSource('meta');
     const list = monthsOf('meta');
     const body = document.getElementById('gp-meta-body');
     if (!list.length) { emptyState(body, 'meta'); return; }
@@ -499,7 +488,6 @@
   // GOOGLE ADS
   // ════════════════════════════════════════════════════════════
   function renderGoogle() {
-    renderSource('google');
     const list = monthsOf('google');
     const body = document.getElementById('gp-google-body');
     if (!list.length) { emptyState(body, 'google'); return; }
@@ -660,7 +648,6 @@
     const months = state.data?.months || [];
     state.month = months.length ? months[months.length - 1].id : null;
     try { state.tab = localStorage.getItem(TAB_KEY) || 'meta'; } catch (e) { /* storage bloqueado */ }
-    renderSync();
     showTab(state.tab);
   }
 

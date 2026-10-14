@@ -486,6 +486,7 @@ const META_COLUMNS = {
   'nombre del anuncio': 'ad',
   'objetivo': 'objective',
   'impresiones': 'impressions',
+  'alcance': 'reach',
   'clics en el enlace': 'linkClicks',
   'ctr (todos)': 'ctrAll',
   'interacciones': 'interactions',
@@ -503,9 +504,9 @@ const META_COLUMNS = {
   'inicio del informe': 'reportStart',
   'fin del informe': 'reportEnd',
 };
-// Solo lo aditivo. Alcance y Frecuencia cuentan personas únicas: no se pueden sumar
-// entre días, edades ni anuncios, y no se publican.
-const META_METRICS = ['spend', 'impressions', 'linkClicks', 'allClicks', 'interactions', 'purchases', 'purchaseValue', 'conversations'];
+// Solo lo aditivo. Alcance y Frecuencia cuentan personas únicas: no se suman en los totales ni en
+// las campañas. El alcance va solo en la tabla del módulo (META_TABLE_SUMS).
+const META_METRICS =['spend', 'impressions', 'linkClicks', 'allClicks', 'interactions', 'purchases', 'purchaseValue', 'conversations'];
 // Pasos del embudo entre el clic y la compra: van en el total del mes y en cada campaña, no en la serie diaria.
 const META_FUNNEL = ['landingViews', 'addToCart', 'checkouts'];
 const META_SUMS = [...META_METRICS, ...META_FUNNEL];
@@ -520,6 +521,11 @@ const META_MONEY = new Set(['spend', 'purchaseValue']);
 const AGE_ORDER = ['13-17', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
 const GENDER_ORDER = ['female', 'male', 'unknown'];
 const TOP_ADS = 10;
+// Tabla del módulo Gasto publicitario: una fila por día, campaña, conjunto y anuncio (edad y sexo se suman).
+// El alcance es la suma de las filas del export, como en los reportes de la agencia (Terminal Pesquero): no es
+// alcance único. Los resultados llevan el tipo que más resultados junta en la fila.
+const META_TABLE_SUMS = ['spend', 'impressions', 'reach', 'linkClicks', 'purchases', 'purchaseValue', 'conversations'];
+const META_TABLE_COLUMNS = ['d', 'campaign', 'adset', 'ad', 'type', ...META_TABLE_SUMS, 'results'];
 
 function emptyMeta(fields = META_SUMS) {
   return Object.fromEntries(fields.map(field => [field, 0]));
@@ -553,6 +559,48 @@ function audienceBy(rows, field, order) {
   return [...groups.entries()]
     .sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]))
     .map(([key, metrics]) => ({ [field]: key, ...roundMeta(metrics, META_BREAKDOWN) }));
+}
+
+// Tabla compacta del módulo: los nombres van una sola vez en sus listas y cada fila lleva su índice.
+// Las filas en cero no se publican.
+function metaTable(rows) {
+  const lists = { campaigns: [], adsets: [], ads: [], types: [] };
+  const seen = { campaigns: new Map(), adsets: new Map(), ads: new Map(), types: new Map() };
+  const indexOf = (list, key, value = key) => {
+    if (!seen[list].has(key)) {
+      seen[list].set(key, lists[list].length);
+      lists[list].push(value);
+    }
+    return seen[list].get(key);
+  };
+  const groups = new Map();
+  for (const row of rows) {
+    const key = [row.day, row.campaign, row.adset, adKey(row)].join('|');
+    let entry = groups.get(key);
+    if (!entry) {
+      entry = { row, sums: emptyMeta(META_TABLE_SUMS), results: {} };
+      groups.set(key, entry);
+    }
+    addMetrics(entry.sums, row.metrics, META_TABLE_SUMS);
+    if (row.resultType) entry.results[row.resultType] = (entry.results[row.resultType] || 0) + row.results;
+  }
+  const out = [];
+  const ordered = [...groups.values()].sort((a, b) => a.row.day.localeCompare(b.row.day) || a.row.campaign.localeCompare(b.row.campaign));
+  for (const { row, sums, results } of ordered) {
+    const [type, value] = Object.entries(results).sort((a, b) => b[1] - a[1])[0] || [null, 0];
+    // Una fila sin gasto ni impresiones puede traer compras o conversaciones atribuidas tarde: va igual.
+    if (!value && META_TABLE_SUMS.every(field => !sums[field])) continue;
+    out.push([
+      Number(row.day.slice(8, 10)),
+      indexOf('campaigns', row.campaign),
+      indexOf('adsets', row.adset),
+      indexOf('ads', adKey(row), { name: row.ad || '(sin nombre)', link: row.adLink || null }),
+      type ? indexOf('types', type) : null,
+      ...META_TABLE_SUMS.map(field => round(sums[field], META_MONEY.has(field) ? 2 : 0)),
+      round(value),
+    ]);
+  }
+  return { columns: META_TABLE_COLUMNS, ...lists, rows: out };
 }
 
 // CTR, CPM y costos se recalculan desde las sumas; nunca se promedian.
@@ -621,6 +669,7 @@ function parseMetaReport(text) {
       metrics: {
         spend: parseNumber(cell(row, 'spend')) || 0,
         impressions,
+        reach: parseNumber(cell(row, 'reach')) || 0,
         linkClicks: parseNumber(cell(row, 'linkClicks')) || 0,
         // Meta no exporta los clics (todos); salen exactos de CTR (todos) × impresiones.
         allClicks: ctrAll === null ? 0 : Math.round(ctrAll * impressions / 100),
@@ -641,6 +690,7 @@ function parseMetaReport(text) {
   if (badDays) warnings.push(`${badDays} filas con una fecha que no se pudo leer en la columna Día; quedaron fuera`);
   if (duplicates) warnings.push(`${duplicates} filas repetidas (mismo día, edad, sexo y anuncio): revisar si el export se duplicó`);
   if (col.ctrAll === undefined) warnings.push('falta la columna CTR (todos): el CTR solo se puede calcular con clics en el enlace');
+  if (col.reach === undefined) warnings.push('falta la columna Alcance: el alcance y la frecuencia quedan en cero');
 
   // El mes es el del contenido. Si el export se pasa de mes, las filas de otros meses no se cuentan.
   const daily = col.day !== undefined;
@@ -756,6 +806,7 @@ function parseMetaReport(text) {
     },
     ads: col.ad !== undefined ? { count: adList.length, top: topAds } : null,
     daily: daily ? dailyList : null,
+    table: daily ? metaTable(kept) : null,
     warnings,
   };
 }
@@ -1016,13 +1067,16 @@ function metaBlock(entry, warnings) {
     audience: report.audience,
     ads: report.ads,
     daily: report.daily,
+    table: report.table,
   };
 }
 
-// JSON con indentación, pero cada objeto plano en una sola línea: las series diarias quedan legibles y el diff es corto.
+// JSON con indentación, pero cada objeto plano y cada lista de números (filas de la tabla de Meta) en una sola
+// línea: las series diarias quedan legibles y el diff es corto.
 function serialize(document) {
   return JSON.stringify(document, null, 2)
-    .replace(/\{\n\s+([^{}[\]]*?)\n\s+\}/g, (_, body) => `{ ${body.split(/,\n\s+/).join(', ')} }`) + '\n';
+    .replace(/\{\n\s+([^{}[\]]*?)\n\s+\}/g, (_, body) => `{ ${body.split(/,\n\s+/).join(', ')} }`)
+    .replace(/\[\n\s+((?:-?[\d.e+-]+|null)(?:,\n\s+(?:-?[\d.e+-]+|null))*)\n\s+\]/g, (_, body) => `[${body.split(/,\n\s+/).join(',')}]`) + '\n';
 }
 
 function comparable(document) {
@@ -1122,7 +1176,8 @@ async function main() {
     currency: 'PEN',
     rules: [
       'Google Ads llega mensual: sin serie diaria real. Meta Ads llega por día y la serie diaria es real.',
-      'Meta: la serie diaria va por día y campaña (edad, sexo y anuncio se suman). El público (audience: edad y sexo) y los anuncios top (ads.top, con su enlace de vista previa) van por mes. Alcance y frecuencia no son aditivos y no se publican.',
+      'Meta: la serie diaria va por día y campaña (edad, sexo y anuncio se suman). El público (audience: edad y sexo) y los anuncios top (ads.top, con su enlace de vista previa) van por mes. Alcance y frecuencia no son aditivos: no van en los totales ni en las campañas.',
+      'Meta (table): una fila por día, campaña, conjunto y anuncio (edad y sexo se suman), con índices a sus listas campaigns, adsets, ads ({ name, link }) y types. El alcance de la tabla es la suma de las filas del export, como en los reportes de la agencia: no es alcance único.',
       'Embudo de Meta: impresiones → clics en el enlace → visitas a la página de destino (landingViews) → agregados al carrito (addToCart) → pagos iniciados (checkouts) → compras. Un paso en null = el export no trae la columna.',
       'CTR, CPC, CPM, costo por resultado y ROAS se recalculan sobre las sumas, nunca se promedian. CTR en fracción (0.0674 = 6.74%).',
       'Los resultados de Meta llevan su tipo; no se suman resultados de tipos distintos.',

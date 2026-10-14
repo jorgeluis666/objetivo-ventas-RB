@@ -2568,8 +2568,6 @@ tbody tr:hover td {
 
 /* Tablas */
 .gp-table-wrap { overflow-x: auto; }
-.gp-camp-table { min-width: 820px; }
-.gp-camp-table th { white-space: normal; }
 .rep-table { font-size: 12px; }
 .rep-table th { padding: 8px 10px; font-size: 10px; letter-spacing: .08em; white-space: nowrap; }
 .rep-table td { padding: 9px 10px; vertical-align: middle; }
@@ -2579,9 +2577,6 @@ tbody tr:hover td {
 .rep-camp-name { font-weight: 600; }
 .rep-bar { max-width: 220px; height: 4px; margin-top: 6px; overflow: hidden; border-radius: 3px; background: #eef3fa; }
 .rep-bar > div { height: 100%; border-radius: 3px; background: var(--gp-c, var(--brand)); }
-.rep-star { margin-right: 6px; color: var(--amber); }
-.gp-type { display: inline-flex; align-items: center; gap: 7px; }
-.gp-pip { width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; }
 .gp-cats { white-space: nowrap; color: var(--text-2); }
 .gp-note { margin-top: 12px; font-size: 12px; line-height: 1.55; color: var(--text-2); }
 .gp-note-top { margin-top: -4px; }
@@ -2666,4 +2661,259 @@ tbody tr:hover td {
   .gp-aud-row { grid-template-columns: 52px 1fr 112px; }
   .rep-metrics > div { flex-direction: column; gap: 2px; }
   .rep-metrics dd { text-align: left; }
+}
+
+/* ============================================================
+   Gasto publicitario · Meta Ads con la estructura de Terminal Pesquero
+   Pestañas de mes y Anual, periodo con KPIs, distribución por campaña con un
+   cuadro por campaña y la tabla de anuncios. Componentes y colores de Royal
+   Baby; el color de cada grupo de campañas llega en --gp-row-c.
+   ============================================================ */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Pestañas de mes (las de Objetivos) con el punto del último mes con datos */
+.gp-month-tabs { margin-bottom: 16px; }
+.gp-month-tabs .month-tab { position: relative; padding: 9px 14px; }
+.gp-current-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--amber);
+}
+
+/* Periodo y KPIs en una sola tarjeta */
+.gp-period-head { margin-bottom: 14px; }
+.gp-period-panel .kpi-strip { margin: 0; }
+.kpi-pill small.gp-delta { font-weight: 700; }
+.gp-delta.good { color: var(--green-text); }
+.gp-delta.bad  { color: var(--red-text); }
+.gp-delta.flat { color: var(--text-2); }
+
+/* Celdas compartidas por las tablas de distribución, conjuntos y anuncios */
+.gp-camp-name { min-width: 180px; color: var(--text); font-weight: 600; }
+.gp-camp-name small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; font-weight: 500; }
+.gp-dot-c {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--gp-row-c, var(--muted));
+}
+.gp-group { display: inline-flex; align-items: center; font-weight: 600; color: var(--text); white-space: nowrap; }
+.gp-result-pill {
+  display: inline-flex;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.gp-share-col { white-space: nowrap; }
+.gp-share-col b { font-size: 12px; color: var(--text); }
+.gp-share {
+  display: inline-block;
+  width: 72px;
+  height: 6px;
+  margin-right: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eef3fa;
+  vertical-align: middle;
+}
+.gp-share > span { display: block; height: 100%; border-radius: 999px; background: var(--gp-row-c, var(--brand)); }
+.gp-no-data { color: var(--muted); font-size: 11px; }
+.gp-table-empty { padding: 28px !important; color: var(--text-2); text-align: center; }
+.rep-table tr.gp-total-row td { background: #f8fbff; border-top: 1px solid var(--border); font-weight: 700; }
+.gp-dist-table { min-width: 1320px; }
+
+/* Cuadro de cada campaña: dentro del panel de distribución, separados por una línea fina.
+   minmax(0, 1fr): sin él, la tabla de conjuntos ensancharía la columna y la página. */
+.gp-camp-blocks { display: grid; grid-template-columns: minmax(0, 1fr); }
+.gp-camp-blocks:empty { display: none; }
+.gp-camp-block { margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--border); }
+.gp-camp-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px 16px; margin-bottom: 14px; }
+.gp-camp-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -.02em;
+}
+.gp-camp-title .gp-dot-c { width: 10px; height: 10px; margin-right: -4px; }
+.gp-camp-title em { color: var(--muted); font-size: 11px; font-style: normal; font-weight: 600; letter-spacing: 0; }
+.gp-camp-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; }
+.gp-chart-toggle {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--text-2);
+  cursor: pointer;
+}
+.gp-chart-toggle:hover { background: #f8fbff; border-color: #bfdbfe; color: var(--brand); }
+.gp-chart-toggle:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, .25); }
+.gp-chart-toggle svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform .15s ease;
+}
+.gp-camp-block.is-collapsed .gp-chart-toggle svg { transform: rotate(180deg); }
+/* Minimizado quedan el título y los KPIs */
+.gp-camp-block.is-collapsed .gp-camp-body,
+.gp-camp-block.is-collapsed [data-camp-modes] { display: none; }
+.gp-camp-block.is-collapsed .gp-camp-kpis { margin-bottom: 0; }
+
+.gp-camp-kpis { display: flex; flex-wrap: wrap; gap: 10px 32px; margin: 0 0 16px; }
+.gp-camp-kpis dt { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.gp-camp-kpis dd { margin: 3px 0 0; color: var(--text); font-size: 16px; font-weight: 700; }
+.gp-camp-kpis dd .gp-delta { margin-left: 6px; font-size: 11px; font-weight: 700; }
+
+/* Chips: vista del gráfico (radio) e indicadores (casillas) */
+.gp-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.gp-camp-metrics { margin: -4px 0 14px; }
+.gp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: color .15s ease, border-color .15s ease, background .15s ease;
+}
+.gp-chip:hover { border-color: #bfdbfe; }
+.gp-chip input { margin: 0; cursor: pointer; accent-color: var(--gp-chip-c); }
+.gp-chip.active {
+  color: var(--gp-chip-c);
+  border-color: var(--gp-chip-c);
+  background: color-mix(in srgb, var(--gp-chip-c) 8%, #fff);
+}
+.gp-chip:focus-within { box-shadow: 0 0 0 3px rgba(37, 99, 235, .2); }
+
+.gp-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; color: var(--text-2); font-size: 11px; }
+.gp-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.gp-legend b { color: var(--text-2); font-weight: 600; }
+.gp-legend-line { display: inline-block; width: 14px; height: 3px; border-radius: 99px; }
+.gp-legend-line.dashed { background: repeating-linear-gradient(90deg, currentColor 0 5px, transparent 5px 9px); }
+
+.gp-adset-head { margin: 18px 0 10px; padding-top: 16px; border-top: 1px solid var(--border); }
+.gp-adset-table { min-width: 820px; }
+.gp-adset-table th { white-space: normal; vertical-align: bottom; }
+.gp-adset-table .gp-camp-name { min-width: 140px; }
+.gp-adset-table .gp-share { width: 44px; }
+
+/* Tabla de anuncios: cabecera fija, Grupo y Anuncio anclados, densidad y pantalla completa */
+.gp-ads-head { align-items: flex-start; gap: 12px 16px; flex-wrap: wrap; }
+.gp-table-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.gp-tool-btn,
+.gp-tool-select select {
+  height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.gp-tool-btn { display: inline-flex; align-items: center; gap: 6px; }
+.gp-tool-btn:hover,
+.gp-tool-btn[aria-pressed="true"] { border-color: #bfdbfe; background: var(--brand-soft); color: var(--brand-text); }
+.gp-tool-btn:focus-visible,
+.gp-tool-select select:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, .25); }
+.gp-ads-scroll {
+  overflow: auto;
+  max-height: calc(100vh - 230px);
+  min-height: 260px;
+  overscroll-behavior-x: contain;
+}
+.gp-ads-scroll:focus-visible { outline: 2px solid #bfdbfe; outline-offset: 2px; }
+.gp-ads-table { min-width: 1640px; }
+.gp-ads-table thead th { position: sticky; top: 0; z-index: 3; border-bottom: 0; box-shadow: inset 0 -1px 0 var(--border); }
+.gp-ads-table .gp-type-col,
+.gp-ads-table .gp-ad-col { position: sticky; z-index: 2; background: #fff; }
+.gp-ads-table thead th:nth-child(-n+2) { z-index: 4; }
+.gp-ads-table .gp-type-col,
+.gp-ads-table thead th:nth-child(1) { left: 0; width: 160px; min-width: 160px; }
+.gp-ads-table .gp-ad-col,
+.gp-ads-table thead th:nth-child(2) { left: 160px; width: 250px; min-width: 250px; }
+/* Borde derecho del bloque anclado + sombra que indica que hay más columnas */
+.gp-ads-table .gp-ad-col { box-shadow: 1px 0 0 var(--border), 9px 0 11px -8px rgba(15, 23, 42, .35); }
+.gp-ads-table thead th:nth-child(2) { box-shadow: 1px 0 0 var(--border), 9px 0 11px -8px rgba(15, 23, 42, .35), inset 0 -1px 0 var(--border); }
+.gp-ads-table td.gp-ad-col { color: var(--text); font-weight: 600; }
+.gp-ad-text { display: block; max-width: 226px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gp-ads-table tbody tr:hover > td { background: #f8fbff; }
+.gp-set-col { min-width: 200px; font-size: 11px; color: var(--text-2); }
+.gp-set-col small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+.gp-date-col { white-space: nowrap; font-size: 11px; color: var(--text-2); }
+.gp-leader { color: var(--amber); }
+.gp-preview { color: var(--brand); font-size: 11px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.gp-preview:hover { text-decoration: underline; }
+/* Sin periodo de comparación (Anual o primer mes): fuera "Mes anterior" y "Variación" */
+.gp-ads-panel.no-compare .gp-ads-table :is(th, td):is(:nth-child(6), :nth-child(7)) { display: none; }
+.gp-ads-panel.no-compare .gp-ads-table { min-width: 1480px; }
+.gp-ads-panel.is-compact .gp-ads-table td { padding-top: 5px; padding-bottom: 5px; }
+.gp-ads-panel.is-compact .gp-ads-table th { padding-top: 6px; padding-bottom: 6px; }
+.gp-ads-panel.is-compact .gp-result-pill { padding: 1px 7px; }
+/* Pantalla completa: el panel toma la ventana y las pestañas de mes se mueven aquí dentro (gasto.js) */
+.gp-ads-panel.is-fullscreen {
+  position: fixed;
+  z-index: 160;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 16px 20px 12px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.gp-ads-panel.is-fullscreen .gp-ads-scroll { flex: 1; min-height: 0; max-height: none; }
+.gp-ads-panel.is-fullscreen .gp-month-tabs { margin: 0 0 14px; }
+body.gp-table-fullscreen { overflow: hidden; }
+
+@media (max-width: 760px) {
+  .gp-camp-head { flex-direction: column; }
+  .gp-camp-controls { justify-content: flex-start; }
+  .gp-camp-kpis { gap: 10px 22px; }
+  .gp-ads-scroll { max-height: calc(100vh - 170px); }
+  .gp-ads-table .gp-type-col,
+  .gp-ads-table .gp-ad-col { position: static; }
+  .gp-ads-table thead th:nth-child(-n+2) { left: auto; }
 }

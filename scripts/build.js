@@ -47,6 +47,8 @@ const TRIM_DATA = {
           if (!['day', 'campaign', 'spend', 'purchases', 'purchaseValue', 'conversations'].includes(field)) delete row[field];
         }
       });
+      // Los anuncios del módulo salen de meta.table; el top del mes ya no se lee.
+      if (month.meta) delete month.meta.ads;
     }
     return doc;
   },

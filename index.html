@@ -721,71 +721,65 @@
 
         <!-- ── Pane: Meta Ads (carpeta Meta Files) ── -->
         <div class="gp-pane" id="gp-pane-meta" role="tabpanel" aria-labelledby="gp-tab-meta">
+          <!-- Estructura del tablero de Terminal Pesquero: pestañas de mes y Anual, periodo con KPIs, distribución
+               por campaña con un cuadro por campaña (KPIs, gráfico y conjuntos) y la tabla de anuncios. -->
           <div class="gp-body" id="gp-meta-body">
-            <div class="rep-toolbar">
-              <div class="proj-mes-wrap">
-                <span class="proj-mes-label">Mes</span>
-                <div class="proj-mes-selector" id="gp-meta-months" role="group" aria-label="Mes de Meta Ads"></div>
-              </div>
-              <span class="rep-period-meta" id="gp-meta-range"></span>
-            </div>
+            <div class="month-tabs gp-month-tabs" id="gp-meta-months" role="group" aria-label="Mes de Meta Ads"></div>
             <div class="rep-stack">
               <div class="gp-alerts" id="gp-meta-alerts" hidden></div>
-              <div class="kpi-strip gp-kpis" id="gp-meta-kpis"></div>
+              <div class="panel gp-period-panel">
+                <div class="gp-period-head">
+                  <div class="panel-title" id="gp-meta-period-title">Cargando datos de Meta…</div>
+                  <div class="panel-sub" id="gp-meta-period-sub"></div>
+                </div>
+                <div class="kpi-strip gp-kpis" id="gp-meta-kpis" role="group" aria-label="Resumen del periodo"></div>
+              </div>
+              <div class="panel">
+                <div class="panel-head"><div>
+                  <div class="panel-title">Distribución de inversión por campaña</div>
+                  <div class="panel-sub" id="gp-meta-dist-sub"></div>
+                </div></div>
+                <div class="gp-table-wrap">
+                  <table class="rep-table gp-dist-table">
+                    <thead><tr><th>Campaña</th><th>Grupo</th><th>Resultado</th><th class="r">Resultados</th><th class="r">Costo por resultado</th><th class="r">Inversión</th><th>% de la inversión</th><th class="r">Impresiones</th><th class="r">Alcance</th><th class="r">Frecuencia</th><th class="r">CPM</th><th class="r">Clics</th><th class="r">CTR</th><th class="r">Compras</th><th class="r">ROAS</th></tr></thead>
+                    <tbody id="gp-meta-dist-body"></tbody>
+                  </table>
+                </div>
+                <div class="gp-camp-blocks" id="gp-meta-blocks"></div>
+              </div>
+              <div class="panel gp-ads-panel" id="gp-ads-panel">
+                <div class="panel-head gp-ads-head">
+                  <div>
+                    <div class="panel-title" id="gp-ads-title">Anuncios del periodo</div>
+                    <div class="panel-sub" id="gp-ads-sub"></div>
+                  </div>
+                  <div class="gp-table-tools">
+                    <label class="gp-tool-select" for="gp-ads-group"><span class="sr-only">Filtrar por grupo</span><select id="gp-ads-group"><option value="all">Todos los grupos</option></select></label>
+                    <button type="button" class="gp-tool-btn" id="gp-ads-density" aria-pressed="false">Compacto</button>
+                    <button type="button" class="gp-tool-btn" id="gp-ads-expand" aria-pressed="false" title="Ver la tabla en pantalla completa (Esc para salir)">⤢ Pantalla completa</button>
+                  </div>
+                </div>
+                <div class="gp-ads-scroll" tabindex="0" role="region" aria-label="Tabla de anuncios">
+                  <table class="rep-table gp-ads-table">
+                    <thead><tr><th>Grupo</th><th>Anuncio</th><th>Campaña / conjunto</th><th>Resultado</th><th class="r">Resultados</th><th class="r" id="gp-ads-prev-head">Mes anterior</th><th class="r">Variación</th><th class="r">Costo por resultado</th><th class="r">Inversión</th><th class="r">Compras</th><th class="r">ROAS</th><th class="r">Impresiones</th><th class="r">Alcance</th><th class="r">CPM</th><th class="r">Clics</th><th>Días activos</th><th>Vista previa</th></tr></thead>
+                    <tbody id="gp-ads-body"></tbody>
+                  </table>
+                </div>
+              </div>
               <div class="grid-2">
                 <div class="panel">
                   <div class="panel-head"><div>
                     <div class="panel-title">Embudo de conversión</div>
-                    <div class="panel-sub">De la impresión a la compra · % respecto al paso anterior</div>
+                    <div class="panel-sub" id="gp-meta-funnel-sub">De la impresión a la compra · % respecto al paso anterior</div>
                   </div></div>
                   <div id="gp-meta-funnel"></div>
                 </div>
                 <div class="panel">
                   <div class="panel-head"><div>
-                    <div class="panel-title">Inversión diaria</div>
-                    <div class="panel-sub">Importe gastado por día · el tooltip desglosa por campaña</div>
-                  </div></div>
-                  <div class="chart-wrap h-260" id="gp-meta-daily-wrap"><canvas id="chart-gp-meta-daily" role="img" aria-label="Inversión diaria en Meta Ads"></canvas></div>
-                  <p class="gp-note" id="gp-meta-daily-note" hidden></p>
-                </div>
-              </div>
-              <div class="panel">
-                <div class="panel-head"><div>
-                  <div class="panel-title">Campañas</div>
-                  <div class="panel-sub">Ordenadas por inversión del mes · cada campaña con su objetivo y su tipo de resultado</div>
-                </div></div>
-                <div id="gp-meta-campaigns"></div>
-              </div>
-              <div class="grid-2">
-                <div class="panel">
-                  <div class="panel-head"><div>
-                    <div class="panel-title">Top anuncios</div>
-                    <div class="panel-sub" id="gp-meta-ads-sub">Enlace a la vista previa del anuncio en Meta</div>
-                  </div></div>
-                  <div id="gp-meta-ads"></div>
-                </div>
-                <div class="panel">
-                  <div class="panel-head"><div>
                     <div class="panel-title">Público</div>
-                    <div class="panel-sub">Compras e inversión por edad y sexo</div>
+                    <div class="panel-sub" id="gp-meta-audience-sub">Compras e inversión por edad y sexo</div>
                   </div></div>
                   <div id="gp-meta-audience"></div>
-                </div>
-              </div>
-              <div class="grid-2">
-                <div class="panel">
-                  <div class="panel-head"><div>
-                    <div class="panel-title">Inversión mensual</div>
-                    <div class="panel-sub">Importe gastado en Meta Ads por mes</div>
-                  </div></div>
-                  <div class="chart-wrap h-220"><canvas id="chart-gp-meta-spend" role="img" aria-label="Inversión mensual en Meta Ads"></canvas></div>
-                </div>
-                <div class="panel">
-                  <div class="panel-head"><div>
-                    <div class="panel-title">ROAS mensual</div>
-                    <div class="panel-sub">Valor de conversión ÷ inversión (atribución de Meta)</div>
-                  </div></div>
-                  <div class="chart-wrap h-220"><canvas id="chart-gp-meta-roas" role="img" aria-label="ROAS mensual de Meta Ads"></canvas></div>
                 </div>
               </div>
             </div>

@@ -299,8 +299,12 @@ function parseGoogleReport(text) {
   });
   // Un informe por día o por palabra clave no trae Impr. ni las filas "Total:" y suele venir con coma
   // decimal ("5,06"), que parseNumber leería como 506: se rechaza con un mensaje que diga qué bajar.
+  // Los informes por día y palabra clave de la cuenta se guardan en la carpeta a propósito (se van a
+  // usar más adelante): no son un fallo, se omiten sin aviso en el tablero.
   if (!('impressions' in col) && plainHeader.some(cell => cell === 'dia' || cell.startsWith('palabra clave'))) {
-    throw new Error('no es el «Informe de campaña» del mes: trae una fila por día o por palabra clave y no tiene la columna Impr.; hay que descargarlo de nuevo desde Campañas');
+    const error = new Error('informe por día y palabra clave: todavía no se usa, el mes sale del «Informe de campaña»');
+    error.detailReport = true;
+    throw error;
   }
   for (const required of ['campaign', 'cost', 'impressions', 'clicks', 'conversions']) {
     if (!(required in col)) throw new Error(`falta la columna de ${GA_FIELD_LABELS[required] || 'campaña'}`);
@@ -929,6 +933,10 @@ async function readPlatform(platform, failures, log) {
       }
       reports.push({ file, month, monthFrom: fromContent ? 'contenido' : 'nombre', report });
     } catch (err) {
+      if (err.detailReport) {
+        console.log(`[ads] ${folder.label}: «${file.name}» es un ${err.message}; se omite`);
+        continue;
+      }
       failures.push({ platform, label: folder.label, file, month: monthFromName(file.name), message: err.message });
     }
   }

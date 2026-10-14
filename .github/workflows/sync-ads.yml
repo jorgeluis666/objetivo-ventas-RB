@@ -13,9 +13,11 @@ name: Sincronizar inversión publicitaria
 # credenciales el script usa la vista pública. Con el secret opcional RB_DRIVE_API_KEY
 # usa la API de Drive.
 #
-# Si un archivo no se puede descargar o leer, el script no escribe nada y sale con
-# código 1: el workflow queda en rojo, se conserva el JSON anterior y el deploy no
-# se dispara (deploy.yml solo sigue a corridas en verde).
+# Si un archivo no se puede descargar o leer, ese mes y plataforma queda como estaba en
+# el JSON anterior, el resto se actualiza y el fallo sale como anotación (warning) de la
+# corrida y en `pending`. Si no se puede listar una carpeta, el script no escribe nada y
+# sale con código 1: el workflow queda en rojo y el deploy no se dispara (deploy.yml
+# solo sigue a corridas en verde).
 
 on:
   schedule:

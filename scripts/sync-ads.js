@@ -17,9 +17,12 @@
  * El mes sale del contenido (rango del informe en Google Ads, columna Día en Meta); el
  * nombre del archivo es solo respaldo. Un mes puede existir con una sola plataforma.
  *
- * Si falla la descarga o la lectura de un archivo no se escribe nada: queda el último
- * JSON válido y el proceso termina con código 1. Las advertencias (informe segmentado,
- * totales que no cuadran, cifras reparadas) no frenan la sincronización.
+ * Si falla la descarga o la lectura de un archivo, ese archivo no frena a los demás: si otro
+ * archivo válido cubre el mismo mes y plataforma se usa ese; si no, el mes de esa plataforma
+ * queda como estaba en el JSON anterior. El fallo va a `pending` (el tablero lo muestra como
+ * «Pendiente») y a las anotaciones del workflow. Si no se puede listar una carpeta no se
+ * escribe nada y el proceso termina con código 1. Las advertencias (informe segmentado,
+ * totales que no cuadran, cifras reparadas) tampoco frenan la sincronización.
  *
  * Uso:
  *   node scripts/sync-ads.js           → sincroniza
@@ -911,7 +914,7 @@ async function readPlatform(platform, failures, log) {
       }
       reports.push({ file, month, monthFrom: fromContent ? 'contenido' : 'nombre', report });
     } catch (err) {
-      failures.push(`${folder.label} «${file.name}»: ${err.message}`);
+      failures.push({ platform, label: folder.label, file, month: monthFromName(file.name), message: err.message });
     }
   }
 
@@ -1032,30 +1035,63 @@ async function main() {
   const check = process.argv.includes('--check');
   const failures = [];
   const warnings = [];
-  const google = await readPlatform('google', failures, warnings);
-  const meta = await readPlatform('meta', failures, warnings);
+  const platforms = {
+    google: await readPlatform('google', failures, warnings),
+    meta: await readPlatform('meta', failures, warnings),
+  };
+  const { google, meta } = platforms;
 
+  let previous = null;
+  try { previous = JSON.parse(fs.readFileSync(OUTPUT_PATH, 'utf8')); } catch { /* primera vez */ }
+  const previousMonth = id => (previous?.months || []).find(month => month.id === id);
+
+  // Un archivo que no se pudo leer no frena a los demás. Si otro archivo cubre ese mes y plataforma,
+  // se ignora; si no, el mes de esa plataforma queda como estaba en el JSON anterior.
+  const kept = { google: new Map(), meta: new Map() };
+  const failureNotes = failures.map(({ platform, label, file, month, message }) => {
+    const covered = month && platforms[platform].byMonth.has(month);
+    const old = month && !covered ? previousMonth(month)?.[platform] : null;
+    if (old) kept[platform].set(month, old);
+    const outcome = !month ? 'no se sabe de qué mes es'
+      : covered ? `se usa el otro archivo de ${monthLabel(month)}`
+      : old ? `${monthLabel(month)} queda con los datos de la sincronización anterior`
+      : `${monthLabel(month)} queda sin datos`;
+    return `${label}: «${file.name}» no se pudo leer (${message}); ${outcome}.`;
+  });
   if (failures.length) {
-    console.error(`[ads] ${failures.length} archivo(s) fallaron; se conserva ${path.relative(process.cwd(), OUTPUT_PATH)} sin cambios:`);
-    failures.forEach(failure => console.error(`  - ${failure}`));
-    process.exit(1);
+    console.warn(`[ads] ${failures.length} archivo(s) no se pudieron leer; el resto se sincroniza:`);
+    failureNotes.forEach(note => {
+      console.warn(`  - ${note}`);
+      if (process.env.GITHUB_ACTIONS) console.log(`::warning title=Archivo de pauta sin leer::${note.replace(/\r?\n/g, ' ')}`);
+    });
   }
 
-  const ids = [...new Set([...google.byMonth.keys(), ...meta.byMonth.keys()])].sort();
+  const ids = [...new Set([...google.byMonth.keys(), ...meta.byMonth.keys(), ...kept.google.keys(), ...kept.meta.keys()])].sort();
   const months = ids.map(id => {
     const before = warnings.length;
     const month = { id, label: monthLabel(id) };
+    // Del mes conservado se arrastran también sus advertencias de esa plataforma.
+    const keep = platform => {
+      const prefix = `${FOLDERS[platform].label} ${month.label}: `;
+      warnings.push(...(previousMonth(id).warnings || []).filter(w => w.startsWith(prefix)));
+      return kept[platform].get(id);
+    };
     if (google.byMonth.has(id)) month.google = googleBlock(google.byMonth.get(id), warnings);
+    else if (kept.google.has(id)) month.google = keep('google');
     if (meta.byMonth.has(id)) month.meta = metaBlock(meta.byMonth.get(id), warnings);
+    else if (kept.meta.has(id)) month.meta = keep('meta');
     month.consolidated = consolidate(month);
     month.warnings = warnings.slice(before);
     return month;
   });
 
   const segmented = months.filter(month => month.google?.segmentation);
-  const pending = segmented.length
-    ? [`Google Ads: exportar de nuevo el informe de campaña sin segmentar por «${segmented[0].google.segmentation}», con Campaña, Costo, Impr., CTR, Clics, Prom. CPC, Conversiones, Costo/conv., Conversiones por compras y Valor de conv. por campaña, y reemplazar las hojas de ${segmented.map(month => month.label).join(', ')}.`]
-    : [];
+  const pending = [
+    ...(segmented.length
+      ? [`Google Ads: exportar de nuevo el informe de campaña sin segmentar por «${segmented[0].google.segmentation}», con Campaña, Costo, Impr., CTR, Clics, Prom. CPC, Conversiones, Costo/conv., Conversiones por compras y Valor de conv. por campaña, y reemplazar las hojas de ${segmented.map(month => month.label).join(', ')}.`]
+      : []),
+    ...failureNotes,
+  ];
 
   const document = {
     schemaVersion: 2,
@@ -1084,8 +1120,6 @@ async function main() {
   }
   pending.forEach(item => console.log(`\n[ads] PENDIENTE: ${item}`));
 
-  let previous = null;
-  try { previous = JSON.parse(fs.readFileSync(OUTPUT_PATH, 'utf8')); } catch { /* primera vez */ }
   const changed = !previous || comparable(previous) !== comparable(document);
   if (check) {
     console.log(`\n[ads] ${changed ? 'hay cambios' : 'sin cambios'} (--check: no se escribe)`);

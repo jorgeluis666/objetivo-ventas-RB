@@ -137,7 +137,7 @@ Los archivos son hojas de cálculo de Google: se descargan exportándolas a CSV 
 - **Google Ads**: llega mensual, así que su serie diaria es estimada (`granularity: "mensual"`) y el consolidado lo marca (`dailyBasis: "mixto"`).
 - **Informe segmentado**: si trae la columna *Categoría de conversión*, las campañas salen con costo, impresiones y clics en cero. Entonces los KPIs del mes se toman de *Total: Cuenta*, el desglose real queda por tipo de campaña (`byType`) y cada campaña sale con `complete: false` y esas cifras en `null`. El JSON lo avisa en `pending`.
 - **Validación**: la suma por tipo y la de campañas se comparan contra *Total: Cuenta*; lo que no cuadra va a `warnings`. Las filas *Total: Campañas* y *Total: Campañas filtradas* son la suma de las campañas, no un tipo. Las hojas de Google Ads se armaron importando el CSV con coma decimal, y las impresiones o clics que terminaban en cero perdieron esos ceros (`122,200` → `122,2`). El script los completa, lo anota en `repairs` y la validación confirma que cuadran.
-- Si falla la descarga o la lectura de algún archivo, no escribe nada y termina con código 1.
+- Si falla la descarga o la lectura de un archivo, no frena a los demás: si otro archivo cubre ese mes y plataforma se usa ese; si no, el mes de esa plataforma queda como estaba en el JSON anterior. El fallo va a `pending` (el tablero lo muestra como «Pendiente» en la pestaña de la plataforma) y como anotación del workflow. Solo si no se puede listar una carpeta no escribe nada y termina con código 1.
 
 ### Sincronización automática
 

@@ -273,61 +273,41 @@
       <section class="view visible" id="view-obj">
         <div class="section-title">Objetivos 2026 · Objetivos y ventas de la marca</div>
         <div class="section-desc">
-          Arriba, los objetivos comerciales que fija la marca; abajo, su histórico de ventas. Cada zona se lee de su carpeta de Drive y se actualiza sola todos los días a las 10:30 a. m. El botón <strong>Sincronizar</strong> la vuelve a leer al instante en este navegador.
+          La meta que fija la marca y su venta, juntas por mes y canal. Cada una se lee de su carpeta de Drive y se actualiza sola todos los días a las 10:30 a. m. Los botones <strong>Sincronizar</strong> las vuelven a leer al instante en este navegador.
         </div>
 
-        <!-- Zona 1: objetivos comerciales (carpeta "Objetivos Royal Baby") -->
+        <!-- Objetivos (carpeta "Objetivos Royal Baby") y ventas (carpeta "Ventas Royal Baby - 2026") en un solo cuadro por mes -->
         <section class="obj-zone" id="zona-objetivos" aria-labelledby="zona-objetivos-titulo">
           <div class="zone-head">
             <div class="zone-head-text">
-              <div class="zone-title" id="zona-objetivos-titulo">Objetivos comerciales</div>
+              <div class="zone-title" id="zona-objetivos-titulo">Objetivos y ventas por canal</div>
               <div class="zone-meta" id="objetivos-fuente"></div>
+              <div class="zone-meta" id="ventas-fuente"></div>
             </div>
             <div class="zone-actions">
               <span class="zone-status" id="objetivos-sync-status" role="status"></span>
               <button class="btn ghost btn-sm btn-sync" id="btn-sync-objetivos" type="button" title="Vuelve a leer el archivo de objetivos de Drive">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                Sincronizar
+                Sincronizar objetivos
+              </button>
+              <span class="zone-status" id="ventas-sync-status" role="status"></span>
+              <button class="btn ghost btn-sm btn-sync" id="btn-sync-ventas" type="button" title="Vuelve a leer el archivo de ventas de Drive">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                Sincronizar ventas
               </button>
             </div>
           </div>
 
           <div class="insight err" id="plan-error" hidden style="margin-bottom:14px;"></div>
           <div id="plan-section">
-            <div class="month-tabs" id="month-tabs"></div>
+            <div class="month-tabs" id="month-tabs" role="group" aria-label="Mes"></div>
             <div id="month-panels"></div>
             <div class="plan-notes" id="plan-notes"></div>
           </div>
         </section>
 
-        <!-- Zona 2: histórico de ventas (carpeta "Ventas Royal Baby - 2026") -->
-        <section class="obj-zone" id="zona-ventas" aria-labelledby="zona-ventas-titulo">
-          <div class="zone-head">
-            <div class="zone-head-text">
-              <div class="zone-title" id="zona-ventas-titulo">Ventas 2026 · histórico de la marca</div>
-              <div class="zone-meta" id="ventas-fuente"></div>
-            </div>
-            <div class="zone-actions">
-              <span class="zone-status" id="ventas-sync-status" role="status"></span>
-              <button class="btn ghost btn-sm btn-sync" id="btn-sync-ventas" type="button" title="Vuelve a leer el archivo de ventas de Drive">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                Sincronizar
-              </button>
-            </div>
-          </div>
-
-          <div class="month-tabs ventas-tabs" id="ventas-tabs" role="group" aria-label="Mes del histórico de ventas"></div>
-          <div class="panel" style="margin-bottom:20px;">
-            <div class="panel-head">
-              <div>
-                <div class="panel-title" id="ventas-title">Ventas por canal y mes</div>
-                <div class="panel-sub" id="ventas-sub"></div>
-              </div>
-            </div>
-            <div class="plan-table-wrap"><table class="plan-table ventas-table" id="ventas-historico"></table></div>
-            <div class="plan-notes" id="ventas-notes"></div>
-          </div>
-
+        <!-- Evolución semanal de las ventas, 2025 vs 2026 -->
+        <section class="obj-zone" id="zona-ventas" aria-label="Evolución de las ventas">
         <div class="panel" style="margin-bottom:20px;">
           <div class="panel-head">
             <div>

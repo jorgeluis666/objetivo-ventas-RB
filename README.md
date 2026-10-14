@@ -237,10 +237,10 @@ Las sesiones abiertas con la clave anterior siguen hasta que se cierre la pesta�
 
 ## Objetivos 2026
 
-El módulo tiene dos zonas, cada una con su fuente de Drive, su fecha de sincronización y su botón **Sincronizar**:
+Arriba van las dos fuentes de Drive (objetivos y ventas), cada una con su fecha de sincronización y su botón **Sincronizar**:
 
-1. **Objetivos comerciales** (arriba): las metas que fija la marca, con su avance. Una pestaña por mes con la meta, lo vendido frente a lo esperado al último día con ventas, alertas y el avance por canal con detalle semanal.
-2. **Ventas 2026 · histórico de la marca** (abajo): ventas por canal y mes calendario, y la evolución semanal 2025 vs 2026.
+1. **Objetivos y ventas por canal**: pestañas Enero–Diciembre y Anual. Cada mes junta la meta del archivo de objetivos y la venta del histórico en un solo cuadro, una fila por canal de ventas, con dos vistas: **Avance vs meta** (meta, esperado al último día con ventas, avance, brecha y detalle semanal) y **Ventas vs 2025** (mismo mes de 2025, participación, transacciones y ticket). La meta de cada objetivo va a la columna de ventas que nombra (WHATSAPP → WhatsApp, OUTLET → Showroom); Instagram y Facebook van con meta 0. Es solo en este cuadro: Proyecciones, el plan por campaña y el correo siguen midiendo «Redes y WhatsApp» con las tres columnas. Los meses sin metas solo tienen la vista de ventas; Anual muestra los 12 meses y la meta del período.
+2. **Evolución semanal 2025 vs 2026** (abajo): el gráfico semanal, mensual o acumulado por canal.
 
 `data/objetivos-2026.json` es la única fuente de metas: lo leen el módulo, Proyecciones, el KPI anual del Comparativo YoY y el correo semanal (`alertas.js`). Al publicar, el build lo incrusta en la página.
 

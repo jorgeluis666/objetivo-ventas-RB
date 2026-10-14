@@ -162,11 +162,18 @@
 
   // Píldoras y tarjetas KPI: los mismos componentes que Gasto publicitario y Proyecciones.
   const pill = (cls, text, title) => `<span class="pill ${cls}"${title ? ` title="${esc(title)}"` : ''}>${text}</span>`;
-  const kpi = ({ label, value, subs = [] }) => `
+  const kpi = ({ label, value, subs = [], extra = '' }) => `
     <div class="kpi-pill">
       <span>${label}</span>
       <strong>${value}</strong>
+      ${extra}
       ${subs.filter(Boolean).map(s => `<small>${s}</small>`).join('')}
+    </div>`;
+  // Barra de cumplimiento de la meta, con una marca en lo esperado a la fecha de corte.
+  const kpiBar = (pct, cls, mark, title) => `
+    <div class="kpi-bar" title="${esc(title)}">
+      <i class="${cls}" style="width:${Math.max(0, Math.min(pct, 100)).toFixed(1)}%"></i>
+      ${mark != null ? `<b style="left:${Math.min(mark, 100).toFixed(1)}%"></b>` : ''}
     </div>`;
   // Vendido frente a lo esperado a la fecha: verde al ritmo o adelantado, ámbar hasta 10 % abajo.
   function vsExpectedPill(real, expected, corte) {
@@ -293,12 +300,21 @@
     const ref       = monthRef2025(m);
     const tkPill    = tk => tk > 0 ? pill('gray', `ticket S/. ${fmt(tk)}`) : '';
 
-    // 1. El objetivo: igual en los tres estados del mes.
+    // 1. El objetivo y cuánto se cumplió con las ventas del histórico. El color sigue al ritmo:
+    //    en el mes en curso, vendido frente a lo esperado al corte; en uno cerrado, frente a la meta.
+    const refAnio = state.plan?.referencia?.anio || 2025;
+    const refTxt  = ref > 0 ? `${pill('gray', `${tt >= ref ? '+' : '−'}${Math.abs(Math.round((tt / ref - 1) * 100))}% vs ${refAnio}`)} ${m.toLowerCase()} ${refAnio}: S/. ${fmt(ref)}` : 'objetivos de la marca';
+    const withSales = status !== 'future' && passed > 0 && tt > 0;
+    const expPct    = status === 'current' ? passed / objectiveDays(m) * 100 : 100;
+    const ritmo     = expPct > 0 ? pctMet / expPct : 0;
+    const cumpleCls = ritmo >= 1 ? 'green' : ritmo >= 0.9 ? 'amber' : 'red';
     const metaKpi = kpi({
       label: 'Meta del mes', value: `S/. ${fmt(tt)}`,
-      subs: ref > 0
-        ? [`${pill('gray', `${tt >= ref ? '+' : '−'}${Math.abs(Math.round((tt / ref - 1) * 100))}% vs ${state.plan?.referencia?.anio || 2025}`)} ${m.toLowerCase()} ${state.plan?.referencia?.anio || 2025}: S/. ${fmt(ref)}`]
-        : ['objetivos de la marca'],
+      extra: withSales ? kpiBar(pctMet, cumpleCls, status === 'current' ? expPct : null,
+        status === 'current' ? `${pctMet.toFixed(0)}% cumplido · lo esperado al ${corteLabel(m)} es ${expPct.toFixed(0)}%` : `${pctMet.toFixed(0)}% cumplido`) : '',
+      subs: withSales
+        ? [`${pill(cumpleCls, `${pctMet.toFixed(0)}% cumplido`)} S/. ${fmt(real)} vendidos${status === 'current' ? ` al ${corteLabel(m)}` : ''}`, refTxt]
+        : [refTxt],
     });
 
     let cards;
@@ -324,7 +340,7 @@
         metaKpi,
         kpi({ label: `Vendido al ${corte}`, value: passed > 0 ? `S/. ${fmt(real)}` : '—',
           subs: passed > 0
-            ? [`${vsExpectedPill(real, esperado, corte)} vs esperado S/. ${fmt(esperado)}`, `${pctMet.toFixed(0)}% de la meta en ${passed} de ${objectiveDays(m)} días`]
+            ? [`${vsExpectedPill(real, esperado, corte)} vs esperado S/. ${fmt(esperado)}`, `${passed} de ${objectiveDays(m)} días con ventas cargadas`]
             : [`${pill('gray', 'sin ventas')} todavía no hay ventas cargadas del mes`] }),
         kpi({ label: 'Faltante para la meta', value: `S/. ${fmt(faltante)}`,
           subs: [faltante > 0 ? `${pill('red', `${pctMissing}% por vender`)} S/. ${fmt(dailyNeed)} por día` : pill('green', '✓ meta cubierta'),

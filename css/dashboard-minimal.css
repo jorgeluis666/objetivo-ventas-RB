@@ -2464,6 +2464,13 @@ tbody tr:hover td {
 /* KPIs: .kpi-pill pinta todos sus <span> como etiqueta; las píldoras de variación no */
 .gp-kpis { margin-bottom: 0; }
 .obj-kpis { margin-bottom: 16px; }
+/* Cumplimiento de la meta: relleno = vendido / meta; marca = lo esperado a la fecha de corte */
+.kpi-bar { position: relative; height: 6px; margin-top: 10px; border-radius: 3px; background: #E2E8F0; }
+.kpi-bar i { display: block; height: 100%; border-radius: 3px; background: var(--brand); }
+.kpi-bar i.green { background: var(--green); }
+.kpi-bar i.amber { background: var(--amber); }
+.kpi-bar i.red   { background: var(--red); }
+.kpi-bar b { position: absolute; top: -3px; width: 2px; height: 12px; margin-left: -1px; border-radius: 1px; background: var(--text); }
 /* Objetivos: píldora "vs esperado" junto al monto vendido (la celda es monoespaciada, la píldora no) */
 .month-table td.mono,
 .month-table .gap-val { white-space: nowrap; }

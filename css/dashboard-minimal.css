@@ -2913,6 +2913,9 @@ body.gp-table-fullscreen { overflow: hidden; }
 .gp-terms-scroll { max-height: 520px; overflow: auto; }
 .gp-terms-table { min-width: 980px; }
 .gp-terms-table thead th { position: sticky; top: 0; z-index: 1; }
+/* Anuncios dentro de cada cuadro de campaña (la tabla completa vive en el módulo Anuncios) */
+.gp-camp-ads-table { min-width: 1180px; }
+.gp-camp-ads-table .gp-ad-cell { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 @media (max-width: 760px) {
   .gp-camp-head { flex-direction: column; }

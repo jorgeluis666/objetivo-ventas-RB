@@ -46,7 +46,8 @@
   const AGE_LABELS = { Unknown: 'Sin dato' };
   const GENDER_LABELS = { female: 'Mujeres', male: 'Hombres', unknown: 'Sin dato' };
 
-  const state = { data: null, loaded: false, tab: 'meta', month: null, rendered: {} };
+  // monthVersion sube con cada cambio de mes; rendered guarda con qué versión se pintó cada vista (ver setMonth).
+  const state = { data: null, loaded: false, tab: 'meta', month: null, monthVersion: 0, rendered: {} };
 
   // ── Formato (mismo criterio que el resto del tablero: "S/. " y es-PE) ──
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -659,6 +660,58 @@
       </div>`;
   }
 
+  // Anuncios del grupo en el periodo, de más a menos resultados, con sus resultados contra el mes anterior.
+  // La tabla completa, con filtro y pantalla completa, está en el módulo Anuncios.
+  function campaignAdsHtml(period, group) {
+    const ofGroup = rows => rows.filter(r => r.group === group.key);
+    const ads = adsOf(ofGroup(period.rows)).sort((a, b) => b.results - a.results || b.spend - a.spend);
+    const previous = new Map((period.compare ? adsOf(ofGroup(period.compare.rows)) : []).map(a => [a.key, a]));
+    const compare = Boolean(period.compare);
+    const commerce = group.purchases > 0;
+    const manySets = new Set(ads.flatMap(a => a.adSets)).size > 1;
+    const monthShort = period.month?.shortName.toLowerCase();
+    const head = [['Anuncio']].concat(manySets ? [['Conjunto']] : [], [['Resultados', true]])
+      .concat(compare ? [[`Resultados ${period.compare.label}`, true], ['Variación', true]] : [])
+      .concat([['Costo por resultado', true], ['Inversión', true], ['% de la campaña'], ['Impresiones', true], ['Alcance', true], ['CPM', true], ['Clics', true]])
+      .concat(commerce ? [['Compras', true], ['ROAS', true]] : [], [['Días activos'], ['Vista previa']]);
+    const body = ads.map((a, k) => {
+      const before = previous.get(a.key);
+      const link = safeUrl(a.link);
+      let days = '—';
+      if (period.annual && a.firstDate) days = a.firstDate === a.lastDate ? fechaCorta(a.firstDate) : `${fechaCorta(a.firstDate)} - ${fechaCorta(a.lastDate)}`;
+      else if (!period.annual && a.firstDay) days = a.firstDay === a.lastDay ? `${a.firstDay} ${monthShort}` : `${a.firstDay}-${a.lastDay} ${monthShort}`;
+      const share = group.spend ? a.spend / group.spend * 100 : 0;
+      return `
+        <tr>
+          <td class="gp-camp-name gp-ad-cell" title="${esc(a.ad)}">${k === 0 && a.results > 0 ? '<b class="gp-leader" title="Líder de la campaña">★</b> ' : ''}${esc(a.ad)}</td>
+          ${manySets ? `<td class="gp-set-col">${esc(a.adSets.join(' / ') || '—')}</td>` : ''}
+          <td class="r mono"><b>${num(a.results)}</b></td>
+          ${compare ? `<td class="r mono">${before ? num(before.results) : '<span class="gp-no-data">—</span>'}</td><td class="r">${variationCell(a.results, before?.results)}</td>` : ''}
+          <td class="r mono">${unitCost(a.costPerResult)}</td>
+          <td class="r mono">${money(a.spend, 2)}</td>
+          <td class="gp-share-col"><span class="gp-share"><span style="width:${Math.min(100, share).toFixed(1)}%"></span></span><b>${pct(share)}</b></td>
+          <td class="r mono">${num(a.impressions)}</td>
+          <td class="r mono">${num(a.reach)}</td>
+          <td class="r mono">${money(a.cpm, 2)}</td>
+          <td class="r mono">${num(a.clicks)}</td>
+          ${commerce ? `<td class="r mono">${a.purchases ? num(a.purchases) : '—'}</td><td class="r">${roasPill(a.roas, a.purchases)}</td>` : ''}
+          <td class="gp-date-col">${days}</td>
+          <td>${link ? `<a class="gp-preview" href="${esc(link)}" target="_blank" rel="noopener noreferrer">Ver anuncio »</a>` : '<span class="gp-no-data">Sin enlace</span>'}</td>
+        </tr>`;
+    }).join('') || `<tr><td class="gp-table-empty" colspan="${head.length}">Sin anuncios con gasto en el periodo.</td></tr>`;
+    return `
+      <div class="gp-adset-head">
+        <div class="panel-title">Anuncios</div>
+        <div class="panel-sub">${ads.length} ${ads.length === 1 ? 'anuncio' : 'anuncios'} con gasto o impresiones en ${esc(period.label)}${compare ? `. Resultados contra ${esc(period.compare.label)}` : ''}. La estrella marca al líder.</div>
+      </div>
+      <div class="gp-table-wrap">
+        <table class="rep-table gp-adset-table gp-camp-ads-table">
+          <thead><tr>${head.map(([label, numeric]) => `<th${numeric ? ' class="r"' : ''}>${esc(label)}</th>`).join('')}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>`;
+  }
+
   function campaignHtml(period, group, before) {
     const key = esc(group.key);
     const settings = campaignSettings(group.key);
@@ -685,6 +738,7 @@
           <div class="chart-wrap h-300"><canvas id="chart-gp-camp-${key}" role="img" aria-label="Gráfico de la campaña ${esc(group.label)}"></canvas></div>
           <div class="gp-legend" data-camp-legend></div>
           ${adSetsHtml(period, group)}
+          ${campaignAdsHtml(period, group)}
         </div>
       </section>`;
   }
@@ -988,10 +1042,10 @@
     }).join('');
   }
 
-  // ── Herramientas de la tabla de anuncios (Meta y Google) ──
+  // ── Herramientas de las tablas de anuncios del módulo Anuncios (Meta y Google) ──
   const AD_TABLES = {
-    meta:   { panel: 'gp-ads-panel', density: 'gp-ads-density', expand: 'gp-ads-expand', tabs: 'gp-meta-months', key: ADS_COMPACT_KEY },
-    google: { panel: 'gp-g-ads-panel', density: 'gp-g-ads-density', expand: 'gp-g-ads-expand', tabs: 'gp-google-months', key: 'rb-gp-gads-compact-v1' },
+    meta:   { panel: 'gp-ads-panel', density: 'gp-ads-density', expand: 'gp-ads-expand', tabs: 'ad-meta-months', key: ADS_COMPACT_KEY },
+    google: { panel: 'gp-g-ads-panel', density: 'gp-g-ads-density', expand: 'gp-g-ads-expand', tabs: 'ad-google-months', key: 'rb-gp-gads-compact-v1' },
   };
   const adTables = Object.fromEntries(Object.entries(AD_TABLES).map(([p, cfg]) => [p, {
     compact: readSetting(cfg.key, 'false') === 'true', fullscreen: false, tabsHome: null,
@@ -1143,11 +1197,11 @@
     const body = document.getElementById('gp-meta-body');
     if (!meta.latestKey) { emptyState(body, 'meta'); return; }
     // Si antes se mostró el estado vacío, se restaura la estructura del panel
-    if (!body.querySelector('#gp-meta-kpis')) { body.innerHTML = metaBodyTpl; applyCompact('meta'); }
+    if (!body.querySelector('#gp-meta-kpis')) body.innerHTML = metaBodyTpl;
 
     const period = currentPeriod();
     state.month = period.annual ? YEAR_KEY : period.month.key;
-    // Los grupos del periodo se calculan una vez para los cuadros, la distribución y los anuncios.
+    // Los grupos del periodo se calculan una vez para la distribución y los cuadros (con sus anuncios).
     const groups = groupsOf(period.rows);
     renderMetaTabs(period);
     renderAlerts('gp-meta-alerts', 'meta', period.annual ? { label: String(period.year), warnings: [] } : period.month.raw);
@@ -1155,7 +1209,6 @@
     renderKpis(period);
     renderDistribution(period);
     renderCampaigns(period, groups);
-    renderAds(period, groups);
     renderFunnelAudience(period);
   }
 
@@ -1166,9 +1219,8 @@
       const tab = e.target.closest('#gp-meta-months .month-tab:not(:disabled)');
       if (tab) {
         if (tab.dataset.month === state.month) return;
-        state.month = tab.dataset.month;
-        // Google Ads se vuelve a pintar con el mes nuevo cuando se abra.
-        state.rendered = { meta: true };
+        setMonth(tab.dataset.month);
+        markRendered('meta');
         renderMeta();
         return;
       }
@@ -1177,17 +1229,9 @@
         const key = toggle.closest('.gp-camp-block').dataset.group;
         saveCampaignSettings(key, { collapsed: !campaignSettings(key).collapsed });
         renderCampaignChart(key);
-        return;
       }
-      if (e.target.closest('#gp-ads-density')) { toggleCompact('meta'); return; }
-      if (e.target.closest('#gp-ads-expand')) toggleFullscreen('meta');
     });
     body.addEventListener('change', e => {
-      if (e.target.id === 'gp-ads-group') {
-        meta.adsGroup = e.target.value;
-        renderAds(currentPeriod());
-        return;
-      }
       const input = e.target.closest('.gp-camp-block input');
       if (!input) return;
       const block = input.closest('.gp-camp-block');
@@ -1635,6 +1679,57 @@
       </div>`;
   }
 
+  // Anuncios del tipo, del informe por día: de más a menos conversiones. La tabla completa está en el módulo Anuncios.
+  function gCampaignAdsHtml(period, group) {
+    const head = `
+      <div class="gp-adset-head">
+        <div class="panel-title">Anuncios</div>`;
+    const rows = (period.detail || []).filter(r => r.group === group.key);
+    if (!rows.length) {
+      return `${head}
+        <div class="panel-sub">${period.detail
+          ? `El informe por día de ${esc(period.detailLabel)} no trae anuncios de ${esc(group.label)}.`
+          : 'El informe de campaña no trae anuncios: llegan con el informe por día y palabra clave del mes.'}</div>
+      </div>`;
+    }
+    const ads = gAds(rows).sort((a, b) => b.conversions - a.conversions || b.cost - a.cost);
+    const compare = period.detailCompare;
+    const previous = new Map((compare ? gAds(compare.rows.filter(r => r.group === group.key)) : []).map(a => [a.key, a]));
+    const total = rows.reduce((s, r) => s + r.cost, 0);
+    const cols = [['Anuncio'], ['Grupo'], ['Conversiones', true]]
+      .concat(compare ? [[`Conversiones ${compare.label}`, true], ['Variación', true]] : [])
+      .concat([['Costo por conversión', true], ['Inversión', true], ['% del tipo'], ['Clics', true], ['CPC', true], ['Valor', true], ['ROAS', true], ['Términos', true], ['Días activos'], ['Página']]);
+    return `${head}
+        <div class="panel-sub">${ads.length} ${ads.length === 1 ? 'anuncio' : 'anuncios'} en el informe por día (${esc(period.detailLabel)}). La estrella marca al líder.</div>
+      </div>
+      <div class="gp-table-wrap">
+        <table class="rep-table gp-adset-table gp-camp-ads-table">
+          <thead><tr>${cols.map(([label, numeric]) => `<th${numeric ? ' class="r"' : ''}>${esc(label)}</th>`).join('')}</tr></thead>
+          <tbody>${ads.map((a, k) => {
+            const before = previous.get(a.key);
+            const url = safeUrl(a.url);
+            const share = total ? a.cost / total * 100 : 0;
+            return `<tr>
+              <td class="gp-camp-name gp-ad-cell" title="${esc(a.ad)}">${k === 0 && a.conversions > 0 ? '<b class="gp-leader" title="Líder del tipo">★</b> ' : ''}${esc(a.ad)}</td>
+              <td class="gp-set-col">${esc(a.adGroups.join(' / ') || '—')}</td>
+              <td class="r mono"><b>${numDec(a.conversions)}</b></td>
+              ${compare ? `<td class="r mono">${before ? numDec(before.conversions) : '<span class="gp-no-data">—</span>'}</td><td class="r">${variationCell(a.conversions, before?.conversions)}</td>` : ''}
+              <td class="r mono">${money(a.costPerConversion, 2)}</td>
+              <td class="r mono">${money(a.cost, 2)}</td>
+              <td class="gp-share-col"><span class="gp-share"><span style="width:${Math.min(100, share).toFixed(1)}%"></span></span><b>${pct(share)}</b></td>
+              <td class="r mono">${num(a.clicks)}</td>
+              <td class="r mono">${money(a.cpc, 2)}</td>
+              <td class="r mono">${a.conversionValue ? money(a.conversionValue) : '—'}</td>
+              <td class="r">${roasPill(a.roas, a.conversions)}</td>
+              <td class="r mono">${num(a.termCount)}</td>
+              <td class="gp-date-col">${daysText(a, period)}</td>
+              <td>${url ? `<a class="gp-preview" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Ver página »</a>` : '<span class="gp-no-data">Sin URL</span>'}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>`;
+  }
+
   function gCampaignHtml(period, group, before) {
     const key = esc(group.key);
     const settings = gCampaignSettings(group.key);
@@ -1665,6 +1760,7 @@
           <div class="chart-wrap h-300"><canvas id="chart-gp-gcamp-${key}" role="img" aria-label="Gráfico de la campaña ${esc(group.label)}"></canvas></div>
           <div class="gp-legend" data-camp-legend></div>
           ${gAdGroupsHtml(period, group)}
+          ${gCampaignAdsHtml(period, group)}
         </div>
       </section>`;
   }
@@ -1853,7 +1949,7 @@
   function renderGoogle() {
     const body = document.getElementById('gp-google-body');
     if (!google.latestKey) { emptyState(body, 'google'); return; }
-    if (!body.querySelector('#gp-g-kpis')) { body.innerHTML = googleBodyTpl; applyCompact('google'); }
+    if (!body.querySelector('#gp-g-kpis')) body.innerHTML = googleBodyTpl;
 
     const period = gCurrentPeriod();
     const year = gViewYear();
@@ -1868,7 +1964,6 @@
     renderGoogleKpis(period);
     renderGoogleDistribution(period);
     renderGoogleCampaigns(period, groups);
-    renderGoogleAds(period, groups);
     renderGoogleTerms(period);
   }
 
@@ -1878,9 +1973,8 @@
       const tab = e.target.closest('#gp-google-months .month-tab:not(:disabled)');
       if (tab) {
         if (tab.dataset.month === state.month) return;
-        state.month = tab.dataset.month;
-        // Meta Ads se vuelve a pintar con el mes nuevo cuando se abra.
-        state.rendered = { google: true };
+        setMonth(tab.dataset.month);
+        markRendered('google');
         renderGoogle();
         return;
       }
@@ -1889,18 +1983,9 @@
         const key = toggle.closest('.gp-camp-block').dataset.group;
         gSaveCampaignSettings(key, { collapsed: !gCampaignSettings(key).collapsed });
         renderGoogleChart(key);
-        return;
       }
-      if (e.target.closest('#gp-g-ads-density')) { toggleCompact('google'); return; }
-      if (e.target.closest('#gp-g-ads-expand')) toggleFullscreen('google');
     });
     body.addEventListener('change', e => {
-      if (e.target.id === 'gp-g-ads-group') {
-        google.adsGroup = e.target.value;
-        const period = gCurrentPeriod();
-        renderGoogleAds(period, gGroups(period.months, gCampaigns(period)));
-        return;
-      }
       const input = e.target.closest('.gp-camp-block input');
       if (!input) return;
       const block = input.closest('.gp-camp-block');
@@ -1917,26 +2002,197 @@
   }
 
   // ════════════════════════════════════════════════════════════
-  // Pestañas
+  // MÓDULO ANUNCIOS (vista view-ads)
+  // Las tablas de anuncios de Meta y Google con un resumen del periodo. Mismos datos, periodos y mes que
+  // Gasto publicitario; dentro de ese módulo cada campaña muestra además sus propios anuncios.
   // ════════════════════════════════════════════════════════════
+  const ADS_TAB_KEY = 'rb-ads-tab';
+  const adsView = { tab: 'meta' };
+
+  // KPI del resumen de anuncios: valor, variación contra el periodo anterior (o una pista) y una nota.
+  const adKpi = (label, value, line, note) => `
+    <div class="kpi-pill">
+      <span>${label}</span>
+      <strong>${value}</strong>
+      ${line || ''}${note ? `<small>${note}</small>` : ''}
+    </div>`;
+
+  function adsSummaryHtml(current, previous, compareLabel, resultField, resultWord) {
+    const prevKeys = previous ? new Set(previous.map(a => a.key)) : null;
+    const fresh = prevKeys ? current.filter(a => !prevKeys.has(a.key)) : null;
+    const empty = current.filter(a => !a[resultField]);
+    const spendField = current[0] && 'spend' in current[0] ? 'spend' : 'cost';
+    const spendOf = list => list.reduce((s, a) => s + (a[spendField] || 0), 0);
+    // Los resultados de Meta no se suman entre tipos (compras, reproducciones…): el anuncio destacado es el de más inversión.
+    const top = current.slice().sort((a, b) => (b[spendField] || 0) - (a[spendField] || 0))[0];
+    return [
+      adKpi('Anuncios con entrega', num(current.length),
+        previous ? deltaHtml(current.length, previous.length, null, compareLabel) : '<small>Con inversión, impresiones o clics</small>'),
+      adKpi('Nuevos en el periodo', fresh ? num(fresh.length) : '—',
+        fresh ? `<small>No corrían en ${esc(compareLabel)}</small>` : '<small>Sin periodo anterior para comparar</small>',
+        fresh?.length ? `${money(spendOf(fresh), 2)} de inversión` : ''),
+      adKpi(`Sin ${resultWord}`, num(empty.length), `<small>${money(spendOf(empty), 2)} de inversión</small>`,
+        current.length ? `${pct(empty.length / current.length * 100, 0)} de los anuncios` : ''),
+      adKpi('Inversión en anuncios', money(spendOf(current), 2),
+        previous ? deltaHtml(spendOf(current), spendOf(previous), null, compareLabel) : '',
+        top ? `Mayor inversión: ${esc(top.ad)}` : ''),
+    ].join('');
+  }
+
+  function renderAdsMeta() {
+    const title = document.getElementById('ad-meta-period-title');
+    if (!meta.latestKey) {
+      title.textContent = 'Sin datos de Meta Ads';
+      document.getElementById('ad-meta-period-sub').textContent = 'La carpeta Meta Files todavía no tiene exports.';
+      return;
+    }
+    const period = currentPeriod();
+    state.month = period.annual ? YEAR_KEY : period.month.key;
+    const groups = groupsOf(period.rows);
+    const year = viewYear();
+    renderMonthTabs('ad-meta-months', {
+      year, has: key => Boolean(monthByKey(key)?.hasData), latestKey: meta.latestKey,
+      selected: period.month?.key, annual: Boolean(period.annual), yearOk: Boolean(yearPeriod(year)), what: 'export de Meta',
+    });
+    title.textContent = `Periodo: ${period.label} ${period.year}${period.annual || period.closed ? '' : ' (mes en curso)'}`;
+    document.getElementById('ad-meta-period-sub').textContent = period.compare ? `Comparación vs ${period.compare.label}` : period.annual ? 'Acumulado del año: sin periodo anterior para comparar' : 'Sin mes anterior para comparar';
+    document.getElementById('ad-meta-kpis').innerHTML = adsSummaryHtml(adsOf(period.rows), period.compare ? adsOf(period.compare.rows) : null, period.compare?.label, 'results', 'resultados');
+    renderAds(period, groups);
+  }
+
+  function renderAdsGoogle() {
+    const title = document.getElementById('ad-google-period-title');
+    if (!google.latestKey) {
+      title.textContent = 'Sin datos de Google Ads';
+      document.getElementById('ad-google-period-sub').textContent = 'La carpeta Google Files todavía no tiene informes.';
+      return;
+    }
+    const period = gCurrentPeriod();
+    state.month = period.annual ? YEAR_KEY : period.month.key;
+    const groups = gGroups(period.months, gCampaigns(period));
+    const year = gViewYear();
+    renderMonthTabs('ad-google-months', {
+      year, has: key => Boolean(gMonthByKey(key)?.hasData), latestKey: google.latestKey,
+      selected: period.month?.key, annual: Boolean(period.annual), yearOk: Boolean(gYearPeriod(year)), what: 'informe de Google Ads',
+    });
+    title.textContent = `Periodo: ${period.detail ? period.detailLabel : period.label} ${period.year}${period.annual || period.closed ? '' : ' (mes en curso)'}`;
+    document.getElementById('ad-google-period-sub').textContent = !period.detail
+      ? 'Este periodo no tiene informe por día y palabra clave: no hay datos de anuncios.'
+      : period.detailCompare ? `Comparación vs ${period.detailCompare.label}` : 'Sin informe por día del mes anterior para comparar';
+    document.getElementById('ad-google-kpis').innerHTML = period.detail
+      ? adsSummaryHtml(gAds(period.detail), period.detailCompare ? gAds(period.detailCompare.rows) : null, period.detailCompare?.label, 'conversions', 'conversiones')
+      : '';
+    renderGoogleAds(period, groups);
+  }
+
+  const ADS_RENDER = { meta: renderAdsMeta, google: renderAdsGoogle };
+
+  function showAdsTab(name) {
+    if (!ADS_RENDER[name]) name = 'meta';
+    adsView.tab = name;
+    document.querySelectorAll('#view-ads .ad-tab').forEach(t => {
+      const on = t.dataset.adPane === name;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+    });
+    document.querySelectorAll('#view-ads .ad-pane').forEach(p => { p.hidden = p.id !== 'ad-pane-' + name; });
+    try { localStorage.setItem(ADS_TAB_KEY, name); } catch (e) { /* storage bloqueado */ }
+    if (!state.loaded) return;
+    // Se repinta si el mes cambió desde la última vez (en este módulo o en Gasto publicitario).
+    if (isStale('ads-' + name)) {
+      markRendered('ads-' + name);
+      ADS_RENDER[name]();
+    }
+  }
+
+  function wireAds() {
+    const view = document.getElementById('view-ads');
+    const tabs = [...view.querySelectorAll('.ad-tab')];
+    tabs.forEach((t, k) => {
+      t.querySelector('.gp-tab-ic').style.background = PLATFORMS[t.dataset.adPane].color;
+      t.addEventListener('click', () => showAdsTab(t.dataset.adPane));
+      t.addEventListener('keydown', e => {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        const next = tabs[(k + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+        next.focus();
+        showAdsTab(next.dataset.adPane);
+      });
+    });
+    view.addEventListener('click', e => {
+      const tab = e.target.closest('#ad-meta-months .month-tab:not(:disabled), #ad-google-months .month-tab:not(:disabled)');
+      if (tab) {
+        if (tab.dataset.month === state.month) return;
+        setMonth(tab.dataset.month);
+        markRendered('ads-' + adsView.tab);
+        ADS_RENDER[adsView.tab]();
+        return;
+      }
+      if (e.target.closest('#gp-ads-density')) { toggleCompact('meta'); return; }
+      if (e.target.closest('#gp-ads-expand')) { toggleFullscreen('meta'); return; }
+      if (e.target.closest('#gp-g-ads-density')) { toggleCompact('google'); return; }
+      if (e.target.closest('#gp-g-ads-expand')) toggleFullscreen('google');
+    });
+    view.addEventListener('change', e => {
+      if (e.target.id === 'gp-ads-group') {
+        meta.adsGroup = e.target.value;
+        renderAds(currentPeriod());
+      } else if (e.target.id === 'gp-g-ads-group') {
+        google.adsGroup = e.target.value;
+        const period = gCurrentPeriod();
+        renderGoogleAds(period, gGroups(period.months, gCampaigns(period)));
+      }
+    });
+    applyCompact('meta');
+    applyCompact('google');
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // Mes compartido, carga y pestañas
+  // ════════════════════════════════════════════════════════════
+  // El mes elegido vale para Gasto publicitario (Meta y Google) y Anuncios. Cada vista recuerda con qué versión
+  // del mes se pintó: al volver a ella se repinta solo si el mes cambió en otra parte.
+  function setMonth(value) {
+    state.month = value;
+    state.monthVersion += 1;
+  }
+  const markRendered = key => { state.rendered[key] = state.monthVersion; };
+  const isStale = key => state.rendered[key] !== state.monthVersion;
+
+  // Datos de una sola vez para los dos módulos, se abra primero el que se abra.
+  let ready = null;
+  function ensureReady() {
+    if (!ready) {
+      ready = loadData().then(data => {
+        state.data = data;
+        state.loaded = true;
+        buildMetaMonths();
+        buildGoogleMonths();
+        const months = data?.months || [];
+        state.month = months.length ? months[months.length - 1].id : null;
+      });
+    }
+    return ready;
+  }
+
   const RENDER = { meta: renderMeta, google: renderGoogle };
 
   function showTab(name) {
     if (!RENDER[name]) name = 'meta';
     state.tab = name;
-    document.querySelectorAll('.gp-tab').forEach(t => {
+    document.querySelectorAll('#view-rep .gp-tab').forEach(t => {
       const on = t.dataset.pane === name;
       t.classList.toggle('active', on);
       t.setAttribute('aria-selected', String(on));
       t.tabIndex = on ? 0 : -1;
     });
-    document.querySelectorAll('.gp-pane').forEach(p => { p.hidden = p.id !== 'gp-pane-' + name; });
+    document.querySelectorAll('#view-rep .gp-pane').forEach(p => { p.hidden = p.id !== 'gp-pane-' + name; });
     try { localStorage.setItem(TAB_KEY, name); } catch (e) { /* storage bloqueado */ }
 
     // Render perezoso: los charts se crean con la pestaña ya visible (y con los datos ya cargados)
     if (!state.loaded) return;
-    if (!state.rendered[name]) {
-      state.rendered[name] = true;
+    if (isStale(name)) {
+      markRendered(name);
       RENDER[name]();
     } else {
       requestAnimationFrame(() => global.Charts.replay(PANE_CHARTS[name]));
@@ -1944,7 +2200,7 @@
   }
 
   function wireTabs() {
-    const tabs = [...document.querySelectorAll('.gp-tab')];
+    const tabs = [...document.querySelectorAll('#view-rep .gp-tab')];
     tabs.forEach((t, k) => {
       // El color de cada plataforma sale de PLATFORMS: el mismo en pestañas, barras y gráficos.
       const cfg = PLATFORMS[t.dataset.pane];
@@ -1961,30 +2217,46 @@
     });
   }
 
+  // Esc y el cambio de módulo cierran la pantalla completa en los dos módulos; una vez para toda la página.
+  let shared = false;
+  function wireShared() {
+    if (shared) return;
+    shared = true;
+    wireFullscreenExit();
+  }
+
   let started = false;
   async function init() {
     if (started) {
-      requestAnimationFrame(() => global.Charts.replay(PANE_CHARTS[state.tab]));
+      showTab(state.tab);
       return;
     }
     started = true;
     metaBodyTpl = document.getElementById('gp-meta-body').innerHTML;
     googleBodyTpl = document.getElementById('gp-google-body').innerHTML;
+    wireShared();
     wireTabs();
     wireMeta();
     wireGoogle();
-    wireFullscreenExit();
-    applyCompact('meta');
-    applyCompact('google');
-    state.data = await loadData();
-    state.loaded = true;
-    buildMetaMonths();
-    buildGoogleMonths();
-    const months = state.data?.months || [];
-    state.month = months.length ? months[months.length - 1].id : null;
     try { state.tab = localStorage.getItem(TAB_KEY) || 'meta'; } catch (e) { /* storage bloqueado */ }
+    await ensureReady();
     showTab(state.tab);
   }
 
-  global.Gasto = { init, load: loadData };
+  let adsStarted = false;
+  async function initAds() {
+    if (adsStarted) {
+      showAdsTab(adsView.tab);
+      return;
+    }
+    adsStarted = true;
+    wireShared();
+    wireAds();
+    try { adsView.tab = localStorage.getItem(ADS_TAB_KEY) || 'meta'; } catch (e) { /* storage bloqueado */ }
+    showAdsTab(adsView.tab);
+    await ensureReady();
+    showAdsTab(adsView.tab);
+  }
+
+  global.Gasto = { init, initAds, load: loadData };
 })(window);

@@ -479,6 +479,10 @@ const GA_DETAIL_COLUMNS = {
   'campana': 'campaign',
   'grupo de anuncios': 'adGroup',
   'anuncio': 'ad',
+  // Sin columna «Anuncio» (informe de anuncios de octubre de 2026 en adelante), el nombre sale de estas, en orden.
+  'nombre del anuncio': 'adName',
+  'titulo 1': 'headline1',
+  'titulo': 'headline',
   'url final del anuncio': 'url',
   'url final': 'url',
   'palabra clave de la busqueda': 'keyword',
@@ -542,8 +546,10 @@ function parseGoogleDetail(text) {
     const day = parseDay(cell(row, 'day'));
     if (!day) { badDays++; continue; }
     const adGroup = cleanText(cell(row, 'adGroup'));
-    const ad = cleanText(cell(row, 'ad'));
-    const url = cleanText(cell(row, 'url'));
+    // Un anuncio de búsqueda responsivo no tiene nombre: se reconoce por su primer título. "--" = vacío.
+    const present = field => { const value = cleanText(cell(row, field)); return value === '--' ? '' : value; };
+    const ad = present('ad') || present('adName') || present('headline1') || present('headline');
+    const url = present('url');
     const keyword = cleanText(cell(row, 'keyword'));
     const key = [day, campaign, adGroup, ad, url, keyword].join('|');
     let entry = groups.get(key);

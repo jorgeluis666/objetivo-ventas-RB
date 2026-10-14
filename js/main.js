@@ -15,6 +15,7 @@
     'view-meta': 'Planificador Meta Ads',
     'view-proj': 'Proyecciones mensuales',
     'view-rep':  'Gasto publicitario',
+    'view-ads':  'Anuncios',
     'view-config': 'Usuarios y Claves',
   };
 
@@ -27,6 +28,7 @@
     'view-meta':   'Presupuesto Web y WhatsApp',
     'view-proj':   'Ritmo del mes y plan por campaña',
     'view-rep':    'Meta Ads y Google Ads',
+    'view-ads':    'Meta Ads y Google Ads por anuncio',
     'view-config': 'Gestión de accesos y alertas',
   };
 
@@ -39,6 +41,7 @@
     'view-meta':   [],
     'view-proj':   ['chart-proj-ritmo', 'chart-proj-fuentes', 'chart-src-*', 'chart-plan-*'],
     'view-rep':    [],  // Gasto.init() re-anima los charts de la pestaña activa
+    'view-ads':    [],
     'view-config': [],
   };
 
@@ -96,6 +99,8 @@
 
     // Init perezoso del gasto publicitario (sus charts se crean ya visibles)
     if (id === 'view-rep') window.Gasto?.init();
+    // Anuncios usa los mismos datos de Meta Ads y Google Ads (js/gasto.js)
+    if (id === 'view-ads') window.Gasto?.initAds();
 
     // Render perezoso de productos para no bloquear primera pantalla
     if (id === 'view-prod' && !state.renderedProducts) {

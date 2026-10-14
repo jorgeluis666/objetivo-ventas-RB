@@ -51,6 +51,16 @@
       </div>
       <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
     </button>
+    <button class="s-item" data-view="view-ads">
+      <div class="s-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M10 8v5l4-2.5z"/><line x1="8" y1="21" x2="16" y2="21"/></svg>
+      </div>
+      <div class="s-text">
+        <div class="s-title-nav">Anuncios</div>
+        <div class="s-desc-nav">Meta Ads y Google Ads por anuncio</div>
+      </div>
+      <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </button>
     <button class="s-item" data-view="view-proj">
       <div class="s-icon">
         <svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
@@ -747,25 +757,6 @@
                 </div>
                 <div class="gp-camp-blocks" id="gp-meta-blocks"></div>
               </div>
-              <div class="panel gp-ads-panel" id="gp-ads-panel">
-                <div class="panel-head gp-ads-head">
-                  <div>
-                    <div class="panel-title" id="gp-ads-title">Anuncios del periodo</div>
-                    <div class="panel-sub" id="gp-ads-sub"></div>
-                  </div>
-                  <div class="gp-table-tools">
-                    <label class="gp-tool-select" for="gp-ads-group"><span class="sr-only">Filtrar por grupo</span><select id="gp-ads-group"><option value="all">Todos los grupos</option></select></label>
-                    <button type="button" class="gp-tool-btn" id="gp-ads-density" aria-pressed="false">Compacto</button>
-                    <button type="button" class="gp-tool-btn" id="gp-ads-expand" aria-pressed="false" title="Ver la tabla en pantalla completa (Esc para salir)">⤢ Pantalla completa</button>
-                  </div>
-                </div>
-                <div class="gp-ads-scroll" tabindex="0" role="region" aria-label="Tabla de anuncios">
-                  <table class="rep-table gp-ads-table">
-                    <thead><tr><th>Grupo</th><th>Anuncio</th><th>Campaña / conjunto</th><th>Resultado</th><th class="r">Resultados</th><th class="r" id="gp-ads-prev-head">Mes anterior</th><th class="r">Variación</th><th class="r">Costo por resultado</th><th class="r">Inversión</th><th class="r">Compras</th><th class="r">ROAS</th><th class="r">Impresiones</th><th class="r">Alcance</th><th class="r">CPM</th><th class="r">Clics</th><th>Días activos</th><th>Vista previa</th></tr></thead>
-                    <tbody id="gp-ads-body"></tbody>
-                  </table>
-                </div>
-              </div>
               <div class="grid-2">
                 <div class="panel">
                   <div class="panel-head"><div>
@@ -816,25 +807,6 @@
                 <p class="gp-note" id="gp-g-dist-note" hidden></p>
                 <div class="gp-camp-blocks" id="gp-g-blocks"></div>
               </div>
-              <div class="panel gp-ads-panel" id="gp-g-ads-panel">
-                <div class="panel-head gp-ads-head">
-                  <div>
-                    <div class="panel-title" id="gp-g-ads-title">Anuncios del periodo</div>
-                    <div class="panel-sub" id="gp-g-ads-sub"></div>
-                  </div>
-                  <div class="gp-table-tools">
-                    <label class="gp-tool-select" for="gp-g-ads-group"><span class="sr-only">Filtrar por tipo de campaña</span><select id="gp-g-ads-group"><option value="all">Todos los tipos</option></select></label>
-                    <button type="button" class="gp-tool-btn" id="gp-g-ads-density" aria-pressed="false">Compacto</button>
-                    <button type="button" class="gp-tool-btn" id="gp-g-ads-expand" aria-pressed="false" title="Ver la tabla en pantalla completa (Esc para salir)">⤢ Pantalla completa</button>
-                  </div>
-                </div>
-                <div class="gp-ads-scroll" tabindex="0" role="region" aria-label="Tabla de anuncios de Google Ads">
-                  <table class="rep-table gp-ads-table gp-g-ads-table">
-                    <thead><tr><th>Tipo</th><th>Anuncio</th><th>Campaña / grupo</th><th class="r">Inversión</th><th class="r">Conversiones</th><th class="r" id="gp-g-ads-prev-head">Mes anterior</th><th class="r">Variación</th><th class="r">Costo por conversión</th><th class="r">Valor</th><th class="r">ROAS</th><th class="r">Clics</th><th class="r">CPC</th><th class="r">Términos</th><th>Días activos</th><th>Página</th></tr></thead>
-                    <tbody id="gp-g-ads-body"></tbody>
-                  </table>
-                </div>
-              </div>
               <div class="panel" id="gp-g-terms-panel">
                 <div class="panel-head"><div>
                   <div class="panel-title">Términos de búsqueda</div>
@@ -846,6 +818,90 @@
                     <tbody id="gp-g-terms-body"></tbody>
                   </table>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ VIEW: Anuncios ════════════════════ -->
+      <!-- Los mismos datos que Gasto publicitario (js/gasto.js), por anuncio. El mes se comparte con ese módulo. -->
+      <section class="view" id="view-ads">
+        <div class="section-title">Anuncios · Meta Ads y Google Ads</div>
+        <div class="section-desc">
+          Cada anuncio del periodo con sus resultados, su costo y la variación contra el mismo tramo del mes anterior. Sale de las mismas carpetas de Drive que <strong>Gasto publicitario</strong>, donde cada campaña muestra además sus propios anuncios.
+        </div>
+
+        <div class="gp-tabs" role="tablist" aria-label="Plataforma de los anuncios">
+          <button class="gp-tab ad-tab active" type="button" role="tab" id="ad-tab-meta" aria-selected="true" aria-controls="ad-pane-meta" data-ad-pane="meta">
+            <span class="gp-tab-ic">M</span>
+            <span><span class="gp-tab-name">Meta Ads</span><span class="gp-tab-src">Export diario · carpeta Meta Files</span></span>
+          </button>
+          <button class="gp-tab ad-tab" type="button" role="tab" id="ad-tab-google" aria-selected="false" aria-controls="ad-pane-google" data-ad-pane="google" tabindex="-1">
+            <span class="gp-tab-ic">G</span>
+            <span><span class="gp-tab-name">Google Ads</span><span class="gp-tab-src">Informe por día y palabra clave · Google Files</span></span>
+          </button>
+        </div>
+
+        <div class="ad-pane" id="ad-pane-meta" role="tabpanel" aria-labelledby="ad-tab-meta">
+          <div class="month-tabs gp-month-tabs" id="ad-meta-months" role="group" aria-label="Mes de los anuncios de Meta Ads"></div>
+          <div class="rep-stack">
+            <div class="panel gp-period-panel">
+              <div class="gp-period-head">
+                <div class="panel-title" id="ad-meta-period-title">Cargando anuncios de Meta…</div>
+                <div class="panel-sub" id="ad-meta-period-sub"></div>
+              </div>
+              <div class="kpi-strip gp-kpis" id="ad-meta-kpis" role="group" aria-label="Resumen de los anuncios"></div>
+            </div>
+            <div class="panel gp-ads-panel" id="gp-ads-panel">
+              <div class="panel-head gp-ads-head">
+                <div>
+                  <div class="panel-title" id="gp-ads-title">Anuncios del periodo</div>
+                  <div class="panel-sub" id="gp-ads-sub"></div>
+                </div>
+                <div class="gp-table-tools">
+                  <label class="gp-tool-select" for="gp-ads-group"><span class="sr-only">Filtrar por grupo</span><select id="gp-ads-group"><option value="all">Todos los grupos</option></select></label>
+                  <button type="button" class="gp-tool-btn" id="gp-ads-density" aria-pressed="false">Compacto</button>
+                  <button type="button" class="gp-tool-btn" id="gp-ads-expand" aria-pressed="false" title="Ver la tabla en pantalla completa (Esc para salir)">⤢ Pantalla completa</button>
+                </div>
+              </div>
+              <div class="gp-ads-scroll" tabindex="0" role="region" aria-label="Tabla de anuncios">
+                <table class="rep-table gp-ads-table">
+                  <thead><tr><th>Grupo</th><th>Anuncio</th><th>Campaña / conjunto</th><th>Resultado</th><th class="r">Resultados</th><th class="r" id="gp-ads-prev-head">Mes anterior</th><th class="r">Variación</th><th class="r">Costo por resultado</th><th class="r">Inversión</th><th class="r">Compras</th><th class="r">ROAS</th><th class="r">Impresiones</th><th class="r">Alcance</th><th class="r">CPM</th><th class="r">Clics</th><th>Días activos</th><th>Vista previa</th></tr></thead>
+                  <tbody id="gp-ads-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ad-pane" id="ad-pane-google" role="tabpanel" aria-labelledby="ad-tab-google" hidden>
+          <div class="month-tabs gp-month-tabs" id="ad-google-months" role="group" aria-label="Mes de los anuncios de Google Ads"></div>
+          <div class="rep-stack">
+            <div class="panel gp-period-panel">
+              <div class="gp-period-head">
+                <div class="panel-title" id="ad-google-period-title">Cargando anuncios de Google Ads…</div>
+                <div class="panel-sub" id="ad-google-period-sub"></div>
+              </div>
+              <div class="kpi-strip gp-kpis" id="ad-google-kpis" role="group" aria-label="Resumen de los anuncios"></div>
+            </div>
+            <div class="panel gp-ads-panel" id="gp-g-ads-panel">
+              <div class="panel-head gp-ads-head">
+                <div>
+                  <div class="panel-title" id="gp-g-ads-title">Anuncios del periodo</div>
+                  <div class="panel-sub" id="gp-g-ads-sub"></div>
+                </div>
+                <div class="gp-table-tools">
+                  <label class="gp-tool-select" for="gp-g-ads-group"><span class="sr-only">Filtrar por tipo de campaña</span><select id="gp-g-ads-group"><option value="all">Todos los tipos</option></select></label>
+                  <button type="button" class="gp-tool-btn" id="gp-g-ads-density" aria-pressed="false">Compacto</button>
+                  <button type="button" class="gp-tool-btn" id="gp-g-ads-expand" aria-pressed="false" title="Ver la tabla en pantalla completa (Esc para salir)">⤢ Pantalla completa</button>
+                </div>
+              </div>
+              <div class="gp-ads-scroll" tabindex="0" role="region" aria-label="Tabla de anuncios de Google Ads">
+                <table class="rep-table gp-ads-table gp-g-ads-table">
+                  <thead><tr><th>Tipo</th><th>Anuncio</th><th>Campaña / grupo</th><th class="r">Inversión</th><th class="r">Conversiones</th><th class="r" id="gp-g-ads-prev-head">Mes anterior</th><th class="r">Variación</th><th class="r">Costo por conversión</th><th class="r">Valor</th><th class="r">ROAS</th><th class="r">Clics</th><th class="r">CPC</th><th class="r">Términos</th><th>Días activos</th><th>Página</th></tr></thead>
+                  <tbody id="gp-g-ads-body"></tbody>
+                </table>
               </div>
             </div>
           </div>

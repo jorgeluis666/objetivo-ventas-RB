@@ -2009,41 +2009,11 @@
 
   // ════════════════════════════════════════════════════════════
   // MÓDULO ANUNCIOS (vista view-ads)
-  // Las tablas de anuncios de Meta y Google con un resumen del periodo. Mismos datos, periodos y mes que
+  // Las tablas de anuncios de Meta y Google con el top 3 de anuncios con ventas. Mismos datos, periodos y mes que
   // Gasto publicitario; dentro de ese módulo cada campaña muestra además sus propios anuncios.
   // ════════════════════════════════════════════════════════════
   const ADS_TAB_KEY = 'rb-ads-tab';
   const adsView = { tab: 'meta' };
-
-  // KPI del resumen de anuncios: valor, variación contra el periodo anterior (o una pista) y una nota.
-  const adKpi = (label, value, line, note) => `
-    <div class="kpi-pill">
-      <span>${label}</span>
-      <strong>${value}</strong>
-      ${line || ''}${note ? `<small>${note}</small>` : ''}
-    </div>`;
-
-  function adsSummaryHtml(current, previous, compareLabel, resultField, resultWord) {
-    const prevKeys = previous ? new Set(previous.map(a => a.key)) : null;
-    const fresh = prevKeys ? current.filter(a => !prevKeys.has(a.key)) : null;
-    const empty = current.filter(a => !a[resultField]);
-    const spendField = current[0] && 'spend' in current[0] ? 'spend' : 'cost';
-    const spendOf = list => list.reduce((s, a) => s + (a[spendField] || 0), 0);
-    // Los resultados de Meta no se suman entre tipos (compras, reproducciones…): el anuncio destacado es el de más inversión.
-    const top = current.slice().sort((a, b) => (b[spendField] || 0) - (a[spendField] || 0))[0];
-    return [
-      adKpi('Anuncios con entrega', num(current.length),
-        previous ? deltaHtml(current.length, previous.length, null, compareLabel) : '<small>Con inversión, impresiones o clics</small>'),
-      adKpi('Nuevos en el periodo', fresh ? num(fresh.length) : '—',
-        fresh ? `<small>No corrían en ${esc(compareLabel)}</small>` : '<small>Sin periodo anterior para comparar</small>',
-        fresh?.length ? `${money(spendOf(fresh), 2)} de inversión` : ''),
-      adKpi(`Sin ${resultWord}`, num(empty.length), `<small>${money(spendOf(empty), 2)} de inversión</small>`,
-        current.length ? `${pct(empty.length / current.length * 100, 0)} de los anuncios` : ''),
-      adKpi('Inversión en anuncios', money(spendOf(current), 2),
-        previous ? deltaHtml(spendOf(current), spendOf(previous), null, compareLabel) : '',
-        top ? `Mayor inversión: ${esc(top.ad)}` : ''),
-    ].join('');
-  }
 
   // Top 3 de anuncios que generaron ventas en el periodo: los de más valor atribuido (a igual valor, más compras).
   function topSalesHtml(ads, { value, count, spend, word, link, none }) {
@@ -2081,7 +2051,6 @@
     title.textContent = `Periodo: ${period.label} ${period.year}${period.annual || period.closed ? '' : ' (mes en curso)'}`;
     document.getElementById('ad-meta-period-sub').textContent = period.compare ? `Comparación vs ${period.compare.label}` : period.annual ? 'Acumulado del año: sin periodo anterior para comparar' : 'Sin mes anterior para comparar';
     const ads = adsOf(period.rows);
-    document.getElementById('ad-meta-kpis').innerHTML = adsSummaryHtml(ads, period.compare ? adsOf(period.compare.rows) : null, period.compare?.label, 'results', 'resultados');
     document.getElementById('ad-meta-top').innerHTML = topSalesHtml(ads, {
       value: 'purchaseValue', count: 'purchases', spend: 'spend', link: 'link', word: n => (n === 1 ? 'compra' : 'compras'),
       none: 'Ningún anuncio registró compras en el periodo.',
@@ -2109,9 +2078,6 @@
       ? 'Este periodo no tiene informe por día y palabra clave: no hay datos de anuncios.'
       : period.detailCompare ? `Comparación vs ${period.detailCompare.label}` : 'Sin informe por día del mes anterior para comparar';
     const ads = period.detail ? gAds(period.detail) : [];
-    document.getElementById('ad-google-kpis').innerHTML = period.detail
-      ? adsSummaryHtml(ads, period.detailCompare ? gAds(period.detailCompare.rows) : null, period.detailCompare?.label, 'conversions', 'conversiones')
-      : '';
     // En Google las ventas son el valor de las conversiones del informe por día.
     document.getElementById('ad-google-top').innerHTML = period.detail ? topSalesHtml(ads, {
       value: 'conversionValue', count: 'conversions', spend: 'cost', link: 'url', word: () => 'conv.',

@@ -2916,7 +2916,7 @@ body.gp-table-fullscreen { overflow: hidden; }
 .gp-cell-sub { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; font-family: var(--font, inherit); font-weight: 500; }
 
 /* Top 3 de anuncios que generaron ventas (módulo Anuncios) */
-.ad-top { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+.ad-top { margin-top: 4px; }
 .ad-top:empty { display: none; }
 .ad-top-head { margin-bottom: 10px; color: var(--text); font-size: 14px; font-weight: 700; }
 .ad-top .gp-note { margin-top: 0; }
@@ -2927,7 +2927,6 @@ body.gp-table-fullscreen { overflow: hidden; }
   min-width: 0;
   padding: 14px 15px;
   border: 1px solid var(--border);
-  border-left: 3px solid var(--gp-row-c, var(--brand));
   border-radius: 10px;
   background: #fff;
 }

@@ -971,6 +971,10 @@
   margin: 4px 0 0 30px;
 }
 .month-table { min-width: 680px; }
+/* Histórico de ventas: 12 meses + Anual; los meses sin ventas no se pueden elegir */
+.ventas-tabs .month-tab { padding: 9px 14px; }
+.month-tab:disabled { cursor: default; opacity: .6; }
+.month-tab:disabled:hover { background: var(--card); color: var(--muted); }
 
 /* ── MÓDULO ACTIVO (sidebar) — estilos en bloque "Light minimal refresh" abajo ── */
 

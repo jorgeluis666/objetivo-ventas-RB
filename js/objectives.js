@@ -66,6 +66,7 @@
     plan: null,            // data/objetivos-2026.json: objetivos de la marca (Drive)
     d2026: null,           // ventas 2026 por mes calendario
     ventasInfo: null,      // { generated, fuente } de las ventas mostradas
+    ventasMes: null,       // pestaña del histórico de ventas: un mes o 'Anual'
     weeklyData: null,
     transactions: null,
     avgTickets: {},
@@ -1156,9 +1157,24 @@
     if (!table) return;
 
     const data = state.d2026 || {};
-    if (sub) sub.textContent = 'Por mes calendario, como lo registra la marca';
-
     const conDatos = m => tot(data[m] || {}) > 0;
+
+    // Una pestaña por mes y "Anual" con el cuadro de los 12 meses. Por defecto, el mes en curso
+    // (o el último con ventas); la elección se conserva al sincronizar.
+    if (!state.ventasMes || (state.ventasMes !== ANUAL && !conDatos(state.ventasMes))) {
+      const cur = months[currentMonthIdx()];
+      state.ventasMes = cur && conDatos(cur) ? cur : [...months].reverse().find(conDatos) || ANUAL;
+    }
+    renderVentasTabs(conDatos);
+    table.classList.toggle('ventas-table', state.ventasMes === ANUAL);   // ancho mínimo de los 12 meses
+    if (state.ventasMes !== ANUAL) {
+      renderVentasMes(state.ventasMes, table);
+      return;
+    }
+
+    const title = document.getElementById('ventas-title');
+    if (title) title.textContent = 'Ventas por canal y mes';
+    if (sub) sub.textContent = 'Por mes calendario, como lo registra la marca';
     const valor = (m, col) => conDatos(m) ? fmtK((data[m] || {})[col] || 0) : '—';
     const titulo = (m, v) => conDatos(m) ? ` title="${m}: S/. ${fmt(v)}"` : '';
     const totalCol = col => months.reduce((s, m) => s + ((data[m] || {})[col] || 0), 0);
@@ -1183,6 +1199,87 @@
       notes.innerHTML = `
         <div>Montos en miles de S/.; pasa el cursor sobre una celda para ver el monto exacto.</div>
         <div>Se lee una pestaña por mes del archivo; las demás pestañas no se usan.</div>`;
+    }
+  }
+
+  const ANUAL = 'Anual';
+
+  // Enero a Diciembre + Anual, con el mismo componente que las pestañas de Objetivos.
+  function renderVentasTabs(conDatos) {
+    const host = document.getElementById('ventas-tabs');
+    if (!host) return;
+    const cur = months[currentMonthIdx()];
+    host.innerHTML = months.map(m => {
+      const ok = conDatos(m);
+      const cls = ['month-tab', m === state.ventasMes ? 'active' : '', m === cur ? 'active-current' : '', ok ? 'past' : 'future']
+        .filter(Boolean).join(' ');
+      return `<button type="button" class="${cls}" data-mes="${m}" aria-pressed="${m === state.ventasMes}"
+        ${ok ? '' : `disabled title="Sin ventas de ${m.toLowerCase()} en el histórico"`}>${m}${m === cur ? ' ◉' : ''}</button>`;
+    }).join('') + `<button type="button" class="month-tab past${state.ventasMes === ANUAL ? ' active' : ''}" data-mes="${ANUAL}"
+        aria-pressed="${state.ventasMes === ANUAL}" title="Los 12 meses del año">${ANUAL}</button>`;
+    host.querySelectorAll('.month-tab:not(:disabled)').forEach(btn => btn.addEventListener('click', () => {
+      state.ventasMes = btn.dataset.mes;
+      renderVentasSection();
+    }));
+  }
+
+  // Un mes del histórico: venta por canal, el mismo mes de 2025, participación, transacciones y ticket.
+  function renderVentasMes(m, table) {
+    const title = document.getElementById('ventas-title');
+    const sub   = document.getElementById('ventas-sub');
+    const notes = document.getElementById('ventas-notes');
+    const mes   = state.d2026?.[m] || {};
+    const ref   = state.d2025Ref?.[m] || {};
+    const tx    = state.transactions?.[m] || {};
+    const total = tot(mes);
+    const total25 = tot(ref);
+    const enCurso = monthStatus(m) === 'current';
+    const corte = enCurso ? corteLabel(m) : null;
+    const qty   = col => tx[chToUpper[col]] || 0;
+    const totalQty = VENTAS_COLS.reduce((s, col) => s + qty(col), 0);
+
+    if (title) title.textContent = `Ventas por canal · ${m} 2026`;
+    if (sub) sub.textContent = enCurso
+      ? `Mes en curso · ventas al ${corte} (${daysPassed(m)} de ${objectiveDays(m)} días)`
+      : 'Mes cerrado, como lo registra la marca';
+
+    // En el mes en curso, 2026 lleva solo los días cargados y 2025 el mes completo: la variación es gris.
+    const varPill = (v26, v25) => {
+      if (!v25) return '<span class="muted">—</span>';
+      const d = Math.round((v26 / v25 - 1) * 100);
+      return pill(enCurso ? 'gray' : d >= 0 ? 'green' : 'red', `${d >= 0 ? '+' : '−'}${Math.abs(d)}%`,
+        enCurso ? `${daysPassed(m)} días de 2026 frente al mes completo de 2025` : `${m} 2026 frente a ${m} 2025`);
+    };
+    const fila = (label, pip, v26, v25, q, strong) => {
+      const b = s => strong ? `<strong>${s}</strong>` : s;
+      return `<tr${strong ? ' class="plan-total"' : ''}>
+        <td>${pip ? `<span class="ch-name"><span class="ch-pip" style="background:${pip}"></span>${label}</span>` : b(label)}</td>
+        <td class="r pc">${b('S/. ' + fmt(v26))}</td>
+        <td class="r pc text-2">${v25 ? 'S/. ' + fmt(v25) : '—'}</td>
+        <td class="r">${varPill(v26, v25)}</td>
+        <td class="r pc">${total > 0 ? (v26 / total * 100).toFixed(1) + '%' : '—'}</td>
+        <td class="r pc">${q ? fmt(q) : '—'}</td>
+        <td class="r pc">${q ? 'S/. ' + fmt(v26 / q) : '—'}</td>
+      </tr>`;
+    };
+    table.innerHTML = `<thead><tr>
+        <th>Canal</th>
+        <th class="r">${m} 2026</th>
+        <th class="r">${m} 2025</th>
+        <th class="r">Var.</th>
+        <th class="r">Participación</th>
+        <th class="r">Transacciones</th>
+        <th class="r">Ticket promedio</th>
+      </tr></thead>
+      <tbody>
+        ${VENTAS_COLS.map(col => fila(col, palette[col] || '#64748B', mes[col] || 0, ref[col] || 0, qty(col))).join('')}
+        ${fila('Total', null, total, total25, totalQty, true)}
+      </tbody>`;
+
+    if (notes) {
+      notes.innerHTML = `
+        ${enCurso ? `<div>Mes en curso: 2026 suma los días cargados hasta el ${corte}; ${m.toLowerCase()} 2025 es el mes completo, por eso la variación va en gris.</div>` : ''}
+        <div>Ticket promedio = venta / transacciones del canal. <strong>Anual</strong> muestra los 12 meses.</div>`;
     }
   }
 

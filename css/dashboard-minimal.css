@@ -978,9 +978,11 @@
 .month-table tr.ch-total-row td { background: #F8FAFC; }
 /* Filas sin detalle semanal: el espacio del botón › para que los nombres queden alineados */
 .ch-weeks-spacer { display: inline-block; width: 20px; flex-shrink: 0; }
-.month-table .ch-parts { white-space: nowrap; }
+.month-table .ch-parts { white-space: nowrap; cursor: help; }
+.month-table .ch-parts.has-note { text-decoration: underline dotted; text-underline-offset: 2px; }
 /* Notas y evolución semanal dentro del recuadro del mes, separadas del cuadro por una línea */
 .obj-shared-slot .plan-notes { margin-top: 14px; }
+.obj-shared-slot .plan-notes:empty { display: none; }
 .obj-chart-block { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border); }
 .month-tab:disabled:hover { background: var(--card); color: var(--muted); }
 

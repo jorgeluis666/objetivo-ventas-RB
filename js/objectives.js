@@ -925,22 +925,12 @@
     renderPlanNotes();
   }
 
-  // Notas debajo del cuadro: avisos de la lectura de objetivos, de qué columna sale cada meta y cómo se calcula.
+  // Debajo del cuadro solo van los avisos de la lectura del archivo de objetivos (vacío si no hay
+  // problemas). Lo demás se explica donde se usa: títulos de encabezados, celdas, píldoras y filas.
   function renderPlanNotes() {
     const notes = document.getElementById('plan-notes');
     if (!notes) return;
-    const metas = planChannels().map(c => `«${esc(c.etiqueta)}» → ${c.sheet[0]}`).join(' · ');
-    const sinMeta = VENTAS_COLS.filter(col => !planOfCol(col));
-    const chNotes = planChannels().filter(c => c.nota).map(c => `<div><strong>${c.label}:</strong> ${c.nota}</div>`).join('');
-    const avisos = (state.plan?.avisos || []).map(a => `<div class="plan-aviso">⚠ ${esc(a)}</div>`).join('');
-    notes.innerHTML = `
-      ${avisos}
-      ${metas ? `<div>Metas del archivo de objetivos por canal de ventas: ${metas}.${sinMeta.length ? ` ${sinMeta.join(' y ')} no tienen meta propia: van con meta 0.` : ''}</div>` : ''}
-      ${chNotes}
-      <div>La meta sale de la columna PROYECCIÓN del archivo de objetivos; la venta, del histórico de ventas, no de su columna VENTA.</div>
-      <div>Esperado = meta del mes repartida por días hasta el último día con ventas cargadas.</div>
-      <div>Ventas vs 2025: en el mes en curso 2026 suma los días cargados y 2025 es el mes completo, por eso la variación va en gris. Ticket promedio = venta / transacciones.</div>
-      <div>Anual: montos en miles de S/.; pasa el cursor sobre una celda para ver el monto exacto.</div>`;
+    notes.innerHTML = (state.plan?.avisos || []).map(a => `<div class="plan-aviso">⚠ ${esc(a)}</div>`).join('');
   }
 
   function selectMonth(m) {
@@ -1157,7 +1147,9 @@
       return `<tr class="ch-obj-row">
           <td>
             <div class="ch-cell">${toggle}${colName(col)}</div>
-            <div class="ch-parts" title="${c ? `Meta de «${esc(c.etiqueta)}» en el archivo de objetivos` : 'Ningún objetivo nombra este canal'}">${c ? `meta «${esc(c.etiqueta)}»` : 'sin meta propia'}</div>
+            <div class="ch-parts${c?.nota ? ' has-note' : ''}" title="${c
+              ? `Meta de «${esc(c.etiqueta)}» (columna PROYECCIÓN del archivo de objetivos)${c.nota ? ` · ${esc(c.nota)}` : ''}`
+              : 'Ningún objetivo del archivo nombra este canal: va con meta 0'}">${c ? `meta «${esc(c.etiqueta)}»` : 'sin meta propia'}</div>
           </td>
           <td class="r mono text-2">${c && state.plan?.referencia ? 'S/. ' + fmt(colRef(m, col)) : '—'}</td>
           <td class="r mono${meta > 0 ? '' : ' text-2'}">S/. ${fmt(meta)}</td>
@@ -1240,7 +1232,7 @@
         <th class="r">Var.</th>
         <th class="r">Participación</th>
         <th class="r">Transacciones</th>
-        <th class="r">Ticket promedio</th>
+        <th class="r" title="Venta / transacciones">Ticket promedio</th>
       </tr></thead>
       <tbody>${rows}
         <tr class="ch-total-row">

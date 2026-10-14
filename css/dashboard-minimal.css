@@ -931,18 +931,10 @@
 .zone-status.err { color: var(--red-text); }
 .btn-sync:disabled { opacity: .7; cursor: progress; }
 
-/* Cuadro de metas: cada celda apila meta, venta con avance y referencia */
-.obj-table { min-width: 760px; }
-.obj-table td.oc span { display: block; line-height: 1.35; font-variant-numeric: tabular-nums; }
-.oc-meta  { font-weight: 700; color: var(--text); font-size: 13px; }
-.oc-venta { font-size: 11px; color: var(--text-2); }
-.oc-ref   { font-size: 11px; color: var(--muted); }
-.oc-current .oc-venta { font-style: italic; }
-.obj-table th.plan-month { text-transform: none; letter-spacing: 0; }
 .plan-aviso { color: var(--amber-text); font-weight: 600; }
 .ventas-table { min-width: 980px; }
 
-/* ── Objetivos 2026: tablas de metas e histórico ── */
+/* ── Objetivos 2026: tablas del mes e histórico ── */
 .plan-table-wrap { overflow-x: auto; }
 .plan-table th {
   white-space: nowrap;
@@ -963,9 +955,6 @@
   white-space: nowrap;
 }
 .plan-table td:first-child { background: var(--card); }
-.plan-table th.plan-month { cursor: pointer; }
-.plan-table th.plan-month:hover { color: var(--brand); }
-.plan-table th.plan-month.is-current { color: var(--amber-text); }
 .plan-table .plan-col-sum { border-left: 1px solid var(--border); }
 .plan-table td.pc { font-variant-numeric: tabular-nums; }
 .plan-table .ch-name { display: inline-flex; align-items: center; gap: 6px; }

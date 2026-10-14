@@ -52,7 +52,7 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
   deploy/
     pages-gate.html       Pantalla de acceso que descifra el tablero
   .github/workflows/
-    update-data.yml       Ventas, todos los días a las 06:00 Lima + workflow_dispatch
+    update-data.yml       Ventas, todos los días a las 10:30 Lima (Apps Script) y 06:00 de respaldo + workflow_dispatch
     sync-objetivos.yml    Objetivos, todos los días a las 06:05 Lima + workflow_dispatch
     sync-ads.yml          Sync diario de las carpetas de Meta Ads y Google Ads (07:00 Lima) + workflow_dispatch
     deploy.yml            Build cifrado + deploy a GitHub Pages
@@ -89,8 +89,8 @@ Dos workflows leen las carpetas de Drive de la marca todos los días y commitean
 
 | Workflow | Hora (Lima) | Script | Escribe |
 |---|---|---|---|
-| `update-data.yml` · *Actualizar datos de ventas* | 06:00 | `fetch-data.js` | `data/ventas-2026.json` |
-| `sync-objetivos.yml` · *Sincronizar objetivos comerciales* | 06:05 | `sync-objetivos.js` | `data/objetivos-2026.json` |
+| `update-data.yml` · *Actualizar datos de ventas* | 10:30 (respaldo 06:00) | `fetch-data.js` | `data/ventas-2026.json` |
+| `sync-objetivos.yml` · *Sincronizar objetivos comerciales* | 10:30 (respaldo 06:05) | `sync-objetivos.js` | `data/objetivos-2026.json` |
 
 - **Ventas 2026**: la hoja de la carpeta [Ventas Royal Baby - 2026](https://drive.google.com/drive/folders/1JJdjIzDu2CrhcBI9gBUTUuPAXnKYUQal). Es la fuente de 2026 de todo el tablero (Objetivos, YoY, Distribución, Proyecciones y correo). **2025** sigue saliendo de su Google Sheet con el secret `SERVICE_ACCOUNT_JSON` (JSON del service account pegado entero).
 - **Objetivos**: la hoja de la carpeta [Objetivos Royal Baby](https://drive.google.com/drive/folders/1wfOOM4F3TRcxehX_dfZWDYSTVBPrPgjg).
@@ -239,7 +239,7 @@ Las sesiones abiertas con la clave anterior siguen hasta que se cierre la pesta�
 
 El módulo tiene dos zonas, cada una con su fuente de Drive, su fecha de sincronización y su botón **Sincronizar**:
 
-1. **Objetivos comerciales** (arriba): las metas que fija la marca, con su avance. Cuadro de metas por canal y mes (meta, venta y avance, referencia del año anterior) y una pestaña por mes con ritmo, alertas y detalle semanal.
+1. **Objetivos comerciales** (arriba): las metas que fija la marca, con su avance. Una pestaña por mes con la meta, lo vendido frente a lo esperado al último día con ventas, alertas y el avance por canal con detalle semanal.
 2. **Ventas 2026 · histórico de la marca** (abajo): ventas por canal y mes calendario, y la evolución semanal 2025 vs 2026.
 
 `data/objetivos-2026.json` es la única fuente de metas: lo leen el módulo, Proyecciones, el KPI anual del Comparativo YoY y el correo semanal (`alertas.js`). Al publicar, el build lo incrusta en la página.

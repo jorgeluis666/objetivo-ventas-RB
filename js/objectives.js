@@ -882,12 +882,6 @@
     return `${d} ${MONTH_ABR[months[mo - 1]]} ${y}`;
   };
 
-  // Rango legible de meses: "Oct–Dic", "Oct" o ''.
-  const monthRange = list =>
-    list.length === 0 ? '' : list.length === 1
-      ? monthShort(list[0])
-      : `${monthShort(list[0])}–${monthShort(list[list.length - 1])}`;
-
   const hasSales = m => monthStatus(m) === 'past' || (monthStatus(m) === 'current' && isLiveMonth(m));
 
   // ── Zona 1: objetivos comerciales ──
@@ -907,102 +901,32 @@
           ? '<b>Sin objetivos:</b> el archivo de objetivos de Drive no tiene meses con PROYECCIÓN.'
           : '<b>Objetivos no disponibles:</b> no se pudo cargar <code>data/objetivos-2026.json</code>.';
       }
-      ['plan-annual', 'plan-notes'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
+      const notesEl = document.getElementById('plan-notes');
+      if (notesEl) notesEl.innerHTML = '';
       monthTabsEl.innerHTML = '';
       monthPanelsEl.innerHTML = '';
       return;
     }
     if (errorEl) errorEl.hidden = true;
-    renderObjTable();
     renderMonthPanels();
+    renderPlanNotes();
   }
 
-  // Celda del cuadro de objetivos: meta, venta con avance y referencia del año anterior.
-  function objCell(m, venta, meta, ref, extraCls = '') {
-    const ventaTxt = !hasSales(m)
-      ? '<span class="muted">venta —</span>'
-      : `venta S/. ${fmt(venta)} · <b style="color:${meta > 0 ? pctColor(venta / meta * 100) : 'var(--muted)'};">${meta > 0 ? (venta / meta * 100).toFixed(0) + '%' : '—'}</b>`;
-    return `<td class="r oc${monthStatus(m) === 'current' ? ' oc-current' : ''} ${extraCls}">
-      <span class="oc-meta">${meta > 0 ? 'S/. ' + fmt(meta) : '<span class="muted">sin meta</span>'}</span>
-      <span class="oc-venta">${ventaTxt}</span>
-      ${state.plan.referencia ? `<span class="oc-ref">${refLabel().replace('Ref. ', '')}: S/. ${fmt(ref)}</span>` : ''}
-    </td>`;
-  }
-
-  // Celda de total del período: suma de metas y de la venta de los meses con ventas.
-  function objSumCell(meta, venta, ref) {
-    const pct = meta > 0 ? venta / meta * 100 : null;
-    return `<td class="r oc oc-sum">
-      <span class="oc-meta">S/. ${fmt(meta)}</span>
-      <span class="oc-venta">venta S/. ${fmt(venta)} · <b style="color:${pct === null ? 'var(--muted)' : pctColor(pct)};">${pct === null ? '—' : pct.toFixed(0) + '%'}</b></span>
-      ${state.plan.referencia ? `<span class="oc-ref">${refLabel().replace('Ref. ', '')}: S/. ${fmt(ref)}</span>` : ''}
-    </td>`;
-  }
-
-  function renderObjTable() {
-    const table = document.getElementById('plan-annual');
-    const sub   = document.getElementById('plan-annual-sub');
+  // Notas del archivo de objetivos, debajo de las pestañas de mes: avisos de la lectura,
+  // equivalencia de canales y lo que mide cada uno.
+  function renderPlanNotes() {
     const notes = document.getElementById('plan-notes');
-    if (!table) return;
-    const meses = objMonths();
-    const conVenta = meses.filter(hasSales);
-    if (sub) {
-      sub.textContent = state.plan.referencia
-        ? `Cada celda: meta (PROYECCIÓN) · venta del mes en el histórico y avance · referencia ${state.plan.referencia.anio}`
-        : 'Cada celda: meta (PROYECCIÓN) · venta del mes en el histórico y avance';
-    }
-
-    const head = `<thead><tr>
-      <th>Canal</th>
-      ${meses.map(m => `<th class="r plan-month${monthStatus(m) === 'current' ? ' is-current' : ''}" data-month="${m}" title="Ver ${m}">${m}</th>`).join('')}
-      <th class="r plan-col-sum">Total ${monthRange(meses)}</th>
-    </tr></thead>`;
-
-    const ventaDe = (m, c) => chReal(state.d2026?.[m], c);
-    let body = '';
-    planChannels().forEach(c => {
-      body += `<tr>
-        <td>
-          <span class="ch-name"><span class="ch-pip" style="background:${chColor(c)}"></span>${c.label}</span>
-          ${c.sheet.length > 1 ? `<div class="ch-parts">${c.sheet.join(' + ')}</div>` : ''}
-        </td>
-        ${meses.map(m => objCell(m, ventaDe(m, c), target(m, c.key), ref2025(m, c.key))).join('')}
-        ${objSumCell(
-          meses.reduce((s, m) => s + target(m, c.key), 0),
-          conVenta.reduce((s, m) => s + ventaDe(m, c), 0),
-          meses.reduce((s, m) => s + ref2025(m, c.key), 0))}
-      </tr>`;
-    });
-    const totalDe = m => tot(state.d2026?.[m] || {});
-    body += `<tr class="plan-total">
-      <td><strong>Total</strong></td>
-      ${meses.map(m => objCell(m, totalDe(m), monthTarget(m), monthRef2025(m))).join('')}
-      ${objSumCell(
-        meses.reduce((s, m) => s + monthTarget(m), 0),
-        conVenta.reduce((s, m) => s + totalDe(m), 0),
-        meses.reduce((s, m) => s + monthRef2025(m), 0))}
-    </tr>`;
-
-    table.innerHTML = head + `<tbody>${body}</tbody>`;
-    table.querySelectorAll('th.plan-month').forEach(th => {
-      th.addEventListener('click', () => {
-        selectMonth(th.dataset.month);
-        document.getElementById('month-tabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    });
-
-    if (notes) {
-      const etiquetas = planChannels().filter(c => norm(c.etiqueta) !== norm(c.label))
-        .map(c => `«${esc(c.etiqueta)}» = ${c.label}`).join(' · ');
-      const chNotes = planChannels().filter(c => c.nota).map(c => `<div><strong>${c.label}:</strong> ${c.nota}</div>`).join('');
-      const avisos = (state.plan.avisos || []).map(a => `<div class="plan-aviso">⚠ ${esc(a)}</div>`).join('');
-      notes.innerHTML = `
-        ${avisos}
-        ${etiquetas ? `<div>Canales del archivo: ${etiquetas}.</div>` : ''}
-        ${chNotes}
-        <div>La venta sale del histórico de ventas (zona de abajo), no de la columna VENTA del archivo de objetivos.</div>
-        <div>El mes en curso va en cursiva: su avance es parcial. Clic en un mes para ver su detalle.</div>`;
-    }
+    if (!notes) return;
+    const etiquetas = planChannels().filter(c => norm(c.etiqueta) !== norm(c.label))
+      .map(c => `«${esc(c.etiqueta)}» = ${c.label}`).join(' · ');
+    const chNotes = planChannels().filter(c => c.nota).map(c => `<div><strong>${c.label}:</strong> ${c.nota}</div>`).join('');
+    const avisos = (state.plan.avisos || []).map(a => `<div class="plan-aviso">⚠ ${esc(a)}</div>`).join('');
+    notes.innerHTML = `
+      ${avisos}
+      ${etiquetas ? `<div>Canales del archivo: ${etiquetas}.</div>` : ''}
+      ${chNotes}
+      <div>La meta sale de la columna PROYECCIÓN del archivo de objetivos; la venta, del histórico de ventas (zona de abajo), no de su columna VENTA.</div>
+      <div>Esperado = meta del mes repartida por días hasta el último día con ventas cargadas.</div>`;
   }
   function selectMonth(m) {
     const monthTabsEl   = document.getElementById('month-tabs');

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-14T05:46:35.001Z",
+  "generatedAt": "2026-10-14T05:50:49.235Z",
   "currency": "PEN",
   "rules": [
     "Google Ads llega mensual: sin serie diaria real. Meta Ads llega por día y la serie diaria es real.",
@@ -48,9 +48,7 @@
       ]
     }
   },
-  "pending": [
-    "Google Ads: «Royal Baby GA - Octubre 2026» no se pudo leer (no es el «Informe de campaña» del mes: trae una fila por día o por palabra clave y no tiene la columna Impr.; hay que descargarlo de nuevo desde Campañas); se usa el otro archivo de Octubre 2026."
-  ],
+  "pending": [],
   "warnings": [
     "Google Ads Enero 2026: 2 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Pmax B | Objetivo | LR» \"51,39\" → 51,390; Impr. de «Total: Máximo rendimiento» \"51,39\" → 51,390); cuadran con los totales.",
     "Google Ads Febrero 2026: 4 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Search | LR» \"1,31\" → 1,310; Impr. de «Shopping Manual | Compras | LR» \"24,72\" → 24,720; Impr. de «Total: Compras» \"24,72\" → 24,720); cuadran con los totales.",

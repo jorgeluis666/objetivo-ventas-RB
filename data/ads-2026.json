@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-14T04:36:37.419Z",
+  "generatedAt": "2026-10-14T05:40:01.583Z",
   "currency": "PEN",
   "rules": [
     "Google Ads llega mensual: sin serie diaria real. Meta Ads llega por día y la serie diaria es real.",
@@ -17,15 +17,6 @@
       "folderUrl": "https://drive.google.com/drive/folders/1TT5KTVZuGlFc7OqvGAz9nuRVyJFvwJpd",
       "discovery": "pública",
       "files": [
-        { "id": "1T6tDRqHujmPW5dKxw1RXx5Nf93mSoezX6L7tYyJWG2A", "name": "Royal Baby - Abril 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1huxAE0DdG0aY-7uNXo5Y1qVI1mXJ-ioKSPbIm-1e3SM", "name": "Royal Baby - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1JFb0lLhq1jALEtQFUNhM1CG4kcOgFAY6bom3dScVLQc", "name": "Royal Baby - Enero 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1xZIfNmK8fEtCYAH8W1ePi65oSelAzuoxBKFQhzjpe-s", "name": "Royal Baby - Febrero 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1Y_ez7IQyIqLcTvW79PwCdTC4GtjXt1v-JtqPcnBpx3Q", "name": "Royal Baby - Junio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1yqruGh1bejI77FO4fzRw1ZrHD1q9RqX_XHiGCR_U7qg", "name": "Royal Baby - Marzo 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1yk0jDIcyczYVkP1_7hw40wJzw3H4LOSOjLKD9IamTW8", "name": "Royal Baby - Mayo 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1jvE6HzMqEJUo2OWumH-30BYfjyAEFEM6mhbb2kOPxHc", "name": "Royal Baby - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "19qCVu6U018yobdF5jG8PTC-DmgX87cDQ9X4mTXWz2UA", "name": "Royal Baby - Septiembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         { "id": "1sQgs4qZdT00185GvZy9HbmLkuU6uyTKcRA3L2jsQY_k", "name": "Royal Baby GA - Abril 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         { "id": "1OHSr4s-6WkU-I3Q_qGrd0AGQPweQ48w3CR1hsTcRQ20", "name": "Royal Baby GA - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         { "id": "1f7JO8c-ZvTc0dRRHgHdxPL9__YTnAwTyPlydJxnbTyA", "name": "Royal Baby GA - Enero 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
@@ -57,15 +48,6 @@
     }
   },
   "pending": [
-    "Google Ads: «Royal Baby - Abril 2026» no se pudo leer (no es el «Informe de campaña» del mes: trae una fila por día o por palabra clave y no tiene la columna Impr.; hay que descargarlo de nuevo desde Campañas); se usa el otro archivo de Abril 2026.",
-    "Google Ads: «Royal Baby - Agosto 2026» no se pudo leer (no es el «Informe de campaña» del mes: trae una fila por día o por palabra clave y no tiene la columna Impr.; hay que descargarlo de nuevo desde Campañas); se usa el otro archivo de Agosto 2026.",
-    "Google Ads: «Royal Baby - Enero 2026» no se pudo leer (no es el «Informe de campaña» del mes: trae una fila por día o por palabra clave y no tiene la columna Impr.; hay que descargarlo de nuevo desde Campañas); se usa el otro archivo de Enero 2026.",
-    "Google Ads: «Royal Baby - Febrero 2026» no se pudo leer (no es el «Informe de campaña» del mes: trae una fila por día o por palabra clave y no tiene la columna Impr.; hay que descargarlo de nuevo desde Campañas); se usa el otro archivo de Febrero 2026.",
-    "Google Ads: «Royal Baby - Junio 2026» no se pudo leer (no es el «Informe de campaña» del mes: trae una fila por día o por palabra clave y no tiene la columna Impr.; hay que descargarlo de nuevo desde Campañas); se usa el otro archivo de Junio 2026.",
-    "Google Ads: «Royal Baby - Marzo 2026» no se pudo leer (no es el «Informe de campaña» del mes: trae una fila por día o por palabra clave y no tiene la columna Impr.; hay que descargarlo de nuevo desde Campañas); se usa el otro archivo de Marzo 2026.",
-    "Google Ads: «Royal Baby - Mayo 2026» no se pudo leer (no es el «Informe de campaña» del mes: trae una fila por día o por palabra clave y no tiene la columna Impr.; hay que descargarlo de nuevo desde Campañas); se usa el otro archivo de Mayo 2026.",
-    "Google Ads: «Royal Baby - Octubre 2026» no se pudo leer (no es el «Informe de campaña» del mes: trae una fila por día o por palabra clave y no tiene la columna Impr.; hay que descargarlo de nuevo desde Campañas); Octubre 2026 queda con los datos de la sincronización anterior.",
-    "Google Ads: «Royal Baby - Septiembre 2026» no se pudo leer (no es el «Informe de campaña» del mes: trae una fila por día o por palabra clave y no tiene la columna Impr.; hay que descargarlo de nuevo desde Campañas); se usa el otro archivo de Septiembre 2026.",
     "Google Ads: «Royal Baby GA - Octubre 2026» no se pudo leer (no es el «Informe de campaña» del mes: trae una fila por día o por palabra clave y no tiene la columna Impr.; hay que descargarlo de nuevo desde Campañas); Octubre 2026 queda con los datos de la sincronización anterior."
   ],
   "warnings": [

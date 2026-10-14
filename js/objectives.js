@@ -130,6 +130,12 @@
   function visualTodayPct(m) {
     return (daysPassed(m) / objectiveDays(m) * 100).toFixed(1);
   }
+  // Último día con ventas del histórico (fuente2026.ultimoDia, "2026-10-11"). La hoja se carga con
+  // un día o dos de atraso: el avance se mide hasta ese día, no hasta hoy.
+  function ultimoDiaVentas() {
+    const u = state.ventasInfo?.fuente?.ultimoDia;
+    return u ? { monthIndex: +u.slice(5, 7) - 1, day: +u.slice(8, 10) } : null;
+  }
   function monthStatus(m) {
     const idx = months.indexOf(m);
     const cur = currentMonthIdx();
@@ -137,17 +143,38 @@
     if (idx > cur)  return 'future';
     return 'current';
   }
+  // Días del mes en curso con ventas cargadas; sin la fecha del histórico, los días hasta hoy.
   function daysPassed(m) {
     const s = monthStatus(m);
     if (s === 'past')    return objectiveDays(m);
     if (s === 'future')  return 0;
-    return Math.min(objectiveDays(m), currentCalendarDay());
+    const u = ultimoDiaVentas();
+    if (!u) return Math.min(objectiveDays(m), currentCalendarDay());
+    return u.monthIndex === months.indexOf(m) ? Math.min(objectiveDays(m), u.day) : 0;
   }
   function daysRemaining(m) {
-    const s = monthStatus(m);
-    if (s === 'past')    return 0;
-    if (s === 'future')  return objectiveDays(m);
-    return Math.max(0, objectiveDays(m) - currentCalendarDay());
+    return Math.max(0, objectiveDays(m) - daysPassed(m));
+  }
+  // Lo que debería llevar vendido a la fecha de corte si avanzara parejo hacia la meta.
+  const expectedTo = (m, tgt) => tgt * daysPassed(m) / objectiveDays(m);
+  // Fecha de corte de las ventas: "11 oct" en el mes en curso, "cierre" en uno pasado.
+  const corteLabel = m => monthStatus(m) === 'current' ? `${daysPassed(m)} ${MONTH_ABR[m]}` : 'cierre';
+
+  // Píldoras y tarjetas KPI: los mismos componentes que Gasto publicitario y Proyecciones.
+  const pill = (cls, text, title) => `<span class="pill ${cls}"${title ? ` title="${esc(title)}"` : ''}>${text}</span>`;
+  const kpi = ({ label, value, subs = [] }) => `
+    <div class="kpi-pill">
+      <span>${label}</span>
+      <strong>${value}</strong>
+      ${subs.filter(Boolean).map(s => `<small>${s}</small>`).join('')}
+    </div>`;
+  // Vendido frente a lo esperado a la fecha: verde al ritmo o adelantado, ámbar hasta 10 % abajo.
+  function vsExpectedPill(real, expected, corte) {
+    if (!expected) return '';
+    const r = real / expected;
+    const cls = r >= 1 ? 'green' : r >= 0.9 ? 'amber' : 'red';
+    const d = Math.round((r - 1) * 100);
+    return pill(cls, `${d >= 0 ? '+' : '−'}${Math.abs(d)}%`, `Vendido frente a lo esperado al ${corte}: S/. ${fmt(expected)}`);
   }
 
   // ── ISO week number del año (1-53) ──
@@ -263,135 +290,62 @@
 
     const pctMet    = tt > 0 ? real / tt * 100 : 0;
     const dailyReal = passed > 0 ? real / passed : 0;
+    const ref       = monthRef2025(m);
+    const tkPill    = tk => tk > 0 ? pill('gray', `ticket S/. ${fmt(tk)}`) : '';
 
-    // Para meses futuros: solo la meta + proyección diaria si no pasa nada hasta que llegue
+    // 1. El objetivo: igual en los tres estados del mes.
+    const metaKpi = kpi({
+      label: 'Meta del mes', value: `S/. ${fmt(tt)}`,
+      subs: ref > 0
+        ? [`${pill('gray', `${tt >= ref ? '+' : '−'}${Math.abs(Math.round((tt / ref - 1) * 100))}% vs ${state.plan?.referencia?.anio || 2025}`)} ${m.toLowerCase()} ${state.plan?.referencia?.anio || 2025}: S/. ${fmt(ref)}`]
+        : ['objetivos de la marca'],
+    });
+
+    let cards;
     if (status === 'future') {
-      el.innerHTML = `
-        <div class="pace-grid">
-          <div class="pace-card">
-            <div class="pace-card-head">
-              <div class="pace-lbl">Días del mes</div>
-              <span class="pace-badge muted">futuro</span>
-            </div>
-            <div class="pace-val">${objectiveDays(m)}</div>
-            <div class="pace-sub">mes futuro</div>
-          </div>
-          <div class="pace-card">
-            <div class="pace-card-head">
-              <div class="pace-lbl">Meta del mes</div>
-              <span class="pace-badge muted">archivo</span>
-            </div>
-            <div class="pace-val brand">S/. ${fmt(tt)}</div>
-            <div class="pace-sub">objetivos de la marca</div>
-          </div>
-          <div class="pace-card">
-            <div class="pace-card-head">
-              <div class="pace-lbl">Venta diaria necesaria</div>
-              <span class="pace-badge muted">proyección</span>
-            </div>
-            <div class="pace-val">S/. ${fmt(tt / objectiveDays(m))}</div>
-            <div class="pace-sub">para alcanzar la meta</div>
-          </div>
-          <div class="pace-card">
-            <div class="pace-card-head">
-              <div class="pace-lbl">Ref. ${m} 2025</div>
-              <span class="pace-badge muted">referencia</span>
-            </div>
-            <div class="pace-val">S/. ${fmt(monthRef2025(m))}</div>
-            <div class="pace-sub">referencia del archivo de objetivos</div>
-          </div>
-        </div>`;
-      return;
-    }
-
-    if (status === 'current') {
-      // Referencia: mes cerrado anterior (si hay). Si no, usa marzo de respaldo.
-      const curIdx = months.indexOf(m);
+      cards = [
+        metaKpi,
+        kpi({ label: 'Venta diaria necesaria', value: `S/. ${fmt(tt / objectiveDays(m))}`,
+          subs: [`${pill('gray', `${objectiveDays(m)} días`)} si el mes avanza parejo`] }),
+        kpi({ label: 'Ventas', value: '—', subs: [`${pill('gray', 'mes futuro')} sin ventas todavía`] }),
+        kpi({ label: 'Días del mes', value: objectiveDays(m), subs: [m.toLowerCase() + ' 2026'] }),
+      ];
+    } else if (status === 'current') {
+      // 2. Cómo va: lo vendido hasta el último día cargado frente a lo esperado a esa fecha.
+      const corte    = corteLabel(m);
+      const esperado = expectedTo(m, tt);
+      const pctMissing = faltante > 0 && tt > 0 ? Math.round(faltante / tt * 100) : 0;
+      // Referencia: el mes anterior (si es enero, marzo de respaldo).
+      const curIdx   = months.indexOf(m);
       const refMonth = curIdx > 0 ? months[curIdx - 1] : 'Marzo';
-      const refTxns = Math.round(Object.values(state.transactions?.[refMonth] || {}).reduce((a, b) => a + b, 0) / (objectiveDays(refMonth) || 30));
-      const refTk   = state.avgTickets?.[refMonth]?.TOTAL || 0;
-
-      const pctPassed = Math.round(passed / objectiveDays(m) * 100);
-      const pctMissing = faltante > 0 ? Math.round(faltante / tt * 100) : 0;
-      el.innerHTML = `
-        <div class="pace-grid">
-          <div class="pace-card">
-            <div class="pace-card-head">
-              <div class="pace-lbl">Días restantes</div>
-              <span class="pace-badge muted">${pctPassed}% del mes</span>
-            </div>
-            <div class="pace-val">${remDays}</div>
-            <div class="pace-sub">de ${objectiveDays(m)} en ${m.toLowerCase()}</div>
-          </div>
-          <div class="pace-card">
-            <div class="pace-card-head">
-              <div class="pace-lbl">Faltante para meta</div>
-              <span class="pace-badge ${faltante > 0 ? 'red' : 'green'}">${faltante > 0 ? '▼ ' + pctMissing + '%' : '✓ cubierto'}</span>
-            </div>
-            <div class="pace-val ${faltante > 0 ? 'red' : 'green'}">S/. ${fmt(faltante)}</div>
-            <div class="pace-sub">Meta: S/. ${fmt(tt)}</div>
-          </div>
-          <div class="pace-card">
-            <div class="pace-card-head">
-              <div class="pace-lbl">Venta diaria necesaria</div>
-              <span class="pace-badge muted">${remDays} días</span>
-            </div>
-            <div class="pace-val">S/. ${fmt(dailyNeed)}</div>
-            <div class="pace-sub">para los ${remDays} días restantes</div>
-          </div>
-          <div class="pace-card">
-            <div class="pace-card-head">
-              <div class="pace-lbl">Transacciones necesarias</div>
-              <span class="pace-badge muted">S/. ${avgTk} ticket</span>
-            </div>
-            <div class="pace-val brand">${txnsNeed}/día</div>
-            <div class="pace-sub">ticket promedio S/. ${avgTk}</div>
-          </div>
-        </div>
-        ${refTk > 0 ? `<div class="pace-footnote">
-          Referencia de ${refMonth.toLowerCase()}: <strong>${refTxns} transacciones/día</strong>
-          con ticket promedio <strong>S/. ${refTk}</strong> → para alcanzar la meta de ${m.toLowerCase()} necesitás mantener un ritmo similar o superior.
-        </div>` : ''}`;
+      const refTxns  = Math.round(Object.values(state.transactions?.[refMonth] || {}).reduce((a, b) => a + b, 0) / (objectiveDays(refMonth) || 30));
+      const refTk    = state.avgTickets?.[refMonth]?.TOTAL || 0;
+      cards = [
+        metaKpi,
+        kpi({ label: `Vendido al ${corte}`, value: passed > 0 ? `S/. ${fmt(real)}` : '—',
+          subs: passed > 0
+            ? [`${vsExpectedPill(real, esperado, corte)} vs esperado S/. ${fmt(esperado)}`, `${pctMet.toFixed(0)}% de la meta en ${passed} de ${objectiveDays(m)} días`]
+            : [`${pill('gray', 'sin ventas')} todavía no hay ventas cargadas del mes`] }),
+        kpi({ label: 'Faltante para la meta', value: `S/. ${fmt(faltante)}`,
+          subs: [faltante > 0 ? `${pill('red', `${pctMissing}% por vender`)} S/. ${fmt(dailyNeed)} por día` : pill('green', '✓ meta cubierta'),
+            faltante > 0 ? `en los ${remDays} días que quedan` : ''] }),
+        kpi({ label: 'Transacciones necesarias', value: `${txnsNeed}/día`,
+          subs: [`${tkPill(avgTk)} promedio del mes`, refTk > 0 ? `${refMonth.toLowerCase()}: ${refTxns}/día con ticket S/. ${fmt(refTk)}` : ''] }),
+      ];
     } else {
       const totalTx = avgTk > 0 ? Math.round(real / avgTk) : 0;
-      const closeColor = real >= tt ? 'green' : pctMet >= 90 ? 'amber' : 'red';
-      const closeBadgeLabel = closeColor === 'green' ? '✓ alcanzado' : closeColor === 'amber' ? '↑ casi' : '▼ brecha';
-      el.innerHTML = `
-        <div class="pace-grid">
-          <div class="pace-card">
-            <div class="pace-card-head">
-              <div class="pace-lbl">Cierre del mes</div>
-              <span class="pace-badge ${closeColor}">${closeBadgeLabel}</span>
-            </div>
-            <div class="pace-val ${closeColor}">${pctMet.toFixed(1)}%</div>
-            <div class="pace-sub">${real >= tt ? '✓ Objetivo alcanzado' : 'de la meta'}</div>
-          </div>
-          <div class="pace-card">
-            <div class="pace-card-head">
-              <div class="pace-lbl">${real >= tt ? 'Excedente' : 'Brecha final'}</div>
-              <span class="pace-badge ${real >= tt ? 'green' : 'red'}">vs meta</span>
-            </div>
-            <div class="pace-val ${real >= tt ? 'green' : 'red'}">${real >= tt ? '+' : ''}S/. ${fmt(real - tt)}</div>
-            <div class="pace-sub">vs meta S/. ${fmt(tt)}</div>
-          </div>
-          <div class="pace-card">
-            <div class="pace-card-head">
-              <div class="pace-lbl">Venta diaria real</div>
-              <span class="pace-badge muted">${passed} días</span>
-            </div>
-            <div class="pace-val">S/. ${fmt(dailyReal)}</div>
-            <div class="pace-sub">promedio sobre ${passed} días</div>
-          </div>
-          <div class="pace-card">
-            <div class="pace-card-head">
-              <div class="pace-lbl">Transacciones totales</div>
-              <span class="pace-badge muted">S/. ${state.avgTickets[m]?.TOTAL || 0} ticket</span>
-            </div>
-            <div class="pace-val brand">${totalTx}</div>
-            <div class="pace-sub">ticket promedio S/. ${state.avgTickets[m]?.TOTAL || 0}</div>
-          </div>
-        </div>`;
+      const closeCls = real >= tt ? 'green' : pctMet >= 90 ? 'amber' : 'red';
+      cards = [
+        metaKpi,
+        kpi({ label: 'Vendido en el mes', value: `S/. ${fmt(real)}`,
+          subs: [`${pill(closeCls, `${pctMet.toFixed(0)}% de la meta`)} ${real >= tt ? 'objetivo alcanzado' : ''}`] }),
+        kpi({ label: real >= tt ? 'Excedente' : 'Brecha final', value: `${real >= tt ? '+' : '−'}S/. ${fmt(Math.abs(real - tt))}`,
+          subs: [`${pill(real >= tt ? 'green' : 'red', 'vs meta')} S/. ${fmt(dailyReal)} por día en promedio`] }),
+        kpi({ label: 'Transacciones', value: fmt(totalTx),
+          subs: [`${tkPill(avgTk)} ${fmt(totalTx / objectiveDays(m))} por día`] }),
+      ];
     }
+    el.innerHTML = `<div class="kpi-strip obj-kpis">${cards.join('')}</div>`;
   }
 
   // ── Detalle semanal por canal (expandible desde la fila de la tabla) ──
@@ -494,7 +448,7 @@
             <span class="ch-wk-meta-lbl">/ ${metaLabel}</span>
           </div>
           <span class="ch-wk-pct" style="color:${textColor};">${isFuture ? '—' : isCurrentWeek ? 'parcial' : pct.toFixed(0) + '%'}</span>
-          <span class="pace-badge ${cls}" style="font-size:10px;padding:2px 6px;">${badge}</span>
+          ${pill({ muted: 'gray', brand: 'blue' }[cls] || cls, badge)}
         </div>
         ${traspasoHtml}`;
     }).join('');
@@ -1086,12 +1040,15 @@
       panel.id = 'mpanel-' + m;
 
       const showReal = hasSales(m);
+      // Esperado a la fecha de corte: solo con ventas del mes (en uno futuro no hay nada que comparar).
+      const live  = status !== 'future' && isLiveMonth(m);
+      const corte = corteLabel(m);
 
-      // ── Marcador del día actual sobre la barra ──
+      // ── Marcador del último día con ventas sobre la barra ──
       const todayPct = status === 'current' ? visualTodayPct(m) : null;
       const todayPin = todayPct !== null
-        ? `<div class="pb-today-pin" style="left:${todayPct}%" title="Día calendario ${currentCalendarDay()}">
-             <span class="pb-today-day">${currentCalendarDay()}</span>
+        ? `<div class="pb-today-pin" style="left:${todayPct}%" title="Ventas cargadas al ${corte} · hoy es ${currentCalendarDay()}">
+             <span class="pb-today-day">${daysPassed(m)}</span>
              <div class="pb-today-tri"></div>
            </div>`
         : '';
@@ -1100,6 +1057,7 @@
       planChannels().forEach(c => {
         const real       = chReal(d2026Month, c);
         const tgt        = target(m, c.key);
+        const esperado   = live && tgt > 0 ? expectedTo(m, tgt) : 0;
         const share      = showReal && monthTotal > 0 ? (real / monthTotal * 100).toFixed(1) : '—';
         const wkDetailId = `ch-weeks-${m}-${c.key}`;
         // Canales que agrupan varias columnas del histórico muestran el desglose bajo el nombre.
@@ -1122,9 +1080,10 @@
             ${parts}
           </td>
           <td class="r mono text-2">${state.plan.referencia ? 'S/. ' + fmt(ref2025(m, c.key)) : '—'}</td>
-          <td class="r mono">${showReal ? 'S/. ' + fmt(real) : '<span class="muted">—</span>'}</td>
-          <td class="r">${showReal ? share + '%' : '—'}</td>
           <td class="r mono">${tgt > 0 ? 'S/. ' + fmt(tgt) : '<span class="muted">sin meta</span>'}</td>
+          <td class="r mono text-2">${esperado ? 'S/. ' + fmt(esperado) : '<span class="muted">—</span>'}</td>
+          <td class="r mono">${showReal ? 'S/. ' + fmt(real) : '<span class="muted">—</span>'}${showReal ? vsExpectedPill(real, esperado, corte) : ''}</td>
+          <td class="r">${showReal ? share + '%' : '—'}</td>
           <td class="r" style="min-width:150px;">
             <div class="pb-wrap">
               <div class="pb-outer">
@@ -1140,7 +1099,7 @@
           <td class="r" id="gv-${m}-${c.key}"></td>
         </tr>
         <tr class="ch-weeks-row" id="${wkDetailId}" style="display:none;">
-          <td colspan="7" style="padding:0;">
+          <td colspan="8" style="padding:0;">
             <div class="ch-weeks-inner">
               ${buildChannelWeeklyHTML(m, c, status)}
             </div>
@@ -1149,8 +1108,9 @@
       });
 
       const refTxt = state.plan.referencia ? ` · ${refLabel().replace('Ref.', 'referencia')}: <strong>S/. ${fmt(total2025)}</strong>` : '';
+      const hoy = currentCalendarDay();
       const statusNote = status === 'current'
-        ? `<div class="period-note">${m} 2026 está en curso · día ${daysPassed(m)} de ${objectiveDays(m)}${refTxt}</div>`
+        ? `<div class="period-note">${m} 2026 está en curso · ventas cargadas al ${corte} (día ${daysPassed(m)} de ${objectiveDays(m)})${hoy > daysPassed(m) ? ` · hoy es ${hoy}` : ''}${refTxt}</div>`
         : status === 'future'
           ? `<div class="period-note">${m} 2026 es mes futuro · meta <strong>S/. ${fmt(monthTarget(m))}</strong>${refTxt}</div>`
           : '';
@@ -1163,16 +1123,17 @@
           <div class="panel-head">
             <div>
               <div class="panel-title">Avance por canal</div>
-              <div class="panel-sub">${m} 2026 · meta del archivo de objetivos</div>
+              <div class="panel-sub">${m} 2026 · meta del archivo de objetivos${live ? ` · ventas al ${corte}` : ''}</div>
             </div>
           </div>
           <div class="plan-table-wrap"><table class="month-table">
             <thead><tr>
               <th>Canal</th>
               <th class="r">${refLabel()}</th>
+              <th class="r">Meta</th>
+              <th class="r" title="Meta repartida por días hasta el último día con ventas">Esperado al ${corte}</th>
               <th class="r">Real 2026</th>
               <th class="r">Participación</th>
-              <th class="r">Meta</th>
               <th class="r" style="min-width:140px;">Avance</th>
               <th class="r">Brecha</th>
             </tr></thead>
@@ -1180,9 +1141,10 @@
               <tr style="background:#F8FAFC;">
                 <td><strong>Total</strong></td>
                 <td class="r mono text-2">${state.plan.referencia ? 'S/. ' + fmt(total2025) : '—'}</td>
-                <td class="r mono">${showReal ? 'S/. ' + fmt(monthTotal) : '<span class="muted">—</span>'}</td>
+                <td class="r mono" id="mt-${m}"></td>
+                <td class="r mono text-2">${live && monthTarget(m) > 0 ? 'S/. ' + fmt(expectedTo(m, monthTarget(m))) : '<span class="muted">—</span>'}</td>
+                <td class="r mono">${showReal ? 'S/. ' + fmt(monthTotal) : '<span class="muted">—</span>'}${showReal && live ? vsExpectedPill(monthTotal, expectedTo(m, monthTarget(m)), corte) : ''}</td>
                 <td class="r">${showReal ? '100%' : '—'}</td>
-                <td class="r mono text-2" id="mt-${m}"></td>
                 <td class="r" style="min-width:150px;">
                   <div class="pb-wrap">
                     <div class="pb-outer">

@@ -2885,8 +2885,8 @@ tbody tr:hover td {
 .gp-leader { color: var(--amber); }
 .gp-preview { color: var(--brand); font-size: 11px; font-weight: 700; text-decoration: none; white-space: nowrap; }
 .gp-preview:hover { text-decoration: underline; }
-/* Sin periodo de comparación (Anual o primer mes): fuera "Mes anterior" y "Variación" */
-.gp-ads-panel.no-compare .gp-ads-table :is(th, td):is(:nth-child(6), :nth-child(7)) { display: none; }
+/* Sin periodo de comparación (Anual o primer mes): fuera "Mes anterior" y "Variación" (columnas 8 y 9 en Meta y Google) */
+.gp-ads-panel.no-compare .gp-ads-table :is(th, td):is(:nth-child(8), :nth-child(9)) { display: none; }
 .gp-ads-panel.no-compare .gp-ads-table { min-width: 1480px; }
 .gp-ads-panel.is-compact .gp-ads-table td { padding-top: 5px; padding-bottom: 5px; }
 .gp-ads-panel.is-compact .gp-ads-table th { padding-top: 6px; padding-bottom: 6px; }
@@ -2907,7 +2907,53 @@ tbody tr:hover td {
 .gp-ads-panel.is-fullscreen .gp-ads-scroll { flex: 1; min-height: 0; max-height: none; }
 .gp-ads-panel.is-fullscreen .gp-month-tabs { margin: 0 0 14px; }
 body.gp-table-fullscreen { overflow: hidden; }
-/* Google Ads: menos columnas en anuncios ("Mes anterior" y "Variación" siguen en la 6 y la 7) y términos de búsqueda */
+/* Nombre del anuncio con enlace al anuncio, y ventas con la cantidad de compras debajo */
+.gp-ad-link { color: inherit; text-decoration: none; }
+.gp-ad-link:hover { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
+.gp-ad-link:focus-visible { outline: 2px solid #bfdbfe; outline-offset: 2px; border-radius: 3px; }
+.gp-ad-link-ic { margin-left: 4px; color: var(--brand); font-size: 11px; }
+.gp-sales-col { white-space: nowrap; }
+.gp-cell-sub { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; font-family: var(--font, inherit); font-weight: 500; }
+
+/* Top 3 de anuncios que generaron ventas (módulo Anuncios) */
+.ad-top { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+.ad-top:empty { display: none; }
+.ad-top-head { margin-bottom: 10px; color: var(--text); font-size: 14px; font-weight: 700; }
+.ad-top .gp-note { margin-top: 0; }
+.ad-top-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.ad-top-card {
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px 15px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gp-row-c, var(--brand));
+  border-radius: 10px;
+  background: #fff;
+}
+.ad-top-rank {
+  display: inline-grid;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  font-size: 12px;
+  font-weight: 800;
+}
+.ad-top-body { min-width: 0; }
+.ad-top-name { overflow: hidden; color: var(--text); font-size: 13px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.ad-top-group { display: flex; align-items: center; margin-top: 3px; overflow: hidden; color: var(--text-2); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.ad-top-group .gp-dot-c { margin-right: 6px; }
+.ad-top-value { margin-top: 8px; color: var(--text); font-size: 20px; font-weight: 700; line-height: 1; }
+.ad-top-meta { margin-top: 5px; color: var(--muted); font-size: 11px; }
+@media (max-width: 900px) {
+  .ad-top-list { grid-template-columns: 1fr; }
+}
+
+/* Google Ads: menos columnas en anuncios y términos de búsqueda */
 .gp-ads-table.gp-g-ads-table { min-width: 1420px; }
 .gp-ads-panel.no-compare .gp-ads-table.gp-g-ads-table { min-width: 1260px; }
 .gp-terms-scroll { max-height: 520px; overflow: auto; }

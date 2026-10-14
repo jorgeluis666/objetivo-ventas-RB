@@ -73,6 +73,17 @@
 
   const fechaCorta = iso => { const [, mm, dd] = iso.split('-'); return `${+dd} ${SHORT[+mm - 1].toLowerCase()}`; };
 
+  // Nombre del anuncio con enlace a su vista previa (Meta) o a su página (Google).
+  const adNameLink = (name, url, title) => {
+    const href = safeUrl(url);
+    return href
+      ? `<a class="gp-ad-link" href="${esc(href)}" target="_blank" rel="noopener noreferrer" title="${esc(title)}">${esc(name)}<span class="gp-ad-link-ic" aria-hidden="true">↗</span></a>`
+      : esc(name);
+  };
+  // Ventas de un anuncio: el valor atribuido y, debajo, cuántas compras o conversiones lo dieron.
+  const salesCell = (value, count, word) => (value
+    ? `<b>${money(value)}</b><small class="gp-cell-sub">${numDec(count)} ${word}</small>`
+    : '<span class="gp-no-data">—</span>');
   // Mismos umbrales de ROAS que Proyecciones.
   const roasPill = (roas, purchases) => !purchases
     ? '<span class="pill gray">sin compras</span>'
@@ -670,20 +681,20 @@
     const commerce = group.purchases > 0;
     const manySets = new Set(ads.flatMap(a => a.adSets)).size > 1;
     const monthShort = period.month?.shortName.toLowerCase();
-    const head = [['Anuncio']].concat(manySets ? [['Conjunto']] : [], [['Resultados', true]])
+    // Con compras, Ventas y ROAS van junto al anuncio; el nombre enlaza a la vista previa en Meta.
+    const head = [['Anuncio']].concat(commerce ? [['Ventas', true], ['ROAS', true]] : [], manySets ? [['Conjunto']] : [], [['Resultados', true]])
       .concat(compare ? [[`Resultados ${period.compare.label}`, true], ['Variación', true]] : [])
-      .concat([['Costo por resultado', true], ['Inversión', true], ['% de la campaña'], ['Impresiones', true], ['Alcance', true], ['CPM', true], ['Clics', true]])
-      .concat(commerce ? [['Compras', true], ['ROAS', true]] : [], [['Días activos'], ['Vista previa']]);
+      .concat([['Costo por resultado', true], ['Inversión', true], ['% de la campaña'], ['Impresiones', true], ['Alcance', true], ['CPM', true], ['Clics', true], ['Días activos']]);
     const body = ads.map((a, k) => {
       const before = previous.get(a.key);
-      const link = safeUrl(a.link);
       let days = '—';
       if (period.annual && a.firstDate) days = a.firstDate === a.lastDate ? fechaCorta(a.firstDate) : `${fechaCorta(a.firstDate)} - ${fechaCorta(a.lastDate)}`;
       else if (!period.annual && a.firstDay) days = a.firstDay === a.lastDay ? `${a.firstDay} ${monthShort}` : `${a.firstDay}-${a.lastDay} ${monthShort}`;
       const share = group.spend ? a.spend / group.spend * 100 : 0;
       return `
         <tr>
-          <td class="gp-camp-name gp-ad-cell" title="${esc(a.ad)}">${k === 0 && a.results > 0 ? '<b class="gp-leader" title="Líder de la campaña">★</b> ' : ''}${esc(a.ad)}</td>
+          <td class="gp-camp-name gp-ad-cell" title="${esc(a.ad)}">${k === 0 && a.results > 0 ? '<b class="gp-leader" title="Líder de la campaña">★</b> ' : ''}${adNameLink(a.ad, a.link, 'Ver el anuncio en Meta')}</td>
+          ${commerce ? `<td class="r mono gp-sales-col">${salesCell(a.purchaseValue, a.purchases, a.purchases === 1 ? 'compra' : 'compras')}</td><td class="r">${roasPill(a.roas, a.purchases)}</td>` : ''}
           ${manySets ? `<td class="gp-set-col">${esc(a.adSets.join(' / ') || '—')}</td>` : ''}
           <td class="r mono"><b>${num(a.results)}</b></td>
           ${compare ? `<td class="r mono">${before ? num(before.results) : '<span class="gp-no-data">—</span>'}</td><td class="r">${variationCell(a.results, before?.results)}</td>` : ''}
@@ -694,9 +705,7 @@
           <td class="r mono">${num(a.reach)}</td>
           <td class="r mono">${money(a.cpm, 2)}</td>
           <td class="r mono">${num(a.clicks)}</td>
-          ${commerce ? `<td class="r mono">${a.purchases ? num(a.purchases) : '—'}</td><td class="r">${roasPill(a.roas, a.purchases)}</td>` : ''}
           <td class="gp-date-col">${days}</td>
-          <td>${link ? `<a class="gp-preview" href="${esc(link)}" target="_blank" rel="noopener noreferrer">Ver anuncio »</a>` : '<span class="gp-no-data">Sin enlace</span>'}</td>
         </tr>`;
     }).join('') || `<tr><td class="gp-table-empty" colspan="${head.length}">Sin anuncios con gasto en el periodo.</td></tr>`;
     return `
@@ -1008,21 +1017,23 @@
     document.getElementById('gp-ads-sub').textContent = `${rows.length} ${rows.length === 1 ? 'anuncio' : 'anuncios'} ordenados por resultados dentro de cada grupo. La estrella marca al líder de cada grupo.`;
     document.getElementById('gp-ads-prev-head').textContent = period.compare ? `Resultados ${period.compare.label}` : 'Mes anterior';
     if (!rows.length) {
-      body.innerHTML = '<tr><td class="gp-table-empty" colspan="17">No hay anuncios de este grupo en el periodo.</td></tr>';
+      body.innerHTML = '<tr><td class="gp-table-empty" colspan="16">No hay anuncios de este grupo en el periodo.</td></tr>';
       return;
     }
     const monthShort = period.month?.shortName.toLowerCase();
     const dateShort = iso => fechaCorta(iso);
+    // Ventas y ROAS van junto al anuncio; el nombre enlaza a la vista previa en Meta.
     body.innerHTML = rows.map(a => {
       const before = previous.get(a.key);
       let days = '—';
       if (period.annual && a.firstDate) days = a.firstDate === a.lastDate ? dateShort(a.firstDate) : `${dateShort(a.firstDate)} - ${dateShort(a.lastDate)}`;
       else if (!period.annual && a.firstDay) days = a.firstDay === a.lastDay ? `${a.firstDay} ${monthShort}` : `${a.firstDay}-${a.lastDay} ${monthShort}`;
-      const link = safeUrl(a.link);
       return `
         <tr style="--gp-row-c:${a.groupColor}">
           <td class="gp-type-col"><span class="gp-group"><i class="gp-dot-c"></i>${esc(a.groupLabel)}</span></td>
-          <td class="gp-ad-col" title="${esc(a.ad)}"><span class="gp-ad-text">${a.leader ? '<b class="gp-leader" title="Líder del grupo">★</b> ' : ''}${esc(a.ad)}</span></td>
+          <td class="gp-ad-col" title="${esc(a.ad)}"><span class="gp-ad-text">${a.leader ? '<b class="gp-leader" title="Líder del grupo">★</b> ' : ''}${adNameLink(a.ad, a.link, 'Ver el anuncio en Meta')}</span></td>
+          <td class="r mono gp-sales-col">${salesCell(a.purchaseValue, a.purchases, a.purchases === 1 ? 'compra' : 'compras')}</td>
+          <td class="r">${roasPill(a.roas, a.purchases)}</td>
           <td class="gp-set-col">${esc(a.campaigns.join(' / '))}<small>${esc(a.adSets.join(' / ') || '—')}</small></td>
           <td><span class="gp-result-pill">${esc(a.resultType ? a.resultLabel : groupResult.get(a.group) || a.resultLabel)}</span></td>
           <td class="r mono"><b>${num(a.results)}</b></td>
@@ -1030,14 +1041,11 @@
           <td class="r">${period.compare ? variationCell(a.results, before?.results) : '<span class="gp-no-data">—</span>'}</td>
           <td class="r mono">${unitCost(a.costPerResult)}</td>
           <td class="r mono">${money(a.spend, 2)}</td>
-          <td class="r mono">${a.purchases ? num(a.purchases) : '—'}</td>
-          <td class="r">${roasPill(a.roas, a.purchases)}</td>
           <td class="r mono">${num(a.impressions)}</td>
           <td class="r mono">${num(a.reach)}</td>
           <td class="r mono">${money(a.cpm, 2)}</td>
           <td class="r mono">${num(a.clicks)}</td>
           <td class="gp-date-col">${days}</td>
-          <td>${link ? `<a class="gp-preview" href="${esc(link)}" target="_blank" rel="noopener noreferrer">Ver anuncio »</a>` : '<span class="gp-no-data">Sin enlace</span>'}</td>
         </tr>`;
     }).join('');
   }
@@ -1696,9 +1704,10 @@
     const compare = period.detailCompare;
     const previous = new Map((compare ? gAds(compare.rows.filter(r => r.group === group.key)) : []).map(a => [a.key, a]));
     const total = rows.reduce((s, r) => s + r.cost, 0);
-    const cols = [['Anuncio'], ['Grupo'], ['Conversiones', true]]
+    // Ventas y ROAS van junto al anuncio; el nombre enlaza a la página a la que lleva el anuncio.
+    const cols = [['Anuncio'], ['Ventas', true], ['ROAS', true], ['Grupo'], ['Conversiones', true]]
       .concat(compare ? [[`Conversiones ${compare.label}`, true], ['Variación', true]] : [])
-      .concat([['Costo por conversión', true], ['Inversión', true], ['% del tipo'], ['Clics', true], ['CPC', true], ['Valor', true], ['ROAS', true], ['Términos', true], ['Días activos'], ['Página']]);
+      .concat([['Costo por conversión', true], ['Inversión', true], ['% del tipo'], ['Clics', true], ['CPC', true], ['Términos', true], ['Días activos']]);
     return `${head}
         <div class="panel-sub">${ads.length} ${ads.length === 1 ? 'anuncio' : 'anuncios'} en el informe por día (${esc(period.detailLabel)}). La estrella marca al líder.</div>
       </div>
@@ -1707,10 +1716,11 @@
           <thead><tr>${cols.map(([label, numeric]) => `<th${numeric ? ' class="r"' : ''}>${esc(label)}</th>`).join('')}</tr></thead>
           <tbody>${ads.map((a, k) => {
             const before = previous.get(a.key);
-            const url = safeUrl(a.url);
             const share = total ? a.cost / total * 100 : 0;
             return `<tr>
-              <td class="gp-camp-name gp-ad-cell" title="${esc(a.ad)}">${k === 0 && a.conversions > 0 ? '<b class="gp-leader" title="Líder del tipo">★</b> ' : ''}${esc(a.ad)}</td>
+              <td class="gp-camp-name gp-ad-cell" title="${esc(a.ad)}">${k === 0 && a.conversions > 0 ? '<b class="gp-leader" title="Líder del tipo">★</b> ' : ''}${adNameLink(a.ad, a.url, 'Ver la página del anuncio')}</td>
+              <td class="r mono gp-sales-col">${salesCell(a.conversionValue, a.conversions, 'conv.')}</td>
+              <td class="r">${roasPill(a.roas, a.conversions)}</td>
               <td class="gp-set-col">${esc(a.adGroups.join(' / ') || '—')}</td>
               <td class="r mono"><b>${numDec(a.conversions)}</b></td>
               ${compare ? `<td class="r mono">${before ? numDec(before.conversions) : '<span class="gp-no-data">—</span>'}</td><td class="r">${variationCell(a.conversions, before?.conversions)}</td>` : ''}
@@ -1719,11 +1729,8 @@
               <td class="gp-share-col"><span class="gp-share"><span style="width:${Math.min(100, share).toFixed(1)}%"></span></span><b>${pct(share)}</b></td>
               <td class="r mono">${num(a.clicks)}</td>
               <td class="r mono">${money(a.cpc, 2)}</td>
-              <td class="r mono">${a.conversionValue ? money(a.conversionValue) : '—'}</td>
-              <td class="r">${roasPill(a.roas, a.conversions)}</td>
               <td class="r mono">${num(a.termCount)}</td>
               <td class="gp-date-col">${daysText(a, period)}</td>
-              <td>${url ? `<a class="gp-preview" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Ver página »</a>` : '<span class="gp-no-data">Sin URL</span>'}</td>
             </tr>`;
           }).join('')}</tbody>
         </table>
@@ -1884,7 +1891,7 @@
     const sub = document.getElementById('gp-g-ads-sub');
     if (!period.detail) {
       sub.textContent = '';
-      body.innerHTML = '<tr><td class="gp-table-empty" colspan="15">El informe de campaña no trae anuncios. Para verlos, sube a la carpeta Google Files el informe por día con Campaña, Grupo de anuncios, Anuncio y Palabra clave del mes (como el de octubre).</td></tr>';
+      body.innerHTML = '<tr><td class="gp-table-empty" colspan="14">El informe de campaña no trae anuncios. Para verlos, sube a la carpeta Google Files el informe de anuncios por día y palabra clave del mes.</td></tr>';
       return;
     }
     const order = new Map(groups.map((g, i) => [g.key, i]));
@@ -1894,28 +1901,27 @@
     all.forEach(a => { if (a.conversions > 0 && !leaders.has(a.group)) { leaders.add(a.group); a.leader = true; } });
     const rows = google.adsGroup === 'all' ? all : all.filter(a => a.group === google.adsGroup);
     sub.innerHTML = `${rows.length} ${rows.length === 1 ? 'anuncio' : 'anuncios'} ordenados por conversiones dentro de cada tipo. La estrella marca al líder. ${detailNote(period)}`;
+    // Ventas y ROAS van junto al anuncio; el nombre enlaza a la página a la que lleva el anuncio.
     body.innerHTML = rows.map(a => {
       const before = previous.get(a.key);
-      const url = safeUrl(a.url);
       return `
         <tr style="--gp-row-c:${a.groupColor}">
           <td class="gp-type-col"><span class="gp-group"><i class="gp-dot-c"></i>${esc(a.groupLabel)}</span></td>
-          <td class="gp-ad-col" title="${esc(a.ad)}"><span class="gp-ad-text">${a.leader ? '<b class="gp-leader" title="Líder del tipo">★</b> ' : ''}${esc(a.ad)}</span></td>
+          <td class="gp-ad-col" title="${esc(a.ad)}"><span class="gp-ad-text">${a.leader ? '<b class="gp-leader" title="Líder del tipo">★</b> ' : ''}${adNameLink(a.ad, a.url, 'Ver la página del anuncio')}</span></td>
+          <td class="r mono gp-sales-col">${salesCell(a.conversionValue, a.conversions, 'conv.')}</td>
+          <td class="r">${roasPill(a.roas, a.conversions)}</td>
           <td class="gp-set-col">${esc(a.campaigns.join(' / '))}<small>${esc(a.adGroups.join(' / ') || '—')}</small></td>
           <td class="r mono">${money(a.cost, 2)}</td>
           <td class="r mono"><b>${numDec(a.conversions)}</b></td>
           <td class="r mono">${before ? numDec(before.conversions) : '<span class="gp-no-data">—</span>'}</td>
           <td class="r">${compare ? variationCell(a.conversions, before?.conversions) : '<span class="gp-no-data">—</span>'}</td>
           <td class="r mono">${money(a.costPerConversion, 2)}</td>
-          <td class="r mono">${a.conversionValue ? money(a.conversionValue) : '—'}</td>
-          <td class="r">${roasPill(a.roas, a.conversions)}</td>
           <td class="r mono">${num(a.clicks)}</td>
           <td class="r mono">${money(a.cpc, 2)}</td>
           <td class="r mono">${num(a.termCount)}</td>
           <td class="gp-date-col">${daysText(a, period)}</td>
-          <td>${url ? `<a class="gp-preview" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Ver página »</a>` : '<span class="gp-no-data">Sin URL</span>'}</td>
         </tr>`;
-    }).join('') || '<tr><td class="gp-table-empty" colspan="15">No hay anuncios de este tipo en el periodo.</td></tr>';
+    }).join('') || '<tr><td class="gp-table-empty" colspan="14">No hay anuncios de este tipo en el periodo.</td></tr>';
   }
 
   function renderGoogleTerms(period) {
@@ -2039,6 +2045,24 @@
     ].join('');
   }
 
+  // Top 3 de anuncios que generaron ventas en el periodo: los de más valor atribuido (a igual valor, más compras).
+  function topSalesHtml(ads, { value, count, spend, word, link, none }) {
+    const top = ads.filter(a => a[value] > 0 || a[count] > 0)
+      .sort((a, b) => b[value] - a[value] || b[count] - a[count]).slice(0, 3);
+    const head = '<div class="ad-top-head">Top 3 de anuncios que generaron ventas</div>';
+    if (!top.length) return `${head}<p class="gp-note">${none}</p>`;
+    return `${head}<div class="ad-top-list">${top.map((a, k) => `
+      <div class="ad-top-card" style="--gp-row-c:${a.groupColor}">
+        <span class="ad-top-rank">${k + 1}</span>
+        <div class="ad-top-body">
+          <div class="ad-top-name" title="${esc(a.ad)}">${adNameLink(a.ad, a[link], 'Ver el anuncio')}</div>
+          <div class="ad-top-group"><i class="gp-dot-c"></i>${esc(a.groupLabel)} · ${esc(a.campaigns.join(' / '))}</div>
+          <div class="ad-top-value">${money(a[value])}</div>
+          <div class="ad-top-meta">${numDec(a[count])} ${word(a[count])} · ROAS ${roasFmt(a.roas)} · ${money(a[spend], 2)} de inversión</div>
+        </div>
+      </div>`).join('')}</div>`;
+  }
+
   function renderAdsMeta() {
     const title = document.getElementById('ad-meta-period-title');
     if (!meta.latestKey) {
@@ -2056,7 +2080,12 @@
     });
     title.textContent = `Periodo: ${period.label} ${period.year}${period.annual || period.closed ? '' : ' (mes en curso)'}`;
     document.getElementById('ad-meta-period-sub').textContent = period.compare ? `Comparación vs ${period.compare.label}` : period.annual ? 'Acumulado del año: sin periodo anterior para comparar' : 'Sin mes anterior para comparar';
-    document.getElementById('ad-meta-kpis').innerHTML = adsSummaryHtml(adsOf(period.rows), period.compare ? adsOf(period.compare.rows) : null, period.compare?.label, 'results', 'resultados');
+    const ads = adsOf(period.rows);
+    document.getElementById('ad-meta-kpis').innerHTML = adsSummaryHtml(ads, period.compare ? adsOf(period.compare.rows) : null, period.compare?.label, 'results', 'resultados');
+    document.getElementById('ad-meta-top').innerHTML = topSalesHtml(ads, {
+      value: 'purchaseValue', count: 'purchases', spend: 'spend', link: 'link', word: n => (n === 1 ? 'compra' : 'compras'),
+      none: 'Ningún anuncio registró compras en el periodo.',
+    });
     renderAds(period, groups);
   }
 
@@ -2079,9 +2108,15 @@
     document.getElementById('ad-google-period-sub').textContent = !period.detail
       ? 'Este periodo no tiene informe por día y palabra clave: no hay datos de anuncios.'
       : period.detailCompare ? `Comparación vs ${period.detailCompare.label}` : 'Sin informe por día del mes anterior para comparar';
+    const ads = period.detail ? gAds(period.detail) : [];
     document.getElementById('ad-google-kpis').innerHTML = period.detail
-      ? adsSummaryHtml(gAds(period.detail), period.detailCompare ? gAds(period.detailCompare.rows) : null, period.detailCompare?.label, 'conversions', 'conversiones')
+      ? adsSummaryHtml(ads, period.detailCompare ? gAds(period.detailCompare.rows) : null, period.detailCompare?.label, 'conversions', 'conversiones')
       : '';
+    // En Google las ventas son el valor de las conversiones del informe por día.
+    document.getElementById('ad-google-top').innerHTML = period.detail ? topSalesHtml(ads, {
+      value: 'conversionValue', count: 'conversions', spend: 'cost', link: 'url', word: () => 'conv.',
+      none: 'Ningún anuncio registró conversiones con valor en el periodo.',
+    }) : '';
     renderGoogleAds(period, groups);
   }
 

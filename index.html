@@ -788,7 +788,67 @@
 
         <!-- ── Pane: Google Ads (carpeta Google Files) ── -->
         <div class="gp-pane" id="gp-pane-google" role="tabpanel" aria-labelledby="gp-tab-google" hidden>
-          <div class="gp-body" id="gp-google-body"></div>
+          <!-- Misma estructura que Meta Ads: informe de campaña (un total por mes) y, si el mes lo trae, el informe
+               por día y palabra clave (serie diaria, grupos de anuncios, anuncios y términos de búsqueda). -->
+          <div class="gp-body" id="gp-google-body">
+            <div class="month-tabs gp-month-tabs" id="gp-google-months" role="group" aria-label="Mes de Google Ads"></div>
+            <div class="rep-stack">
+              <div class="gp-alerts" id="gp-google-alerts" hidden></div>
+              <div class="panel gp-period-panel">
+                <div class="gp-period-head">
+                  <div class="panel-title" id="gp-g-period-title">Cargando datos de Google Ads…</div>
+                  <div class="panel-sub" id="gp-g-period-sub"></div>
+                </div>
+                <div class="kpi-strip gp-kpis" id="gp-g-kpis" role="group" aria-label="Resumen del periodo"></div>
+                <p class="gp-note" id="gp-g-kpis-note" hidden></p>
+              </div>
+              <div class="panel">
+                <div class="panel-head"><div>
+                  <div class="panel-title">Distribución de inversión por campaña</div>
+                  <div class="panel-sub" id="gp-g-dist-sub"></div>
+                </div></div>
+                <div class="gp-table-wrap">
+                  <table class="rep-table gp-dist-table">
+                    <thead><tr><th>Campaña</th><th>Tipo</th><th>Estado</th><th class="r">Inversión</th><th>% de la inversión</th><th class="r">Impresiones</th><th class="r">Clics</th><th class="r">CTR</th><th class="r">CPC</th><th class="r">Conversiones</th><th class="r">Compras</th><th class="r">Costo por compra</th><th class="r">Valor</th><th class="r">ROAS</th></tr></thead>
+                    <tbody id="gp-g-dist-body"></tbody>
+                  </table>
+                </div>
+                <p class="gp-note" id="gp-g-dist-note" hidden></p>
+                <div class="gp-camp-blocks" id="gp-g-blocks"></div>
+              </div>
+              <div class="panel gp-ads-panel" id="gp-g-ads-panel">
+                <div class="panel-head gp-ads-head">
+                  <div>
+                    <div class="panel-title" id="gp-g-ads-title">Anuncios del periodo</div>
+                    <div class="panel-sub" id="gp-g-ads-sub"></div>
+                  </div>
+                  <div class="gp-table-tools">
+                    <label class="gp-tool-select" for="gp-g-ads-group"><span class="sr-only">Filtrar por tipo de campaña</span><select id="gp-g-ads-group"><option value="all">Todos los tipos</option></select></label>
+                    <button type="button" class="gp-tool-btn" id="gp-g-ads-density" aria-pressed="false">Compacto</button>
+                    <button type="button" class="gp-tool-btn" id="gp-g-ads-expand" aria-pressed="false" title="Ver la tabla en pantalla completa (Esc para salir)">⤢ Pantalla completa</button>
+                  </div>
+                </div>
+                <div class="gp-ads-scroll" tabindex="0" role="region" aria-label="Tabla de anuncios de Google Ads">
+                  <table class="rep-table gp-ads-table gp-g-ads-table">
+                    <thead><tr><th>Tipo</th><th>Anuncio</th><th>Campaña / grupo</th><th class="r">Inversión</th><th class="r">Conversiones</th><th class="r" id="gp-g-ads-prev-head">Mes anterior</th><th class="r">Variación</th><th class="r">Costo por conversión</th><th class="r">Valor</th><th class="r">ROAS</th><th class="r">Clics</th><th class="r">CPC</th><th class="r">Términos</th><th>Días activos</th><th>Página</th></tr></thead>
+                    <tbody id="gp-g-ads-body"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="panel" id="gp-g-terms-panel">
+                <div class="panel-head"><div>
+                  <div class="panel-title">Términos de búsqueda</div>
+                  <div class="panel-sub" id="gp-g-terms-sub"></div>
+                </div></div>
+                <div class="gp-table-wrap gp-terms-scroll">
+                  <table class="rep-table gp-terms-table">
+                    <thead><tr><th>Término</th><th>Tipo</th><th>Grupo de anuncios</th><th class="r">Inversión</th><th>% de la inversión</th><th class="r">Clics</th><th class="r">CPC</th><th class="r">Conversiones</th><th class="r">ROAS</th><th>Días activos</th></tr></thead>
+                    <tbody id="gp-g-terms-body"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

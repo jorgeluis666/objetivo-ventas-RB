@@ -297,15 +297,8 @@ function parseGoogleReport(text) {
     const field = GA_COLUMNS[cell];
     if (field && !(field in col)) col[field] = index;
   });
-  // Un informe por día o por palabra clave no trae Impr. ni las filas "Total:" y suele venir con coma
-  // decimal ("5,06"), que parseNumber leería como 506: se rechaza con un mensaje que diga qué bajar.
-  // Los informes por día y palabra clave de la cuenta se guardan en la carpeta a propósito (se van a
-  // usar más adelante): no son un fallo, se omiten sin aviso en el tablero.
-  if (!('impressions' in col) && plainHeader.some(cell => cell === 'dia' || cell.startsWith('palabra clave'))) {
-    const error = new Error('informe por día y palabra clave: todavía no se usa, el mes sale del «Informe de campaña»');
-    error.detailReport = true;
-    throw error;
-  }
+  // El informe por día y palabra clave se lee aparte (parseGoogleDetail): readPlatform lo separa antes.
+  if (isGoogleDetail(plainHeader)) throw new Error('es un informe por día y palabra clave, no un informe de campaña');
   for (const required of ['campaign', 'cost', 'impressions', 'clicks', 'conversions']) {
     if (!(required in col)) throw new Error(`falta la columna de ${GA_FIELD_LABELS[required] || 'campaña'}`);
   }
@@ -474,6 +467,122 @@ function parseGoogleReport(text) {
     missingColumns: missing,
     repairs,
     checks,
+  };
+}
+
+// ─── Google Ads: informe por día y palabra clave ─────────────────────────────
+// Una fila por día, campaña, grupo de anuncios, anuncio y término de búsqueda. Da la serie diaria, los grupos,
+// los anuncios y los términos del mes. Google no detalla los términos con pocas impresiones: suma menos que el
+// informe de campaña, que sigue siendo la fuente de los totales del mes.
+const GA_DETAIL_COLUMNS = {
+  'dia': 'day',
+  'campana': 'campaign',
+  'grupo de anuncios': 'adGroup',
+  'anuncio': 'ad',
+  'url final del anuncio': 'url',
+  'url final': 'url',
+  'palabra clave de la busqueda': 'keyword',
+  'termino de busqueda': 'keyword',
+  'palabra clave': 'keyword',
+  'costo': 'cost',
+  'coste': 'cost',
+  'impr.': 'impressions',
+  'impresiones': 'impressions',
+  'clics': 'clicks',
+  'conversiones': 'conversions',
+  'conversiones por compras': 'purchases',
+  'conversiones de compras': 'purchases',
+  'valor de conv.': 'conversionValue',
+};
+const GA_DETAIL_SUMS = ['cost', 'impressions', 'clicks', 'conversions', 'purchases', 'conversionValue'];
+const GA_DETAIL_TABLE_COLUMNS = ['d', 'campaign', 'adGroup', 'ad', 'keyword', ...GA_DETAIL_SUMS];
+
+const isGoogleDetail = plainHeader => plainHeader.includes('dia') && plainHeader.includes('campana')
+  && plainHeader.some(cell => cell === 'grupo de anuncios' || cell.startsWith('palabra clave') || cell === 'termino de busqueda');
+
+function parseGoogleDetail(text) {
+  const rows = parseCsv(text);
+  const headerIndex = rows.slice(0, 15).findIndex(row => isGoogleDetail(row.map(normalize)));
+  if (headerIndex < 0) throw new Error('no encuentro el encabezado del informe por día (Día, Campaña, Grupo de anuncios…)');
+  const header = rows[headerIndex].map(normalize);
+  const col = {};
+  header.forEach((cell, index) => {
+    const field = GA_DETAIL_COLUMNS[cell];
+    if (field && !(field in col)) col[field] = index;
+  });
+  for (const [field, label] of [['cost', 'Costo'], ['clicks', 'Clics']]) {
+    if (!(field in col)) throw new Error(`falta la columna ${label}`);
+  }
+  // Mismo criterio que el informe de campaña: con porcentajes en coma decimal, los números vienen "5,06".
+  const dataRows = rows.slice(headerIndex + 1);
+  const percents = dataRows.flat().map(value => value.trim()).filter(value => /^-?\d[\d.,]*\s?%$/.test(value));
+  const decimalComma = percents.some(value => /,\d+\s?%$/.test(value)) && !percents.some(value => /\.\d+\s?%$/.test(value));
+  const toDotDecimal = value => (/^-?\d{1,3}(\.\d{3})*(,\d+)?$|^-?\d+(,\d+)?$/.test(value.trim())
+    ? value.trim().replace(/\./g, '').replace(',', '.') : value);
+  const cell = (row, field) => {
+    const value = col[field] !== undefined ? String(row[col[field]] ?? '') : '';
+    return decimalComma ? toDotDecimal(value) : value;
+  };
+
+  const lists = { campaigns: [], adGroups: [], ads: [], keywords: [] };
+  const seen = { campaigns: new Map(), adGroups: new Map(), ads: new Map(), keywords: new Map() };
+  const indexOf = (list, key, value = key) => {
+    if (!seen[list].has(key)) {
+      seen[list].set(key, lists[list].length);
+      lists[list].push(value);
+    }
+    return seen[list].get(key);
+  };
+  const groups = new Map();
+  let badDays = 0;
+  for (const row of dataRows) {
+    if (!row.some(value => value.trim())) continue;
+    const campaign = cleanText(cell(row, 'campaign'));
+    if (!campaign || /^total/i.test(campaign) || /^total/i.test(String(row[0] || '').trim())) continue;
+    const day = parseDay(cell(row, 'day'));
+    if (!day) { badDays++; continue; }
+    const adGroup = cleanText(cell(row, 'adGroup'));
+    const ad = cleanText(cell(row, 'ad'));
+    const url = cleanText(cell(row, 'url'));
+    const keyword = cleanText(cell(row, 'keyword'));
+    const key = [day, campaign, adGroup, ad, url, keyword].join('|');
+    let entry = groups.get(key);
+    if (!entry) {
+      entry = { day, campaign, adGroup, ad, url, keyword, sums: Object.fromEntries(GA_DETAIL_SUMS.map(field => [field, 0])) };
+      groups.set(key, entry);
+    }
+    for (const field of GA_DETAIL_SUMS) entry.sums[field] += parseNumber(cell(row, field)) || 0;
+  }
+  const entries = [...groups.values()];
+  if (!entries.length) throw new Error('el informe por día no trae filas');
+  // El mes es el que más filas junta; las de otros meses no se cuentan.
+  const perMonth = {};
+  for (const entry of entries) perMonth[monthOfDate(entry.day)] = (perMonth[monthOfDate(entry.day)] || 0) + 1;
+  const month = Object.entries(perMonth).sort((a, b) => b[1] - a[1])[0][0];
+  const kept = entries.filter(entry => monthOfDate(entry.day) === month)
+    .sort((a, b) => a.day.localeCompare(b.day) || a.campaign.localeCompare(b.campaign));
+  const warnings = [];
+  if (badDays) warnings.push(`${badDays} filas del informe por día con una fecha que no se pudo leer; quedaron fuera`);
+  if (kept.length < entries.length) warnings.push(`${entries.length - kept.length} filas del informe por día de otros meses quedaron fuera`);
+
+  const out = kept.map(entry => [
+    Number(entry.day.slice(8, 10)),
+    indexOf('campaigns', entry.campaign),
+    indexOf('adGroups', entry.adGroup),
+    indexOf('ads', `${entry.ad}|${entry.url}`, { name: entry.ad || '(sin nombre)', url: entry.url || null }),
+    indexOf('keywords', entry.keyword),
+    ...GA_DETAIL_SUMS.map(field => round(entry.sums[field], field === 'impressions' || field === 'clicks' ? 0 : 2)),
+  ]);
+  const days = [...new Set(kept.map(entry => entry.day))].sort();
+  const totals = Object.fromEntries(GA_DETAIL_SUMS.map(field => [field, round(sumField(kept.map(entry => entry.sums), field))]));
+  return {
+    month,
+    coverage: coverage(days[0], days[days.length - 1], month, days.length),
+    // Sin columna de impresiones o de compras esos campos van en cero en la tabla: el tablero no los usa.
+    fields: { impressions: col.impressions !== undefined, purchases: col.purchases !== undefined },
+    totals,
+    table: { columns: GA_DETAIL_TABLE_COLUMNS, ...lists, rows: out },
+    warnings,
   };
 }
 
@@ -968,9 +1077,20 @@ async function readPlatform(platform, failures, log) {
   console.log(`[ads] ${folder.label}: ${tabular.length} archivos (vista ${discovery})`);
 
   const reports = [];
+  const details = [];
   for (const file of tabular) {
     try {
       const text = await download(file);
+      // El informe por día y palabra clave de Google completa el mes del informe de campaña.
+      if (platform === 'google' && parseCsv(text).slice(0, 15).some(row => isGoogleDetail(row.map(normalize)))) {
+        const detail = parseGoogleDetail(text);
+        const fromName = monthFromName(file.name);
+        if (fromName && fromName !== detail.month) {
+          log.push(`${folder.label}: «${file.name}» dice ${monthLabel(fromName)} en el nombre pero el contenido es de ${monthLabel(detail.month)}; uso el contenido`);
+        }
+        details.push({ file, month: detail.month, detail });
+        continue;
+      }
       const report = platform === 'google' ? parseGoogleReport(text) : parseMetaReport(text);
       const fromContent = platform === 'google' ? (report.period && monthOfDate(report.period.start)) : report.month;
       const fromName = monthFromName(file.name);
@@ -984,10 +1104,6 @@ async function readPlatform(platform, failures, log) {
       }
       reports.push({ file, month, monthFrom: fromContent ? 'contenido' : 'nombre', report });
     } catch (err) {
-      if (err.detailReport) {
-        console.log(`[ads] ${folder.label}: «${file.name}» es un ${err.message}; se omite`);
-        continue;
-      }
       failures.push({ platform, label: folder.label, file, month: monthFromName(file.name), message: err.message });
     }
   }
@@ -1003,7 +1119,22 @@ async function readPlatform(platform, failures, log) {
     }
     byMonth.set(entry.month, entry);
   }
+  const detailByMonth = new Map();
+  details.sort((a, b) => String(b.file.modifiedTime || '').localeCompare(String(a.file.modifiedTime || '')) || a.file.name.localeCompare(b.file.name));
+  for (const entry of details) {
+    const current = detailByMonth.get(entry.month);
+    if (current) {
+      log.push(`${folder.label}: hay dos informes por día de ${monthLabel(entry.month)}; uso «${current.file.name}» e ignoro «${entry.file.name}»`);
+      continue;
+    }
+    if (!byMonth.has(entry.month)) {
+      log.push(`${folder.label}: «${entry.file.name}» es el informe por día de ${monthLabel(entry.month)}, pero falta el informe de campaña de ese mes; no se usa`);
+      continue;
+    }
+    detailByMonth.set(entry.month, entry);
+  }
   return {
+    detailByMonth,
     source: {
       folderId: folder.id,
       folderUrl: `https://drive.google.com/drive/folders/${folder.id}`,
@@ -1014,9 +1145,10 @@ async function readPlatform(platform, failures, log) {
   };
 }
 
-function googleBlock(entry, warnings) {
+function googleBlock(entry, warnings, detailEntry) {
   const { report, file, month } = entry;
   const label = `Google Ads ${monthLabel(month)}`;
+  for (const warning of detailEntry?.detail.warnings || []) warnings.push(`${label}: ${warning}`);
   if (report.segmentation) {
     warnings.push(`${label}: el informe viene segmentado por «${report.segmentation}»: las campañas traen conversiones pero costo, impresiones y clics en cero. Los KPIs del mes salen de «${report.totalsSource}» y la tabla por campaña queda incompleta.`);
   }
@@ -1048,6 +1180,13 @@ function googleBlock(entry, warnings) {
     campaigns: report.campaigns,
     checks: report.checks,
     repairs: report.repairs,
+    detail: detailEntry ? {
+      source: { name: detailEntry.file.name, id: detailEntry.file.id, mimeType: detailEntry.file.mimeType, modifiedTime: detailEntry.file.modifiedTime },
+      coverage: detailEntry.detail.coverage,
+      fields: detailEntry.detail.fields,
+      totals: detailEntry.detail.totals,
+      table: detailEntry.detail.table,
+    } : null,
   };
 }
 
@@ -1096,6 +1235,10 @@ function printMonth(month) {
     const ctr = t.ctr === null ? '—' : `${(t.ctr * 100).toFixed(2)}%`;
     console.log(`    Google  ${money(t.cost)} · ${count(t.impressions)} impr · ${count(t.clicks)} clics · CTR ${ctr} · ${count(t.purchases)} compras · costo/compra ${money(t.costPerPurchase)} · valor ${money(t.conversionValue)} (conversiones con Contacto: ${count(t.conversions)})`);
     const rebuilt = g.byType.filter(row => row.fromCampaigns).map(row => row.type);
+    if (g.detail) {
+      const dt = g.detail.totals;
+      console.log(`            informe por día: ${g.detail.coverage.days} días · ${money(dt.cost)} de ${money(t.cost)} · ${count(dt.clicks)} clics · ${g.detail.table.adGroups.length} grupos · ${g.detail.table.ads.length} anuncios · ${g.detail.table.keywords.length} términos`);
+    }
     console.log(`            ${g.campaignsComplete ? `${g.campaigns.length} campañas completas` : `tabla por campaña INCOMPLETA (segmentada por ${g.segmentation}); KPIs desde ${g.totalsSource}`}${rebuilt.length ? ` · sin fila de total en el informe, sumado desde sus campañas: ${rebuilt.join(', ')}` : ''}`);
   }
   if (m) {
@@ -1153,7 +1296,7 @@ async function main() {
       warnings.push(...(previousMonth(id).warnings || []).filter(w => w.startsWith(prefix)));
       return kept[platform].get(id);
     };
-    if (google.byMonth.has(id)) month.google = googleBlock(google.byMonth.get(id), warnings);
+    if (google.byMonth.has(id)) month.google = googleBlock(google.byMonth.get(id), warnings, google.detailByMonth.get(id));
     else if (kept.google.has(id)) month.google = keep('google');
     if (meta.byMonth.has(id)) month.meta = metaBlock(meta.byMonth.get(id), warnings);
     else if (kept.meta.has(id)) month.meta = keep('meta');
@@ -1176,6 +1319,7 @@ async function main() {
     currency: 'PEN',
     rules: [
       'Google Ads llega mensual: sin serie diaria real. Meta Ads llega por día y la serie diaria es real.',
+      'Google Ads (detail): si la carpeta trae el informe por día y palabra clave del mes, va en google.detail.table: una fila por día, campaña, grupo de anuncios, anuncio ({ name, url }) y término de búsqueda. Suma menos que el informe de campaña (Google no detalla los términos con pocas impresiones): los totales del mes salen del informe de campaña.',
       'Meta: la serie diaria va por día y campaña (edad, sexo y anuncio se suman). El público (audience: edad y sexo) y los anuncios top (ads.top, con su enlace de vista previa) van por mes. Alcance y frecuencia no son aditivos: no van en los totales ni en las campañas.',
       'Meta (table): una fila por día, campaña, conjunto y anuncio (edad y sexo se suman), con índices a sus listas campaigns, adsets, ads ({ name, link }) y types. El alcance de la tabla es la suma de las filas del export, como en los reportes de la agencia: no es alcance único.',
       'Embudo de Meta: impresiones → clics en el enlace → visitas a la página de destino (landingViews) → agregados al carrito (addToCart) → pagos iniciados (checkouts) → compras. Un paso en null = el export no trae la columna.',

@@ -2907,6 +2907,12 @@ tbody tr:hover td {
 .gp-ads-panel.is-fullscreen .gp-ads-scroll { flex: 1; min-height: 0; max-height: none; }
 .gp-ads-panel.is-fullscreen .gp-month-tabs { margin: 0 0 14px; }
 body.gp-table-fullscreen { overflow: hidden; }
+/* Google Ads: menos columnas en anuncios ("Mes anterior" y "Variación" siguen en la 6 y la 7) y términos de búsqueda */
+.gp-ads-table.gp-g-ads-table { min-width: 1420px; }
+.gp-ads-panel.no-compare .gp-ads-table.gp-g-ads-table { min-width: 1260px; }
+.gp-terms-scroll { max-height: 520px; overflow: auto; }
+.gp-terms-table { min-width: 980px; }
+.gp-terms-table thead th { position: sticky; top: 0; z-index: 1; }
 
 @media (max-width: 760px) {
   .gp-camp-head { flex-direction: column; }

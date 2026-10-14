@@ -14,6 +14,8 @@
    mes y Anual, periodo con KPIs contra el mismo tramo del mes anterior,
    distribución por campaña con un cuadro por campaña (KPIs, gráfico y
    conjuntos de anuncios) y la tabla de anuncios. Todo sale de meta.table.
+   Google Ads repite la estructura con el informe de campaña (un total por mes)
+   y, si el mes lo trae, el informe por día y palabra clave (google.detail).
    Expone window.Gasto.init() (main.js lo llama al abrir la vista) y Gasto.load(),
    la misma carga de datos, que main.js le pasa a Proyecciones.
    ============================================================ */
@@ -33,11 +35,10 @@
   };
   const axisColor = '#94A3B8';
   const gridColor = 'rgba(15,23,42,0.06)';
-  const inkColor = '#06132b';
   const TAB_KEY = 'rb-gp-tab';
   const PANE_CHARTS = {
     meta:   ['chart-gp-camp-*'],
-    google: ['chart-gp-google-spend'],
+    google: ['chart-gp-gcamp-*'],
   };
 
   const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -51,7 +52,6 @@
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const money = (n, dec = 0) => n == null || !Number.isFinite(n) ? '—'
     : 'S/. ' + n.toLocaleString('es-PE', { minimumFractionDigits: dec, maximumFractionDigits: dec });
-  const moneyShort = v => Math.abs(v) >= 1e3 ? 'S/. ' + (v / 1e3).toFixed(1).replace(/\.0$/, '') + 'k' : 'S/. ' + Math.round(v);
   const num = n => n == null || !Number.isFinite(n) ? '—' : Math.round(n).toLocaleString('es-PE');
   // Google Ads reparte conversiones entre campañas: pueden venir con decimales (19.75).
   const numDec = n => n == null ? '—' : n.toLocaleString('es-PE', { maximumFractionDigits: 2 });
@@ -71,25 +71,11 @@
   const pad = n => String(n).padStart(2, '0');
 
   const fechaCorta = iso => { const [, mm, dd] = iso.split('-'); return `${+dd} ${SHORT[+mm - 1].toLowerCase()}`; };
-  const shortOf = id => SHORT[+id.slice(5, 7) - 1];
 
-  function deltaPill(cur, prev, { neutral = false } = {}) {
-    if (cur == null || !prev) return '';
-    const d = (cur - prev) / prev * 100;
-    const cls = neutral ? 'gray' : d >= 0 ? 'green' : 'red';
-    return `<span class="pill ${cls}">${d >= 0 ? '+' : ''}${pct(d)}</span>`;
-  }
   // Mismos umbrales de ROAS que Proyecciones.
   const roasPill = (roas, purchases) => !purchases
     ? '<span class="pill gray">sin compras</span>'
     : `<span class="pill ${roas >= 3 ? 'green' : roas >= 1.5 ? 'amber' : 'red'}">${roasFmt(roas)}</span>`;
-
-  const kpi = ({ label, value, subs = [] }) => `
-    <div class="kpi-pill">
-      <span>${label}</span>
-      <strong>${value}</strong>
-      ${subs.filter(Boolean).map(s => `<small>${s}</small>`).join('')}
-    </div>`;
 
   function readSetting(key, fallback) {
     try { const value = localStorage.getItem(key); return value == null ? fallback : value; } catch (e) { return fallback; }
@@ -135,10 +121,6 @@
     }
   }
 
-  const monthsOf = p => (state.data?.months || []).filter(m => m[p]);
-  // El mes elegido se comparte entre pestañas; si una plataforma no lo tiene (o Meta está en Anual), muestra su último mes.
-  const pickMonth = list => list.find(m => m.id === state.month) || list[list.length - 1];
-
   // ── Desplegable de sincronización (barra superior) y estados comunes ──
   // Hasta qué día llega cada plataforma y la carpeta de Drive de cada una.
   function syncDetail(data) {
@@ -174,33 +156,6 @@
       </div>`;
   }
 
-  function monthSelector(hostId, list, selected) {
-    const host = document.getElementById(hostId);
-    const year = selected.id.slice(0, 4);
-    const has = new Set(list.map(m => m.id));
-    host.innerHTML = SHORT.map((label, k) => {
-      const id = `${year}-${String(k + 1).padStart(2, '0')}`;
-      const on = id === selected.id;
-      const ok = has.has(id);
-      return `<button type="button" class="proj-mes-btn${on ? ' active' : ''}${ok ? '' : ' sin-datos'}" data-id="${id}"
-        aria-pressed="${on}"${ok ? '' : ' disabled'} title="${MONTHS[k]} ${year}${ok ? '' : ' · sin datos'}">${label}</button>`;
-    }).join('');
-    host.querySelectorAll('.proj-mes-btn:not(.sin-datos)').forEach(btn => btn.addEventListener('click', () => {
-      if (btn.dataset.id === selected.id) return;
-      state.month = btn.dataset.id;
-      // La otra pestaña se vuelve a pintar con el mes nuevo cuando se abra.
-      state.rendered = { [state.tab]: true };
-      RENDER[state.tab]();
-    }));
-  }
-
-  function periodText(block, m) {
-    const c = block.coverage;
-    const range = c ? `Del ${fechaCorta(c.start)} al ${fechaCorta(c.end)}` : esc(m.label);
-    const partial = c && !c.complete ? ' <span class="pill amber">mes parcial</span>' : '';
-    return `${range}${partial} <span class="muted">· ${esc(block.source?.name || '')}</span>`;
-  }
-
   // Avisos del sync: los de la plataforma en ese mes, los de su carpeta y lo pendiente.
   function renderAlerts(hostId, p, m) {
     const label = PLATFORMS[p].label;
@@ -216,37 +171,6 @@
         <ul class="gp-alert-list">${[...own, ...folder].map(w => `<li>${esc(w)}</li>`).join('')}</ul></div>` : '',
     ].join('');
     host.hidden = !host.innerHTML;
-  }
-
-  // Resalta en el eje X la etiqueta del mes elegido.
-  function highlightX(chartId, idx) {
-    const chart = global.Charts.getInstance(chartId);
-    if (!chart) return;
-    chart.options.scales.x.ticks.color = ctx => ctx.index === idx ? inkColor : axisColor;
-    chart.options.scales.x.ticks.font = ctx => ({ size: 11, weight: ctx.index === idx ? 700 : 400 });
-    chart.update('none');
-  }
-
-  function monthlyBarChart(id, list, values, color, footer) {
-    global.Charts.mount(id, {
-      type: 'bar',
-      data: { labels: list.map(m => shortOf(m.id)), datasets: [{ label: 'Inversión', data: values, backgroundColor: color, borderRadius: { topLeft: 4, topRight: 4 }, maxBarThickness: 36 }] },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: {
-            title: items => list[items[0].dataIndex].label,
-            label: c => ` Inversión: ${money(c.parsed.y)}`,
-            footer: items => footer(list[items[0].dataIndex]),
-          } },
-        },
-        scales: {
-          x: { ticks: { color: axisColor, font: { size: 11 } }, grid: { display: false } },
-          y: { beginAtZero: true, ticks: { color: axisColor, font: { size: 10 }, callback: moneyShort }, grid: { color: gridColor } },
-        },
-      },
-    });
   }
 
   // ════════════════════════════════════════════════════════════
@@ -328,9 +252,6 @@
     campaignCharts: readJson(CAMP_CHARTS_KEY),
     charts: new Set(),
     adsGroup: 'all',
-    compact: readSetting(ADS_COMPACT_KEY, 'false') === 'true',
-    fullscreen: false,
-    tabsHome: null,
   };
   let metaBodyTpl = '';  // HTML original de #gp-meta-body (se guarda en init)
 
@@ -563,19 +484,24 @@
   }
 
   // ── Pestañas de mes y periodo ──
-  function renderMetaTabs(period) {
-    const host = document.getElementById('gp-meta-months');
-    const year = viewYear();
-    const annual = Boolean(period?.annual);
-    const selected = annual ? null : period?.month.key;
-    const yearOk = Boolean(yearPeriod(year));
+  // Enero a Diciembre del año y Anual (Meta y Google). has(key) dice si el mes tiene datos; what nombra el archivo.
+  function renderMonthTabs(hostId, { year, has, latestKey, selected, annual, yearOk, what }) {
+    const host = document.getElementById(hostId);
     keepFocus(host, () => {
       host.innerHTML = MONTHS.map((name, k) => {
         const key = `${year}-${pad(k + 1)}`;
-        const ok = Boolean(monthByKey(key)?.hasData);
-        const on = key === selected;
-        return `<button type="button" class="month-tab${on ? ' active' : ''}" data-month="${key}" aria-pressed="${on}"${ok ? '' : ' disabled title="Sin export de Meta en la carpeta"'}>${name}${key === meta.latestKey ? '<span class="gp-current-dot" title="Último mes con datos"></span>' : ''}</button>`;
-      }).join('') + `<button type="button" class="month-tab${annual ? ' active' : ''}" data-month="${YEAR_KEY}" aria-pressed="${annual}" title="${yearOk ? `Acumulado ${year} de los meses con export de Meta` : 'Sin exports de Meta en la carpeta'}"${yearOk ? '' : ' disabled'}>Anual</button>`;
+        const ok = has(key);
+        const on = !annual && key === selected;
+        return `<button type="button" class="month-tab${on ? ' active' : ''}" data-month="${key}" aria-pressed="${on}"${ok ? '' : ` disabled title="Sin ${what} en la carpeta"`}>${name}${key === latestKey ? '<span class="gp-current-dot" title="Último mes con datos"></span>' : ''}</button>`;
+      }).join('') + `<button type="button" class="month-tab${annual ? ' active' : ''}" data-month="${YEAR_KEY}" aria-pressed="${annual}" title="${yearOk ? `Acumulado ${year} de los meses con datos` : `Sin ${what} en la carpeta`}"${yearOk ? '' : ' disabled'}>Anual</button>`;
+    });
+  }
+
+  function renderMetaTabs(period) {
+    const year = viewYear();
+    renderMonthTabs('gp-meta-months', {
+      year, has: key => Boolean(monthByKey(key)?.hasData), latestKey: meta.latestKey,
+      selected: period?.month?.key, annual: Boolean(period?.annual), yearOk: Boolean(yearPeriod(year)), what: 'export de Meta',
     });
   }
 
@@ -922,8 +848,9 @@
     },
   }];
 
-  function drawLineChart(id, series, metrics, modeKey) {
-    meta.charts.add(id);
+  // registry: los gráficos vivos de la pestaña, para destruirlos al repintar.
+  function drawLineChart(id, series, metrics, modeKey, registry = meta.charts) {
+    registry.add(id);
     global.Charts.mount(id, {
       type: 'line',
       data: { labels: series.labels, datasets: series.datasets },
@@ -1061,38 +988,57 @@
     }).join('');
   }
 
-  // ── Herramientas de la tabla de anuncios ──
-  function applyAdsCompact() {
-    const panel = document.getElementById('gp-ads-panel');
-    const button = document.getElementById('gp-ads-density');
-    panel.classList.toggle('is-compact', meta.compact);
-    button.setAttribute('aria-pressed', String(meta.compact));
-    button.textContent = meta.compact ? 'Cómodo' : 'Compacto';
-    button.title = meta.compact ? 'Volver a filas amplias' : 'Reducir el alto de las filas';
+  // ── Herramientas de la tabla de anuncios (Meta y Google) ──
+  const AD_TABLES = {
+    meta:   { panel: 'gp-ads-panel', density: 'gp-ads-density', expand: 'gp-ads-expand', tabs: 'gp-meta-months', key: ADS_COMPACT_KEY },
+    google: { panel: 'gp-g-ads-panel', density: 'gp-g-ads-density', expand: 'gp-g-ads-expand', tabs: 'gp-google-months', key: 'rb-gp-gads-compact-v1' },
+  };
+  const adTables = Object.fromEntries(Object.entries(AD_TABLES).map(([p, cfg]) => [p, {
+    compact: readSetting(cfg.key, 'false') === 'true', fullscreen: false, tabsHome: null,
+  }]));
+
+  function applyCompact(p) {
+    const cfg = AD_TABLES[p];
+    const t = adTables[p];
+    const panel = document.getElementById(cfg.panel);
+    const button = document.getElementById(cfg.density);
+    if (!panel || !button) return;
+    panel.classList.toggle('is-compact', t.compact);
+    button.setAttribute('aria-pressed', String(t.compact));
+    button.textContent = t.compact ? 'Cómodo' : 'Compacto';
+    button.title = t.compact ? 'Volver a filas amplias' : 'Reducir el alto de las filas';
+  }
+  function toggleCompact(p) {
+    adTables[p].compact = !adTables[p].compact;
+    saveSetting(AD_TABLES[p].key, adTables[p].compact);
+    applyCompact(p);
   }
 
-  function toggleAdsFullscreen(force) {
-    const panel = document.getElementById('gp-ads-panel');
-    const button = document.getElementById('gp-ads-expand');
+  function toggleFullscreen(p, force) {
+    const cfg = AD_TABLES[p];
+    const t = adTables[p];
+    const panel = document.getElementById(cfg.panel);
+    const button = document.getElementById(cfg.expand);
     if (!panel || !button) return;
-    meta.fullscreen = force == null ? !meta.fullscreen : Boolean(force);
-    const tabs = document.getElementById('gp-meta-months');
+    t.fullscreen = force == null ? !t.fullscreen : Boolean(force);
+    const tabs = document.getElementById(cfg.tabs);
     const scroll = panel.querySelector('.gp-ads-scroll');
-    panel.classList.toggle('is-fullscreen', meta.fullscreen);
-    document.body.classList.toggle('gp-table-fullscreen', meta.fullscreen);
+    panel.classList.toggle('is-fullscreen', t.fullscreen);
+    document.body.classList.toggle('gp-table-fullscreen', t.fullscreen);
     // Las pestañas de mes viajan al panel para poder cambiar de mes sin salir.
-    if (meta.fullscreen) {
-      meta.tabsHome = { parent: tabs.parentNode, next: tabs.nextSibling };
+    if (t.fullscreen) {
+      t.tabsHome = { parent: tabs.parentNode, next: tabs.nextSibling };
       panel.insertBefore(tabs, scroll);
-    } else if (meta.tabsHome) {
-      meta.tabsHome.parent.insertBefore(tabs, meta.tabsHome.next);
-      meta.tabsHome = null;
+    } else if (t.tabsHome) {
+      t.tabsHome.parent.insertBefore(tabs, t.tabsHome.next);
+      t.tabsHome = null;
     }
-    button.setAttribute('aria-pressed', String(meta.fullscreen));
-    button.textContent = meta.fullscreen ? '✕ Salir' : '⤢ Pantalla completa';
-    button.title = meta.fullscreen ? 'Salir de pantalla completa (Esc)' : 'Ver la tabla en pantalla completa (Esc para salir)';
-    if (meta.fullscreen) scroll.focus();
+    button.setAttribute('aria-pressed', String(t.fullscreen));
+    button.textContent = t.fullscreen ? '✕ Salir' : '⤢ Pantalla completa';
+    button.title = t.fullscreen ? 'Salir de pantalla completa (Esc)' : 'Ver la tabla en pantalla completa (Esc para salir)';
+    if (t.fullscreen) scroll.focus();
   }
+  const closeFullscreens = () => Object.keys(AD_TABLES).forEach(p => { if (adTables[p].fullscreen) toggleFullscreen(p, false); });
 
   // ── Embudo y público (del archivo de cada mes: un total por mes) ──
   // Suma de los totales de los meses del periodo; un paso en null en todos los meses = el export no trae la columna.
@@ -1197,7 +1143,7 @@
     const body = document.getElementById('gp-meta-body');
     if (!meta.latestKey) { emptyState(body, 'meta'); return; }
     // Si antes se mostró el estado vacío, se restaura la estructura del panel
-    if (!body.querySelector('#gp-meta-kpis')) { body.innerHTML = metaBodyTpl; applyAdsCompact(); }
+    if (!body.querySelector('#gp-meta-kpis')) { body.innerHTML = metaBodyTpl; applyCompact('meta'); }
 
     const period = currentPeriod();
     state.month = period.annual ? YEAR_KEY : period.month.key;
@@ -1233,13 +1179,8 @@
         renderCampaignChart(key);
         return;
       }
-      if (e.target.closest('#gp-ads-density')) {
-        meta.compact = !meta.compact;
-        saveSetting(ADS_COMPACT_KEY, meta.compact);
-        applyAdsCompact();
-        return;
-      }
-      if (e.target.closest('#gp-ads-expand')) toggleAdsFullscreen();
+      if (e.target.closest('#gp-ads-density')) { toggleCompact('meta'); return; }
+      if (e.target.closest('#gp-ads-expand')) toggleFullscreen('meta');
     });
     body.addEventListener('change', e => {
       if (e.target.id === 'gp-ads-group') {
@@ -1260,118 +1201,719 @@
       }
       renderCampaignChart(key);
     });
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && meta.fullscreen) toggleAdsFullscreen(false);
-    });
-    // Cambiar de módulo o de pestaña con el panel fijo dejaría la página bloqueada.
-    document.querySelectorAll('.s-item, .gp-tab').forEach(btn => btn.addEventListener('click', () => {
-      if (meta.fullscreen) toggleAdsFullscreen(false);
-    }));
+  }
+
+  // Esc y el cambio de módulo o de pestaña cierran la pantalla completa de las dos tablas de anuncios
+  // (con el panel fijo la página quedaría bloqueada).
+  function wireFullscreenExit() {
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFullscreens(); });
+    document.querySelectorAll('.s-item, .gp-tab').forEach(btn => btn.addEventListener('click', closeFullscreens));
   }
 
   // ════════════════════════════════════════════════════════════
-  // GOOGLE ADS
+  // GOOGLE ADS — misma estructura que Meta Ads
+  // El informe de campaña llega con un total por mes: el periodo, los KPIs, la distribución y los cuadros salen
+  // de él. Cuando la carpeta trae además el informe por día y palabra clave del mes (google.detail), da la serie
+  // diaria, los grupos de anuncios, los anuncios y los términos de búsqueda.
   // ════════════════════════════════════════════════════════════
-  function renderGoogle() {
-    const list = monthsOf('google');
-    const body = document.getElementById('gp-google-body');
-    if (!list.length) { emptyState(body, 'google'); return; }
+  const G_CAMP_CHARTS_KEY = 'rb-gp-gcamp-charts-v1';
+  // Cada campaña se agrupa por su tipo (la "campaña" del reporte). Colores de la marca Google.
+  const G_TYPES = [
+    { key: 'busqueda', label: 'Búsqueda', match: /busqueda|buscar|search/, color: '#4285F4' },
+    { key: 'pmax', label: 'Máximo rendimiento', match: /maximo rendimiento|rendimiento maximo|performance max|pmax/, color: '#F9AB00' },
+    { key: 'shopping', label: 'Shopping', match: /shopping/, color: '#34A853' },
+    { key: 'demanda', label: 'Generación de demanda', match: /generacion de demanda|demand gen|discovery/, color: '#EA4335' },
+    { key: 'video', label: 'Video', match: /video|youtube/, color: '#9334E6' },
+    { key: 'display', label: 'Display', match: /display/, color: '#12B5CB' },
+  ];
+  const G_SUMS = ['cost', 'impressions', 'clicks', 'conversions', 'purchases', 'conversionValue'];
+  // Indicadores del gráfico de cada tipo. daily: el campo del informe por día (sin impresiones; ahí las compras
+  // son las conversiones del informe).
+  const G_METRICS = [
+    { key: 'cost', label: 'Inversión', unit: 'money', daily: 'cost' },
+    { key: 'clicks', label: 'Clics', unit: 'count', daily: 'clicks' },
+    { key: 'purchases', label: 'Compras', dailyLabel: 'Conversiones', unit: 'count', daily: 'conversions' },
+    { key: 'conversionValue', label: 'Valor de conversión', unit: 'money', daily: 'conversionValue' },
+    { key: 'impressions', label: 'Impresiones', unit: 'count', daily: null },
+  ];
+  const G_DEFAULT_METRICS = ['cost', 'purchases'];
+  const G_CAMPAIGN_KPIS = [
+    { key: 'cost', label: 'Inversión', format: 'money2', better: null },
+    { key: 'clicks', label: 'Clics', format: 'count', better: 'up' },
+    { key: 'ctr', label: 'CTR', format: 'pct2', better: 'up' },
+    { key: 'cpc', label: 'CPC', format: 'money2', better: 'down' },
+    { key: 'purchases', label: 'Compras', format: 'num2', better: 'up' },
+    { key: 'costPerPurchase', label: 'Costo por compra', format: 'money2', better: 'down' },
+    { key: 'roas', label: 'ROAS', format: 'roas', better: 'up' },
+  ];
+  const G_KPIS = [
+    { key: 'cost', label: 'Inversión', hint: 'Costo del periodo', better: null, format: 'money2', perMonth: true },
+    { key: 'impressions', label: 'Impresiones', hint: 'Veces que se mostraron los anuncios', better: 'up', format: 'count', perMonth: true },
+    { key: 'clicks', label: 'Clics', hint: 'Clics en los anuncios', better: 'up', format: 'count', perMonth: true },
+    { key: 'ctr', label: 'CTR', hint: 'Clics / impresiones', better: 'up', format: 'pct2' },
+    { key: 'cpc', label: 'CPC prom.', hint: 'Costo por clic', better: 'down', format: 'money2' },
+    { key: 'purchases', label: 'Compras', hint: 'Conversiones por compras', better: 'up', format: 'num2', perMonth: true,
+      note: t => `Costo por compra ${money(t.costPerPurchase, 2)}` },
+    { key: 'conversionValue', label: 'Valor de conversión', hint: 'Atribución de Google', better: 'up', format: 'money', perMonth: true,
+      note: t => `ROAS ${roasFmt(t.roas)} · atribución de Google` },
+    { key: 'conversions', label: 'Conversiones', hint: 'Compras y contactos (clics a WhatsApp)', better: 'up', format: 'num2', perMonth: true },
+  ];
+  FORMATS.pct2 = n => pct(n, 2);
+  FORMATS.num2 = numDec;
 
-    const m = pickMonth(list);
-    const i = list.indexOf(m);
-    const prev = list[i - 1];
+  const google = { months: [], latestKey: null, campaignCharts: readJson(G_CAMP_CHARTS_KEY), charts: new Set(), adsGroup: 'all' };
+  let googleBodyTpl = '';  // HTML original de #gp-google-body (se guarda en init)
+  const otherTypes = new Map();
+
+  function typeGroup(type) {
+    const text = normalize(type);
+    const known = G_TYPES.find(t => t.match.test(text));
+    if (known) return known;
+    const label = String(type || '').trim() || 'Otro';
+    const key = `otro-${normalize(label).replace(/[^a-z0-9]+/g, '-')}`;
+    if (!otherTypes.has(key)) otherTypes.set(key, { key, label, color: OTHER_COLORS[otherTypes.size % OTHER_COLORS.length] });
+    return otherTypes.get(key);
+  }
+
+  // CTR, CPC, costos y ROAS se recalculan sobre las sumas. Un campo en null (informe segmentado) deja sus cocientes en null.
+  function gDerive(t) {
+    const div = (a, b) => (a == null || b == null || !b ? null : a / b);
+    return {
+      ...t,
+      ctr: div(t.clicks, t.impressions) == null ? null : t.clicks / t.impressions * 100,
+      cpc: div(t.cost, t.clicks),
+      costPerConversion: div(t.cost, t.conversions),
+      costPerPurchase: div(t.cost, t.purchases),
+      roas: div(t.conversionValue, t.cost),
+    };
+  }
+  // Suma campo a campo; si algún sumando no informa el campo (null), la suma tampoco.
+  function gSum(items) {
+    const t = Object.fromEntries(G_SUMS.map(f => [f, 0]));
+    items.forEach(item => G_SUMS.forEach(f => { t[f] = t[f] == null || item[f] == null ? null : t[f] + item[f]; }));
+    return t;
+  }
+  const gScale = (t, factor) => Object.fromEntries(G_SUMS.map(f => [f, t[f] == null ? null : t[f] * factor]));
+  const gActive = x => (x.cost || 0) > 0 || (x.impressions || 0) > 0 || (x.clicks || 0) > 0;
+
+  function normalizeGoogleMonth(m) {
     const g = m.google;
-    const t = g.totals;
-    const pt = prev?.google.totals;
-    const partial = !!g.coverage && !g.coverage.complete;
-    const vs = prev ? ` vs ${shortOf(prev.id)}` : '';
-    const complete = g.campaignsComplete;
-    const categories = Object.entries(g.conversionsByCategory || {}).sort((a, b) => b[1] - a[1]);
-    const campaigns = g.campaigns.slice().sort((a, b) => (b.purchases || 0) - (a.purchases || 0) || (b.conversions || 0) - (a.conversions || 0));
-    const catText = cats => Object.entries(cats || {}).filter(([, v]) => v).map(([k, v]) => `${esc(k)} ${numDec(v)}`).join(' · ') || '—';
-    // Las conversiones de Google suman Compra y Contacto (clics a WhatsApp): solo se explican cuando difieren de las compras.
-    const contact = categories.find(([k, v]) => /contacto/i.test(k) && v);
-    const conversionsNote = t.conversions != null && (t.conversions !== t.purchases || categories.some(([k, v]) => v && !/compra/i.test(k)))
-      ? `<p class="gp-note gp-note-top">Conversiones del mes: <b>${numDec(t.conversions)}</b>${categories.length ? ` (${catText(g.conversionsByCategory)})` : ''}.
-        ${contact ? 'Contacto son clics a WhatsApp y va aparte: el KPI de conversión es <b>Compras</b>.' : 'El KPI de conversión es <b>Compras</b>.'}</p>`
-      : '';
-
-    body.innerHTML = `
-      <div class="rep-toolbar">
-        <div class="proj-mes-wrap">
-          <span class="proj-mes-label">Mes</span>
-          <div class="proj-mes-selector" id="gp-google-months" role="group" aria-label="Mes de Google Ads"></div>
-        </div>
-        <span class="rep-period-meta">${periodText(g, m)}</span>
-      </div>
-      <div class="rep-stack">
-        <div class="gp-alerts" id="gp-google-alerts"></div>
-        <div class="kpi-strip gp-kpis">${[
-          kpi({ label: 'Inversión', value: money(t.cost),
-            subs: [prev ? `${deltaPill(t.cost, pt.cost, { neutral: true })}${vs}` : 'Costo del mes', `CPC ${money(t.cpc, 2)}`] }),
-          kpi({ label: 'Compras', value: numDec(t.purchases),
-            subs: [prev ? `${deltaPill(t.purchases, pt.purchases, { neutral: partial })}${vs}` : '', `Costo por compra ${money(t.costPerPurchase, 2)}`] }),
-          kpi({ label: 'Valor de conversión', value: money(t.conversionValue),
-            subs: [prev ? `${deltaPill(t.conversionValue, pt.conversionValue, { neutral: partial })}${vs}` : '', `ROAS ${roasFmt(t.roas)} · atribución de Google`] }),
-          kpi({ label: 'CTR', value: pct(t.ctr == null ? null : t.ctr * 100, 2),
-            subs: [`${num(t.clicks)} clics · ${num(t.impressions)} impresiones`] }),
-        ].join('')}</div>
-        ${conversionsNote}
-        <div class="grid-2">
-          <div class="panel">
-            <div class="panel-head"><div>
-              <div class="panel-title">Inversión por tipo de campaña</div>
-              <div class="panel-sub">Costo, clics y compras del mes · cifras completas</div>
-            </div></div>
-            <div class="gp-table-wrap"><table class="rep-table">
-              <thead><tr><th>Tipo</th><th class="r">Inversión</th><th class="r">Clics</th><th class="r">CTR</th><th class="r">Compras</th><th class="r">ROAS</th></tr></thead>
-              <tbody>${g.byType.map(x => {
-                const share = (ratio(x.cost, t.cost) || 0) * 100;
-                return `<tr>
-                  <td><div class="rep-camp-name">${esc(x.type)}</div><div class="rep-bar"><div style="width:${share}%"></div></div></td>
-                  <td class="r mono">${money(x.cost)}<span class="sub-val">${pct(share)}</span></td>
-                  <td class="r mono">${num(x.clicks)}</td>
-                  <td class="r mono">${pct(x.ctr == null ? null : x.ctr * 100, 2)}</td>
-                  <td class="r mono">${x.purchases ? numDec(x.purchases) : '—'}</td>
-                  <td class="r">${roasPill(x.roas, x.purchases)}</td>
-                </tr>`;
-              }).join('')}</tbody>
-            </table></div>
-          </div>
-          <div class="panel">
-            <div class="panel-head"><div>
-              <div class="panel-title">Compras por campaña</div>
-              <div class="panel-sub">${complete ? 'Inversión y compras de cada campaña' : 'Compras, valor y conversiones por categoría · sin costo por campaña'}</div>
-            </div></div>
-            ${campaigns.length ? `<div class="gp-table-wrap"><table class="rep-table">
-              <thead><tr><th>Campaña</th>${complete ? '<th class="r">Inversión</th>' : ''}<th class="r">Compras</th><th class="r">Valor</th>${complete ? '<th class="r">ROAS</th>' : '<th class="r">Conversiones</th>'}</tr></thead>
-              <tbody>${campaigns.map(c => `<tr>
-                <td>${esc(c.campaign)}<span class="sub-val">${esc([c.type, c.status].filter(Boolean).join(' · '))}</span></td>
-                ${complete ? `<td class="r mono">${money(c.cost)}</td>` : ''}
-                <td class="r mono">${c.purchases ? numDec(c.purchases) : '—'}</td>
-                <td class="r mono">${c.conversionValue ? money(c.conversionValue) : '—'}</td>
-                ${complete ? `<td class="r">${roasPill(c.roas, c.purchases)}</td>` : `<td class="r gp-cats">${catText(c.conversionsByCategory)}</td>`}
-              </tr>`).join('')}</tbody>
-            </table></div>` : '<p class="gp-note">El informe de este mes no trae campañas.</p>'}
-            ${complete ? '' : `<p class="gp-note">El informe viene segmentado por «${esc(g.segmentation)}»: por campaña solo trae conversiones y su valor. El costo, las impresiones y los clics de cada campaña no se conocen; la inversión completa está en «Inversión por tipo de campaña».</p>`}
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-head"><div>
-            <div class="panel-title">Inversión mensual</div>
-            <div class="panel-sub">Costo en Google Ads por mes · el tooltip muestra compras y ROAS · Google llega con un total por mes, sin serie diaria</div>
-          </div></div>
-          <div class="chart-wrap h-220"><canvas id="chart-gp-google-spend" role="img" aria-label="Inversión mensual en Google Ads"></canvas></div>
-        </div>
-      </div>`;
-    monthSelector('gp-google-months', list, m);
-    renderAlerts('gp-google-alerts', 'google', m);
-
-    monthlyBarChart('chart-gp-google-spend', list, list.map(x => x.google.totals.cost), PLATFORMS.google.color, x => {
-      const gt = x.google.totals;
-      return `Compras: ${numDec(gt.purchases)} · ROAS ${roasFmt(gt.roas)}`;
+    const [year, month] = m.id.split('-').map(Number);
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const cov = g.coverage?.start?.startsWith(m.id) ? g.coverage : null;
+    const firstDay = cov ? +cov.start.slice(8) : 1;
+    const lastDay = cov && cov.end.startsWith(m.id) ? +cov.end.slice(8) : daysInMonth;
+    const typeOf = new Map();
+    const campaigns = (g.campaigns || []).map(c => {
+      const group = typeGroup(c.type);
+      typeOf.set(c.campaign, group);
+      return { name: c.campaign, status: c.status || '', type: c.type, group: group.key, groupLabel: group.label, groupColor: group.color, ...Object.fromEntries(G_SUMS.map(f => [f, c[f] ?? null])) };
     });
-    highlightX('chart-gp-google-spend', i);
+    const byType = (g.byType || []).map(x => ({ group: typeGroup(x.type), ...Object.fromEntries(G_SUMS.map(f => [f, x[f] ?? 0])) }));
+    const totals = Object.fromEntries(G_SUMS.map(f => [f, g.totals?.[f] ?? null]));
+    let detail = null;
+    const t = g.detail?.table;
+    if (t) {
+      const at = Object.fromEntries(t.columns.map((name, i) => [name, i]));
+      detail = t.rows.map(r => {
+        const campaign = t.campaigns[r[at.campaign]] || '';
+        const group = typeOf.get(campaign) || typeGroup(/search|busqueda/i.test(campaign) ? 'Búsqueda' : '');
+        const ad = t.ads[r[at.ad]] || {};
+        return {
+          d: r[at.d], day: `${m.id}-${pad(r[at.d])}`, campaign,
+          adGroup: t.adGroups[r[at.adGroup]] || '', ad: ad.name || '(sin nombre)', url: ad.url || null, keyword: t.keywords[r[at.keyword]] || '',
+          cost: r[at.cost] || 0, clicks: r[at.clicks] || 0, conversions: r[at.conversions] || 0, conversionValue: r[at.conversionValue] || 0,
+          impressions: null, purchases: null,
+          group: group.key, groupLabel: group.label, groupColor: group.color,
+        };
+      });
+    }
+    const dcov = g.detail?.coverage;
+    return {
+      key: m.id, label: m.label, name: MONTHS[month - 1], shortName: SHORT[month - 1], year, month, daysInMonth,
+      firstDay, lastDay, complete: cov ? cov.complete : true, totals, campaigns, byType, detail,
+      detailFirst: dcov ? +dcov.start.slice(8) : null, detailLast: dcov ? +dcov.end.slice(8) : null,
+      hasData: gActive(totals), raw: m,
+    };
+  }
+
+  function buildGoogleMonths() {
+    google.months = (state.data?.months || []).filter(m => m.google).map(normalizeGoogleMonth);
+    const withData = google.months.filter(m => m.hasData);
+    google.latestKey = withData.length ? withData[withData.length - 1].key : null;
+    google.months.forEach(m => { m.past = Boolean(google.latestKey && m.key < google.latestKey); });
+  }
+
+  const gMonthByKey = key => google.months.find(m => m.key === key) || null;
+  function gPrevious(m) {
+    const date = new Date(m.year, m.month - 2, 1);
+    return gMonthByKey(`${date.getFullYear()}-${pad(date.getMonth() + 1)}`);
+  }
+  function gSelectedMonth() {
+    const m = gMonthByKey(state.month);
+    return m?.hasData ? m : gMonthByKey(google.latestKey);
+  }
+  const gViewYear = () => gSelectedMonth()?.year ?? new Date().getFullYear();
+
+  // El mes en curso se compara con el mes anterior prorrateado a los mismos días: Google llega con un total por mes
+  // y no hay tramo diario del mes anterior. Un mes cerrado se compara completo. Los cocientes no cambian al prorratear.
+  function gPeriodOf(m) {
+    if (!m?.hasData) return null;
+    const closed = m.complete || m.past;
+    const days = m.lastDay - m.firstDay + 1;
+    const prev = gPrevious(m);
+    let compare = null;
+    if (prev?.hasData) {
+      const prevDays = prev.lastDay - prev.firstDay + 1;
+      const factor = closed ? 1 : Math.min(1, days / prevDays);
+      compare = factor < 1
+        ? { month: prev, factor, label: `${prev.name} prorrateado a ${days} ${days === 1 ? 'día' : 'días'}`, short: `${prev.shortName} prorrateado` }
+        : { month: prev, factor: 1, label: rangeLabel(prev, prev.firstDay, prev.lastDay), short: rangeLabel(prev, prev.firstDay, prev.lastDay) };
+    }
+    // Grupos, anuncios y términos con el mismo tramo del mes anterior, si ese mes también trae informe por día.
+    const detailTo = m.detailLast || m.lastDay;
+    const detailCompare = m.detail && prev?.detail
+      ? { rows: prev.detail.filter(r => r.d <= Math.min(closed ? prev.daysInMonth : detailTo, prev.daysInMonth)), label: rangeLabel(prev, 1, Math.min(closed ? prev.daysInMonth : detailTo, prev.daysInMonth)) }
+      : null;
+    return {
+      month: m, months: [m], year: m.year, closed, compare, detailCompare,
+      label: rangeLabel(m, m.firstDay, m.lastDay),
+      detail: m.detail, detailLabel: m.detail ? rangeLabel(m, m.detailFirst, m.detailLast) : null,
+    };
+  }
+
+  function gYearPeriod(year) {
+    const months = google.months.filter(m => m.hasData && m.year === year);
+    if (!months.length) return null;
+    const first = months[0];
+    const last = months[months.length - 1];
+    const withDetail = months.filter(m => m.detail);
+    return {
+      annual: true, month: null, months, year, compare: null, detailCompare: null,
+      closed: last.month === 12 && last.complete,
+      label: `${first.firstDay} ${first.name} - ${last.lastDay} ${last.name}`,
+      detail: withDetail.length ? withDetail.flatMap(m => m.detail) : null,
+      detailLabel: withDetail.length ? withDetail.map(m => m.shortName).join(', ') : null,
+    };
+  }
+  const gAnnualView = () => state.month === YEAR_KEY && Boolean(gYearPeriod(gViewYear()));
+  const gCurrentPeriod = () => (gAnnualView() ? gYearPeriod(gViewYear()) : gPeriodOf(gSelectedMonth()));
+
+  const gTotals = period => gDerive(period.annual ? gSum(period.months.map(m => m.totals)) : period.month.totals);
+  const gPrevTotals = period => (period.compare ? gDerive(gScale(period.compare.month.totals, period.compare.factor)) : null);
+
+  // Campañas del periodo (en Anual, sumadas por nombre).
+  function gCampaigns(period) {
+    const byName = new Map();
+    period.months.forEach(m => m.campaigns.forEach(c => {
+      if (!byName.has(c.name)) byName.set(c.name, { ...c, items: [] });
+      byName.get(c.name).items.push(c);
+    }));
+    const total = gTotals(period).cost || 0;
+    return [...byName.values()]
+      .map(c => {
+        const sums = gDerive(gSum(c.items));
+        // El estado es el del último mes en que aparece.
+        return { ...c, ...sums, status: c.items[c.items.length - 1].status, share: total && sums.cost != null ? sums.cost / total * 100 : null };
+      })
+      .filter(c => gActive(c) || (c.conversions || 0) > 0 || c.cost == null)
+      .sort((a, b) => (b.cost ?? -1) - (a.cost ?? -1) || (b.conversions || 0) - (a.conversions || 0));
+  }
+
+  // Tipos de campaña del periodo (los cuadros): de los totales por tipo del informe, que vienen completos.
+  function gGroups(months, campaigns, factor = 1) {
+    const byKey = new Map();
+    months.forEach(m => m.byType.forEach(x => {
+      if (!byKey.has(x.group.key)) byKey.set(x.group.key, { ...x.group, items: [] });
+      byKey.get(x.group.key).items.push(x);
+    }));
+    const groups = [...byKey.values()].map(g => ({ ...g, ...gDerive(gScale(gSum(g.items), factor)) })).filter(gActive);
+    const total = groups.reduce((s, g) => s + (g.cost || 0), 0);
+    return groups
+      .map(g => ({ ...g, share: total ? g.cost / total * 100 : 0, campaigns: (campaigns || []).filter(c => c.group === g.key).map(c => c.name) }))
+      .sort((a, b) => b.cost - a.cost);
+  }
+
+  // Filas del informe por día agrupadas (grupos de anuncios, anuncios, términos).
+  function gRankDetail(rows, keyOf, describe) {
+    const total = rows.reduce((s, r) => s + r.cost, 0);
+    return [...groupRows(rows, keyOf).entries()]
+      .map(([key, items]) => {
+        const sums = gDerive(Object.fromEntries(['cost', 'clicks', 'conversions', 'conversionValue'].map(f => [f, items.reduce((s, r) => s + r[f], 0)])));
+        const active = items.filter(gActive);
+        const dates = active.map(r => r.day).sort();
+        return { key, ...describe(items, active), ...sums, share: total ? sums.cost / total * 100 : 0, firstDate: dates[0] || null, lastDate: dates[dates.length - 1] || null };
+      })
+      .filter(x => x.cost > 0 || x.clicks > 0 || x.conversions > 0)
+      .sort((a, b) => b.cost - a.cost);
+  }
+  const gAdGroups = rows => gRankDetail(rows, r => `${r.group}|${normalize(r.adGroup)}`, (items, active) => ({
+    name: items[0].adGroup, campaigns: [...new Set(active.map(r => r.campaign))],
+    adCount: new Set(active.map(r => normalize(r.ad))).size, termCount: new Set(active.map(r => normalize(r.keyword))).size,
+  }));
+  const gAds = rows => gRankDetail(rows, r => `${r.group}|${normalize(r.ad)}`, (items, active) => ({
+    group: items[0].group, groupLabel: items[0].groupLabel, groupColor: items[0].groupColor,
+    ad: items[0].ad, url: items.find(r => r.url)?.url || null,
+    campaigns: [...new Set(active.map(r => r.campaign))], adGroups: [...new Set(active.map(r => r.adGroup).filter(Boolean))],
+    termCount: new Set(active.map(r => normalize(r.keyword))).size,
+  }));
+  const gTerms = rows => gRankDetail(rows, r => `${r.group}|${normalize(r.keyword)}`, (items, active) => ({
+    group: items[0].group, groupLabel: items[0].groupLabel, groupColor: items[0].groupColor,
+    keyword: items[0].keyword || '(sin término)', adGroups: [...new Set(active.map(r => r.adGroup).filter(Boolean))],
+  }));
+
+  const daysText = (x, period) => {
+    if (!x.firstDate) return '—';
+    if (period.annual || x.firstDate.slice(0, 7) !== x.lastDate.slice(0, 7)) return x.firstDate === x.lastDate ? fechaCorta(x.firstDate) : `${fechaCorta(x.firstDate)} - ${fechaCorta(x.lastDate)}`;
+    const a = +x.firstDate.slice(8);
+    const b = +x.lastDate.slice(8);
+    const mon = SHORT[+x.firstDate.slice(5, 7) - 1].toLowerCase();
+    return a === b ? `${a} ${mon}` : `${a}-${b} ${mon}`;
+  };
+
+  // ── Periodo y KPIs ──
+  function renderGooglePeriod(period) {
+    const title = document.getElementById('gp-g-period-title');
+    const sub = document.getElementById('gp-g-period-sub');
+    if (period.annual) {
+      const count = period.months.length;
+      const closed = period.closed || period.year < new Date().getFullYear();
+      title.textContent = `Periodo: ${period.label} ${period.year}${closed ? '' : ' (año en curso)'}`;
+      sub.textContent = `Acumulado de ${count} ${count === 1 ? 'mes' : 'meses'} con informe de Google Ads (${period.months.map(m => m.shortName).join(', ')}). Sin año anterior para comparar.`;
+      return;
+    }
+    title.textContent = `Periodo: ${period.label} ${period.year}${period.closed ? '' : ' (mes en curso)'}`;
+    sub.textContent = !period.compare ? 'Sin mes anterior para comparar'
+      : period.compare.factor < 1 ? `Comparación vs ${period.compare.label} (Google llega con un total por mes)`
+      : `Comparación vs ${period.compare.label}`;
+  }
+
+  function renderGoogleKpis(period) {
+    const current = gTotals(period);
+    const previous = gPrevTotals(period);
+    let average = null;
+    if (period.annual) {
+      const closed = period.months.filter(m => m.complete || m.past);
+      const months = closed.length ? closed : period.months;
+      average = Object.fromEntries(G_KPIS.map(k => [k.key, months.reduce((s, m) => s + (m.totals[k.key] || 0), 0) / months.length]));
+      average.basis = `Promedio de ${months.map(m => m.name).join(', ')}`;
+    }
+    document.getElementById('gp-g-kpis').innerHTML = G_KPIS.map(k => {
+      let line = `<small>${k.hint}</small>`;
+      if (previous) line = deltaHtml(current[k.key], previous[k.key], k.better, period.compare.short);
+      else if (average && k.perMonth) line = `<small title="${esc(average.basis)}">Prom. mensual: ${fmt(k.format, average[k.key])}</small>`;
+      const note = k.note ? k.note(current) : '';
+      return `
+        <div class="kpi-pill">
+          <span>${k.label}</span>
+          <strong>${fmt(k.format, current[k.key])}</strong>
+          ${line}${note ? `<small>${note}</small>` : ''}
+        </div>`;
+    }).join('');
+    // Las conversiones de Google suman Compra y Contacto (clics a WhatsApp): se explican cuando difieren de las compras.
+    const categories = {};
+    period.months.forEach(m => Object.entries(m.raw.google.conversionsByCategory || {}).forEach(([k, v]) => { categories[k] = (categories[k] || 0) + (v || 0); }));
+    const cats = Object.entries(categories).filter(([, v]) => v).sort((a, b) => b[1] - a[1]);
+    const note = document.getElementById('gp-g-kpis-note');
+    const differs = current.conversions != null && (current.conversions !== current.purchases || cats.some(([k]) => !/compra/i.test(k)));
+    note.hidden = !differs;
+    note.innerHTML = differs
+      ? `Conversiones del periodo: <b>${numDec(current.conversions)}</b>${cats.length ? ` (${cats.map(([k, v]) => `${esc(k)} ${numDec(v)}`).join(' · ')})` : ''}. ${cats.some(([k]) => /contacto/i.test(k)) ? 'Contacto son clics a WhatsApp y va aparte: ' : ''}el KPI de conversión es <b>Compras</b>.`
+      : '';
+  }
+
+  // ── Distribución por campaña ──
+  function renderGoogleDistribution(period) {
+    const rows = gCampaigns(period);
+    const total = gTotals(period);
+    const incomplete = period.months.filter(m => m.raw.google.campaignsComplete === false);
+    document.getElementById('gp-g-dist-sub').textContent = `${period.label} | ${rows.length} ${rows.length === 1 ? 'campaña' : 'campañas'} con costo, impresiones o clics.`;
+    const cell = (v, f) => (v == null ? '<span class="gp-no-data">—</span>' : f(v));
+    document.getElementById('gp-g-dist-body').innerHTML = rows.map(c => `
+      <tr style="--gp-row-c:${c.groupColor}">
+        <td class="gp-camp-name">${esc(c.name)}</td>
+        <td><span class="gp-group"><i class="gp-dot-c"></i>${esc(c.groupLabel)}</span></td>
+        <td><span class="gp-result-pill">${esc(c.status || '—')}</span></td>
+        <td class="r mono">${cell(c.cost, v => money(v, 2))}</td>
+        <td class="gp-share-col">${c.share == null ? '<span class="gp-no-data">—</span>' : `<span class="gp-share"><span style="width:${Math.min(100, c.share).toFixed(1)}%"></span></span><b>${pct(c.share)}</b>`}</td>
+        <td class="r mono">${cell(c.impressions, num)}</td>
+        <td class="r mono">${cell(c.clicks, num)}</td>
+        <td class="r mono">${pct(c.ctr, 2)}</td>
+        <td class="r mono">${money(c.cpc, 2)}</td>
+        <td class="r mono">${c.conversions ? numDec(c.conversions) : '—'}</td>
+        <td class="r mono">${c.purchases ? numDec(c.purchases) : '—'}</td>
+        <td class="r mono">${money(c.costPerPurchase, 2)}</td>
+        <td class="r mono">${c.conversionValue ? money(c.conversionValue) : '—'}</td>
+        <td class="r">${c.cost == null ? '<span class="gp-no-data">—</span>' : roasPill(c.roas, c.purchases)}</td>
+      </tr>`).join('') + `
+      <tr class="gp-total-row">
+        <td class="gp-camp-name">Total del periodo</td>
+        <td></td><td></td>
+        <td class="r mono">${money(total.cost, 2)}</td>
+        <td class="gp-share-col"><b>100%</b></td>
+        <td class="r mono">${num(total.impressions)}</td>
+        <td class="r mono">${num(total.clicks)}</td>
+        <td class="r mono">${pct(total.ctr, 2)}</td>
+        <td class="r mono">${money(total.cpc, 2)}</td>
+        <td class="r mono">${numDec(total.conversions)}</td>
+        <td class="r mono">${numDec(total.purchases)}</td>
+        <td class="r mono">${money(total.costPerPurchase, 2)}</td>
+        <td class="r mono">${money(total.conversionValue)}</td>
+        <td class="r">${roasPill(total.roas, total.purchases)}</td>
+      </tr>`;
+    const note = document.getElementById('gp-g-dist-note');
+    note.hidden = !incomplete.length;
+    note.textContent = incomplete.length
+      ? `El informe de ${incomplete.map(m => m.name).join(', ')} viene segmentado por conversión: por campaña solo trae conversiones y su valor (—). La inversión completa está en los cuadros por tipo y en el total.`
+      : '';
+  }
+
+  // ── Cuadro de cada tipo de campaña ──
+  function gCampaignSettings(key) {
+    const saved = google.campaignCharts[key] || {};
+    const metrics = G_METRICS.map(m => m.key).filter(k => Array.isArray(saved.metrics) && saved.metrics.includes(k));
+    return {
+      metrics: metrics.length ? metrics : G_DEFAULT_METRICS,
+      // Como en Meta, abre en el acumulado del mes; sin informe por día el cuadro cae a "Por mes".
+      mode: MODES.some(m => m.key === saved.mode) ? saved.mode : 'cumulative',
+      collapsed: saved.collapsed === true,
+    };
+  }
+  function gSaveCampaignSettings(key, changes) {
+    google.campaignCharts[key] = { ...gCampaignSettings(key), ...changes };
+    saveSetting(G_CAMP_CHARTS_KEY, JSON.stringify(google.campaignCharts));
+  }
+  const gCampaignBlock = key => [...document.querySelectorAll('#gp-g-blocks .gp-camp-block')].find(n => n.dataset.group === key) || null;
+
+  // El cuadro tiene serie diaria si el mes trae informe por día con filas de ese tipo.
+  const gHasDaily = (period, key) => !period.annual && Boolean(period.month.detail?.some(r => r.group === key && gActive(r)));
+
+  function gAdGroupsHtml(period, group) {
+    const head = `
+      <div class="gp-adset-head">
+        <div class="panel-title">Grupos de anuncios</div>`;
+    const rows = (period.detail || []).filter(r => r.group === group.key);
+    if (!rows.length) {
+      return `${head}
+        <div class="panel-sub">${period.detail
+          ? `El informe por día de ${esc(period.detailLabel)} no trae filas de ${esc(group.label)}.`
+          : `El informe de campaña no trae grupos de anuncios. Para verlos, sube a la carpeta <b>Google Files</b> el informe por día con Campaña, Grupo de anuncios, Anuncio y Palabra clave del mes (como el de octubre).`}</div>
+      </div>`;
+    }
+    const sets = gAdGroups(rows);
+    const compare = period.detailCompare;
+    const previous = new Map((compare ? gAdGroups(compare.rows.filter(r => r.group === group.key)) : []).map(s => [s.key, s]));
+    const manyCampaigns = group.campaigns.length > 1;
+    const detailCost = rows.reduce((s, r) => s + r.cost, 0);
+    const cols = [['Grupo']].concat(manyCampaigns ? [['Campaña']] : [], [['Conversiones', true]])
+      .concat(compare ? [[`Conversiones ${compare.label}`, true], ['Variación', true]] : [])
+      .concat([['Costo por conversión', true], ['Inversión', true], ['% del tipo'], ['Clics', true], ['CPC', true], ['Valor', true], ['ROAS', true], ['Términos', true]]);
+    return `${head}
+        <div class="panel-sub">${sets.length} ${sets.length === 1 ? 'grupo' : 'grupos'} en el informe por día (${esc(period.detailLabel)}): ${money(detailCost, 2)} de ${money(group.cost, 2)} del tipo. Google no detalla los términos con pocas impresiones.</div>
+      </div>
+      <div class="gp-table-wrap">
+        <table class="rep-table gp-adset-table">
+          <thead><tr>${cols.map(([label, numeric]) => `<th${numeric ? ' class="r"' : ''}>${esc(label)}</th>`).join('')}</tr></thead>
+          <tbody>${sets.map(s => {
+            const before = previous.get(s.key);
+            return `<tr>
+              <td class="gp-camp-name">${esc(s.name || '(sin grupo)')}<small>${s.adCount} ${s.adCount === 1 ? 'anuncio' : 'anuncios'}</small></td>
+              ${manyCampaigns ? `<td class="gp-set-col">${esc(s.campaigns.join(' / '))}</td>` : ''}
+              <td class="r mono"><b>${numDec(s.conversions)}</b></td>
+              ${compare ? `<td class="r mono">${before ? numDec(before.conversions) : '<span class="gp-no-data">—</span>'}</td><td class="r">${variationCell(s.conversions, before?.conversions)}</td>` : ''}
+              <td class="r mono">${money(s.costPerConversion, 2)}</td>
+              <td class="r mono">${money(s.cost, 2)}</td>
+              <td class="gp-share-col"><span class="gp-share"><span style="width:${Math.min(100, s.share).toFixed(1)}%"></span></span><b>${pct(s.share)}</b></td>
+              <td class="r mono">${num(s.clicks)}</td>
+              <td class="r mono">${money(s.cpc, 2)}</td>
+              <td class="r mono">${s.conversionValue ? money(s.conversionValue) : '—'}</td>
+              <td class="r">${roasPill(s.roas, s.conversions)}</td>
+              <td class="r mono">${num(s.termCount)}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function gCampaignHtml(period, group, before) {
+    const key = esc(group.key);
+    const settings = gCampaignSettings(group.key);
+    let comparison = '';
+    if (period.annual) {
+      const months = period.months.filter(m => m.byType.some(x => x.group.key === group.key && gActive(x)));
+      comparison = months.length === period.months.length ? `. Activo en los ${months.length} ${months.length === 1 ? 'mes' : 'meses'}` : `. Activo en ${months.map(m => m.shortName).join(', ')}`;
+    } else if (period.compare) {
+      comparison = before ? ` vs ${period.compare.label}` : `. Nuevo: no corría en ${period.compare.month.name}`;
+    }
+    const kpis = G_CAMPAIGN_KPIS.map(k => `
+      <div><dt>${esc(k.label)}</dt><dd>${fmt(k.format, group[k.key])}${before ? deltaHtml(group[k.key], before[k.key], k.better) : ''}</dd></div>`).join('');
+    return `
+      <section class="gp-camp-block${settings.collapsed ? ' is-collapsed' : ''}" data-group="${key}" style="--gp-row-c:${group.color}">
+        <div class="gp-camp-head">
+          <div>
+            <div class="gp-camp-title"><i class="gp-dot-c"></i>Campaña ${esc(group.label)}<em>${pct(group.share)} de la inversión</em></div>
+            <div class="panel-sub">${esc(group.campaigns.join(' / ') || group.label)} | ${esc(period.label)}${esc(comparison)}</div>
+          </div>
+          <div class="gp-camp-controls">
+            <div class="gp-chips" data-camp-modes role="radiogroup" aria-label="Vista del gráfico de ${esc(group.label)}"></div>
+            <button type="button" class="gp-chart-toggle" data-camp-toggle aria-controls="gp-gcamp-body-${key}">${CHEVRON}</button>
+          </div>
+        </div>
+        <dl class="gp-camp-kpis">${kpis}</dl>
+        <div class="gp-camp-body" id="gp-gcamp-body-${key}">
+          <div class="gp-chips gp-camp-metrics" data-camp-metrics role="group" aria-label="Indicadores del gráfico de ${esc(group.label)}"></div>
+          <div class="chart-wrap h-300"><canvas id="chart-gp-gcamp-${key}" role="img" aria-label="Gráfico de la campaña ${esc(group.label)}"></canvas></div>
+          <div class="gp-legend" data-camp-legend></div>
+          ${gAdGroupsHtml(period, group)}
+        </div>
+      </section>`;
+  }
+
+  // Valores por día del informe por día (índice 0 = día 1). Fuera de los días que cubre el informe quedan en null.
+  function gDailyValues(m, field, key) {
+    const values = Array.from({ length: m.daysInMonth }, (_, i) => (i + 1 >= m.detailFirst && i + 1 <= m.detailLast ? 0 : null));
+    m.detail.forEach(r => { if (r.group === key && values[r.d - 1] != null) values[r.d - 1] += r[field]; });
+    return values;
+  }
+
+  function gLineSeries(metric, modeKey, m, compare = true) {
+    if (modeKey === 'monthly') {
+      const year = gViewYear();
+      const values = MONTHS.map((_, k) => {
+        const month = gMonthByKey(`${year}-${pad(k + 1)}`);
+        const items = month?.hasData ? month.byType.filter(x => x.group.key === metric.group) : [];
+        return items.some(gActive) ? items.reduce((s, x) => s + (x[metric.key] || 0), 0) : null;
+      });
+      return {
+        labels: SHORT,
+        datasets: [{ label: metric.label, unit: metric.unit, data: values, borderColor: metric.color, backgroundColor: `${metric.color}1a`, fill: true, borderWidth: 2.5, pointRadius: 5, pointHoverRadius: 7, pointBackgroundColor: metric.color, tension: 0.25, spanGaps: false, valueLabels: true }],
+        legend: [`<span><i class="gp-legend-line" style="background:${metric.color}"></i><b>${esc(metric.label)} por mes</b></span>`],
+      };
+    }
+    const isCumulative = modeKey === 'cumulative';
+    const transform = values => (isCumulative ? cumulative(values) : values);
+    const label = metric.dailyLabel || metric.label;
+    const series = {
+      labels: Array.from({ length: m.daysInMonth }, (_, i) => `${i + 1}`),
+      datasets: [{ label: compare ? m.name : label, unit: metric.unit, data: transform(gDailyValues(m, metric.daily, metric.group)), borderColor: metric.color, backgroundColor: `${metric.color}14`, fill: isCumulative, borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 4, tension: 0.2, spanGaps: false }],
+      legend: [`<span><i class="gp-legend-line" style="background:${metric.color}"></i><b>${esc(m.name)} ${m.year} · informe por día (${esc(rangeLabel(m, m.detailFirst, m.detailLast))})</b></span>`],
+    };
+    const prev = gPrevious(m);
+    if (compare && prev?.detail) {
+      const prevValues = transform(gDailyValues(prev, metric.daily, metric.group)).slice(0, m.daysInMonth);
+      if (prevValues.some(v => v)) {
+        series.datasets.push({ label: prev.name, unit: metric.unit, data: prevValues, borderColor: PREVIOUS_COLOR, borderDash: [6, 5], fill: false, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.2 });
+        series.legend.push(`<span><i class="gp-legend-line dashed" style="color:${PREVIOUS_COLOR}"></i><b>${esc(prev.name)} (mismo día del mes)</b></span>`);
+      }
+    } else if (compare) {
+      series.legend.push(`<span>${prev ? `${esc(prev.name)} no tiene informe por día para comparar.` : ''}</span>`);
+    }
+    return series;
+  }
+
+  function gCampaignSeries(metrics, modeKey, m) {
+    if (metrics.length === 1) return gLineSeries(metrics[0], modeKey, m);
+    const parts = metrics.map(metric => gLineSeries(metric, modeKey, m, false));
+    return {
+      labels: parts[0].labels,
+      datasets: parts.map((part, i) => ({ ...part.datasets[0], label: modeKey === 'monthly' ? metrics[i].label : metrics[i].dailyLabel || metrics[i].label, yAxisID: `y${i}` })),
+      legend: [parts[0].legend[0].replace(/<b>.*<\/b>/, `<b>${modeKey === 'monthly' ? `${metrics.length} indicadores por mes` : `${esc(m.name)} ${m.year} · informe por día`}</b>`), '<span>Cada indicador con su escala.</span>'],
+    };
+  }
+
+  function renderGoogleChart(key, period = gCurrentPeriod(), groups = null) {
+    const block = gCampaignBlock(key);
+    const list = groups || gGroups(period.months, gCampaigns(period));
+    const group = list.find(g => g.key === key);
+    const m = gSelectedMonth();
+    if (!block || !group || !m) return;
+    const settings = gCampaignSettings(key);
+    const daily = gHasDaily(period, key);
+    const modes = daily ? MODES : MODES.filter(x => x.key === 'monthly');
+    const modeKey = daily && modes.some(x => x.key === settings.mode) ? settings.mode : 'monthly';
+    // En la serie diaria no hay impresiones: ese indicador solo aparece por mes.
+    const metrics = G_METRICS.filter(x => modeKey === 'monthly' || x.daily)
+      .map(x => ({ ...x, label: modeKey === 'monthly' ? x.label : x.dailyLabel || x.label, color: group.color, group: key }));
+    let selected = metrics.filter(x => settings.metrics.includes(x.key));
+    if (!selected.length) selected = metrics.filter(x => G_DEFAULT_METRICS.includes(x.key));
+    const toggle = block.querySelector('[data-camp-toggle]');
+    block.classList.toggle('is-collapsed', settings.collapsed);
+    toggle.setAttribute('aria-expanded', String(!settings.collapsed));
+    toggle.title = `${settings.collapsed ? 'Expandir' : 'Minimizar'} la campaña ${group.label}`;
+    const modesHost = block.querySelector('[data-camp-modes]');
+    const metricsHost = block.querySelector('[data-camp-metrics]');
+    keepFocus(modesHost, () => { modesHost.innerHTML = chipsHtml(modes, modeKey, `gp-gcamp-mode-${key}`, 'var(--brand)'); });
+    keepFocus(metricsHost, () => { metricsHost.innerHTML = chipsHtml(metrics, selected.map(x => x.key), `gp-gcamp-metric-${key}`, null, true); });
+    const id = `chart-gp-gcamp-${key}`;
+    if (settings.collapsed) {
+      global.Charts.destroy(id);
+      google.charts.delete(id);
+      return;
+    }
+    const series = gCampaignSeries(selected, modeKey, m);
+    block.querySelector('canvas').parentElement.style.height = selected.length > 1 ? `${90 + 135 * selected.length}px` : '';
+    block.querySelector('[data-camp-legend]').innerHTML = series.legend.join('');
+    drawLineChart(id, series, selected, modeKey, google.charts);
+  }
+
+  function renderGoogleCampaigns(period, groups) {
+    google.charts.forEach(id => global.Charts.destroy(id));
+    google.charts.clear();
+    const previous = period.compare ? gGroups([period.compare.month], period.compare.month.campaigns, period.compare.factor) : [];
+    document.getElementById('gp-g-blocks').innerHTML = groups.map(g => gCampaignHtml(period, g, previous.find(p => p.key === g.key))).join('');
+    groups.forEach(g => renderGoogleChart(g.key, period, groups));
+  }
+
+  // ── Anuncios y términos de búsqueda (informe por día) ──
+  function detailNote(period) {
+    if (!period.detail) return '';
+    const months = period.months.filter(m => m.detail);
+    const detailCost = period.detail.reduce((s, r) => s + r.cost, 0);
+    const cost = months.reduce((s, m) => s + (m.totals.cost || 0), 0);
+    return `Informe por día y palabra clave (${esc(period.detailLabel)}): ${money(detailCost, 2)} de ${money(cost, 2)} del informe de campaña (${pct(cost ? detailCost / cost * 100 : null, 0)}). Google no detalla los términos con pocas impresiones.`;
+  }
+
+  function renderGoogleAds(period, groups) {
+    const body = document.getElementById('gp-g-ads-body');
+    const panel = document.getElementById('gp-g-ads-panel');
+    const select = document.getElementById('gp-g-ads-group');
+    const compare = period.detailCompare;
+    panel.classList.toggle('no-compare', !compare);
+    const detailGroups = groups.filter(g => (period.detail || []).some(r => r.group === g.key));
+    if (google.adsGroup !== 'all' && !detailGroups.some(g => g.key === google.adsGroup)) google.adsGroup = 'all';
+    select.innerHTML = ['<option value="all">Todos los tipos</option>']
+      .concat(detailGroups.map(g => `<option value="${esc(g.key)}"${g.key === google.adsGroup ? ' selected' : ''}>${esc(g.label)}</option>`)).join('');
+    document.getElementById('gp-g-ads-title').textContent = `Anuncios | ${period.label} ${period.year}`;
+    document.getElementById('gp-g-ads-prev-head').textContent = compare ? `Conversiones ${compare.label}` : 'Mes anterior';
+    const sub = document.getElementById('gp-g-ads-sub');
+    if (!period.detail) {
+      sub.textContent = '';
+      body.innerHTML = '<tr><td class="gp-table-empty" colspan="15">El informe de campaña no trae anuncios. Para verlos, sube a la carpeta Google Files el informe por día con Campaña, Grupo de anuncios, Anuncio y Palabra clave del mes (como el de octubre).</td></tr>';
+      return;
+    }
+    const order = new Map(groups.map((g, i) => [g.key, i]));
+    const previous = new Map((compare ? gAds(compare.rows) : []).map(a => [a.key, a]));
+    const all = gAds(period.detail).sort((a, b) => (order.get(a.group) ?? 99) - (order.get(b.group) ?? 99) || b.conversions - a.conversions || b.cost - a.cost);
+    const leaders = new Set();
+    all.forEach(a => { if (a.conversions > 0 && !leaders.has(a.group)) { leaders.add(a.group); a.leader = true; } });
+    const rows = google.adsGroup === 'all' ? all : all.filter(a => a.group === google.adsGroup);
+    sub.innerHTML = `${rows.length} ${rows.length === 1 ? 'anuncio' : 'anuncios'} ordenados por conversiones dentro de cada tipo. La estrella marca al líder. ${detailNote(period)}`;
+    body.innerHTML = rows.map(a => {
+      const before = previous.get(a.key);
+      const url = safeUrl(a.url);
+      return `
+        <tr style="--gp-row-c:${a.groupColor}">
+          <td class="gp-type-col"><span class="gp-group"><i class="gp-dot-c"></i>${esc(a.groupLabel)}</span></td>
+          <td class="gp-ad-col" title="${esc(a.ad)}"><span class="gp-ad-text">${a.leader ? '<b class="gp-leader" title="Líder del tipo">★</b> ' : ''}${esc(a.ad)}</span></td>
+          <td class="gp-set-col">${esc(a.campaigns.join(' / '))}<small>${esc(a.adGroups.join(' / ') || '—')}</small></td>
+          <td class="r mono">${money(a.cost, 2)}</td>
+          <td class="r mono"><b>${numDec(a.conversions)}</b></td>
+          <td class="r mono">${before ? numDec(before.conversions) : '<span class="gp-no-data">—</span>'}</td>
+          <td class="r">${compare ? variationCell(a.conversions, before?.conversions) : '<span class="gp-no-data">—</span>'}</td>
+          <td class="r mono">${money(a.costPerConversion, 2)}</td>
+          <td class="r mono">${a.conversionValue ? money(a.conversionValue) : '—'}</td>
+          <td class="r">${roasPill(a.roas, a.conversions)}</td>
+          <td class="r mono">${num(a.clicks)}</td>
+          <td class="r mono">${money(a.cpc, 2)}</td>
+          <td class="r mono">${num(a.termCount)}</td>
+          <td class="gp-date-col">${daysText(a, period)}</td>
+          <td>${url ? `<a class="gp-preview" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Ver página »</a>` : '<span class="gp-no-data">Sin URL</span>'}</td>
+        </tr>`;
+    }).join('') || '<tr><td class="gp-table-empty" colspan="15">No hay anuncios de este tipo en el periodo.</td></tr>';
+  }
+
+  function renderGoogleTerms(period) {
+    const panel = document.getElementById('gp-g-terms-panel');
+    const sub = document.getElementById('gp-g-terms-sub');
+    const body = document.getElementById('gp-g-terms-body');
+    if (!period.detail) {
+      sub.textContent = 'Lo que la gente buscó en Google antes de hacer clic en un anuncio.';
+      body.innerHTML = '<tr><td class="gp-table-empty" colspan="10">Sin informe por día y palabra clave para este periodo.</td></tr>';
+      return;
+    }
+    const terms = gTerms(period.detail);
+    sub.innerHTML = `${terms.length} ${terms.length === 1 ? 'término' : 'términos'} que la gente buscó antes de hacer clic, de mayor a menor inversión. ${detailNote(period)}`;
+    body.innerHTML = terms.map(x => `
+      <tr style="--gp-row-c:${x.groupColor}">
+        <td class="gp-camp-name">${esc(x.keyword)}</td>
+        <td><span class="gp-group"><i class="gp-dot-c"></i>${esc(x.groupLabel)}</span></td>
+        <td class="gp-set-col">${esc(x.adGroups.join(' / ') || '—')}</td>
+        <td class="r mono">${money(x.cost, 2)}</td>
+        <td class="gp-share-col"><span class="gp-share"><span style="width:${Math.min(100, x.share).toFixed(1)}%"></span></span><b>${pct(x.share)}</b></td>
+        <td class="r mono">${num(x.clicks)}</td>
+        <td class="r mono">${money(x.cpc, 2)}</td>
+        <td class="r mono">${x.conversions ? numDec(x.conversions) : '—'}</td>
+        <td class="r">${roasPill(x.roas, x.conversions)}</td>
+        <td class="gp-date-col">${daysText(x, period)}</td>
+      </tr>`).join('');
+    panel.hidden = false;
+  }
+
+  // ── Render ──
+  function renderGoogle() {
+    const body = document.getElementById('gp-google-body');
+    if (!google.latestKey) { emptyState(body, 'google'); return; }
+    if (!body.querySelector('#gp-g-kpis')) { body.innerHTML = googleBodyTpl; applyCompact('google'); }
+
+    const period = gCurrentPeriod();
+    const year = gViewYear();
+    const campaigns = gCampaigns(period);
+    const groups = gGroups(period.months, campaigns);
+    renderMonthTabs('gp-google-months', {
+      year, has: key => Boolean(gMonthByKey(key)?.hasData), latestKey: google.latestKey,
+      selected: period.month?.key, annual: Boolean(period.annual), yearOk: Boolean(gYearPeriod(year)), what: 'informe de Google Ads',
+    });
+    renderAlerts('gp-google-alerts', 'google', period.annual ? { label: String(period.year), warnings: [] } : period.month.raw);
+    renderGooglePeriod(period);
+    renderGoogleKpis(period);
+    renderGoogleDistribution(period);
+    renderGoogleCampaigns(period, groups);
+    renderGoogleAds(period, groups);
+    renderGoogleTerms(period);
+  }
+
+  function wireGoogle() {
+    const body = document.getElementById('gp-google-body');
+    body.addEventListener('click', e => {
+      const tab = e.target.closest('#gp-google-months .month-tab:not(:disabled)');
+      if (tab) {
+        if (tab.dataset.month === state.month) return;
+        state.month = tab.dataset.month;
+        // Meta Ads se vuelve a pintar con el mes nuevo cuando se abra.
+        state.rendered = { google: true };
+        renderGoogle();
+        return;
+      }
+      const toggle = e.target.closest('[data-camp-toggle]');
+      if (toggle) {
+        const key = toggle.closest('.gp-camp-block').dataset.group;
+        gSaveCampaignSettings(key, { collapsed: !gCampaignSettings(key).collapsed });
+        renderGoogleChart(key);
+        return;
+      }
+      if (e.target.closest('#gp-g-ads-density')) { toggleCompact('google'); return; }
+      if (e.target.closest('#gp-g-ads-expand')) toggleFullscreen('google');
+    });
+    body.addEventListener('change', e => {
+      if (e.target.id === 'gp-g-ads-group') {
+        google.adsGroup = e.target.value;
+        const period = gCurrentPeriod();
+        renderGoogleAds(period, gGroups(period.months, gCampaigns(period)));
+        return;
+      }
+      const input = e.target.closest('.gp-camp-block input');
+      if (!input) return;
+      const block = input.closest('.gp-camp-block');
+      const key = block.dataset.group;
+      if (input.closest('[data-camp-modes]')) {
+        gSaveCampaignSettings(key, { mode: input.value });
+      } else {
+        // Siempre queda al menos un indicador: desmarcar el último lo deja como estaba.
+        const checked = [...block.querySelectorAll('[data-camp-metrics] input:checked')].map(i => i.value);
+        if (checked.length) gSaveCampaignSettings(key, { metrics: checked });
+      }
+      renderGoogleChart(key);
+    });
   }
 
   // ════════════════════════════════════════════════════════════
@@ -1427,12 +1969,17 @@
     }
     started = true;
     metaBodyTpl = document.getElementById('gp-meta-body').innerHTML;
+    googleBodyTpl = document.getElementById('gp-google-body').innerHTML;
     wireTabs();
     wireMeta();
-    applyAdsCompact();
+    wireGoogle();
+    wireFullscreenExit();
+    applyCompact('meta');
+    applyCompact('google');
     state.data = await loadData();
     state.loaded = true;
     buildMetaMonths();
+    buildGoogleMonths();
     const months = state.data?.months || [];
     state.month = months.length ? months[months.length - 1].id : null;
     try { state.tab = localStorage.getItem(TAB_KEY) || 'meta'; } catch (e) { /* storage bloqueado */ }

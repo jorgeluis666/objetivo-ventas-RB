@@ -291,6 +291,11 @@ function parseGoogleReport(text) {
     const field = GA_COLUMNS[cell];
     if (field && !(field in col)) col[field] = index;
   });
+  // Un informe por día o por palabra clave no trae Impr. ni las filas "Total:" y suele venir con coma
+  // decimal ("5,06"), que parseNumber leería como 506: se rechaza con un mensaje que diga qué bajar.
+  if (!('impressions' in col) && plainHeader.some(cell => cell === 'dia' || cell.startsWith('palabra clave'))) {
+    throw new Error('no es el «Informe de campaña» del mes: trae una fila por día o por palabra clave y no tiene la columna Impr.; hay que descargarlo de nuevo desde Campañas');
+  }
   for (const required of ['campaign', 'cost', 'impressions', 'clicks', 'conversions']) {
     if (!(required in col)) throw new Error(`falta la columna de ${GA_FIELD_LABELS[required] || 'campaña'}`);
   }
@@ -549,10 +554,11 @@ function parseMetaReport(text) {
   const col = {};
   header.forEach((name, index) => {
     const plain = normalize(name);
-    const field = META_COLUMNS[plain] || (plain.startsWith('importe gastado') ? 'spend' : null);
+    // Meta renombró «Importe gastado (PEN)» a «Monto gastado (PEN)» en octubre de 2026: valen las dos.
+    const field = META_COLUMNS[plain] || (/^(importe|monto) gastado/.test(plain) ? 'spend' : null);
     if (field && !(field in col)) col[field] = index;
   });
-  for (const [field, label] of [['spend', 'Importe gastado'], ['impressions', 'Impresiones']]) {
+  for (const [field, label] of [['spend', 'Importe gastado o Monto gastado'], ['impressions', 'Impresiones']]) {
     if (!(field in col)) throw new Error(`falta la columna ${label}`);
   }
   const currency = (header[col.spend].match(/\(([A-Z]{3})\)/) || [])[1] || null;

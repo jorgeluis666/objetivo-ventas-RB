@@ -4,7 +4,8 @@ name: Sincronizar inversión publicitaria
 # con scripts/sync-ads.js y commitea data/ads-2026.json si cambió. Lo usa el módulo
 # Gasto publicitario del tablero.
 #
-# Corre todos los días a las 07:00 de Lima y a mano (Run workflow). No hay botón en
+# Corre todos los días a las 10:30 de Lima, lanzado por el Apps Script scripts/disparar-actualizacion.gs
+# (el cron de las 07:00 queda de respaldo), y a mano (Run workflow). No hay botón en
 # el tablero: dispararlo desde el navegador exigiría un token de GitHub y el tablero
 # lo abren clientes.
 #

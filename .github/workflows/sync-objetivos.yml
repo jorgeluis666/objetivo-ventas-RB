@@ -4,7 +4,8 @@ name: Sincronizar objetivos comerciales
 # commitea data/objetivos-2026.json. Es la zona de objetivos del módulo Objetivos 2026; también
 # la usan Proyecciones y el correo semanal.
 #
-# Corre todos los días a las 06:05 de Lima (después de las ventas) y a mano (Run workflow).
+# Corre todos los días a las 10:30 de Lima, lanzado por el Apps Script scripts/disparar-actualizacion.gs
+# (el cron de las 06:05 queda de respaldo), y a mano (Run workflow).
 # En el tablero, el botón Sincronizar de la zona de objetivos lee la misma hoja al instante,
 # solo en ese navegador.
 #

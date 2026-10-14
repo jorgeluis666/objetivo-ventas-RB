@@ -5,7 +5,8 @@ name: Actualizar datos de ventas
 #          sin credenciales). Es la zona de ventas del módulo Objetivos y la fuente de todo el tablero.
 #   2025 → el Google Sheet de 2025 por la API de Sheets (secret SERVICE_ACCOUNT_JSON).
 #
-# Corre todos los días a las 06:00 de Lima y a mano (Run workflow). En el tablero, el botón
+# Corre todos los días a las 10:30 de Lima, lanzado por el Apps Script scripts/disparar-actualizacion.gs
+# (GitHub atrasa sus cron varias horas); el cron de las 06:00 queda de respaldo. En el tablero, el botón
 # Sincronizar de la zona de ventas lee la misma hoja al instante, solo en ese navegador.
 #
 # Si una lectura falla, el script no escribe nada y sale con código 1: queda publicado el último

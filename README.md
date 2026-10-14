@@ -100,6 +100,14 @@ Dos workflows leen las carpetas de Drive de la marca todos los días y commitean
 
 Esos commits los hace `GITHUB_TOKEN`, que no dispara otros workflows: el deploy y las alertas se encadenan con `workflow_run` al terminar cada uno. Para forzar una corrida: `Actions → <workflow> → Run workflow`.
 
+### Corrida diaria de las 10:30
+
+GitHub corre los cron con 5 a 9 horas de atraso (el de las 06:00 sale entre las 11:00 y las 15:00). Para que el tablero esté al día a media mañana, el proyecto de Apps Script **Royal Baby - Actualizacion diaria** (`scripts/disparar-actualizacion.gs`, se pega en script.google.com) lanza con `workflow_dispatch` `update-data.yml`, `sync-objetivos.yml` y `sync-ads.yml` todos los días a las **10:30 de Lima (±15 min)**; arrancan en segundos y el deploy sigue al terminar. Los cron de GitHub quedan de respaldo.
+
+- El token va en *Configuración del proyecto → Propiedades de script* como `GITHUB_TOKEN`: fine-grained, solo este repo, permiso **Actions: Read and write**. Cuando venza, crear otro y reemplazar la propiedad.
+- Si GitHub rechaza la orden, el activador falla y Google avisa por correo.
+- La venta del día anterior aparece solo si ya está cargada en la hoja de Drive a esa hora.
+
 ### Botones Sincronizar
 
 Cada zona del módulo Objetivos tiene un botón **Sincronizar** que vuelve a leer su hoja de Drive en el navegador y redibuja la zona al instante (la de ventas, todo el tablero). Lo que se sincroniza así vale para quien lo presionó y hasta que recargue la página: para todos, el tablero publicado se actualiza con la corrida diaria. El botón lee la hoja de la que salió lo publicado; si en Drive se reemplazó el archivo por otro, lo toma recién la corrida diaria (el navegador no puede listar la carpeta).
@@ -118,7 +126,7 @@ node scripts/sync-ads.js --check   # informa sin escribir
 Lee dos carpetas compartidas por enlace, una por plataforma:
 
 - **Google Ads** ([carpeta](https://drive.google.com/drive/folders/1TT5KTVZuGlFc7OqvGAz9nuRVyJFvwJpd)): `Royal Baby GA - <Mes> 2026`, informe de campaña del mes.
-- **Meta Ads** ([carpeta](https://drive.google.com/drive/folders/1kjz_QSgFpkd9semvyjrlLQi3ETH8-DPm)): `Royal Baby - <Mes> 2026`, export del Administrador de anuncios con desglose diario, por edad, sexo y anuncio.
+- **Meta Ads** ([carpeta](https://drive.google.com/drive/folders/1kjz_QSgFpkd9semvyjrlLQi3ETH8-DPm)): `Royal Baby - <Mes> 2026`, export del Administrador de anuncios con desglose diario, por edad, sexo y anuncio. El gasto puede venir como «Importe gastado» o «Monto gastado» (nombre de Meta desde octubre de 2026).
 
 Los archivos son hojas de cálculo de Google: se descargan exportándolas a CSV (solo la primera pestaña). Un CSV subido sin convertir también se lee. Con la variable `RB_DRIVE_API_KEY` usa la API de Drive; sin ella, la vista pública de la carpeta.
 

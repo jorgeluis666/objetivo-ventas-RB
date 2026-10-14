@@ -228,7 +228,9 @@ const GA_COLUMNS = {
   'conversiones': 'conversions',
   'conv.': 'conversions',
   'conversiones por compras': 'purchases',
+  'conversiones de compras': 'purchases',      // Google Ads en español de España
   'todas las conv.': 'allConversions',
+  'todas las conversiones': 'allConversions',
   'valor de conv.': 'conversionValue',
 };
 const GA_COUNT_FIELDS = ['impressions', 'clicks'];
@@ -245,7 +247,8 @@ const GA_CONVERSION_SEGMENTS = [
 ];
 // El export en español llama "Compras" a las campañas de Shopping. En Google Ads se ven como "Shopping",
 // y en el tablero "Compras" es el KPI de conversión: se guardan con el nombre de la interfaz.
-const GA_TYPE_LABELS = { compras: 'Shopping' };
+// En español de España los tipos llegan como "Buscar" y "Rendimiento máximo": se guardan como los demás meses.
+const GA_TYPE_LABELS = { compras: 'Shopping', buscar: 'Búsqueda', 'rendimiento maximo': 'Máximo rendimiento' };
 const campaignType = text => GA_TYPE_LABELS[normalize(text)] || text;
 const GA_FIELD_LABELS = {
   cost: 'costo', impressions: 'impresiones', clicks: 'clics', conversions: 'conversiones',
@@ -306,8 +309,20 @@ function parseGoogleReport(text) {
   let segmentation = segmentIndex >= 0 ? header[segmentIndex].trim() : null;
   const period = periodFromText(rows.slice(0, headerIndex).map(row => row.join(' ')).join(' '));
 
+  // Con Google Ads en español de España el export trae coma decimal y punto de miles ("615,28",
+  // "6.289", CTR "8,63%"); con el formato de siempre, punto decimal ("1494.87", "3.18%"). Se detecta
+  // por los porcentajes del informe y los números se pasan a punto decimal antes de leerlos.
+  const dataRows = rows.slice(headerIndex + 1);
+  const percents = dataRows.flat().map(value => value.trim()).filter(value => /^-?\d[\d.,]*\s?%$/.test(value));
+  const decimalComma = percents.some(value => /,\d+\s?%$/.test(value)) && !percents.some(value => /\.\d+\s?%$/.test(value));
+  const toDotDecimal = value => (/^-?\d{1,3}(\.\d{3})*(,\d+)?$|^-?\d+(,\d+)?$/.test(value.trim())
+    ? value.trim().replace(/\./g, '').replace(',', '.') : value);
+
   const repairs = [];
-  const cell = (row, field) => (col[field] !== undefined ? row[col[field]] ?? '' : '');
+  const cell = (row, field) => {
+    const value = col[field] !== undefined ? row[col[field]] ?? '' : '';
+    return decimalComma ? toDotDecimal(value) : value;
+  };
   const readMetrics = (row, rowLabel) => {
     const out = {};
     for (const field of GA_COUNT_FIELDS) {

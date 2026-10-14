@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-14T05:40:01.583Z",
+  "generatedAt": "2026-10-14T05:46:35.001Z",
   "currency": "PEN",
   "rules": [
     "Google Ads llega mensual: sin serie diaria real. Meta Ads llega por día y la serie diaria es real.",
@@ -17,6 +17,7 @@
       "folderUrl": "https://drive.google.com/drive/folders/1TT5KTVZuGlFc7OqvGAz9nuRVyJFvwJpd",
       "discovery": "pública",
       "files": [
+        { "id": "1EHwXq2LMAYRN13_UfEsZncjhw19BlJsa7IxjmgE3zWA", "name": "Royal Baby - Octubrel 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         { "id": "1sQgs4qZdT00185GvZy9HbmLkuU6uyTKcRA3L2jsQY_k", "name": "Royal Baby GA - Abril 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         { "id": "1OHSr4s-6WkU-I3Q_qGrd0AGQPweQ48w3CR1hsTcRQ20", "name": "Royal Baby GA - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         { "id": "1f7JO8c-ZvTc0dRRHgHdxPL9__YTnAwTyPlydJxnbTyA", "name": "Royal Baby GA - Enero 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
@@ -48,7 +49,7 @@
     }
   },
   "pending": [
-    "Google Ads: «Royal Baby GA - Octubre 2026» no se pudo leer (no es el «Informe de campaña» del mes: trae una fila por día o por palabra clave y no tiene la columna Impr.; hay que descargarlo de nuevo desde Campañas); Octubre 2026 queda con los datos de la sincronización anterior."
+    "Google Ads: «Royal Baby GA - Octubre 2026» no se pudo leer (no es el «Informe de campaña» del mes: trae una fila por día o por palabra clave y no tiene la columna Impr.; hay que descargarlo de nuevo desde Campañas); se usa el otro archivo de Octubre 2026."
   ],
   "warnings": [
     "Google Ads Enero 2026: 2 cifra(s) que la hoja había truncado al importar el CSV se completaron (Impr. de «Pmax B | Objetivo | LR» \"51,39\" → 51,390; Impr. de «Total: Máximo rendimiento» \"51,39\" → 51,390); cuadran con los totales.",
@@ -1754,37 +1755,37 @@
       "id": "2026-10",
       "label": "Octubre 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Octubre 2026", "id": "1eM8ZjVYSK3vSdE3w423j-IK2Ri0Gg2qFDT3mu5LZ7j4", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby - Octubrel 2026", "id": "1EHwXq2LMAYRN13_UfEsZncjhw19BlJsa7IxjmgE3zWA", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
         "monthFrom": "contenido",
         "granularity": "mensual",
-        "coverage": { "start": "2026-10-01", "end": "2026-10-04", "days": null, "daysInMonth": 31, "complete": false },
+        "coverage": { "start": "2026-10-01", "end": "2026-10-13", "days": null, "daysInMonth": 31, "complete": false },
         "segmentation": null,
         "campaignsComplete": true,
         "totalsSource": "Total: Cuenta",
-        "totals": { "cost": 155.03, "impressions": 1729, "clicks": 147, "conversions": 1, "purchases": 1, "allConversions": 1, "conversionValue": 114.5, "ctr": 0.08502, "cpc": 1.05, "costPerConversion": 155.03, "costPerPurchase": 155.03, "roas": 0.74 },
+        "totals": { "cost": 615.28, "impressions": 6289, "clicks": 543, "conversions": 1, "purchases": 1, "allConversions": 1, "conversionValue": 114.5, "ctr": 0.086341, "cpc": 1.13, "costPerConversion": 615.28, "costPerPurchase": 615.28, "roas": 0.19 },
         "conversionsByCategory": null,
         "byType": [
-          { "type": "Búsqueda", "cost": 155.03, "impressions": 1729, "clicks": 147, "conversions": 1, "purchases": 1, "allConversions": 1, "conversionValue": 114.5, "ctr": 0.08502, "cpc": 1.05, "costPerConversion": 155.03, "costPerPurchase": 155.03, "roas": 0.74 }
+          { "type": "Búsqueda", "cost": 615.28, "impressions": 6289, "clicks": 543, "conversions": 1, "purchases": 1, "allConversions": 1, "conversionValue": 114.5, "ctr": 0.086341, "cpc": 1.13, "costPerConversion": 615.28, "costPerPurchase": 615.28, "roas": 0.19 }
         ],
         "campaigns": [
-          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": 50, "complete": true, "cost": 155.03, "impressions": 1729, "clicks": 147, "conversions": 1, "purchases": 1, "allConversions": 1, "conversionValue": 114.5, "ctr": 0.08502, "cpc": 1.05, "costPerConversion": 155.03, "costPerPurchase": 155.03, "roas": 0.74, "conversionsByCategory": null }
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": 50, "complete": true, "cost": 615.28, "impressions": 6289, "clicks": 543, "conversions": 1, "purchases": 1, "allConversions": 1, "conversionValue": 114.5, "ctr": 0.086341, "cpc": 1.13, "costPerConversion": 615.28, "costPerPurchase": 615.28, "roas": 0.19, "conversionsByCategory": null }
         ],
         "checks": [
-          { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "cost", "expected": 155.03, "actual": 155.03, "ok": true },
-          { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "impressions", "expected": 1729, "actual": 1729, "ok": true },
-          { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "clicks", "expected": 147, "actual": 147, "ok": true },
+          { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "cost", "expected": 615.28, "actual": 615.28, "ok": true },
+          { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "impressions", "expected": 6289, "actual": 6289, "ok": true },
+          { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "clicks", "expected": 543, "actual": 543, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "conversions", "expected": 1, "actual": 1, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "purchases", "expected": 1, "actual": 1, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "allConversions", "expected": 1, "actual": 1, "ok": true },
           { "check": "Total por tipo de campaña vs Total: Cuenta", "field": "conversionValue", "expected": 114.5, "actual": 114.5, "ok": true },
-          { "check": "Suma de campañas vs Total: Cuenta", "field": "cost", "expected": 155.03, "actual": 155.03, "ok": true },
-          { "check": "Suma de campañas vs Total: Cuenta", "field": "impressions", "expected": 1729, "actual": 1729, "ok": true },
-          { "check": "Suma de campañas vs Total: Cuenta", "field": "clicks", "expected": 147, "actual": 147, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "cost", "expected": 615.28, "actual": 615.28, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "impressions", "expected": 6289, "actual": 6289, "ok": true },
+          { "check": "Suma de campañas vs Total: Cuenta", "field": "clicks", "expected": 543, "actual": 543, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversions", "expected": 1, "actual": 1, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "purchases", "expected": 1, "actual": 1, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "allConversions", "expected": 1, "actual": 1, "ok": true },
           { "check": "Suma de campañas vs Total: Cuenta", "field": "conversionValue", "expected": 114.5, "actual": 114.5, "ok": true },
-          { "check": "Total: Campañas filtradas vs Total: Cuenta", "field": "cost", "expected": 155.03, "actual": 155.03, "ok": true }
+          { "check": "Total: Campañas filtradas vs Total: Cuenta", "field": "cost", "expected": 615.28, "actual": 615.28, "ok": true }
         ],
         "repairs": []
       },
@@ -1881,15 +1882,15 @@
           "google",
           "meta"
         ],
-        "spend": 996.75,
-        "impressions": 126786,
-        "clicks": 2078,
+        "spend": 1457,
+        "impressions": 131346,
+        "clicks": 2474,
         "purchases": 6,
         "purchaseValue": 4264.63,
-        "cpm": 7.86,
-        "costPerPurchase": 166.13,
-        "roas": 4.28,
-        "spendShare": { "google": 0.1555, "meta": 0.8445 },
+        "cpm": 11.09,
+        "costPerPurchase": 242.83,
+        "roas": 2.93,
+        "spendShare": { "google": 0.4223, "meta": 0.5777 },
         "dailyBasis": "mixto",
         "notes": [
           "Clics = clics de Google Ads + clics en el enlace de Meta.",

@@ -47,7 +47,7 @@
   const GENDER_LABELS = { female: 'Mujeres', male: 'Hombres', unknown: 'Sin dato' };
 
   // monthVersion sube con cada cambio de mes; rendered guarda con qué versión se pintó cada vista (ver setMonth).
-  const state = { data: null, loaded: false, tab: 'meta', month: null, monthVersion: 0, rendered: {} };
+  const state = { data: null, artes: null, loaded: false, tab: 'meta', month: null, monthVersion: 0, rendered: {} };
 
   // ── Formato (mismo criterio que el resto del tablero: "S/. " y es-PE) ──
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -2033,6 +2033,65 @@
       </div>`).join('')}</div>`;
   }
 
+  // ── Artes del mes (data/artes-2026.json, incrustado como RB_ARTES_DATA al publicar) ──
+  // Cada arte se identifica con su anuncio por el nombre del archivo: "40% OFF - Daniela.mp4" ↔ "40% OFF Daniela".
+  // Solo hay artes de algunos anuncios: los que están en la carpeta del mes.
+  const ARTES_FILE = 'data/artes-2026.json';
+  async function loadArtes() {
+    if (global.RB_ARTES_DATA) return global.RB_ARTES_DATA;
+    try {
+      const res = await fetch(ARTES_FILE, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json();
+    } catch (err) {
+      console.warn('[gasto] no se pudo cargar', ARTES_FILE, err);
+      return null;
+    }
+  }
+  const artKey = name => normalize(String(name ?? '').replace(/\.[a-z0-9]{2,4}$/i, '')).replace(/[^a-z0-9%]+/g, ' ').trim();
+  const driveId = id => (/^[\w-]{20,}$/.test(String(id || '')) ? String(id) : null);
+
+  function renderArtes(period) {
+    const host = document.getElementById('ad-meta-artes');
+    const month = !period.annual && state.artes?.months?.[period.month.key];
+    if (!month?.artes?.length) { host.hidden = true; host.innerHTML = ''; return; }
+    const folder = safeUrl(month.folder?.url);
+    const cards = month.artes.map(art => {
+      const key = artKey(art.file);
+      const rows = period.rows.filter(r => artKey(r.ad) === key);
+      const t = summarize(rows);
+      const versions = new Set(rows.map(r => r.link).filter(Boolean)).size;
+      const groups = [...new Set(rows.filter(hasActivity).map(r => r.groupLabel))];
+      const ad = rows[0]?.ad;
+      const match = !rows.length
+        ? 'Sin anuncio con este nombre en el periodo.'
+        : `Anuncio «${esc(ad)}»${versions > 1 ? ` · ${versions} versiones` : ''} en ${esc(groups.join(' y ') || 'Meta')}`
+          + (t.purchases ? ` · ${money(t.purchaseValue)} en ventas · ROAS ${roasFmt(t.roas)}` : ` · ${money(t.spend, 2)} de inversión`);
+      // La miniatura de Drive hace de portada; el reproductor de Drive se carga al hacer clic (ver wireAds).
+      // Drive rechaza la miniatura si la petición lleva el referer del tablero.
+      const id = driveId(art.driveId);
+      const media = id
+        ? `<button type="button" class="ad-arte-poster" data-arte="${id}" data-title="${esc(art.file)}" aria-label="Reproducir ${esc(art.file)}">
+            <img src="https://drive.google.com/thumbnail?id=${id}&amp;sz=w480" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="ad-arte-play" aria-hidden="true">▶</span>
+          </button>`
+        : '<span class="gp-no-data">Sin vista previa</span>';
+      return `
+        <article class="ad-arte">
+          <div class="ad-arte-media">${media}</div>
+          <div class="ad-arte-body">
+            <div class="ad-arte-file">${esc(art.file)}${art.seconds ? `<small>${art.kind === 'video' ? 'Video' : 'Imagen'} · ${art.seconds} s</small>` : ''}</div>
+            <div class="ad-arte-match">${match}</div>
+            <ul class="ad-arte-notes">${(art.notes || []).slice(0, 3).map(n => `<li>${esc(n)}</li>`).join('')}</ul>
+          </div>
+        </article>`;
+    }).join('');
+    host.innerHTML = `
+      <div class="panel-title">Artes de ${esc(period.month.name.toLowerCase())}</div>
+      <div class="panel-sub">${month.artes.length} ${month.artes.length === 1 ? 'arte' : 'artes'} de la carpeta ${folder ? `<a class="gp-ad-link" href="${esc(folder)}" target="_blank" rel="noopener noreferrer">${esc(month.folder.name)}<span class="gp-ad-link-ic" aria-hidden="true">↗</span></a>` : esc(month.folder?.name || 'del mes')}, cada uno con el anuncio que lleva el mismo nombre. No todos los anuncios tienen arte en la carpeta.</div>
+      <div class="ad-artes-list">${cards}</div>`;
+    host.hidden = false;
+  }
+
   function renderAdsMeta() {
     const title = document.getElementById('ad-meta-period-title');
     if (!meta.latestKey) {
@@ -2055,6 +2114,7 @@
       value: 'purchaseValue', count: 'purchases', spend: 'spend', link: 'link', word: n => (n === 1 ? 'compra' : 'compras'),
       none: 'Ningún anuncio registró compras en el periodo.',
     });
+    renderArtes(period);
     renderAds(period, groups);
   }
 
@@ -2129,6 +2189,16 @@
         ADS_RENDER[adsView.tab]();
         return;
       }
+      const poster = e.target.closest('.ad-arte-poster');
+      if (poster) {
+        const frame = document.createElement('iframe');
+        frame.src = `https://drive.google.com/file/d/${poster.dataset.arte}/preview`;
+        frame.title = `Arte ${poster.dataset.title}`;
+        frame.allow = 'autoplay; fullscreen';
+        frame.allowFullscreen = true;
+        poster.replaceWith(frame);
+        return;
+      }
       if (e.target.closest('#gp-ads-density')) { toggleCompact('meta'); return; }
       if (e.target.closest('#gp-ads-expand')) { toggleFullscreen('meta'); return; }
       if (e.target.closest('#gp-g-ads-density')) { toggleCompact('google'); return; }
@@ -2164,8 +2234,9 @@
   let ready = null;
   function ensureReady() {
     if (!ready) {
-      ready = loadData().then(data => {
+      ready = Promise.all([loadData(), loadArtes()]).then(([data, artes]) => {
         state.data = data;
+        state.artes = artes;
         state.loaded = true;
         buildMetaMonths();
         buildGoogleMonths();

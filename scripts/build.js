@@ -3,8 +3,8 @@
  * build.js — arma dist/ para GitHub Pages (https://royalbaby.limaretail.com).
  *
  * Salida: dist/index.html, dist/assets/ y dist/CNAME. Nada más: data/, scripts/ y README no se publican.
- * index.html lleva incrustados el CSS, todos los js/ y los datos (ventas-2026.json, objetivos-2026.json y
- * ads-2026.json, este último sin los campos que el tablero no lee).
+ * index.html lleva incrustados el CSS, todos los js/ y los datos (ventas-2026.json, objetivos-2026.json,
+ * ads-2026.json, este sin los campos que el tablero no lee, y artes-2026.json).
  *
  * Con RB_PAGE_PASSWORD el tablero se cifra (AES-256-GCM, llave PBKDF2-SHA256 de 600 000 iteraciones)
  * dentro de deploy/pages-gate.html, que lo descifra en el navegador con la clave. Sin la variable,
@@ -29,6 +29,7 @@ const EMBEDDED_DATA = {
   RB_VENTAS_DATA:    'data/ventas-2026.json',
   RB_OBJETIVOS_DATA: 'data/objetivos-2026.json',
   RB_GASTO_DATA:     'data/ads-2026.json',
+  RB_ARTES_DATA:     'data/artes-2026.json',
 };
 
 // Campos que el tablero no lee: se quitan al incrustar para no inflar el HTML cifrado.

@@ -2952,6 +2952,64 @@ body.gp-table-fullscreen { overflow: hidden; }
   .ad-top-list { grid-template-columns: 1fr; }
 }
 
+/* Artes del mes (módulo Anuncios): la pieza en vertical y, a su lado, tres notas de diseño */
+.ad-artes-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+.ad-arte {
+  display: flex;
+  gap: 16px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+}
+.ad-arte-media {
+  display: grid;
+  flex-shrink: 0;
+  align-self: flex-start;
+  width: 200px;
+  aspect-ratio: 9 / 16;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #0f172a;
+}
+.ad-arte-media iframe { width: 100%; height: 100%; border: 0; }
+.ad-arte-poster { position: relative; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
+.ad-arte-poster img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ad-arte-poster:focus-visible { outline: 3px solid #bfdbfe; outline-offset: -3px; }
+.ad-arte-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  padding-left: 3px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.72);
+  color: #fff;
+  font-size: 17px;
+  transform: translate(-50%, -50%);
+  transition: background 0.15s ease;
+}
+.ad-arte-poster:hover .ad-arte-play { background: var(--brand); }
+.ad-arte-body { min-width: 0; }
+.ad-arte-file { color: var(--text); font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+.ad-arte-file small { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; font-weight: 500; }
+.ad-arte-match { margin-top: 6px; color: var(--text-2); font-size: 12px; line-height: 1.45; }
+.ad-arte-notes { margin: 12px 0 0; padding-left: 18px; color: var(--text); font-size: 13px; line-height: 1.5; }
+.ad-arte-notes li + li { margin-top: 8px; }
+.ad-arte-notes li::marker { color: var(--brand); }
+@media (max-width: 1280px) {
+  .ad-artes-list { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .ad-arte { flex-direction: column; }
+  .ad-arte-media { width: min(100%, 240px); align-self: center; }
+}
+
 /* Google Ads: menos columnas en anuncios y términos de búsqueda */
 .gp-ads-table.gp-g-ads-table { min-width: 1420px; }
 .gp-ads-panel.no-compare .gp-ads-table.gp-g-ads-table { min-width: 1260px; }

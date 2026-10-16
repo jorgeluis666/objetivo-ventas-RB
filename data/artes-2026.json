@@ -1,0 +1,61 @@
+{
+  "about": "Artes de los anuncios por mes, de la carpeta «Artes - Royal Baby» en Drive (una subcarpeta por mes). Cada arte se identifica con su anuncio por el nombre del archivo, sin la extensión. Solo están los artes que hay en la carpeta: no todos los anuncios tienen uno. Las tres notas de diseño se escriben a mano al revisar cada pieza.",
+  "folder": {
+    "name": "Artes - Royal Baby",
+    "url": "https://drive.google.com/drive/folders/1ab1a50IRolSq5qydzycRsGctbG8J9gmP"
+  },
+  "months": {
+    "2026-10": {
+      "folder": {
+        "name": "Royal Baby - Octubre",
+        "url": "https://drive.google.com/drive/folders/1uXf3J7jNmAogwVAFk1xcuqYUGBEQMrx8"
+      },
+      "artes": [
+        {
+          "file": "Outlet Septiembre.mp4",
+          "driveId": "1meSwi7xn78P9zr05hrpP0lPOPJ5FSGGv",
+          "kind": "video",
+          "seconds": 13,
+          "notes": [
+            "Abre con «OUTLET · Martín Aranda» sobre maniquíes y escala a «Hasta 60% OFF»: la oferta queda clara en los primeros dos segundos.",
+            "Alterna fotos de producto con placas amarillas («Encuentra tus favoritos en nuestro outlet · 40% / 50% OFF»): el amarillo de marca y la tipografía negra gruesa sostienen la lectura del descuento.",
+            "Cierra con urgencia y canal de compra: «Aprovecha y compra en nuestra web, antes que se agoten las tallas», y el logo de Royal Baby sobre amarillo."
+          ]
+        },
+        {
+          "file": "Navidad - Video.mp4",
+          "driveId": "177UBMhFPfFF2FQw_LVIMqN1Eexzp0Eyp",
+          "kind": "video",
+          "seconds": 12,
+          "notes": [
+            "Tono premium: fondo azul marino a rayas, logo caligráfico de Martín Aranda y presentación de la colección «Manchester · Christmas 2026».",
+            "Niños con tartán rojo, jerséis de punto con motivos nórdicos y vestido rojo sobre escenografía navideña, con frases caligráficas («Para fotografiar», «Para recordar») que venden el momento y no el precio.",
+            "Sin descuento ni precio en pantalla: usa recursos de temporada (marco de estampilla, copos de nieve) y cierra con el logo de Royal Baby en azul marino."
+          ]
+        },
+        {
+          "file": "40% OFF.mp4",
+          "driveId": "1UhcjHVKS0-_tvV7wO5OxHa55fC499r6G",
+          "kind": "video",
+          "seconds": 12,
+          "notes": [
+            "Arranca con «Fin de temporada» y un «40% OFF» a pantalla completa que alterna fondo amarillo y negro: el descuento es el protagonista.",
+            "Cada foto de producto lleva una cinta amarilla en movimiento («por web y tienda») y el sello «en todo Martín Aranda», que fijan alcance y canales sin tapar la prenda.",
+            "Cierra con la llamada a la acción «No te olvides de agendar tu cita» y el logo de Royal Baby sobre amarillo."
+          ]
+        },
+        {
+          "file": "40% OFF - Daniela.mp4",
+          "driveId": "1e-dQg4_mUPG4y2UxaUDmEs6MyWx6-0Dz",
+          "kind": "video",
+          "seconds": 26,
+          "notes": [
+            "Formato de creadora: Daniela habla a cámara dentro de la tienda, con subtítulos animados («Ven, ven, ven»), y se ve como contenido orgánico más que como publicidad.",
+            "Inserta la placa de la campaña (foto en blanco y negro con «Fin de temporada · 40% OFF» en amarillo y la cinta «por web y tienda») para conectarse con el resto de piezas del descuento.",
+            "Cuenta la compra de principio a fin: prendas en la mano, un plano exterior con el mismo cartel y Daniela saliendo con bolsas de Royal Baby."
+          ]
+        }
+      ]
+    }
+  }
+}

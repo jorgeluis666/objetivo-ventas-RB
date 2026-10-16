@@ -85,8 +85,14 @@ async function main() {
       continue;
     }
 
+    // listFolder trata una carpeta vacía como un error, porque no la distingue de una que dejó de
+    // estar compartida. Una campaña recién creada está vacía a menudo, así que no se avisa de ella.
     const entradas = await listFolder(campana.id).catch(err => {
-      avisos.push(`No se pudo leer la campaña «${campana.name}»: ${err.message}`);
+      if (!/no devolvió archivos/i.test(err.message)) {
+        avisos.push(`No se pudo leer la campaña «${campana.name}»: ${err.message}`);
+      } else {
+        console.log(`  · «${campana.name}»: vacía, sin artes todavía`);
+      }
       return [];
     });
 

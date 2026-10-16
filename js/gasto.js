@@ -2064,13 +2064,30 @@
 
   // La miniatura de Drive hace de portada; el reproductor de Drive se carga al hacer clic (ver wireAds).
   // Drive rechaza la miniatura si la petición lleva el referer del tablero.
+  // Un carrusel es una subcarpeta «(Carrusel)» con una imagen por lámina: la portada es la primera
+  // y el clic pasa a la siguiente, en vez de abrir el reproductor de video.
+  const esCarrusel = art => art.kind === 'carrusel' && Array.isArray(art.slides) && art.slides.length > 1;
   function arteMedia(art) {
     const id = driveId(art.driveId);
-    return id
-      ? `<button type="button" class="ad-arte-poster" data-arte="${id}" data-title="${esc(art.file)}" aria-label="Reproducir ${esc(art.file)}">
+    if (!id) return '<span class="gp-no-data">Sin vista previa</span>';
+    if (esCarrusel(art)) {
+      const slides = art.slides.filter(driveId);
+      return `<button type="button" class="ad-arte-poster is-carrusel" data-slides="${esc(slides.join(','))}" data-slide="0" data-title="${esc(art.file)}" aria-label="Siguiente lámina de ${esc(art.file)}">
+          <img src="https://drive.google.com/thumbnail?id=${slides[0]}&amp;sz=w480" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="ad-arte-slide-count" aria-hidden="true">1/${slides.length}</span>
+        </button>`;
+    }
+    return `<button type="button" class="ad-arte-poster" data-arte="${id}" data-title="${esc(art.file)}" aria-label="Reproducir ${esc(art.file)}">
           <img src="https://drive.google.com/thumbnail?id=${id}&amp;sz=w480" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="ad-arte-play" aria-hidden="true">▶</span>
-        </button>`
-      : '<span class="gp-no-data">Sin vista previa</span>';
+        </button>`;
+  }
+
+  function pasarLamina(poster) {
+    const slides = String(poster.dataset.slides || '').split(',').filter(Boolean);
+    if (slides.length < 2) return;
+    const siguiente = (Number(poster.dataset.slide || 0) + 1) % slides.length;
+    poster.dataset.slide = String(siguiente);
+    poster.querySelector('img').src = `https://drive.google.com/thumbnail?id=${slides[siguiente]}&sz=w480`;
+    poster.querySelector('.ad-arte-slide-count').textContent = `${siguiente + 1}/${slides.length}`;
   }
   // Drive no deja reproducir sus videos fuera de su reproductor, y ese reproductor se descuadra en marcos angostos
   // (franja negra, controles cortados). Se pinta a 360×640, donde encaja justo en 9:16, y se escala al ancho del marco.
@@ -2093,6 +2110,14 @@
 
   const arteNotes = art => `<ul class="ad-arte-notes">${(art.notes || []).slice(0, 3).map(n => `<li>${esc(n)}</li>`).join('')}</ul>`;
 
+  // Debajo del nombre: qué es la pieza. Un carrusel dice cuántas láminas tiene; un video, su duración
+  // cuando está anotada a mano.
+  function arteTipo(art) {
+    if (esCarrusel(art)) return `<small>Carrusel · ${art.slides.length} láminas</small>`;
+    if (!art.seconds) return '';
+    return `<small>${art.kind === 'video' ? 'Video' : 'Imagen'} · ${art.seconds} s</small>`;
+  }
+
   // Arte de un anuncio del top 3, o un cuadro referencial si la carpeta del mes no lo tiene.
   function topArteHtml(ad, period) {
     const art = artesOf(period).find(x => artKey(x.file) === artKey(ad.ad));
@@ -2101,7 +2126,7 @@
         <div class="ad-top-arte">
           <div class="ad-arte-media">${arteMedia(art)}</div>
           <div class="ad-arte-body">
-            <div class="ad-arte-file">${esc(art.file)}${art.seconds ? `<small>${art.kind === 'video' ? 'Video' : 'Imagen'} · ${art.seconds} s</small>` : ''}</div>
+            <div class="ad-arte-file">${esc(art.file)}${arteTipo(art)}</div>
             ${arteNotes(art)}
           </div>
         </div>`;
@@ -2142,7 +2167,7 @@
         <article class="ad-arte">
           <div class="ad-arte-media">${arteMedia(art)}</div>
           <div class="ad-arte-body">
-            <div class="ad-arte-file">${esc(art.file)}${art.seconds ? `<small>${art.kind === 'video' ? 'Video' : 'Imagen'} · ${art.seconds} s</small>` : ''}</div>
+            <div class="ad-arte-file">${esc(art.file)}${arteTipo(art)}</div>
             <div class="ad-arte-match">${match}</div>
             ${arteNotes(art)}
           </div>
@@ -2257,7 +2282,8 @@
       }
       const poster = e.target.closest('.ad-arte-poster');
       if (poster) {
-        playArte(poster);
+        if (poster.classList.contains('is-carrusel')) pasarLamina(poster);
+        else playArte(poster);
         return;
       }
       if (e.target.closest('#gp-ads-density')) { toggleCompact('meta'); return; }

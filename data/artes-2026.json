@@ -1,40 +1,39 @@
 {
-  "about": "Artes de los anuncios por mes, de la carpeta «Artes - Royal Baby» en Drive (una subcarpeta por mes). Cada arte se identifica con su anuncio por el nombre del archivo, sin la extensión. Solo están los artes que hay en la carpeta: no todos los anuncios tienen uno. Las tres notas de diseño se escriben a mano al revisar cada pieza.",
+  "about": "Artes de los anuncios por mes, de la carpeta de artes de la marca en Drive: una subcarpeta por campaña y, dentro, la pieza de cada anuncio (un archivo suelto, o una subcarpeta «(Carrusel)» con una imagen por lámina). Cada arte se identifica con su anuncio por el nombre del archivo, sin la extensión. Solo están los artes que hay en Drive: no todos los anuncios tienen uno. Lo escribe scripts/sync-artes.js; las tres notas de diseño se redactan a mano y el script las conserva.",
   "folder": {
-    "name": "Artes - Royal Baby",
+    "name": "06 Artes",
     "url": "https://drive.google.com/drive/folders/1ab1a50IRolSq5qydzycRsGctbG8J9gmP"
   },
+  "sincronizado": "2026-10-16T21:00:15.122Z",
+  "avisos": [],
   "months": {
     "2026-10": {
       "folder": {
-        "name": "Royal Baby - Octubre",
-        "url": "https://drive.google.com/drive/folders/1uXf3J7jNmAogwVAFk1xcuqYUGBEQMrx8"
+        "name": "06 Artes",
+        "url": "https://drive.google.com/drive/folders/1ab1a50IRolSq5qydzycRsGctbG8J9gmP"
       },
       "artes": [
         {
-          "file": "Outlet Septiembre.mp4",
-          "driveId": "1meSwi7xn78P9zr05hrpP0lPOPJ5FSGGv",
-          "kind": "video",
-          "seconds": 13,
-          "notes": [
-            "Abre con «OUTLET · Martín Aranda» sobre maniquíes y escala a «Hasta 60% OFF»: la oferta queda clara en los primeros dos segundos.",
-            "Alterna fotos de producto con placas amarillas («Encuentra tus favoritos en nuestro outlet · 40% / 50% OFF»): el amarillo de marca y la tipografía negra gruesa sostienen la lectura del descuento.",
-            "Cierra con urgencia y canal de compra: «Aprovecha y compra en nuestra web, antes que se agoten las tallas», y el logo de Royal Baby sobre amarillo."
-          ]
+          "file": "¿Se acerca el bautizo de tu peque?.mp4",
+          "campana": "Rotal Baby WhatsApp - Octubre",
+          "driveId": "1ER2_21ghD-DZb76QXmLAyhPb8HyrcZap",
+          "kind": "video"
         },
         {
-          "file": "Navidad - Video.mp4",
-          "driveId": "177UBMhFPfFF2FQw_LVIMqN1Eexzp0Eyp",
+          "file": "40% OFF - Daniela.mp4",
+          "campana": "Royal Baby E-commerce - Octubre",
+          "driveId": "1e-dQg4_mUPG4y2UxaUDmEs6MyWx6-0Dz",
           "kind": "video",
-          "seconds": 12,
+          "seconds": 26,
           "notes": [
-            "Tono premium: fondo azul marino a rayas, logo caligráfico de Martín Aranda y presentación de la colección «Manchester · Christmas 2026».",
-            "Niños con tartán rojo, jerséis de punto con motivos nórdicos y vestido rojo sobre escenografía navideña, con frases caligráficas («Para fotografiar», «Para recordar») que venden el momento y no el precio.",
-            "Sin descuento ni precio en pantalla: usa recursos de temporada (marco de estampilla, copos de nieve) y cierra con el logo de Royal Baby en azul marino."
+            "Formato de creadora: Daniela habla a cámara dentro de la tienda, con subtítulos animados («Ven, ven, ven»), y se ve como contenido orgánico más que como publicidad.",
+            "Inserta la placa de la campaña (foto en blanco y negro con «Fin de temporada · 40% OFF» en amarillo y la cinta «por web y tienda») para conectarse con el resto de piezas del descuento.",
+            "Cuenta la compra de principio a fin: prendas en la mano, un plano exterior con el mismo cartel y Daniela saliendo con bolsas de Royal Baby."
           ]
         },
         {
           "file": "40% OFF.mp4",
+          "campana": "Royal Baby E-commerce - Octubre",
           "driveId": "1UhcjHVKS0-_tvV7wO5OxHa55fC499r6G",
           "kind": "video",
           "seconds": 12,
@@ -45,15 +44,109 @@
           ]
         },
         {
-          "file": "40% OFF - Daniela.mp4",
-          "driveId": "1e-dQg4_mUPG4y2UxaUDmEs6MyWx6-0Dz",
+          "file": "Benedetta mensajes - Daniela.mp4",
+          "campana": "Rotal Baby WhatsApp - Octubre",
+          "driveId": "10VcYajMNmVO0FFfMJRQmPJLzEjRTIPju",
+          "kind": "video"
+        },
+        {
+          "file": "La línea Benedetta está creada para esos momentos.mp4",
+          "campana": "Rotal Baby WhatsApp - Octubre",
+          "driveId": "1MzyQmtLE0XUs5HahErnaz5UquT1FUWaj",
+          "kind": "video"
+        },
+        {
+          "file": "La temporada de bautizos comienza aquí.mp4",
+          "campana": "Rotal Baby WhatsApp - Octubre",
+          "driveId": "1X21jp0-KLqNDQkf5hDMkHd98jGdnsU9-",
+          "kind": "video"
+        },
+        {
+          "file": "Navidad - Video.mp4",
+          "campana": "Royal Baby E-commerce - Octubre",
+          "driveId": "177UBMhFPfFF2FQw_LVIMqN1Eexzp0Eyp",
           "kind": "video",
-          "seconds": 26,
+          "seconds": 12,
           "notes": [
-            "Formato de creadora: Daniela habla a cámara dentro de la tienda, con subtítulos animados («Ven, ven, ven»), y se ve como contenido orgánico más que como publicidad.",
-            "Inserta la placa de la campaña (foto en blanco y negro con «Fin de temporada · 40% OFF» en amarillo y la cinta «por web y tienda») para conectarse con el resto de piezas del descuento.",
-            "Cuenta la compra de principio a fin: prendas en la mano, un plano exterior con el mismo cartel y Daniela saliendo con bolsas de Royal Baby."
+            "Tono premium: fondo azul marino a rayas, logo caligráfico de Martín Aranda y presentación de la colección «Manchester · Christmas 2026».",
+            "Niños con tartán rojo, jerséis de punto con motivos nórdicos y vestido rojo sobre escenografía navideña, con frases caligráficas («Para fotografiar», «Para recordar») que venden el momento y no el precio.",
+            "Sin descuento ni precio en pantalla: usa recursos de temporada (marco de estampilla, copos de nieve) y cierra con el logo de Royal Baby en azul marino."
           ]
+        },
+        {
+          "file": "Outlet - nuevo - enero.mp4",
+          "campana": "Rotal Baby WhatsApp - Octubre",
+          "driveId": "1oh5g0fDvL_OvHvek58gSA54Cqe8TOyQ1",
+          "kind": "video"
+        },
+        {
+          "file": "Outlet Septiembre.mp4",
+          "campana": "Royal Baby E-commerce - Octubre",
+          "driveId": "1meSwi7xn78P9zr05hrpP0lPOPJ5FSGGv",
+          "kind": "video",
+          "seconds": 13,
+          "notes": [
+            "Abre con «OUTLET · Martín Aranda» sobre maniquíes y escala a «Hasta 60% OFF»: la oferta queda clara en los primeros dos segundos.",
+            "Alterna fotos de producto con placas amarillas («Encuentra tus favoritos en nuestro outlet · 40% / 50% OFF»): el amarillo de marca y la tipografía negra gruesa sostienen la lectura del descuento.",
+            "Cierra con urgencia y canal de compra: «Aprovecha y compra en nuestra web, antes que se agoten las tallas», y el logo de Royal Baby sobre amarillo."
+          ]
+        },
+        {
+          "file": "Outlet.mp4",
+          "campana": "Rotal Baby WhatsApp - Octubre",
+          "driveId": "1JnvHBkXW6AFDkINvgnY27utTej2Ub2_y",
+          "kind": "video"
+        },
+        {
+          "file": "Piezas españolas para comenzar una historia que vale la pena guardar.mp4",
+          "campana": "Rotal Baby WhatsApp - Octubre",
+          "driveId": "1G5ROVeKc0t-hN3EXOul2gEK7XAc7RXk3",
+          "kind": "video"
+        },
+        {
+          "file": "Royal Outlet ya está aquí.mp4",
+          "campana": "Rotal Baby WhatsApp - Octubre",
+          "driveId": "1Az8CBrIDnuDQOZVvjgNC7w5vtvcicptI",
+          "kind": "video",
+          "seconds": 39,
+          "notes": [
+            "Formato de creadora en tienda: la presentadora habla a cámara desde el Royal Outlet de Miraflores y los subtítulos van quemados, así que se entiende sin sonido. La oferta no abre la pieza: llega en el segundo 9, con un «40% OFF» amarillo sobre un perchero de estampados.",
+            "El guion resuelve objeciones una por una, intercalando a la presentadora con planos de los percheros y un maniquí: quien no está en Lima compra por el «botón de sale» de la web, la tienda atiende de lunes a viernes y es previa coordinación. Eso ocupa la mitad del video.",
+            "Cierra con el producto en primer plano, prendas dobladas y la promesa de atención «súper personalizada», y remata con la placa de la corona y «ROYAL BABY · baby brands». Lo que vende es la moda española de Martín Aranda y el trato, con el descuento como puerta de entrada."
+          ]
+        },
+        {
+          "file": "Un momento especial como el bautizo de tu peque,Un momento especial como el bautizo de tu peque (carrusel)",
+          "campana": "Rotal Baby WhatsApp - Octubre",
+          "driveId": "1RcLxJjRm_1RtnryfwSIc3lJeTOb0BDYp",
+          "kind": "carrusel",
+          "slides": [
+            "1RcLxJjRm_1RtnryfwSIc3lJeTOb0BDYp",
+            "199xL9qFILfaALv6E0HQjGBp1TcT3e0cO",
+            "1eixitOUJLCGC_nnAbJsByPKKM5yBjRlo",
+            "1P3vR9M0s7GDk78VgPEc59emD90eM4NCw"
+          ],
+          "ordenIncierto": true
+        },
+        {
+          "file": "Un nuevo stock exclusivo para las ceremonias.mp4",
+          "campana": "Rotal Baby WhatsApp - Octubre",
+          "driveId": "14ldT5zN3F2Lee6kfFSdpsOM0Lf4RGhlN",
+          "kind": "video"
+        },
+        {
+          "file": "Una exclusiva novedad llegó a Benedetta (Carrusel)",
+          "campana": "Rotal Baby WhatsApp - Octubre",
+          "driveId": "1GF2sqwAsUpxYaC00Mz0i7eZESboeNPMn",
+          "kind": "carrusel",
+          "slides": [
+            "1GF2sqwAsUpxYaC00Mz0i7eZESboeNPMn",
+            "1f0X6AtfTFRCryIaupu7yXXidWws7oq0B",
+            "1VfsMQs1ajPfkYzC0keG-i-Bou7_G89e2",
+            "1CeSM0ggpj54C5EydxVA5zL5L_1hRabYB",
+            "1LZmaFrprXvbc8OSeNB5rpwco2bR-5yER"
+          ],
+          "ordenIncierto": true
         }
       ]
     }

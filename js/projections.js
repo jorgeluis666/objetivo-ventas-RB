@@ -33,14 +33,20 @@
     'Conversaciones con mensajes iniciadas': 'wa',
   };  // Interacciones, ThruPlay y el resto van a Alcance
   // Base de la proyección: de dónde sale el ritmo diario (venta, inversión, ROAS) de los días que quedan.
+  // Con qué ritmo se proyecta lo que falta del mes. "Mes en curso" es la base por defecto: toma lo
+  // que el mes lleva hecho hasta donde llega el dato, que es lo que de verdad describe cómo va. Las
+  // ventanas de 7 y 14 días y el mes anterior quedan como alternativas para contrastar.
   const BASES = {
+    curso:    { label: 'Mes en curso',      short: 'lo que va del mes', desde1: true },
     semana:   { label: 'Última semana',     short: 'últimos 7 días',  days: 7 },
     quincena: { label: 'Últimas 2 semanas', short: 'últimos 14 días', days: 14 },
-    mes:      { label: 'Mes anterior',      short: 'mes anterior',    days: null },  // completo
+    mes:      { label: 'Mes anterior',      short: 'mes anterior',    completo: true },
   };
-  const BASE_KEY = 'rb-proj-base';
-  const laBase = () => (BASES[_base].days ? `los ${BASES[_base].short}` : 'el mes anterior');
-  const delaBase = () => (BASES[_base].days ? `de los ${BASES[_base].short}` : 'del mes anterior');
+  // La clave cambia al estrenar "Mes en curso": quien ya hubiera elegido una ventana seguiría
+  // proyectando con ella y no vería la base nueva.
+  const BASE_KEY = 'rb-proj-base-v2';
+  const laBase = () => (BASES[_base].completo ? 'el mes anterior' : BASES[_base].days ? `los ${BASES[_base].short}` : 'lo que va del mes');
+  const delaBase = () => (BASES[_base].completo ? 'del mes anterior' : BASES[_base].days ? `de los ${BASES[_base].short}` : 'de lo que va del mes');
   const SHORT = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
   const axisColor = '#94A3B8';
   const gridColor = 'rgba(15,23,42,0.06)';
@@ -68,7 +74,7 @@
   let _gasto = null;    // Gasto publicitario: data/ads-2026.json
   let _adsDia = null;   // Gasto publicitario por día y fuente (ver adsPorDia)
   let _mes = null;
-  let _base = 'semana';
+  let _base = 'curso';
   try { if (BASES[localStorage.getItem(BASE_KEY)]) _base = localStorage.getItem(BASE_KEY); } catch (e) { /* storage bloqueado */ }
   let _p = null;        // cálculo del mes activo
 
@@ -127,10 +133,13 @@
   // mes anterior completo.
   function baseDates(m, hasta) {
     const b = BASES[_base];
-    if (!b.days) {
+    if (b.completo) {
       const i = monthIdx(m) - 1;   // enero → diciembre del año anterior (Date.UTC lo resuelve)
       return rangeIso(isoDate(YEAR, i, 1), isoDate(YEAR, i + 1, 0));
     }
+    // Mes en curso: del día 1 hasta donde llega el dato, no una ventana de días hacia atrás. Así el
+    // ritmo es el del propio mes y no arrastra días del mes anterior.
+    if (b.desde1) return hasta ? rangeIso(isoDate(YEAR, monthIdx(m), 1), hasta) : [];
     return hasta ? rangeIso(addDays(hasta, 1 - b.days), hasta) : [];
   }
 
@@ -393,7 +402,7 @@
     el.innerHTML = Object.entries(BASES).map(([key, b]) => {
       const on = key === _base;
       return `<button type="button" class="proj-mes-btn${on ? ' active' : ''}" data-base="${key}" aria-pressed="${on}"${cerrado ? ' disabled' : ''}
-        title="Proyectar con ${b.days ? `el ritmo de los ${b.short}` : 'el ritmo del mes anterior completo'}">${b.label}</button>`;
+        title="Proyectar con ${b.completo ? 'el ritmo del mes anterior completo' : b.days ? `el ritmo de los ${b.short}` : 'el ritmo de lo que va del mes, hasta donde llega el dato'}">${b.label}</button>`;
     }).join('');
     el.querySelectorAll('[data-base]').forEach(btn => btn.addEventListener('click', () => {
       if (btn.dataset.base === _base) return;
@@ -406,7 +415,8 @@
 
   // Qué días entran en la base de cada dato y qué se estimó.
   function baseText(p) {
-    const parcial = !!BASES[_base].days;
+    // El mes anterior se nombra entero; las demás bases son un rango de días que se dice con fechas.
+    const parcial = !BASES[_base].completo;
     const rango = dates => {
       if (!dates.length) return 'sin fechas';
       if (parcial) return `del ${fecha(dates[0])} al ${fecha(dates[dates.length - 1])}`;

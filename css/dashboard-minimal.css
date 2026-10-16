@@ -2942,7 +2942,21 @@ body.gp-table-fullscreen { overflow: hidden; }
   font-size: 12px;
   font-weight: 800;
 }
-.ad-top-body { min-width: 0; }
+.ad-top-body { flex: 1 1 0; min-width: 0; }
+/* Arte de cada anuncio del top 3, debajo de sus cifras: la pieza a todo el ancho y sus notas debajo */
+.ad-top-card:has(.ad-top-arte) { flex-wrap: wrap; align-content: flex-start; }
+.ad-top-arte { flex-basis: 100%; min-width: 0; padding-top: 12px; border-top: 1px solid var(--border); }
+.ad-top-arte .ad-arte-media { width: 100%; max-width: 260px; margin: 0 auto; }
+.ad-top-arte .ad-arte-body { margin-top: 12px; }
+.ad-top-arte .ad-arte-notes { margin-top: 10px; font-size: 12.5px; }
+.ad-arte-media.is-empty {
+  border: 1px dashed #cbd5e1;
+  background: var(--surface-2, #f8fafc);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.ad-arte-missing { margin: 6px 0 0; color: var(--text-2); font-size: 12.5px; line-height: 1.5; }
 .ad-top-name { overflow: hidden; color: var(--text); font-size: 13px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 .ad-top-group { display: flex; align-items: center; margin-top: 3px; overflow: hidden; color: var(--text-2); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .ad-top-group .gp-dot-c { margin-right: 6px; }
@@ -2974,7 +2988,9 @@ body.gp-table-fullscreen { overflow: hidden; }
   border-radius: 8px;
   background: #0f172a;
 }
-.ad-arte-media iframe { width: 100%; height: 100%; border: 0; }
+.ad-arte-media { position: relative; }
+/* El reproductor de Drive se pinta a 360×640 y js/gasto.js (playArte) lo escala al ancho del marco */
+.ad-arte-player { position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; }
 .ad-arte-poster { position: relative; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
 .ad-arte-poster img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .ad-arte-poster:focus-visible { outline: 3px solid #bfdbfe; outline-offset: -3px; }

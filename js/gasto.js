@@ -2016,9 +2016,12 @@
   const adsView = { tab: 'meta' };
 
   // Top 3 de anuncios que generaron ventas en el periodo: los de más valor atribuido (a igual valor, más compras).
-  function topSalesHtml(ads, { value, count, spend, word, link, none }) {
-    const top = ads.filter(a => a[value] > 0 || a[count] > 0)
-      .sort((a, b) => b[value] - a[value] || b[count] - a[count]).slice(0, 3);
+  const topSales = (ads, value, count) => ads.filter(a => a[value] > 0 || a[count] > 0)
+    .sort((a, b) => b[value] - a[value] || b[count] - a[count]).slice(0, 3);
+
+  // arte (opcional): el arte de cada anuncio debajo de sus cifras (Meta).
+  function topSalesHtml(ads, { value, count, spend, word, link, none, arte }) {
+    const top = topSales(ads, value, count);
     const head = '<div class="ad-top-head">Top 3 de anuncios que generaron ventas</div>';
     if (!top.length) return `${head}<p class="gp-note">${none}</p>`;
     return `${head}<div class="ad-top-list">${top.map((a, k) => `
@@ -2030,6 +2033,7 @@
           <div class="ad-top-value">${money(a[value])}</div>
           <div class="ad-top-meta">${numDec(a[count])} ${word(a[count])} · ROAS ${roasFmt(a.roas)} · ${money(a[spend], 2)} de inversión</div>
         </div>
+        ${arte ? arte(a) : ''}
       </div>`).join('')}</div>`;
   }
 
@@ -2051,12 +2055,79 @@
   const artKey = name => normalize(String(name ?? '').replace(/\.[a-z0-9]{2,4}$/i, '')).replace(/[^a-z0-9%]+/g, ' ').trim();
   const driveId = id => (/^[\w-]{20,}$/.test(String(id || '')) ? String(id) : null);
 
-  function renderArtes(period) {
+  // Artes del periodo: los del mes elegido o, en la vista anual, los de todos los meses (el más reciente primero).
+  function artesOf(period) {
+    const months = state.artes?.months || {};
+    if (!period.annual) return months[period.month.key]?.artes || [];
+    return Object.keys(months).sort().reverse().flatMap(key => months[key].artes || []);
+  }
+
+  // La miniatura de Drive hace de portada; el reproductor de Drive se carga al hacer clic (ver wireAds).
+  // Drive rechaza la miniatura si la petición lleva el referer del tablero.
+  function arteMedia(art) {
+    const id = driveId(art.driveId);
+    return id
+      ? `<button type="button" class="ad-arte-poster" data-arte="${id}" data-title="${esc(art.file)}" aria-label="Reproducir ${esc(art.file)}">
+          <img src="https://drive.google.com/thumbnail?id=${id}&amp;sz=w480" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="ad-arte-play" aria-hidden="true">▶</span>
+        </button>`
+      : '<span class="gp-no-data">Sin vista previa</span>';
+  }
+  // Drive no deja reproducir sus videos fuera de su reproductor, y ese reproductor se descuadra en marcos angostos
+  // (franja negra, controles cortados). Se pinta a 360×640, donde encaja justo en 9:16, y se escala al ancho del marco.
+  const DRIVE_PLAYER = { width: 360, height: 640 };
+  function playArte(poster) {
+    const box = poster.closest('.ad-arte-media');
+    const frame = document.createElement('iframe');
+    frame.src = `https://drive.google.com/file/d/${poster.dataset.arte}/preview`;
+    frame.title = `Arte ${poster.dataset.title}`;
+    frame.allow = 'autoplay; fullscreen';
+    frame.allowFullscreen = true;
+    frame.className = 'ad-arte-player';
+    frame.style.width = DRIVE_PLAYER.width + 'px';
+    frame.style.height = DRIVE_PLAYER.height + 'px';
+    const fit = () => { frame.style.transform = `scale(${box.clientWidth / DRIVE_PLAYER.width})`; };
+    fit();
+    if (global.ResizeObserver) new ResizeObserver(fit).observe(box);
+    poster.replaceWith(frame);
+  }
+
+  const arteNotes = art => `<ul class="ad-arte-notes">${(art.notes || []).slice(0, 3).map(n => `<li>${esc(n)}</li>`).join('')}</ul>`;
+
+  // Arte de un anuncio del top 3, o un cuadro referencial si la carpeta del mes no lo tiene.
+  function topArteHtml(ad, period) {
+    const art = artesOf(period).find(x => artKey(x.file) === artKey(ad.ad));
+    if (art) {
+      return `
+        <div class="ad-top-arte">
+          <div class="ad-arte-media">${arteMedia(art)}</div>
+          <div class="ad-arte-body">
+            <div class="ad-arte-file">${esc(art.file)}${art.seconds ? `<small>${art.kind === 'video' ? 'Video' : 'Imagen'} · ${art.seconds} s</small>` : ''}</div>
+            ${arteNotes(art)}
+          </div>
+        </div>`;
+    }
+    const where = period.annual ? 'las carpetas de artes' : state.artes?.months?.[period.month.key]
+      ? `la carpeta ${esc(state.artes.months[period.month.key].folder?.name || 'del mes')}`
+      : `una carpeta de artes de ${esc(period.month.name.toLowerCase())}`;
+    return `
+      <div class="ad-top-arte">
+        <div class="ad-arte-media is-empty"><span>Sin arte</span></div>
+        <div class="ad-arte-body">
+          <div class="ad-arte-file">Arte no disponible</div>
+          <p class="ad-arte-missing">No hay un archivo «${esc(ad.ad)}» en ${where}. Al subirlo con el nombre del anuncio aparece aquí con su vista previa y sus notas de diseño.</p>
+        </div>
+      </div>`;
+  }
+
+  // Artes del mes que no están en el top 3: cada uno con su anuncio y sus notas de diseño.
+  function renderArtes(period, top) {
     const host = document.getElementById('ad-meta-artes');
     const month = !period.annual && state.artes?.months?.[period.month.key];
-    if (!month?.artes?.length) { host.hidden = true; host.innerHTML = ''; return; }
+    const inTop = new Set(top.map(a => artKey(a.ad)));
+    const rest = (month?.artes || []).filter(art => !inTop.has(artKey(art.file)));
+    if (!rest.length) { host.hidden = true; host.innerHTML = ''; return; }
     const folder = safeUrl(month.folder?.url);
-    const cards = month.artes.map(art => {
+    const cards = rest.map(art => {
       const key = artKey(art.file);
       const rows = period.rows.filter(r => artKey(r.ad) === key);
       const t = summarize(rows);
@@ -2067,27 +2138,22 @@
         ? 'Sin anuncio con este nombre en el periodo.'
         : `Anuncio «${esc(ad)}»${versions > 1 ? ` · ${versions} versiones` : ''} en ${esc(groups.join(' y ') || 'Meta')}`
           + (t.purchases ? ` · ${money(t.purchaseValue)} en ventas · ROAS ${roasFmt(t.roas)}` : ` · ${money(t.spend, 2)} de inversión`);
-      // La miniatura de Drive hace de portada; el reproductor de Drive se carga al hacer clic (ver wireAds).
-      // Drive rechaza la miniatura si la petición lleva el referer del tablero.
-      const id = driveId(art.driveId);
-      const media = id
-        ? `<button type="button" class="ad-arte-poster" data-arte="${id}" data-title="${esc(art.file)}" aria-label="Reproducir ${esc(art.file)}">
-            <img src="https://drive.google.com/thumbnail?id=${id}&amp;sz=w480" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="ad-arte-play" aria-hidden="true">▶</span>
-          </button>`
-        : '<span class="gp-no-data">Sin vista previa</span>';
       return `
         <article class="ad-arte">
-          <div class="ad-arte-media">${media}</div>
+          <div class="ad-arte-media">${arteMedia(art)}</div>
           <div class="ad-arte-body">
             <div class="ad-arte-file">${esc(art.file)}${art.seconds ? `<small>${art.kind === 'video' ? 'Video' : 'Imagen'} · ${art.seconds} s</small>` : ''}</div>
             <div class="ad-arte-match">${match}</div>
-            <ul class="ad-arte-notes">${(art.notes || []).slice(0, 3).map(n => `<li>${esc(n)}</li>`).join('')}</ul>
+            ${arteNotes(art)}
           </div>
         </article>`;
     }).join('');
+    const folderLink = folder
+      ? `<a class="gp-ad-link" href="${esc(folder)}" target="_blank" rel="noopener noreferrer">${esc(month.folder.name)}<span class="gp-ad-link-ic" aria-hidden="true">↗</span></a>`
+      : esc(month.folder?.name || 'del mes');
     host.innerHTML = `
-      <div class="panel-title">Artes de ${esc(period.month.name.toLowerCase())}</div>
-      <div class="panel-sub">${month.artes.length} ${month.artes.length === 1 ? 'arte' : 'artes'} de la carpeta ${folder ? `<a class="gp-ad-link" href="${esc(folder)}" target="_blank" rel="noopener noreferrer">${esc(month.folder.name)}<span class="gp-ad-link-ic" aria-hidden="true">↗</span></a>` : esc(month.folder?.name || 'del mes')}, cada uno con el anuncio que lleva el mismo nombre. No todos los anuncios tienen arte en la carpeta.</div>
+      <div class="panel-title">${top.length ? 'Otros artes' : 'Artes'} de ${esc(period.month.name.toLowerCase())}</div>
+      <div class="panel-sub">${rest.length} ${rest.length === 1 ? 'arte' : 'artes'} de la carpeta ${folderLink}${top.length ? ' fuera del top 3' : ''}, cada uno con el anuncio que lleva el mismo nombre.</div>
       <div class="ad-artes-list">${cards}</div>`;
     host.hidden = false;
   }
@@ -2112,9 +2178,9 @@
     const ads = adsOf(period.rows);
     document.getElementById('ad-meta-top').innerHTML = topSalesHtml(ads, {
       value: 'purchaseValue', count: 'purchases', spend: 'spend', link: 'link', word: n => (n === 1 ? 'compra' : 'compras'),
-      none: 'Ningún anuncio registró compras en el periodo.',
+      none: 'Ningún anuncio registró compras en el periodo.', arte: a => topArteHtml(a, period),
     });
-    renderArtes(period);
+    renderArtes(period, topSales(ads, 'purchaseValue', 'purchases'));
     renderAds(period, groups);
   }
 
@@ -2191,12 +2257,7 @@
       }
       const poster = e.target.closest('.ad-arte-poster');
       if (poster) {
-        const frame = document.createElement('iframe');
-        frame.src = `https://drive.google.com/file/d/${poster.dataset.arte}/preview`;
-        frame.title = `Arte ${poster.dataset.title}`;
-        frame.allow = 'autoplay; fullscreen';
-        frame.allowFullscreen = true;
-        poster.replaceWith(frame);
+        playArte(poster);
         return;
       }
       if (e.target.closest('#gp-ads-density')) { toggleCompact('meta'); return; }

@@ -2966,29 +2966,17 @@ body.gp-table-fullscreen { overflow: hidden; }
   .ad-top-list { grid-template-columns: 1fr; }
 }
 
-/* Artes del mes (módulo Anuncios): la pieza en vertical y, a su lado, tres notas de diseño */
-.ad-artes-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
-.ad-arte {
-  display: flex;
-  gap: 16px;
-  min-width: 0;
-  padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #fff;
-}
+/* Arte de un anuncio (módulo Anuncios): la pieza en vertical, 9:16 como en Meta */
 .ad-arte-media {
+  position: relative;
   display: grid;
-  flex-shrink: 0;
-  align-self: flex-start;
-  width: 200px;
+  width: 100%;
   aspect-ratio: 9 / 16;
   place-items: center;
   overflow: hidden;
   border-radius: 8px;
   background: #0f172a;
 }
-.ad-arte-media { position: relative; }
 /* El reproductor de Drive se pinta a 360×640 y js/gasto.js (playArte) lo escala al ancho del marco */
 .ad-arte-player { position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; }
 .ad-arte-poster { position: relative; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
@@ -3028,16 +3016,58 @@ body.gp-table-fullscreen { overflow: hidden; }
 .ad-arte-body { min-width: 0; }
 .ad-arte-file { color: var(--text); font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
 .ad-arte-file small { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; font-weight: 500; }
-.ad-arte-match { margin-top: 6px; color: var(--text-2); font-size: 12px; line-height: 1.45; }
 .ad-arte-notes { margin: 12px 0 0; padding-left: 18px; color: var(--text); font-size: 13px; line-height: 1.5; }
 .ad-arte-notes li + li { margin-top: 8px; }
 .ad-arte-notes li::marker { color: var(--brand); }
-@media (max-width: 1280px) {
-  .ad-artes-list { grid-template-columns: 1fr; }
+
+/* Anuncios por campaña y conjunto: campaña plegable, conjuntos dentro y una tarjeta por anuncio */
+.ad-camp { margin-top: 14px; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
+.ad-camp-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 16px;
+  padding: 12px 16px;
+  cursor: pointer;
+  list-style: none;
 }
+.ad-camp-head::-webkit-details-marker { display: none; }
+.ad-camp-title::before { content: '▸'; flex-shrink: 0; color: var(--muted); font-size: 12px; transition: transform 0.15s ease; }
+.ad-camp[open] > .ad-camp-head .ad-camp-title::before { transform: rotate(90deg); }
+.ad-camp[open] > .ad-camp-head { border-bottom: 1px solid var(--border); }
+.ad-camp-head:focus-visible { outline: 2px solid #bfdbfe; outline-offset: -2px; border-radius: 10px; }
+.ad-camp-title { display: flex; flex: 1 1 320px; align-items: center; gap: 8px; min-width: 0; }
+.ad-camp-name { min-width: 0; color: var(--text); font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+.ad-camp-group { flex-shrink: 0; padding: 1px 8px; border-radius: 999px; background: var(--brand-soft); color: var(--brand-text); font-size: 11px; font-weight: 600; }
+.ad-camp-stats, .ad-set-stats { color: var(--text-2); font-size: 12px; }
+.ad-camp-stats b, .ad-set-stats b { color: var(--text); font-weight: 700; }
+.ad-set { padding: 14px 16px 16px; }
+.ad-set + .ad-set { border-top: 1px dashed var(--border); }
+.ad-set-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 14px; margin-bottom: 12px; }
+.ad-set-name { color: var(--text); font-size: 13px; font-weight: 700; }
+.ad-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.ad-card { display: flex; flex-direction: column; min-width: 0; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
+.ad-card .ad-arte-media { border-radius: 6px; }
+.ad-card .ad-arte-play { width: 40px; height: 40px; font-size: 14px; }
+.ad-card-name { margin-top: 10px; overflow: hidden; color: var(--text); font-size: 13px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.ad-card-file { margin-top: 2px; overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.ad-card-file small { margin-left: 4px; font-size: 11px; }
+.ad-card-file small::before { content: '· '; }
+.ad-card-stats { display: grid; gap: 6px; margin: 10px 0 0; }
+.ad-card-stats > div { display: flex; justify-content: space-between; gap: 8px; }
+.ad-card-stats dt { color: var(--muted); font-size: 11px; }
+.ad-card-stats dd { margin: 0; color: var(--text); font-size: 12px; font-weight: 700; text-align: right; }
+.ad-card-stats dd small { display: block; color: var(--muted); font-size: 10.5px; font-weight: 500; }
+.ad-card-notes { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
+.ad-card-notes summary { color: var(--brand); font-size: 12px; font-weight: 600; cursor: pointer; }
+.ad-card-notes .ad-arte-notes { margin-top: 8px; font-size: 12px; }
 @media (max-width: 600px) {
-  .ad-arte { flex-direction: column; }
-  .ad-arte-media { width: min(100%, 240px); align-self: center; }
+  .ad-camp-head, .ad-set { padding-right: 12px; padding-left: 12px; }
+  .ad-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .ad-card { padding: 8px; }
+  .ad-card-stats > div { flex-direction: column; gap: 0; }
+  .ad-card-stats dd { text-align: left; }
 }
 
 /* Google Ads: menos columnas en anuncios y términos de búsqueda */

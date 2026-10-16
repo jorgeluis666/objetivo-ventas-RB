@@ -2052,7 +2052,9 @@
       return null;
     }
   }
-  const artKey = name => normalize(String(name ?? '').replace(/\.[a-z0-9]{2,4}$/i, '')).replace(/[^a-z0-9%]+/g, ' ').trim();
+  // Un carrusel es una subcarpeta «<anuncio> (Carrusel)»: el sufijo no es parte del nombre del anuncio.
+  const artKey = name => normalize(String(name ?? '').replace(/\.[a-z0-9]{2,4}$/i, '').replace(/\s*\((carrusel|carousel)\)\s*$/i, ''))
+    .replace(/[^a-z0-9%]+/g, ' ').trim();
   const driveId = id => (/^[\w-]{20,}$/.test(String(id || '')) ? String(id) : null);
 
   // Artes del periodo: los del mes elegido o, en la vista anual, los de todos los meses (el más reciente primero).
@@ -2144,42 +2146,91 @@
       </div>`;
   }
 
-  // Artes del mes que no están en el top 3: cada uno con su anuncio y sus notas de diseño.
-  function renderArtes(period, top) {
-    const host = document.getElementById('ad-meta-artes');
-    const month = !period.annual && state.artes?.months?.[period.month.key];
-    const inTop = new Set(top.map(a => artKey(a.ad)));
-    const rest = (month?.artes || []).filter(art => !inTop.has(artKey(art.file)));
-    if (!rest.length) { host.hidden = true; host.innerHTML = ''; return; }
-    const folder = safeUrl(month.folder?.url);
-    const cards = rest.map(art => {
-      const key = artKey(art.file);
-      const rows = period.rows.filter(r => artKey(r.ad) === key);
-      const t = summarize(rows);
-      const versions = new Set(rows.map(r => r.link).filter(Boolean)).size;
-      const groups = [...new Set(rows.filter(hasActivity).map(r => r.groupLabel))];
-      const ad = rows[0]?.ad;
-      const match = !rows.length
-        ? 'Sin anuncio con este nombre en el periodo.'
-        : `Anuncio «${esc(ad)}»${versions > 1 ? ` · ${versions} versiones` : ''} en ${esc(groups.join(' y ') || 'Meta')}`
-          + (t.purchases ? ` · ${money(t.purchaseValue)} en ventas · ROAS ${roasFmt(t.roas)}` : ` · ${money(t.spend, 2)} de inversión`);
-      return `
-        <article class="ad-arte">
-          <div class="ad-arte-media">${arteMedia(art)}</div>
-          <div class="ad-arte-body">
-            <div class="ad-arte-file">${esc(art.file)}${arteTipo(art)}</div>
-            <div class="ad-arte-match">${match}</div>
-            ${arteNotes(art)}
-          </div>
-        </article>`;
-    }).join('');
-    const folderLink = folder
-      ? `<a class="gp-ad-link" href="${esc(folder)}" target="_blank" rel="noopener noreferrer">${esc(month.folder.name)}<span class="gp-ad-link-ic" aria-hidden="true">↗</span></a>`
-      : esc(month.folder?.name || 'del mes');
+  // ── Anuncios por campaña y conjunto ──
+  // Debajo del top 3: cada campaña del periodo con sus conjuntos y, en cada conjunto, sus anuncios con el arte
+  // (o un cuadro referencial) y sus cifras. Un anuncio es su nombre dentro del conjunto: sus versiones se suman.
+  const bySpend = (a, b) => b.spend - a.spend;
+  const plural = (n, one, many) => `${num(n)} ${n === 1 ? one : many}`;
+
+  // Resultados con el nombre de lo que mide la campaña o el anuncio ("12 conversaciones", "3 compras").
+  const SINGULAR = { compras: 'compra', conversaciones: 'conversación', interacciones: 'interacción', reproducciones: 'reproducción' };
+  function resultsText(t, type) {
+    if (!(t.results > 0)) return 'Sin resultados';
+    let label = resultLabel(type);
+    label = label.charAt(0).toLowerCase() + label.slice(1);
+    if (Math.round(t.results) === 1) label = label.replace(/^\S+/, w => SINGULAR[w] || w);
+    return `${num(t.results)} ${label}`;
+  }
+
+  function treeOf(rows) {
+    const active = rows.filter(hasActivity);
+    return [...groupRows(active, r => r.campaign).entries()].map(([campaign, cRows]) => ({
+      campaign, group: cRows[0].group, groupLabel: cRows[0].groupLabel, groupColor: cRows[0].groupColor,
+      resultType: dominantType(cRows), ...summarize(cRows),
+      adSets: [...groupRows(cRows, r => r.adset).entries()].map(([adset, sRows]) => ({
+        adset, resultType: dominantType(sRows), ...summarize(sRows),
+        ads: [...groupRows(sRows, r => normalize(r.ad)).values()].map(aRows => ({
+          ad: aRows[0].ad, link: aRows.find(r => r.link)?.link || null,
+          versions: new Set(aRows.map(r => r.link).filter(Boolean)).size,
+          resultType: dominantType(aRows), ...summarize(aRows),
+        })).sort((a, b) => b.purchaseValue - a.purchaseValue || b.results - a.results || bySpend(a, b)),
+      })).sort(bySpend),
+    })).sort(bySpend);
+  }
+
+  function adCardHtml(ad, artes) {
+    const art = artes.find(x => artKey(x.file) === artKey(ad.ad));
+    const media = art
+      ? `<div class="ad-arte-media">${arteMedia(art)}</div>`
+      : '<div class="ad-arte-media is-empty"><span>Sin arte</span></div>';
+    const notes = art?.notes?.length
+      ? `<details class="ad-card-notes"><summary>Notas de diseño</summary>${arteNotes(art)}</details>` : '';
+    return `
+      <article class="ad-card">
+        ${media}
+        <div class="ad-card-name" title="${esc(ad.ad)}">${adNameLink(ad.ad, ad.link, 'Ver el anuncio en Meta')}</div>
+        ${art ? `<div class="ad-card-file">${esc(art.file)}${arteTipo(art)}</div>` : '<div class="ad-card-file" title="No hay un archivo con el nombre del anuncio en la carpeta de artes">Sin arte en Drive</div>'}
+        <dl class="ad-card-stats">
+          <div><dt>Resultados</dt><dd>${esc(resultsText(ad, ad.resultType))}${ad.costPerResult != null ? `<small>${unitCost(ad.costPerResult)} c/u</small>` : ''}</dd></div>
+          <div><dt>Inversión</dt><dd>${money(ad.spend, 2)}${ad.versions > 1 ? `<small>${ad.versions} versiones</small>` : ''}</dd></div>
+          ${ad.purchases ? `<div><dt>Ventas</dt><dd>${money(ad.purchaseValue)}<small>${plural(ad.purchases, 'compra', 'compras')} · ROAS ${roasFmt(ad.roas)}</small></dd></div>` : ''}
+        </dl>
+        ${notes}
+      </article>`;
+  }
+
+  // Cifras de la cabecera de una campaña o un conjunto, en una línea.
+  const treeStats = t => [
+    `<b>${money(t.spend, 2)}</b> de inversión`,
+    esc(resultsText(t, t.resultType)),
+    t.purchases ? `<b>${money(t.purchaseValue)}</b> en ventas · ROAS ${roasFmt(t.roas)}` : '',
+  ].filter(Boolean).join(' · ');
+
+  function renderAdTree(period) {
+    const host = document.getElementById('ad-meta-tree');
+    const tree = treeOf(period.rows);
+    if (!tree.length) { host.hidden = true; host.innerHTML = ''; return; }
+    const artes = artesOf(period);
+    const adSets = tree.reduce((n, c) => n + c.adSets.length, 0);
+    const ads = tree.reduce((n, c) => n + c.adSets.reduce((m, s) => m + s.ads.length, 0), 0);
     host.innerHTML = `
-      <div class="panel-title">${top.length ? 'Otros artes' : 'Artes'} de ${esc(period.month.name.toLowerCase())}</div>
-      <div class="panel-sub">${rest.length} ${rest.length === 1 ? 'arte' : 'artes'} de la carpeta ${folderLink}${top.length ? ' fuera del top 3' : ''}, cada uno con el anuncio que lleva el mismo nombre.</div>
-      <div class="ad-artes-list">${cards}</div>`;
+      <div class="panel-title">Anuncios por campaña y conjunto | ${esc(period.label)} ${period.year}</div>
+      <div class="panel-sub">${plural(tree.length, 'campaña', 'campañas')}, ${plural(adSets, 'conjunto', 'conjuntos')} y ${plural(ads, 'anuncio', 'anuncios')} con gasto en el periodo, de mayor a menor inversión. Cada anuncio muestra su arte de Drive o un cuadro referencial si no lo hay.</div>
+      ${tree.map(c => `
+        <details class="ad-camp" open style="--gp-row-c:${c.groupColor}">
+          <summary class="ad-camp-head">
+            <span class="ad-camp-title"><i class="gp-dot-c"></i><span class="ad-camp-name">${esc(c.campaign)}</span><span class="ad-camp-group">${esc(c.groupLabel)}</span></span>
+            <span class="ad-camp-stats">${treeStats(c)} · ${plural(c.adSets.length, 'conjunto', 'conjuntos')}</span>
+          </summary>
+          ${c.adSets.map(s => `
+            <section class="ad-set">
+              <div class="ad-set-head">
+                <span class="ad-set-name">${esc(s.adset || '(sin conjunto)')}</span>
+                <span class="ad-set-stats">${plural(s.ads.length, 'anuncio', 'anuncios')} · ${treeStats(s)}</span>
+              </div>
+              <div class="ad-card-grid">${s.ads.map(a => adCardHtml(a, artes)).join('')}</div>
+            </section>`).join('')}
+        </details>`).join('')}`;
     host.hidden = false;
   }
 
@@ -2205,7 +2256,7 @@
       value: 'purchaseValue', count: 'purchases', spend: 'spend', link: 'link', word: n => (n === 1 ? 'compra' : 'compras'),
       none: 'Ningún anuncio registró compras en el periodo.', arte: a => topArteHtml(a, period),
     });
-    renderArtes(period, topSales(ads, 'purchaseValue', 'purchases'));
+    renderAdTree(period);
     renderAds(period, groups);
   }
 

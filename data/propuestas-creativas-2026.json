@@ -1,0 +1,87 @@
+{
+  "about": "Comentario y propuestas creativas por mes para el módulo Anuncios, a partir del «Reporte de Diversidad Creativa en Meta Ads» de Lima Retail. Se escribe a mano: las cifras citadas son las del corte indicado en «corte» y no se actualizan solas. Los prompts son para Nano Banana (generación y edición de imágenes de Gemini).",
+  "fuente": "Reporte de Diversidad Creativa en Meta Ads · Lima Retail",
+  "months": {
+    "2026-10": {
+      "corte": "1-15 de octubre",
+      "comentario": [
+        "Ventas E-Commerce depende de un solo ángulo, el descuento sin locución. «Outlet septiembre» lleva S/. 611 de los S/. 837 de la campaña (73 %) y trae 3 compras a S/. 204 cada una. «Navidad - video», la única pieza de producto premium sin oferta, ya vendió S/. 344 con S/. 126. «40% OFF Daniela», la única con persona, suma S/. 84 sin compras.",
+        "En WhatsApp convierte la persona que explica. «Royal Outlet ya está aquí», una creadora en tienda que resuelve objeciones (cómo comprar fuera de Lima, citas, atención), trajo la venta más grande del mes, S/. 2,130, con S/. 18.73 de inversión. «No estábamos preparadas para esto» saca 118 conversaciones a S/. 0.43, pero no tiene arte en Drive y no se puede leer su patrón: conviene subirlo antes de replicarlo.",
+        "Faltan familias enteras del reporte: no hay testimonio, founder ni narrativa con guion, y tampoco carrusel problema-solución ni combinaciones de producto. Los dos carruseles del mes (bautizo y Benedetta) juntan S/. 1.91 de inversión, así que todavía no dicen nada.",
+        "Para el próximo ciclo, el reporte recomienda menos piezas pero más distintas: 5 ángulos claros antes que 15 variaciones. También pide nombrar cada anuncio con su familia al inicio (por ejemplo «CARRUSEL | Bautizo problema-solución») para leer los resultados por patrón en este módulo."
+      ],
+      "familias": [
+        { "familia": "Selfie / UGC", "estado": "presente", "anuncios": "Royal Outlet ya está aquí ✨, 40% OFF Daniela" },
+        { "familia": "Sin locución (oferta)", "estado": "presente", "anuncios": "Outlet septiembre, 40% OFF" },
+        { "familia": "Sin persona (producto)", "estado": "presente", "anuncios": "Navidad - video" },
+        { "familia": "Carrusel de producto", "estado": "poco probado", "anuncios": "Un momento especial…, Benedetta - muro - carrusel (S/. 1.91 entre los dos)" },
+        { "familia": "Narrativa directa", "estado": "ausente", "anuncios": "" },
+        { "familia": "Testimonio", "estado": "ausente", "anuncios": "" },
+        { "familia": "Founder / asesora", "estado": "ausente", "anuncios": "" },
+        { "familia": "Combinaciones de producto", "estado": "ausente", "anuncios": "" }
+      ],
+      "propuestas": [
+        {
+          "familia": "Carrusel problema-solución",
+          "titulo": "Bautizo sin estrés, en 5 láminas",
+          "donde": "Tráfico a Mensajes · WhatsApp - Bautizos",
+          "hipotesis": "Una secuencia problema → solución → beneficio → variedad → cierre ordena la decisión y trae conversaciones más calificadas que el video suelto.",
+          "metrica": "Costo por conversación y conversaciones que piden cita",
+          "formato": "Carrusel 4:5, 5 láminas",
+          "referencias": "Fotos reales de 2 o 3 conjuntos de bautizo Benedetta (frente y detalle de encaje).",
+          "prompt": "Usa las fotos adjuntas de los conjuntos de bautizo Benedetta como referencia exacta: conserva la tela, los encajes, las cintas de raso y los botones tal como son, sin inventar detalles ni cambiar colores. Genera 5 imágenes verticales 4:5 para un carrusel de Instagram con el mismo estilo: fotografía editorial de producto, luz natural suave de ventana, paleta marfil, crema y beige con acentos azul marino, ambiente sereno y elegante, sin personas, sin logos y sin marcas de agua.\nLámina 1 (el problema): una mesa clara con una invitación de bautizo, una agenda abierta y una cinta de raso marfil. Deja libre el tercio superior para el titular.\nLámina 2 (la solución): el conjunto principal colgado en una percha de madera sobre pared crema.\nLámina 3 (el beneficio): primer plano macro del encaje y la cinta, con textura visible.\nLámina 4 (la variedad): tres conjuntos alineados en un perchero negro fino, vistos de frente.\nLámina 5 (el cierre): el conjunto doblado en una caja de regalo crema con papel de seda. Deja libre la mitad inferior para el llamado a la acción.\nNo escribas texto en las imágenes: los titulares se agregan después en Canva."
+        },
+        {
+          "familia": "Testimonio",
+          "titulo": "Lo que dijo una Royal Mom",
+          "donde": "Ventas E-Commerce · remarketing, y WhatsApp - outlet",
+          "hipotesis": "Una voz de tercero baja la duda final de quien ya vio la marca y todavía no compra.",
+          "metrica": "Costo por compra en remarketing y tasa de cierre de conversaciones",
+          "formato": "Imagen 4:5 con cita y versión 9:16 para Stories",
+          "referencias": "Una foto real de clienta con su bebé usando Martín Aranda, con su permiso por escrito, y la reseña real (Google o WhatsApp).",
+          "prompt": "Edita la foto adjunta de una clienta real con su bebé. No cambies sus rostros, su ropa ni sus proporciones: solo ajusta la luz a un tono cálido y suave y limpia el fondo para que quede en crema desenfocado. Convierte la imagen a formato vertical 4:5 extendiendo el fondo de forma natural, y deja un bloque limpio en el tercio inferior para una cita de 2 líneas. Agrega en esa zona un recuadro crema con borde fino azul marino y comillas tipográficas grandes en azul marino, sin texto dentro. Estilo cercano y real, nada publicitario. Sin logos ni marcas de agua. Después genera la misma composición en 9:16 con el bloque de la cita en el centro."
+        },
+        {
+          "familia": "Combinaciones de producto",
+          "titulo": "El look completo Martín Aranda",
+          "donde": "Ventas E-Commerce · Martin Aranda | Max Conv - 3",
+          "hipotesis": "Mostrar el conjunto armado (jersey, pantalón, calcetines y zapatos) sube el ticket promedio frente a la prenda suelta con descuento.",
+          "metrica": "Ticket promedio, ROAS y costo por compra",
+          "formato": "Carrusel 1:1 de 4 looks, o imagen única 4:5",
+          "referencias": "Fotos de producto sobre fondo blanco de las 4 prendas de cada look, incluidos los calcetines Dorian Gray.",
+          "prompt": "Con las fotos adjuntas de producto, arma un flat lay cenital de un look infantil completo: jersey, pantalón, calcetines y zapatos. Usa exactamente esas prendas, con sus colores, tejidos y detalles; no inventes estampados ni logos. Composición ordenada en forma de cuerpo (el jersey arriba, el pantalón debajo, los calcetines y los zapatos al final), con aire entre las piezas. Fondo de lino crema con sombra suave y natural, luz difusa de día y un pequeño ramito de eucalipto en una esquina como único accesorio. Formato cuadrado 1:1, nitidez alta en las texturas del punto. Sin texto, sin personas y sin marcas de agua. Repite el mismo estilo y encuadre para los otros 3 looks adjuntos, para que el carrusel se vea como una serie."
+        },
+        {
+          "familia": "Narrativa directa",
+          "titulo": "Cómo comprar en el Royal Outlet",
+          "donde": "Tráfico a Mensajes · WhatsApp - outlet",
+          "hipotesis": "Replicar el patrón ganador de «Royal Outlet ya está aquí» (resolver objeciones una por una) en un carrusel que se lee sin sonido.",
+          "metrica": "Costo por conversación y ventas atribuidas",
+          "formato": "Carrusel 4:5, 4 láminas, con la línea gráfica amarilla del outlet",
+          "referencias": "Fotos reales del Royal Outlet de Miraflores: percheros, maniquí y prendas dobladas.",
+          "prompt": "Usa las fotos adjuntas del Royal Outlet de Miraflores como base: conserva el local, los percheros y las prendas reales, sin agregar productos que no estén en las fotos. Genera 4 imágenes verticales 4:5 con la línea gráfica del outlet: una franja horizontal amarilla intensa (#FFE500) que ocupa el tercio inferior y, sobre ella, espacio limpio para un titular en tipografía sans serif negra muy gruesa. La foto ocupa los dos tercios superiores, con luz clara y colores fieles.\nLámina 1: vista general del outlet con los percheros llenos.\nLámina 2: primer plano de un perchero de estampados.\nLámina 3: prendas dobladas sobre una mesa, con una etiqueta de precio en blanco.\nLámina 4: el maniquí vestido de frente, centrado.\nNo escribas texto en las imágenes: los titulares («¿No estás en Lima?», «Atención con cita», «Hasta 40% OFF», «Escríbenos») se agregan después en Canva."
+        },
+        {
+          "familia": "Sin persona (beneficio visible)",
+          "titulo": "Manchester, listo para regalar",
+          "donde": "Ventas E-Commerce · remarketing de Navidad",
+          "hipotesis": "La pieza premium sin oferta ya vende; una versión de regalo empuja la compra de Navidad sin tocar el precio.",
+          "metrica": "CTR, costo por compra y valor de conversión",
+          "formato": "Imagen 1:1 para feed y 9:16 para Stories",
+          "referencias": "Fotos de producto de la colección Manchester (tartán rojo, jersey de punto nórdico, vestido rojo) y el fondo azul marino a rayas del video de Navidad.",
+          "prompt": "Con las fotos adjuntas de la colección Manchester, crea un bodegón navideño de regalo: una caja rígida azul marino abierta con papel de seda marfil, y dentro el conjunto de tartán rojo doblado con cuidado, el jersey de punto con motivos nórdicos a un lado y una cinta de raso roja suelta. Respeta exactamente los colores, el tartán y el tejido de las prendas adjuntas. Fondo azul marino con rayas verticales sutiles, como el de la imagen de referencia, luz cálida lateral, pequeños acentos dorados (una estrella de papel y ramitas secas) y profundidad de campo suave. Ambiente elegante y sobrio, no recargado. Sin personas, sin texto y sin marcas de agua. Entrega una versión cuadrada 1:1 y otra vertical 9:16 que deje libre el tercio superior para el titular."
+        },
+        {
+          "familia": "Founder / asesora",
+          "titulo": "Guion visual para la asesora de la tienda",
+          "donde": "Tráfico a Mensajes · WhatsApp, y prospecting",
+          "hipotesis": "La cara del negocio explicando por qué eligen moda española y cómo atienden genera más confianza que una creadora externa.",
+          "metrica": "Retención a 3 s, ThruPlay y costo por conversación",
+          "formato": "Reel 9:16 de 20 a 30 s, grabado con la persona real",
+          "referencias": "Ninguna: el storyboard es un boceto para planificar la grabación, no la pieza final.",
+          "prompt": "Dibuja un storyboard de 4 viñetas verticales 9:16, lado a lado, en estilo boceto a lápiz con toques de acuarela azul marino y amarillo, sin rostros detallados ni personas reconocibles. Viñeta 1 (gancho, 0-3 s): una mujer de pie frente a un perchero de ropa infantil, mirando a cámara, plano medio. Viñeta 2 (origen): sus manos mostrando la etiqueta y el tejido de un jersey de punto, plano detalle. Viñeta 3 (promesa): ella doblando una prenda sobre una mesa con una caja de regalo al lado. Viñeta 4 (cierre): ella señalando un celular con un ícono de chat, con la puerta de la tienda al fondo. Debajo de cada viñeta deja un recuadro en blanco para escribir el texto del guion. Fondo blanco, trazo limpio, aspecto de documento de trabajo."
+        }
+      ]
+    }
+  }
+}

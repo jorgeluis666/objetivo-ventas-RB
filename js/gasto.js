@@ -47,7 +47,7 @@
   const GENDER_LABELS = { female: 'Mujeres', male: 'Hombres', unknown: 'Sin dato' };
 
   // monthVersion sube con cada cambio de mes; rendered guarda con qué versión se pintó cada vista (ver setMonth).
-  const state = { data: null, artes: null, loaded: false, tab: 'meta', month: null, monthVersion: 0, rendered: {} };
+  const state = { data: null, artes: null, propuestas: null, loaded: false, tab: 'meta', month: null, monthVersion: 0, rendered: {} };
 
   // ── Formato (mismo criterio que el resto del tablero: "S/. " y es-PE) ──
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -2040,18 +2040,21 @@
   // ── Artes del mes (data/artes-2026.json, incrustado como RB_ARTES_DATA al publicar) ──
   // Cada arte se identifica con su anuncio por el nombre del archivo: "40% OFF - Daniela.mp4" ↔ "40% OFF Daniela".
   // Solo hay artes de algunos anuncios: los que están en la carpeta del mes.
-  const ARTES_FILE = 'data/artes-2026.json';
-  async function loadArtes() {
-    if (global.RB_ARTES_DATA) return global.RB_ARTES_DATA;
+  // Datos auxiliares del módulo: incrustados al publicar (scripts/build.js) o el JSON de data/ en local.
+  async function loadExtra(globalName, file) {
+    if (global[globalName]) return global[globalName];
     try {
-      const res = await fetch(ARTES_FILE, { cache: 'no-store' });
+      const res = await fetch(file, { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return await res.json();
     } catch (err) {
-      console.warn('[gasto] no se pudo cargar', ARTES_FILE, err);
+      console.warn('[gasto] no se pudo cargar', file, err);
       return null;
     }
   }
+  const loadArtes = () => loadExtra('RB_ARTES_DATA', 'data/artes-2026.json');
+  // Comentario y propuestas creativas del mes (data/propuestas-creativas-2026.json), escritos a mano.
+  const loadPropuestas = () => loadExtra('RB_PROPUESTAS_DATA', 'data/propuestas-creativas-2026.json');
   // Un carrusel es una subcarpeta «<anuncio> (Carrusel)»: el sufijo no es parte del nombre del anuncio.
   const artKey = name => normalize(String(name ?? '').replace(/\.[a-z0-9]{2,4}$/i, '').replace(/\s*\((carrusel|carousel)\)\s*$/i, ''))
     .replace(/[^a-z0-9%]+/g, ' ').trim();
@@ -2234,6 +2237,72 @@
     host.hidden = false;
   }
 
+  // ── Diversidad creativa y propuestas para Nano Banana (al final del módulo) ──
+  // Comentario del mes según el reporte de diversidad creativa, qué familias se usaron y prompts listos para copiar.
+  const ESTADO_FAMILIA = { presente: 'green', 'poco probado': 'amber', ausente: 'gray' };
+  function renderPropuestas(period) {
+    const host = document.getElementById('ad-meta-propuestas');
+    const mes = !period.annual && state.propuestas?.months?.[period.month.key];
+    if (!mes) { host.hidden = true; host.innerHTML = ''; return; }
+    host.innerHTML = `
+      <div class="panel-title">Diversidad creativa y nuevas propuestas | ${esc(period.month.name)} ${period.year}</div>
+      <div class="panel-sub">Lectura del ${esc(mes.corte)} con el ${esc(state.propuestas.fuente || 'reporte de diversidad creativa')}. Las cifras son las de ese corte.</div>
+      <div class="ad-div-grid">
+        <section>
+          <div class="ad-div-head">Comentario</div>
+          <ul class="ad-arte-notes ad-div-comment">${(mes.comentario || []).map(c => `<li>${esc(c)}</li>`).join('')}</ul>
+        </section>
+        <section>
+          <div class="ad-div-head">Familias creativas del mes</div>
+          <table class="rep-table ad-div-table">
+            <thead><tr><th>Familia</th><th>Estado</th><th>Anuncios</th></tr></thead>
+            <tbody>${(mes.familias || []).map(f => `
+              <tr><td>${esc(f.familia)}</td><td><span class="pill ${ESTADO_FAMILIA[f.estado] || 'gray'}">${esc(f.estado)}</span></td><td>${f.anuncios ? esc(f.anuncios) : '<span class="gp-no-data">—</span>'}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </section>
+      </div>
+      <div class="ad-div-head ad-div-head-props">Propuestas para armar con Nano Banana</div>
+      <p class="gp-note">Cada prompt parte de fotos reales adjuntas: Nano Banana edita y compone, pero las prendas, las personas y las reseñas deben ser reales. Los textos se agregan después en Canva para evitar errores de tipografía.</p>
+      <div class="ad-prop-list">${(mes.propuestas || []).map((p, k) => `
+        <article class="ad-prop">
+          <div class="ad-prop-top"><span class="ad-camp-group">${esc(p.familia)}</span><span class="ad-prop-format">${esc(p.formato)}</span></div>
+          <div class="ad-prop-title">${k + 1}. ${esc(p.titulo)}</div>
+          <dl class="ad-prop-meta">
+            <div><dt>Dónde probar</dt><dd>${esc(p.donde)}</dd></div>
+            <div><dt>Hipótesis</dt><dd>${esc(p.hipotesis)}</dd></div>
+            <div><dt>Métrica</dt><dd>${esc(p.metrica)}</dd></div>
+            <div><dt>Adjuntar</dt><dd>${esc(p.referencias)}</dd></div>
+          </dl>
+          <div class="ad-prop-prompt-head">
+            <span>Prompt</span>
+            <button type="button" class="gp-tool-btn ad-prop-copy" data-prop="${k}">Copiar prompt</button>
+          </div>
+          <pre class="ad-prop-prompt">${esc(p.prompt)}</pre>
+        </article>`).join('')}
+      </div>`;
+    host.hidden = false;
+  }
+
+  async function copyPrompt(button) {
+    const mes = state.propuestas?.months?.[currentPeriod().month?.key];
+    const text = mes?.propuestas?.[Number(button.dataset.prop)]?.prompt;
+    if (!text) return;
+    let ok = false;
+    try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {
+      // Sin permiso de portapapeles: se selecciona el texto para copiarlo a mano.
+      const pre = button.closest('.ad-prop').querySelector('.ad-prop-prompt');
+      const range = document.createRange();
+      range.selectNodeContents(pre);
+      const sel = getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+    button.textContent = ok ? 'Copiado ✓' : 'Seleccionado: Ctrl+C';
+    clearTimeout(button._reset);
+    button._reset = setTimeout(() => { button.textContent = 'Copiar prompt'; }, 2000);
+  }
+
   function renderAdsMeta() {
     const title = document.getElementById('ad-meta-period-title');
     if (!meta.latestKey) {
@@ -2258,6 +2327,7 @@
     });
     renderAdTree(period);
     renderAds(period, groups);
+    renderPropuestas(period);
   }
 
   function renderAdsGoogle() {
@@ -2331,6 +2401,8 @@
         ADS_RENDER[adsView.tab]();
         return;
       }
+      const copy = e.target.closest('.ad-prop-copy');
+      if (copy) { copyPrompt(copy); return; }
       const poster = e.target.closest('.ad-arte-poster');
       if (poster) {
         if (poster.classList.contains('is-carrusel')) pasarLamina(poster);
@@ -2372,9 +2444,10 @@
   let ready = null;
   function ensureReady() {
     if (!ready) {
-      ready = Promise.all([loadData(), loadArtes()]).then(([data, artes]) => {
+      ready = Promise.all([loadData(), loadArtes(), loadPropuestas()]).then(([data, artes, propuestas]) => {
         state.data = data;
         state.artes = artes;
+        state.propuestas = propuestas;
         state.loaded = true;
         buildMetaMonths();
         buildGoogleMonths();

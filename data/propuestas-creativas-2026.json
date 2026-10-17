@@ -1,13 +1,43 @@
 {
-  "about": "Diversidad creativa por conjunto de anuncios para el módulo Anuncios, a partir del «Reporte de Diversidad Creativa en Meta Ads» de Lima Retail. «familias» son los 6 ángulos que cada conjunto debería cubrir. «anuncios» clasifica cada anuncio por las familias que cumple, según la revisión de su arte (un anuncio sin arte en Drive queda sin clasificar). «conjuntos» trae, por campaña y conjunto, una lectura y las propuestas para Nano Banana que cubren las familias que faltan. Se escribe a mano; la cobertura se calcula en el tablero con los anuncios que tienen gasto en el periodo.",
+  "about": "Diversidad creativa por conjunto de anuncios para el módulo Anuncios, a partir del «Reporte de Diversidad Creativa en Meta Ads» de Lima Retail. «familias» son los 6 ángulos que cada conjunto debería cubrir, con el formato que recomienda el reporte. «anuncios» clasifica cada anuncio por las familias que cumple, según la revisión de su arte (un anuncio sin arte en Drive queda sin clasificar). «conjuntos» trae, por campaña y conjunto, una lectura y las sugerencias que cubren las familias que faltan. Se escribe a mano; la cobertura se calcula en el tablero con los anuncios que tienen gasto en el periodo.",
   "fuente": "Reporte de Diversidad Creativa en Meta Ads · Lima Retail",
   "familias": [
-    { "key": "selfie", "label": "Selfie / UGC", "que": "Una persona real habla a cámara y baja la resistencia al anuncio." },
-    { "key": "narrativa", "label": "Narrativa directa", "que": "Guion que explica problema, solución, beneficio y siguiente paso." },
-    { "key": "producto", "label": "Producto / carrusel", "que": "El producto al centro: catálogo, variantes, combinaciones o carrusel problema-solución." },
-    { "key": "sin_locucion", "label": "Sin locución / oferta", "que": "Ritmo visual y texto en pantalla; se entiende sin sonido." },
-    { "key": "testimonio", "label": "Testimonio", "que": "Un tercero valida la compra y resuelve la última objeción." },
-    { "key": "founder", "label": "Founder / asesora", "que": "La cara del negocio explica origen, criterio y forma de atender." }
+    {
+      "key": "selfie",
+      "label": "Selfie / UGC",
+      "que": "Una persona real habla a cámara y baja la resistencia al anuncio.",
+      "formato": "Reel vertical 9:16 de 15 a 25 s con una persona real hablando a cámara"
+    },
+    {
+      "key": "narrativa",
+      "label": "Narrativa directa",
+      "que": "Guion que explica problema, solución, beneficio y siguiente paso.",
+      "formato": "Video de 15 a 30 s con guion, o carrusel de 4 a 6 láminas que cuente problema y solución"
+    },
+    {
+      "key": "producto",
+      "label": "Producto / carrusel",
+      "que": "El producto al centro: catálogo, variantes, combinaciones o carrusel problema-solución.",
+      "formato": "Carrusel de 4 a 6 láminas o catálogo: variantes, combinaciones o problema-solución"
+    },
+    {
+      "key": "sin_locucion",
+      "label": "Sin locución / oferta",
+      "que": "Ritmo visual y texto en pantalla; se entiende sin sonido.",
+      "formato": "Reel corto con texto en pantalla y cortes rápidos, entendible sin sonido"
+    },
+    {
+      "key": "testimonio",
+      "label": "Testimonio",
+      "que": "Un tercero valida la compra y resuelve la última objeción.",
+      "formato": "Video corto, imagen con la cita de una clienta o UGC de clienta real"
+    },
+    {
+      "key": "founder",
+      "label": "Founder / asesora",
+      "que": "La cara del negocio explica origen, criterio y forma de atender.",
+      "formato": "Video directo a cámara de la dueña o la asesora de la tienda"
+    }
   ],
   "months": {
     "2026-10": {
@@ -19,22 +49,52 @@
         "WhatsApp, Reconocimiento e Interacción no tienen artes en Drive, así que su cobertura no se puede medir. Las propuestas de esos conjuntos son un punto de partida: hay que subir sus artes para confirmarlas."
       ],
       "anuncios": {
-        "Outlet septiembre": ["sin_locucion", "producto"],
-        "40% OFF": ["sin_locucion"],
-        "Navidad - video": ["producto", "sin_locucion"],
-        "40% OFF Daniela": ["selfie"],
-        "¿Se acerca el bautizo de tu peque?": ["producto", "sin_locucion"],
-        "Benedetta mensajes - Daniela": ["selfie", "narrativa"],
-        "Un nuevo stock exclusivo para las ceremonias": ["producto"],
-        "Un momento especial como el bautizo de tu peque,Un momento especial como el bautizo de tu peque,": ["producto"],
-        "Royal Outlet ya está aquí ✨": ["selfie", "narrativa"],
-        "Outlet": ["selfie"],
-        "Outlet - nuevo - enero": ["sin_locucion"]
+        "Outlet septiembre": [
+          "sin_locucion",
+          "producto"
+        ],
+        "40% OFF": [
+          "sin_locucion"
+        ],
+        "Navidad - video": [
+          "producto",
+          "sin_locucion"
+        ],
+        "40% OFF Daniela": [
+          "selfie"
+        ],
+        "¿Se acerca el bautizo de tu peque?": [
+          "producto",
+          "sin_locucion"
+        ],
+        "Benedetta mensajes - Daniela": [
+          "selfie",
+          "narrativa"
+        ],
+        "Un nuevo stock exclusivo para las ceremonias": [
+          "producto"
+        ],
+        "Un momento especial como el bautizo de tu peque,Un momento especial como el bautizo de tu peque,": [
+          "producto"
+        ],
+        "Royal Outlet ya está aquí ✨": [
+          "selfie",
+          "narrativa"
+        ],
+        "Outlet": [
+          "selfie"
+        ],
+        "Outlet - nuevo - enero": [
+          "sin_locucion"
+        ]
       },
       "conjuntos": [
         {
           "campana": "Ventas E-Commerce | 2025 | LR | Inv. Total | Ver01",
-          "conjuntos": ["Martin Aranda remarketing 2", "Martin Aranda remarketing - Público pequeño"],
+          "conjuntos": [
+            "Martin Aranda remarketing 2",
+            "Martin Aranda remarketing - Público pequeño"
+          ],
           "lectura": "Remarketing con las mismas 4 piezas en los dos conjuntos: tiene descuento, producto y una creadora, pero nadie explica por qué comprar ni quién respalda la compra. Es el público que ya conoce la marca, así que lo que falta es confianza.",
           "propuestas": [
             {
@@ -42,33 +102,29 @@
               "titulo": "Lo que dijo una Royal Mom",
               "hipotesis": "Una voz de tercero baja la duda final de quien ya vio Martín Aranda y todavía no compra.",
               "metrica": "Costo por compra y ROAS del conjunto",
-              "formato": "Imagen 4:5 con cita y versión 9:16 para Stories",
-              "referencias": "Foto real de una clienta con su bebé vestido de Martín Aranda (con permiso por escrito) y su reseña real.",
-              "prompt": "Edita la foto adjunta de una clienta real con su bebé. No cambies sus rostros, su ropa ni sus proporciones: solo lleva la luz a un tono cálido y suave y desenfoca el fondo hasta dejarlo crema. Convierte la imagen a 4:5 extendiendo el fondo de forma natural y deja un bloque limpio en el tercio inferior para una cita de dos líneas. En ese bloque coloca un recuadro crema con borde fino azul marino y comillas tipográficas grandes azul marino, sin texto dentro. Estilo cercano y real, nada publicitario, sin logos ni marcas de agua. Después genera la misma composición en 9:16 con el bloque de la cita en el centro."
+              "formato": "Imagen 4:5 con cita y versión 9:16 para Stories"
             },
             {
               "familia": "narrativa",
               "titulo": "Por qué Martín Aranda, en 4 láminas",
               "hipotesis": "Explicar origen, calidad y asesoría de tallas convierte el descuento en una decisión razonada.",
               "metrica": "CTR, tasa de visita a la web y costo por compra",
-              "formato": "Carrusel 4:5, 4 láminas",
-              "referencias": "Fotos de producto Martín Aranda: una prenda de punto, su etiqueta, un detalle de costura y el conjunto completo.",
-              "prompt": "Usa las fotos adjuntas de prendas Martín Aranda como referencia exacta de tejidos, colores y detalles; no inventes estampados ni logos. Genera 4 imágenes 4:5 con el mismo estilo editorial: luz natural de día, fondo de lino crema, acentos azul marino, mucha calma visual y espacio libre en el tercio superior para el titular.\nLámina 1 (la pregunta): la prenda de punto doblada sobre la mesa junto a una cinta métrica enrollada.\nLámina 2 (el origen): primer plano de la etiqueta y el tejido, con textura nítida.\nLámina 3 (el detalle): macro de una costura o un botón forrado.\nLámina 4 (el cierre): el conjunto completo colgado en una percha de madera, centrado.\nNo escribas texto en las imágenes: los titulares («¿Qué talla elijo?», «Moda española desde 1965», «Hecho para durar», «Te asesoramos por WhatsApp») se agregan en Canva."
+              "formato": "Carrusel 4:5, 4 láminas"
             },
             {
               "familia": "founder",
-              "titulo": "Guion visual: la asesora recomienda",
+              "titulo": "La asesora recomienda una pieza",
               "hipotesis": "La cara del negocio recomendando una pieza concreta da más confianza que el descuento solo.",
               "metrica": "Retención a 3 s, CTR y costo por compra",
-              "formato": "Reel 9:16 de 20 a 30 s, grabado con la persona real",
-              "referencias": "Ninguna: el storyboard es un boceto para planificar la grabación, no la pieza final.",
-              "prompt": "Dibuja un storyboard de 4 viñetas verticales 9:16, lado a lado, en boceto a lápiz con toques de acuarela azul marino, sin rostros detallados ni personas reconocibles. Viñeta 1 (gancho, 0-3 s): una mujer frente a un perchero de ropa infantil sostiene un jersey de punto y mira a cámara. Viñeta 2: sus manos muestran la etiqueta y el tejido en plano detalle. Viñeta 3: ella combina el jersey con un pantalón sobre una mesa. Viñeta 4: ella señala un celular con un ícono de carrito de compra. Debajo de cada viñeta deja un recuadro en blanco para el texto del guion. Fondo blanco, trazo limpio, aspecto de documento de trabajo."
+              "formato": "Reel 9:16 de 20 a 30 s, grabado con la persona real"
             }
           ]
         },
         {
           "campana": "Ventas E-Commerce | 2025 | LR | Inv. Total | Ver01",
-          "conjuntos": ["Martin Aranda | Max Conv - 3"],
+          "conjuntos": [
+            "Martin Aranda | Max Conv - 3"
+          ],
           "lectura": "Conjunto de prospecting con 3 piezas de descuento y una creadora. «40 Off» no tiene arte. Para un público frío faltan la explicación, la prueba social y la cara del negocio.",
           "propuestas": [
             {
@@ -76,33 +132,29 @@
               "titulo": "Carrusel problema-solución: el regalo perfecto",
               "hipotesis": "Plantear el problema del regalo de baby shower y resolverlo con Martín Aranda atrae compradores que no buscaban descuento.",
               "metrica": "CTR, costo por compra y valor de conversión",
-              "formato": "Carrusel 4:5, 5 láminas",
-              "referencias": "Fotos de producto Martín Aranda de recién nacido: un conjunto, un gorro o patuco y su caja de regalo.",
-              "prompt": "Con las fotos adjuntas de producto Martín Aranda para recién nacido, genera 5 imágenes 4:5 con el mismo estilo: luz suave de ventana, paleta marfil, celeste empolvado y azul marino, sin personas, sin logos y sin marcas de agua. Respeta exactamente colores y tejidos de las prendas adjuntas.\nLámina 1 (el problema): una tarjeta de invitación a baby shower sobre una mesa con un lazo sin atar.\nLámina 2 (la solución): el conjunto principal extendido sobre una manta de punto.\nLámina 3 (el detalle): macro del tejido y un botón.\nLámina 4 (el complemento): gorro y patuco junto al conjunto.\nLámina 5 (el cierre): todo dentro de una caja de regalo azul marino con papel de seda.\nDeja libre el tercio superior de cada lámina para el titular que se agrega en Canva."
+              "formato": "Carrusel 4:5, 5 láminas"
             },
             {
               "familia": "testimonio",
               "titulo": "Reseñas que venden en frío",
               "hipotesis": "Una reseña con estrellas sobre la prenda le da a un público nuevo una razón para confiar en la tienda.",
               "metrica": "CTR y costo por compra",
-              "formato": "Imagen 1:1 y 4:5",
-              "referencias": "Foto de producto Martín Aranda y una reseña real de Google o de la web.",
-              "prompt": "Con la foto adjunta de producto, crea una pieza cuadrada 1:1: la prenda a la izquierda ocupando dos tercios del lienzo, sobre fondo crema liso con sombra suave, y a la derecha una tarjeta blanca vertical con esquinas redondeadas y una fila de 5 estrellas doradas en la parte superior, dejando el resto de la tarjeta vacío para pegar la reseña real en Canva. Respeta exactamente colores y tejido de la prenda. Estilo limpio y luminoso, sin logos ni marcas de agua. Genera también una versión 4:5 con la tarjeta debajo de la prenda."
+              "formato": "Imagen 1:1 y 4:5"
             },
             {
               "familia": "founder",
-              "titulo": "Guion visual: quiénes somos en 20 segundos",
+              "titulo": "Quiénes somos en 20 segundos",
               "hipotesis": "Para un público que no conoce la tienda, ver a la persona detrás de Royal Baby genera la confianza que el descuento no da.",
               "metrica": "Retención a 3 s, ThruPlay y costo por compra",
-              "formato": "Reel 9:16 de 20 s, grabado con la persona real",
-              "referencias": "Ninguna: es un boceto para planificar la grabación.",
-              "prompt": "Dibuja un storyboard de 4 viñetas verticales 9:16 en boceto a lápiz con acuarela azul marino y amarillo, sin rostros detallados. Viñeta 1: una mujer en la puerta de una tienda de ropa infantil saluda a cámara. Viñeta 2: recorre un perchero señalando prendas. Viñeta 3: dobla una prenda y la pone en una bolsa de compra. Viñeta 4: sostiene un celular con la web abierta. Bajo cada viñeta, un recuadro en blanco para el guion. Fondo blanco, trazo limpio."
+              "formato": "Reel 9:16 de 20 s, grabado con la persona real"
             }
           ]
         },
         {
           "campana": "Tráfico a Mensajes | WhatsApp | Inv Total | LR",
-          "conjuntos": ["WhatsApp - Bautizos"],
+          "conjuntos": [
+            "WhatsApp - Bautizos"
+          ],
           "lectura": "El conjunto más completo: tiene producto, video sin locución y a Daniela explicando las piezas. «Benedetta - muro - carrusel» no tiene arte. Faltan prueba social y founder, que en una compra emocional como el bautizo pesan mucho.",
           "propuestas": [
             {
@@ -110,24 +162,22 @@
               "titulo": "El bautizo de una Royal Mom",
               "hipotesis": "Ver a otra familia que ya vistió a su bebé con Benedetta resuelve la duda de talla y calidad antes de escribir.",
               "metrica": "Costo por conversación y conversaciones que piden cita",
-              "formato": "Imagen 4:5 con cita y carrusel de 3 fotos",
-              "referencias": "Fotos reales de un bautizo de una clienta con su bebé vestido de Benedetta (con permiso por escrito) y su mensaje real.",
-              "prompt": "Edita las fotos adjuntas de un bautizo real. No cambies rostros, ropa ni proporciones: unifica la luz en un tono cálido marfil, suaviza los fondos y convierte cada foto a 4:5 extendiendo el fondo de forma natural. En la primera, deja un bloque crema en el tercio inferior con comillas tipográficas color oro viejo, sin texto dentro, para la cita de la mamá. Las otras dos quedan como fotos limpias del bebé y del detalle del vestido. Estilo de álbum familiar elegante, sin logos ni marcas de agua."
+              "formato": "Imagen 4:5 con cita y carrusel de 3 fotos"
             },
             {
               "familia": "founder",
-              "titulo": "Guion visual: por qué elegimos Benedetta",
+              "titulo": "Por qué elegimos Benedetta",
               "hipotesis": "La asesora contando cómo eligen las piezas de ceremonia da autoridad a una marca nueva para el cliente.",
               "metrica": "Retención a 3 s y costo por conversación",
-              "formato": "Reel 9:16 de 25 s, grabado con la persona real",
-              "referencias": "Ninguna: es un boceto para planificar la grabación.",
-              "prompt": "Dibuja un storyboard de 4 viñetas verticales 9:16 en boceto a lápiz con acuarela marfil y beige, sin rostros detallados. Viñeta 1: una mujer frente a un perchero de vestidos blancos de ceremonia mira a cámara. Viñeta 2: sus manos muestran el encaje de un faldón de bautizo. Viñeta 3: ella dobla el faldón en una caja crema con papel de seda. Viñeta 4: ella sostiene un celular con un ícono de chat para agendar cita. Bajo cada viñeta, un recuadro en blanco para el guion. Fondo blanco, trazo limpio."
+              "formato": "Reel 9:16 de 25 s, grabado con la persona real"
             }
           ]
         },
         {
           "campana": "Tráfico a Mensajes | WhatsApp | Inv Total | LR",
-          "conjuntos": ["WhatsApp - outlet"],
+          "conjuntos": [
+            "WhatsApp - outlet"
+          ],
           "lectura": "Ya tiene creadora con objeciones resueltas, que es la pieza que más vendió, y un recorrido de tienda con oferta. «Outlet Agosto - Daniela» no tiene arte. Le falta mostrar el producto en detalle y la prueba social.",
           "propuestas": [
             {
@@ -135,33 +185,29 @@
               "titulo": "Carrusel por edades del outlet",
               "hipotesis": "Mostrar qué hay para cada edad (0-12 meses, 1-3 años, 4-8 años) evita que la persona escriba solo para preguntar si hay su talla.",
               "metrica": "Costo por conversación y conversaciones con intención de compra",
-              "formato": "Carrusel 4:5, 3 láminas",
-              "referencias": "Fotos reales de prendas del outlet agrupadas por edad.",
-              "prompt": "Con las fotos adjuntas de prendas del outlet, arma 3 imágenes 4:5, una por grupo de edad, como un flat lay cenital ordenado: 3 o 4 prendas por lámina sobre fondo blanco roto con sombra suave. Usa exactamente las prendas adjuntas, sin inventar estampados ni logos. Reserva el tercio inferior de cada lámina para una franja amarilla intensa (#FFE500) sin texto, donde luego va la edad y el «hasta 40% OFF» en Canva. Luz clara de día, colores fieles, sin personas ni marcas de agua."
+              "formato": "Carrusel 4:5, 3 láminas"
             },
             {
               "familia": "testimonio",
               "titulo": "Compré en el outlet y llegó a provincia",
               "hipotesis": "Una clienta de fuera de Lima contando que su pedido llegó bien resuelve la objeción que la creadora plantea.",
               "metrica": "Costo por conversación y ventas atribuidas",
-              "formato": "Imagen 9:16 para Stories y 4:5 para feed",
-              "referencias": "Captura real del mensaje de WhatsApp de la clienta (con permiso y sin su número) y foto del paquete o la prenda recibida.",
-              "prompt": "Con la foto adjunta de la prenda recibida, crea una composición vertical 9:16: la foto ocupa la mitad inferior con luz cálida y fondo desenfocado, y en la mitad superior deja un fondo amarillo intenso (#FFE500) con una burbuja de chat blanca vacía, con esquinas redondeadas, donde se pegará la captura real del mensaje. Respeta la prenda tal como es. Estilo directo y real, sin logos ni marcas de agua. Genera también la versión 4:5."
+              "formato": "Imagen 9:16 para Stories y 4:5 para feed"
             },
             {
               "familia": "founder",
-              "titulo": "Guion visual: la dueña presenta el outlet",
+              "titulo": "La dueña presenta el outlet",
               "hipotesis": "Que la responsable del outlet explique por qué hay descuento (fin de colección, no defecto) quita la sospecha sobre la calidad.",
               "metrica": "Retención a 3 s y costo por conversación",
-              "formato": "Reel 9:16 de 20 s, grabado con la persona real",
-              "referencias": "Ninguna: es un boceto para planificar la grabación.",
-              "prompt": "Dibuja un storyboard de 4 viñetas verticales 9:16 en boceto a lápiz con acuarela amarilla y negra, sin rostros detallados. Viñeta 1: una mujer en el centro de una tienda outlet abre los brazos hacia los percheros. Viñeta 2: sostiene una prenda con su etiqueta original visible. Viñeta 3: señala un cartel de 40% OFF. Viñeta 4: muestra un celular con el chat de WhatsApp. Bajo cada viñeta, un recuadro en blanco para el guion. Fondo blanco, trazo limpio."
+              "formato": "Reel 9:16 de 20 s, grabado con la persona real"
             }
           ]
         },
         {
           "campana": "Tráfico a Mensajes | WhatsApp | Inv Total | LR",
-          "conjuntos": ["WhatsApp"],
+          "conjuntos": [
+            "WhatsApp"
+          ],
           "lectura": "Trae 129 de las 312 conversaciones de la campaña (41 %), casi todas por «No estábamos preparadas para esto» (117 a S/. 0.44), pero ninguno de sus 4 anuncios tiene arte en Drive. Primero hay que subirlos para medir la cobertura; mientras tanto, estas dos propuestas cubren familias que no aparecen en ningún conjunto de mensajes.",
           "propuestas": [
             {
@@ -169,49 +215,45 @@
               "titulo": "Mensajes reales de Royal Moms",
               "hipotesis": "Un collage de mensajes de clientas felices lleva la prueba social al conjunto que más conversaciones trae.",
               "metrica": "Costo por conversación",
-              "formato": "Imagen 4:5 y 9:16",
-              "referencias": "Capturas reales de mensajes de clientas (con permiso y sin números) y una foto de producto.",
-              "prompt": "Con la foto de producto adjunta, crea una imagen 4:5: la prenda centrada en la mitad inferior sobre fondo crema con sombra suave, y en la mitad superior tres burbujas de chat blancas vacías, escalonadas y ligeramente superpuestas, con sombra sutil, donde luego se pegan las capturas reales. Paleta crema y azul marino, estilo limpio, sin logos ni marcas de agua. Genera también la versión 9:16."
+              "formato": "Imagen 4:5 y 9:16"
             },
             {
               "familia": "founder",
-              "titulo": "Guion visual: bienvenida al universo Royal Baby",
+              "titulo": "Bienvenida al universo Royal Baby",
               "hipotesis": "Presentar las marcas de la tienda desde la voz de la dueña da contexto a quien llega por primera vez al chat.",
               "metrica": "Retención a 3 s y costo por conversación",
-              "formato": "Reel 9:16 de 25 s, grabado con la persona real",
-              "referencias": "Ninguna: es un boceto para planificar la grabación.",
-              "prompt": "Dibuja un storyboard de 4 viñetas verticales 9:16 en boceto a lápiz con acuarela azul marino y rosa empolvado, sin rostros detallados. Viñeta 1: una mujer en la entrada de una tienda infantil saluda a cámara. Viñeta 2: camina junto a tres percheros, uno por marca. Viñeta 3: muestra una prenda de cada marca sobre una mesa. Viñeta 4: sostiene un celular con un ícono de chat. Bajo cada viñeta, un recuadro en blanco para el guion. Fondo blanco, trazo limpio."
+              "formato": "Reel 9:16 de 25 s, grabado con la persona real"
             }
           ]
         },
         {
           "campana": "Reconocimiento | LR",
-          "conjuntos": ["Reconocimiento | Truplays tráfico a tienda - Exclusión 2"],
+          "conjuntos": [
+            "Reconocimiento | Truplays tráfico a tienda - Exclusión 2"
+          ],
           "lectura": "Campaña de reproducciones (ThruPlay) con 2 piezas sin arte en Drive. Para alcance, el reporte recomienda selfie y video sin locución, que se ven completos en el feed.",
           "propuestas": [
             {
               "familia": "selfie",
-              "titulo": "Guion visual: el detalle que nadie nota",
+              "titulo": "El detalle que nadie nota",
               "hipotesis": "Un gancho en primera persona sobre un detalle de la prenda retiene más que el producto solo.",
               "metrica": "Hook rate (3 s), ThruPlay y costo por ThruPlay",
-              "formato": "Reel 9:16 de 15 s, grabado con una persona real",
-              "referencias": "Ninguna: es un boceto para planificar la grabación.",
-              "prompt": "Dibuja un storyboard de 3 viñetas verticales 9:16 en boceto a lápiz con acuarela azul marino, sin rostros detallados. Viñeta 1 (0-3 s): una mujer sostiene unos calcetines de niño frente a la cámara con gesto de sorpresa. Viñeta 2: primer plano de la puntera y el tejido de los calcetines. Viñeta 3: los calcetines puestos con unos zapatos de niño, plano de pies. Bajo cada viñeta, un recuadro en blanco para el texto en pantalla. Fondo blanco, trazo limpio."
+              "formato": "Reel 9:16 de 15 s, grabado con una persona real"
             },
             {
               "familia": "sin_locucion",
-              "titulo": "Placas para un video sin locución",
-              "hipotesis": "Una secuencia de 4 imágenes con texto en pantalla se entiende sin sonido y sube las reproducciones completas.",
+              "titulo": "Calcetines Dorian Gray, sin locución",
+              "hipotesis": "Una secuencia corta de producto con texto en pantalla se entiende sin sonido y sube las reproducciones completas.",
               "metrica": "ThruPlay y costo por ThruPlay",
-              "formato": "4 imágenes 9:16 para montar un video de 8 a 10 s",
-              "referencias": "Fotos de producto de los calcetines Dorian Gray y de un look completo.",
-              "prompt": "Con las fotos adjuntas de los calcetines Dorian Gray, genera 4 imágenes verticales 9:16 para montar un video corto, con el mismo estilo: fondo de color liso azul marino, luz de estudio suave y el producto nítido, respetando exactamente su tejido y colores. 1: un par de calcetines centrado. 2: macro del tejido. 3: tres pares en abanico. 4: los calcetines con unos zapatos de niño. Deja el tercio superior libre para el texto en pantalla, que se agrega en el editor de video. Sin personas, sin logos ni marcas de agua."
+              "formato": "Reel de 8 a 10 s con texto en pantalla"
             }
           ]
         },
         {
           "campana": "Campaña Interacción 2026 | LR",
-          "conjuntos": ["Conjunto Interacción"],
+          "conjuntos": [
+            "Conjunto Interacción"
+          ],
           "lectura": "Campaña de interacciones con 3 piezas sin arte en Drive. Para interacción funcionan el carrusel que invita a elegir y la persona que pregunta a la audiencia.",
           "propuestas": [
             {
@@ -219,18 +261,14 @@
               "titulo": "Carrusel «¿cuál elegirías?»",
               "hipotesis": "Pedir que elijan entre looks de Navidad genera comentarios y guardados, que es lo que mide esta campaña.",
               "metrica": "Interacciones, comentarios, guardados y costo por interacción",
-              "formato": "Carrusel 4:5, 4 láminas",
-              "referencias": "Fotos de producto de 3 looks navideños de la colección Manchester.",
-              "prompt": "Con las fotos adjuntas de 3 looks de la colección Manchester, genera 4 imágenes 4:5 con el mismo estilo: fondo azul marino con rayas verticales sutiles, luz cálida y pequeños acentos dorados. Láminas 1 a 3: cada look completo en flat lay centrado, respetando exactamente tartán, punto y colores, con un círculo blanco vacío en la esquina superior derecha para numerarlo después. Lámina 4: los tres looks juntos en miniatura, en fila. Sin personas, sin texto, sin logos ni marcas de agua."
+              "formato": "Carrusel 4:5, 4 láminas"
             },
             {
               "familia": "selfie",
-              "titulo": "Guion visual: ayúdame a elegir",
+              "titulo": "Ayúdame a elegir",
               "hipotesis": "Una persona pidiendo opinión a cámara invita a comentar más que una pieza de marca.",
               "metrica": "Comentarios y costo por interacción",
-              "formato": "Reel 9:16 de 15 s, grabado con una persona real",
-              "referencias": "Ninguna: es un boceto para planificar la grabación.",
-              "prompt": "Dibuja un storyboard de 3 viñetas verticales 9:16 en boceto a lápiz con acuarela roja y azul marino, sin rostros detallados. Viñeta 1: una mujer sostiene dos conjuntos navideños de niño, uno en cada mano, y mira a cámara. Viñeta 2: acerca uno a la cámara. Viñeta 3: acerca el otro y señala hacia abajo, a los comentarios. Bajo cada viñeta, un recuadro en blanco para el texto en pantalla. Fondo blanco, trazo limpio."
+              "formato": "Reel 9:16 de 15 s, grabado con una persona real"
             }
           ]
         }

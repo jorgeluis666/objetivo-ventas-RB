@@ -2237,12 +2237,10 @@
     host.hidden = false;
   }
 
-  // ── Diversidad creativa por conjunto y propuestas para Nano Banana (al final del módulo) ──
+  // ── Diversidad creativa por conjunto (al final del módulo) ──
   // La meta del reporte es que cada conjunto cubra las 6 familias creativas. La cobertura se calcula con los anuncios
-  // que tienen gasto en el periodo y su clasificación (escrita a mano al revisar cada arte); las propuestas de cada
-  // conjunto cubren las familias que le faltan.
-  let promptTexts = [];
-
+  // que tienen gasto en el periodo y su clasificación (escrita a mano al revisar cada arte). Cada conjunto marca los
+  // formatos que le faltan y trae sugerencias para cubrirlos.
   function coverageOf(adNames, mes, familias) {
     const tags = new Map(Object.entries(mes.anuncios || {}).map(([name, keys]) => [artKey(name), keys]));
     const present = new Map(familias.map(f => [f.key, []]));
@@ -2255,30 +2253,34 @@
     return { present, unclassified };
   }
 
-  function propuestaHtml(p, familia) {
-    const k = promptTexts.push(p.prompt) - 1;
+  const sugerenciaHtml = (p, familia) => `
+    <article class="ad-prop">
+      <div class="ad-prop-top"><span class="ad-camp-group">${esc(familia?.label || p.familia)}</span><span class="ad-prop-format">${esc(p.formato)}</span></div>
+      <div class="ad-prop-title">${esc(p.titulo)}</div>
+      <dl class="ad-prop-meta">
+        <div><dt>Hipótesis</dt><dd>${esc(p.hipotesis)}</dd></div>
+        <div><dt>Métrica</dt><dd>${esc(p.metrica)}</dd></div>
+      </dl>
+    </article>`;
+
+  // Formatos que le faltan al conjunto para completar la diversidad, con el formato que recomienda el reporte.
+  function missingHtml(missing, unmeasured) {
+    if (unmeasured) {
+      return '<div class="ad-div-missing is-unknown"><b>Formatos que faltan: sin medir.</b> Ningún anuncio de este conjunto tiene arte en Drive; súbelos con el nombre del anuncio para saber qué formatos tiene.</div>';
+    }
+    if (!missing.length) return '<div class="ad-div-missing is-done"><b>Diversidad creativa completa:</b> el conjunto cubre las 6 familias.</div>';
     return `
-      <article class="ad-prop">
-        <div class="ad-prop-top"><span class="ad-camp-group">${esc(familia?.label || p.familia)}</span><span class="ad-prop-format">${esc(p.formato)}</span></div>
-        <div class="ad-prop-title">${esc(p.titulo)}</div>
-        <dl class="ad-prop-meta">
-          <div><dt>Hipótesis</dt><dd>${esc(p.hipotesis)}</dd></div>
-          <div><dt>Métrica</dt><dd>${esc(p.metrica)}</dd></div>
-          <div><dt>Adjuntar</dt><dd>${esc(p.referencias)}</dd></div>
-        </dl>
-        <div class="ad-prop-prompt-head">
-          <span>Prompt para Nano Banana</span>
-          <button type="button" class="gp-tool-btn ad-prop-copy" data-prop="${k}">Copiar prompt</button>
-        </div>
-        <pre class="ad-prop-prompt">${esc(p.prompt)}</pre>
-      </article>`;
+      <div class="ad-div-missing">
+        <b>Faltan ${missing.length} ${missing.length === 1 ? 'formato' : 'formatos'} para completar la diversidad creativa</b>
+        <ul>${missing.map(f => `<li><span>${esc(f.label)}</span>${esc(f.formato || f.que)}</li>`).join('')}</ul>
+      </div>`;
   }
 
-  // Un bloque por entrada de propuestas: uno o varios conjuntos (los que repiten las mismas piezas van juntos).
+  // Un bloque por entrada de sugerencias: uno o varios conjuntos (los que repiten las mismas piezas van juntos).
   function setBlockHtml(sets, entry, mes, familias) {
     const adNames = [...new Set(sets.flatMap(s => s.ads.map(a => a.ad)))];
     const { present, unclassified } = coverageOf(adNames, mes, familias);
-    const covered = familias.filter(f => present.get(f.key).length).length;
+    const missing = familias.filter(f => !present.get(f.key).length);
     // Si ningún anuncio tiene arte, la cobertura no se puede medir: no es lo mismo que no cubrir nada.
     const unmeasured = unclassified.length === adNames.length;
     const chips = familias.map(f => {
@@ -2294,14 +2296,15 @@
       <section class="ad-set ad-div-set">
         <div class="ad-set-head">
           <span class="ad-set-name">${esc(names.join(' · '))}</span>
-          <span class="ad-set-stats">${unmeasured ? '<b>Cobertura sin medir</b>' : `<b>${covered} de ${familias.length}</b> familias`}${names.length > 1 ? ` · ${names.length} conjuntos con las mismas piezas` : ''}</span>
+          <span class="ad-set-stats">${unmeasured ? '<b>Cobertura sin medir</b>' : `<b>${familias.length - missing.length} de ${familias.length}</b> familias`}${names.length > 1 ? ` · ${names.length} conjuntos con las mismas piezas` : ''}</span>
         </div>
         <div class="ad-fam-list">${chips}</div>
-        ${unclassified.length ? `<p class="ad-div-unclassified">Sin clasificar por falta de arte en Drive: ${esc(unclassified.join(', '))}.</p>` : ''}
+        ${missingHtml(missing, unmeasured)}
+        ${unclassified.length && !unmeasured ? `<p class="ad-div-unclassified">Sin clasificar por falta de arte en Drive: ${esc(unclassified.join(', '))}.</p>` : ''}
         ${entry?.lectura ? `<p class="ad-div-lectura">${esc(entry.lectura)}</p>` : ''}
         ${entry?.propuestas?.length
-          ? `<div class="ad-prop-list">${entry.propuestas.map(p => propuestaHtml(p, famByKey.get(p.familia))).join('')}</div>`
-          : '<p class="gp-note">Sin propuestas escritas para este conjunto.</p>'}
+          ? `<div class="ad-div-sug-head">Sugerencias</div><div class="ad-prop-list">${entry.propuestas.map(p => sugerenciaHtml(p, famByKey.get(p.familia))).join('')}</div>`
+          : '<p class="gp-note">Sin sugerencias escritas para este conjunto.</p>'}
       </section>`;
   }
 
@@ -2311,7 +2314,6 @@
     if (!mes) { host.hidden = true; host.innerHTML = ''; return; }
     const familias = state.propuestas.familias || [];
     const entries = mes.conjuntos || [];
-    promptTexts = [];
     const campaigns = treeOf(period.rows).map(c => {
       const sets = new Map(c.adSets.map(s => [normalize(s.adset), s]));
       const used = new Set();
@@ -2332,29 +2334,10 @@
     }).join('');
     host.innerHTML = `
       <div class="panel-title">Diversidad creativa por conjunto | ${esc(period.month.name)} ${period.year}</div>
-      <div class="panel-sub">Cada conjunto debería cubrir las ${familias.length} familias del ${esc(state.propuestas.fuente || 'reporte de diversidad creativa')}. Las propuestas cubren las que faltan. Lectura del ${esc(mes.corte)}.</div>
+      <div class="panel-sub">Cada conjunto debería cubrir las ${familias.length} familias del ${esc(state.propuestas.fuente || 'reporte de diversidad creativa')}. Se marcan los formatos que faltan y las sugerencias para cubrirlos. Lectura del ${esc(mes.corte)}.</div>
       <ul class="ad-arte-notes ad-div-comment">${(mes.comentario || []).map(c => `<li>${esc(c)}</li>`).join('')}</ul>
-      <p class="gp-note">Cada prompt parte de fotos reales adjuntas: Nano Banana edita y compone, pero las prendas, las personas y las reseñas deben ser reales. En selfie y founder, Nano Banana arma el guion visual y la grabación es con la persona real. Los textos se agregan después en Canva.</p>
       ${campaigns}`;
     host.hidden = false;
-  }
-
-  async function copyPrompt(button) {
-    const text = promptTexts[Number(button.dataset.prop)];
-    if (!text) return;
-    let ok = false;
-    try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {
-      // Sin permiso de portapapeles: se selecciona el texto para copiarlo a mano.
-      const pre = button.closest('.ad-prop').querySelector('.ad-prop-prompt');
-      const range = document.createRange();
-      range.selectNodeContents(pre);
-      const sel = getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
-    button.textContent = ok ? 'Copiado ✓' : 'Seleccionado: Ctrl+C';
-    clearTimeout(button._reset);
-    button._reset = setTimeout(() => { button.textContent = 'Copiar prompt'; }, 2000);
   }
 
   function renderAdsMeta() {
@@ -2455,8 +2438,6 @@
         ADS_RENDER[adsView.tab]();
         return;
       }
-      const copy = e.target.closest('.ad-prop-copy');
-      if (copy) { copyPrompt(copy); return; }
       const poster = e.target.closest('.ad-arte-poster');
       if (poster) {
         if (poster.classList.contains('is-carrusel')) pasarLamina(poster);

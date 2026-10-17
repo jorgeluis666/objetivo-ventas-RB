@@ -3088,21 +3088,16 @@ body.gp-table-fullscreen { overflow: hidden; }
 .ad-prop-meta > div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px; }
 .ad-prop-meta dt { color: var(--muted); font-size: 11px; }
 .ad-prop-meta dd { margin: 0; color: var(--text-2); font-size: 12px; line-height: 1.45; }
-.ad-prop-prompt-head { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; color: var(--text); font-size: 12px; font-weight: 700; }
-.ad-prop-prompt {
-  max-height: 220px;
-  margin: 8px 0 0;
-  padding: 10px 12px;
-  overflow: auto;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface-2, #f8fafc);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 12px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-}
+/* Formatos que le faltan al conjunto: el aviso principal de cada bloque */
+.ad-div-missing { margin-top: 12px; padding: 10px 14px; border: 1px solid #fde68a; border-radius: 8px; background: #fffbeb; color: var(--text); font-size: 12.5px; }
+.ad-div-missing ul { display: grid; gap: 4px; margin: 8px 0 0; padding: 0; list-style: none; }
+.ad-div-missing li { color: var(--text-2); line-height: 1.45; }
+.ad-div-missing li span { margin-right: 6px; color: var(--text); font-weight: 700; }
+.ad-div-missing li span::after { content: ' ·'; color: var(--muted); font-weight: 400; }
+.ad-div-missing.is-unknown { border-color: var(--border); background: var(--surface-2, #f8fafc); color: var(--text-2); }
+.ad-div-missing.is-done { border-color: #bbf7d0; background: #f0fdf4; }
+.ad-div-sug-head { margin-top: 16px; color: var(--text); font-size: 13px; font-weight: 700; }
+.ad-div-sug-head + .ad-prop-list { margin-top: 8px; }
 @media (max-width: 600px) {
   .ad-prop-meta > div { grid-template-columns: 1fr; gap: 0; }
   .ad-camp-head, .ad-set { padding-right: 12px; padding-left: 12px; }

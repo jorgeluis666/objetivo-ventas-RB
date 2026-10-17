@@ -2237,56 +2237,110 @@
     host.hidden = false;
   }
 
-  // ── Diversidad creativa y propuestas para Nano Banana (al final del módulo) ──
-  // Comentario del mes según el reporte de diversidad creativa, qué familias se usaron y prompts listos para copiar.
-  const ESTADO_FAMILIA = { presente: 'green', 'poco probado': 'amber', ausente: 'gray' };
+  // ── Diversidad creativa por conjunto y propuestas para Nano Banana (al final del módulo) ──
+  // La meta del reporte es que cada conjunto cubra las 6 familias creativas. La cobertura se calcula con los anuncios
+  // que tienen gasto en el periodo y su clasificación (escrita a mano al revisar cada arte); las propuestas de cada
+  // conjunto cubren las familias que le faltan.
+  let promptTexts = [];
+
+  function coverageOf(adNames, mes, familias) {
+    const tags = new Map(Object.entries(mes.anuncios || {}).map(([name, keys]) => [artKey(name), keys]));
+    const present = new Map(familias.map(f => [f.key, []]));
+    const unclassified = [];
+    adNames.forEach(name => {
+      const keys = tags.get(artKey(name));
+      if (!keys) { unclassified.push(name); return; }
+      keys.forEach(k => present.get(k)?.push(name));
+    });
+    return { present, unclassified };
+  }
+
+  function propuestaHtml(p, familia) {
+    const k = promptTexts.push(p.prompt) - 1;
+    return `
+      <article class="ad-prop">
+        <div class="ad-prop-top"><span class="ad-camp-group">${esc(familia?.label || p.familia)}</span><span class="ad-prop-format">${esc(p.formato)}</span></div>
+        <div class="ad-prop-title">${esc(p.titulo)}</div>
+        <dl class="ad-prop-meta">
+          <div><dt>Hipótesis</dt><dd>${esc(p.hipotesis)}</dd></div>
+          <div><dt>Métrica</dt><dd>${esc(p.metrica)}</dd></div>
+          <div><dt>Adjuntar</dt><dd>${esc(p.referencias)}</dd></div>
+        </dl>
+        <div class="ad-prop-prompt-head">
+          <span>Prompt para Nano Banana</span>
+          <button type="button" class="gp-tool-btn ad-prop-copy" data-prop="${k}">Copiar prompt</button>
+        </div>
+        <pre class="ad-prop-prompt">${esc(p.prompt)}</pre>
+      </article>`;
+  }
+
+  // Un bloque por entrada de propuestas: uno o varios conjuntos (los que repiten las mismas piezas van juntos).
+  function setBlockHtml(sets, entry, mes, familias) {
+    const adNames = [...new Set(sets.flatMap(s => s.ads.map(a => a.ad)))];
+    const { present, unclassified } = coverageOf(adNames, mes, familias);
+    const covered = familias.filter(f => present.get(f.key).length).length;
+    // Si ningún anuncio tiene arte, la cobertura no se puede medir: no es lo mismo que no cubrir nada.
+    const unmeasured = unclassified.length === adNames.length;
+    const chips = familias.map(f => {
+      const ads = present.get(f.key);
+      if (ads.length) return `<span class="ad-fam is-on" title="${esc(`${f.que} Lo cubre: ${ads.join(', ')}`)}">✓ ${esc(f.label)}</span>`;
+      return unmeasured
+        ? `<span class="ad-fam is-unknown" title="${esc(f.que)}">? ${esc(f.label)}</span>`
+        : `<span class="ad-fam" title="${esc(f.que)}">Falta · ${esc(f.label)}</span>`;
+    }).join('');
+    const famByKey = new Map(familias.map(f => [f.key, f]));
+    const names = sets.map(s => s.adset || '(sin conjunto)');
+    return `
+      <section class="ad-set ad-div-set">
+        <div class="ad-set-head">
+          <span class="ad-set-name">${esc(names.join(' · '))}</span>
+          <span class="ad-set-stats">${unmeasured ? '<b>Cobertura sin medir</b>' : `<b>${covered} de ${familias.length}</b> familias`}${names.length > 1 ? ` · ${names.length} conjuntos con las mismas piezas` : ''}</span>
+        </div>
+        <div class="ad-fam-list">${chips}</div>
+        ${unclassified.length ? `<p class="ad-div-unclassified">Sin clasificar por falta de arte en Drive: ${esc(unclassified.join(', '))}.</p>` : ''}
+        ${entry?.lectura ? `<p class="ad-div-lectura">${esc(entry.lectura)}</p>` : ''}
+        ${entry?.propuestas?.length
+          ? `<div class="ad-prop-list">${entry.propuestas.map(p => propuestaHtml(p, famByKey.get(p.familia))).join('')}</div>`
+          : '<p class="gp-note">Sin propuestas escritas para este conjunto.</p>'}
+      </section>`;
+  }
+
   function renderPropuestas(period) {
     const host = document.getElementById('ad-meta-propuestas');
     const mes = !period.annual && state.propuestas?.months?.[period.month.key];
     if (!mes) { host.hidden = true; host.innerHTML = ''; return; }
+    const familias = state.propuestas.familias || [];
+    const entries = mes.conjuntos || [];
+    promptTexts = [];
+    const campaigns = treeOf(period.rows).map(c => {
+      const sets = new Map(c.adSets.map(s => [normalize(s.adset), s]));
+      const used = new Set();
+      const blocks = entries.filter(e => normalize(e.campana) === normalize(c.campaign)).map(e => {
+        const own = e.conjuntos.map(n => sets.get(normalize(n))).filter(Boolean);
+        own.forEach(s => used.add(s));
+        return own.length ? setBlockHtml(own, e, mes, familias) : '';
+      });
+      c.adSets.filter(s => !used.has(s)).forEach(s => blocks.push(setBlockHtml([s], null, mes, familias)));
+      return `
+        <details class="ad-camp" open style="--gp-row-c:${c.groupColor}">
+          <summary class="ad-camp-head">
+            <span class="ad-camp-title"><i class="gp-dot-c"></i><span class="ad-camp-name">${esc(c.campaign)}</span><span class="ad-camp-group">${esc(c.groupLabel)}</span></span>
+            <span class="ad-camp-stats">${plural(c.adSets.length, 'conjunto', 'conjuntos')}</span>
+          </summary>
+          ${blocks.join('')}
+        </details>`;
+    }).join('');
     host.innerHTML = `
-      <div class="panel-title">Diversidad creativa y nuevas propuestas | ${esc(period.month.name)} ${period.year}</div>
-      <div class="panel-sub">Lectura del ${esc(mes.corte)} con el ${esc(state.propuestas.fuente || 'reporte de diversidad creativa')}. Las cifras son las de ese corte.</div>
-      <div class="ad-div-grid">
-        <section>
-          <div class="ad-div-head">Comentario</div>
-          <ul class="ad-arte-notes ad-div-comment">${(mes.comentario || []).map(c => `<li>${esc(c)}</li>`).join('')}</ul>
-        </section>
-        <section>
-          <div class="ad-div-head">Familias creativas del mes</div>
-          <table class="rep-table ad-div-table">
-            <thead><tr><th>Familia</th><th>Estado</th><th>Anuncios</th></tr></thead>
-            <tbody>${(mes.familias || []).map(f => `
-              <tr><td>${esc(f.familia)}</td><td><span class="pill ${ESTADO_FAMILIA[f.estado] || 'gray'}">${esc(f.estado)}</span></td><td>${f.anuncios ? esc(f.anuncios) : '<span class="gp-no-data">—</span>'}</td></tr>`).join('')}
-            </tbody>
-          </table>
-        </section>
-      </div>
-      <div class="ad-div-head ad-div-head-props">Propuestas para armar con Nano Banana</div>
-      <p class="gp-note">Cada prompt parte de fotos reales adjuntas: Nano Banana edita y compone, pero las prendas, las personas y las reseñas deben ser reales. Los textos se agregan después en Canva para evitar errores de tipografía.</p>
-      <div class="ad-prop-list">${(mes.propuestas || []).map((p, k) => `
-        <article class="ad-prop">
-          <div class="ad-prop-top"><span class="ad-camp-group">${esc(p.familia)}</span><span class="ad-prop-format">${esc(p.formato)}</span></div>
-          <div class="ad-prop-title">${k + 1}. ${esc(p.titulo)}</div>
-          <dl class="ad-prop-meta">
-            <div><dt>Dónde probar</dt><dd>${esc(p.donde)}</dd></div>
-            <div><dt>Hipótesis</dt><dd>${esc(p.hipotesis)}</dd></div>
-            <div><dt>Métrica</dt><dd>${esc(p.metrica)}</dd></div>
-            <div><dt>Adjuntar</dt><dd>${esc(p.referencias)}</dd></div>
-          </dl>
-          <div class="ad-prop-prompt-head">
-            <span>Prompt</span>
-            <button type="button" class="gp-tool-btn ad-prop-copy" data-prop="${k}">Copiar prompt</button>
-          </div>
-          <pre class="ad-prop-prompt">${esc(p.prompt)}</pre>
-        </article>`).join('')}
-      </div>`;
+      <div class="panel-title">Diversidad creativa por conjunto | ${esc(period.month.name)} ${period.year}</div>
+      <div class="panel-sub">Cada conjunto debería cubrir las ${familias.length} familias del ${esc(state.propuestas.fuente || 'reporte de diversidad creativa')}. Las propuestas cubren las que faltan. Lectura del ${esc(mes.corte)}.</div>
+      <ul class="ad-arte-notes ad-div-comment">${(mes.comentario || []).map(c => `<li>${esc(c)}</li>`).join('')}</ul>
+      <p class="gp-note">Cada prompt parte de fotos reales adjuntas: Nano Banana edita y compone, pero las prendas, las personas y las reseñas deben ser reales. En selfie y founder, Nano Banana arma el guion visual y la grabación es con la persona real. Los textos se agregan después en Canva.</p>
+      ${campaigns}`;
     host.hidden = false;
   }
 
   async function copyPrompt(button) {
-    const mes = state.propuestas?.months?.[currentPeriod().month?.key];
-    const text = mes?.propuestas?.[Number(button.dataset.prop)]?.prompt;
+    const text = promptTexts[Number(button.dataset.prop)];
     if (!text) return;
     let ok = false;
     try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {

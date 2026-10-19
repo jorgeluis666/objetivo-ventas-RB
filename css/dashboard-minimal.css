@@ -3239,9 +3239,77 @@ body.gp-table-fullscreen { overflow: hidden; }
   margin-top: 9px;
   color: inherit;
   font-size: 10px;
-  text-align: center;
   text-decoration: none;
   opacity: .7;
 }
 
 .s-web:hover { opacity: 1; text-decoration: underline; }
+
+/* ===== WhatsApp: boton en el panel abierto, icono flotante cuando no hay sitio ===== */
+/* Con el panel minimizado o la ventana angosta el boton ancho se cortaba ("93 40"):
+   en esos dos casos queda el icono redondo y el numero viaja en el title. */
+
+.s-wa span {
+  white-space: nowrap;
+}
+
+.shell.sidebar-collapsed .s-modulo-activo {
+  display: block;
+  margin-top: auto;
+  padding: 0;
+}
+
+.shell.sidebar-collapsed .s-ma-label,
+.shell.sidebar-collapsed .s-ma-name,
+.shell.sidebar-collapsed .s-web,
+.shell.sidebar-collapsed .s-wa span {
+  display: none;
+}
+
+.shell.sidebar-collapsed .s-wa {
+  position: fixed;
+  bottom: 16px;
+  left: 22px;
+  z-index: 60;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  box-shadow: 0 6px 16px rgba(37, 211, 102, .35);
+}
+
+.shell.sidebar-collapsed .s-wa svg {
+  width: 20px;
+  height: 20px;
+}
+
+@media(max-width:760px) {
+  /* El panel pasa a ser una franja arriba: el WhatsApp se despega y queda flotando
+     sobre el tablero, al alcance del pulgar. */
+  .s-wa {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 60;
+    width: 52px;
+    height: 52px;
+    margin: 0;
+    padding: 0;
+    border-radius: 50%;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, .28);
+  }
+
+  .s-wa span {
+    display: none;
+  }
+
+  .s-wa svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .s-modulo-activo {
+    margin-top: 12px;
+  }
+}

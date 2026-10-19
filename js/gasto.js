@@ -2181,8 +2181,10 @@
     })).sort(bySpend);
   }
 
-  function adCardHtml(ad, artes) {
+  function adCardHtml(ad, artes, div) {
     const art = artes.find(x => artKey(x.file) === artKey(ad.ad));
+    // Familias creativas que cubre la pieza, según la clasificación del mes.
+    const fams = (div?.tags.get(artKey(ad.ad)) || []).map(k => div.famByKey.get(k)?.label).filter(Boolean);
     const media = art
       ? `<div class="ad-arte-media">${arteMedia(art)}</div>`
       : '<div class="ad-arte-media is-empty"><span>Sin arte</span></div>';
@@ -2193,6 +2195,7 @@
         ${media}
         <div class="ad-card-name" title="${esc(ad.ad)}">${adNameLink(ad.ad, ad.link, 'Ver el anuncio en Meta')}</div>
         ${art ? `<div class="ad-card-file">${esc(art.file)}${arteTipo(art)}</div>` : '<div class="ad-card-file" title="No hay un archivo con el nombre del anuncio en la carpeta de artes">Sin arte en Drive</div>'}
+        ${fams.length ? `<div class="ad-card-fam" title="Familias de diversidad creativa que cubre">${esc(fams.join(' · '))}</div>` : ''}
         <dl class="ad-card-stats">
           <div><dt>Resultados</dt><dd>${esc(resultsText(ad, ad.resultType))}${ad.costPerResult != null ? `<small>${unitCost(ad.costPerResult)} c/u</small>` : ''}</dd></div>
           <div><dt>Inversión</dt><dd>${money(ad.spend, 2)}${ad.versions > 1 ? `<small>${ad.versions} versiones</small>` : ''}</dd></div>
@@ -2214,130 +2217,109 @@
     const tree = treeOf(period.rows);
     if (!tree.length) { host.hidden = true; host.innerHTML = ''; return; }
     const artes = artesOf(period);
+    const div = diversityOf(period);
     const adSets = tree.reduce((n, c) => n + c.adSets.length, 0);
     const ads = tree.reduce((n, c) => n + c.adSets.reduce((m, s) => m + s.ads.length, 0), 0);
     host.innerHTML = `
       <div class="panel-title">Anuncios por campaña y conjunto | ${esc(period.label)} ${period.year}</div>
-      <div class="panel-sub">${plural(tree.length, 'campaña', 'campañas')}, ${plural(adSets, 'conjunto', 'conjuntos')} y ${plural(ads, 'anuncio', 'anuncios')} con gasto en el periodo, de mayor a menor inversión. Cada anuncio muestra su arte de Drive o un cuadro referencial si no lo hay.</div>
+      <div class="panel-sub">${plural(tree.length, 'campaña', 'campañas')}, ${plural(adSets, 'conjunto', 'conjuntos')} y ${plural(ads, 'anuncio', 'anuncios')} con gasto en el periodo, de mayor a menor inversión. Cada anuncio muestra su arte de Drive o un cuadro referencial si no lo hay${div ? `, y cada conjunto el checklist de las ${div.familias.length} familias de diversidad creativa` : ''}.</div>
+      ${div?.mes.comentario?.length ? `
+        <details class="ad-div-note">
+          <summary>Lectura de diversidad creativa · ${esc(div.mes.corte)}</summary>
+          <ul class="ad-arte-notes">${div.mes.comentario.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+        </details>` : ''}
       ${tree.map(c => `
         <details class="ad-camp" open style="--gp-row-c:${c.groupColor}">
           <summary class="ad-camp-head">
             <span class="ad-camp-title"><i class="gp-dot-c"></i><span class="ad-camp-name">${esc(c.campaign)}</span><span class="ad-camp-group">${esc(c.groupLabel)}</span></span>
             <span class="ad-camp-stats">${treeStats(c)} · ${plural(c.adSets.length, 'conjunto', 'conjuntos')}</span>
           </summary>
-          ${c.adSets.map(s => `
+          ${c.adSets.map(s => {
+            const cov = div && coverageOf(s, c, div);
+            return `
             <section class="ad-set">
               <div class="ad-set-head">
                 <span class="ad-set-name">${esc(s.adset || '(sin conjunto)')}</span>
-                <span class="ad-set-stats">${plural(s.ads.length, 'anuncio', 'anuncios')} · ${treeStats(s)}</span>
+                <span class="ad-set-stats">${plural(s.ads.length, 'anuncio', 'anuncios')} · ${treeStats(s)}${cov ? ` · ${cov.unmeasured ? 'diversidad sin medir' : `<b>${cov.done} de ${div.familias.length}</b> familias`}` : ''}</span>
               </div>
-              <div class="ad-card-grid">${s.ads.map(a => adCardHtml(a, artes)).join('')}</div>
-            </section>`).join('')}
+              <div class="ad-card-grid">${s.ads.map(a => adCardHtml(a, artes, div)).join('')}</div>
+              ${cov ? checklistHtml(cov, div) : ''}
+            </section>`;
+          }).join('')}
         </details>`).join('')}`;
     host.hidden = false;
   }
 
-  // ── Diversidad creativa por conjunto (al final del módulo) ──
+  // ── Diversidad creativa dentro de cada conjunto ──
   // La meta del reporte es que cada conjunto cubra las 6 familias creativas. La cobertura se calcula con los anuncios
-  // que tienen gasto en el periodo y su clasificación (escrita a mano al revisar cada arte). Cada conjunto marca los
-  // formatos que le faltan y trae sugerencias para cubrirlos.
-  function coverageOf(adNames, mes, familias) {
-    const tags = new Map(Object.entries(mes.anuncios || {}).map(([name, keys]) => [artKey(name), keys]));
+  // que tienen gasto en el periodo y su clasificación (escrita a mano al revisar cada arte). Cada conjunto lleva un
+  // checklist: las familias que ya cubre y los artes que faltan, con la sugerencia escrita para cubrirlos.
+  function diversityOf(period) {
+    const mes = !period.annual && state.propuestas?.months?.[period.month.key];
+    if (!mes) return null;
+    const familias = state.propuestas.familias || [];
+    return {
+      mes, familias,
+      famByKey: new Map(familias.map(f => [f.key, f])),
+      tags: new Map(Object.entries(mes.anuncios || {}).map(([name, keys]) => [artKey(name), keys])),
+    };
+  }
+
+  function coverageOf(s, c, div) {
+    const { familias, tags } = div;
     const present = new Map(familias.map(f => [f.key, []]));
     const unclassified = [];
-    adNames.forEach(name => {
-      const keys = tags.get(artKey(name));
-      if (!keys) { unclassified.push(name); return; }
-      keys.forEach(k => present.get(k)?.push(name));
+    s.ads.forEach(({ ad }) => {
+      const keys = tags.get(artKey(ad));
+      if (!keys) { unclassified.push(ad); return; }
+      keys.forEach(k => present.get(k)?.push(ad));
     });
-    return { present, unclassified };
+    const entry = (div.mes.conjuntos || []).find(e => normalize(e.campana) === normalize(c.campaign)
+      && e.conjuntos.some(n => normalize(n) === normalize(s.adset)));
+    return {
+      present, unclassified, entry,
+      done: familias.filter(f => present.get(f.key).length).length,
+      // Si ningún anuncio tiene arte, la cobertura no se puede medir: no es lo mismo que no cubrir nada.
+      unmeasured: unclassified.length === s.ads.length,
+    };
   }
 
-  const sugerenciaHtml = (p, familia) => `
-    <article class="ad-prop">
-      <div class="ad-prop-top"><span class="ad-camp-group">${esc(familia?.label || p.familia)}</span><span class="ad-prop-format">${esc(p.formato)}</span></div>
-      <div class="ad-prop-title">${esc(p.titulo)}</div>
-      <dl class="ad-prop-meta">
-        <div><dt>Hipótesis</dt><dd>${esc(p.hipotesis)}</dd></div>
-        <div><dt>Métrica</dt><dd>${esc(p.metrica)}</dd></div>
-      </dl>
-    </article>`;
-
-  // Formatos que le faltan al conjunto para completar la diversidad, con el formato que recomienda el reporte.
-  function missingHtml(missing, unmeasured) {
-    if (unmeasured) {
-      return '<div class="ad-div-missing is-unknown"><b>Formatos que faltan: sin medir.</b> Ningún anuncio de este conjunto tiene arte en Drive; súbelos con el nombre del anuncio para saber qué formatos tiene.</div>';
-    }
-    if (!missing.length) return '<div class="ad-div-missing is-done"><b>Diversidad creativa completa:</b> el conjunto cubre las 6 familias.</div>';
-    return `
-      <div class="ad-div-missing">
-        <b>Faltan ${missing.length} ${missing.length === 1 ? 'formato' : 'formatos'} para completar la diversidad creativa</b>
-        <ul>${missing.map(f => `<li><span>${esc(f.label)}</span>${esc(f.formato || f.que)}</li>`).join('')}</ul>
-      </div>`;
-  }
-
-  // Un bloque por entrada de sugerencias: uno o varios conjuntos (los que repiten las mismas piezas van juntos).
-  function setBlockHtml(sets, entry, mes, familias) {
-    const adNames = [...new Set(sets.flatMap(s => s.ads.map(a => a.ad)))];
-    const { present, unclassified } = coverageOf(adNames, mes, familias);
-    const missing = familias.filter(f => !present.get(f.key).length);
-    // Si ningún anuncio tiene arte, la cobertura no se puede medir: no es lo mismo que no cubrir nada.
-    const unmeasured = unclassified.length === adNames.length;
-    const chips = familias.map(f => {
-      const ads = present.get(f.key);
-      if (ads.length) return `<span class="ad-fam is-on" title="${esc(`${f.que} Lo cubre: ${ads.join(', ')}`)}">✓ ${esc(f.label)}</span>`;
-      return unmeasured
-        ? `<span class="ad-fam is-unknown" title="${esc(f.que)}">? ${esc(f.label)}</span>`
-        : `<span class="ad-fam" title="${esc(f.que)}">Falta · ${esc(f.label)}</span>`;
-    }).join('');
-    const famByKey = new Map(familias.map(f => [f.key, f]));
-    const names = sets.map(s => s.adset || '(sin conjunto)');
-    return `
-      <section class="ad-set ad-div-set">
-        <div class="ad-set-head">
-          <span class="ad-set-name">${esc(names.join(' · '))}</span>
-          <span class="ad-set-stats">${unmeasured ? '<b>Cobertura sin medir</b>' : `<b>${familias.length - missing.length} de ${familias.length}</b> familias`}${names.length > 1 ? ` · ${names.length} conjuntos con las mismas piezas` : ''}</span>
-        </div>
-        <div class="ad-fam-list">${chips}</div>
-        ${missingHtml(missing, unmeasured)}
-        ${unclassified.length && !unmeasured ? `<p class="ad-div-unclassified">Sin clasificar por falta de arte en Drive: ${esc(unclassified.join(', '))}.</p>` : ''}
-        ${entry?.lectura ? `<p class="ad-div-lectura">${esc(entry.lectura)}</p>` : ''}
-        ${entry?.propuestas?.length
-          ? `<div class="ad-div-sug-head">Sugerencias</div><div class="ad-prop-list">${entry.propuestas.map(p => sugerenciaHtml(p, famByKey.get(p.familia))).join('')}</div>`
-          : '<p class="gp-note">Sin sugerencias escritas para este conjunto.</p>'}
-      </section>`;
-  }
-
-  function renderPropuestas(period) {
-    const host = document.getElementById('ad-meta-propuestas');
-    const mes = !period.annual && state.propuestas?.months?.[period.month.key];
-    if (!mes) { host.hidden = true; host.innerHTML = ''; return; }
-    const familias = state.propuestas.familias || [];
-    const entries = mes.conjuntos || [];
-    const campaigns = treeOf(period.rows).map(c => {
-      const sets = new Map(c.adSets.map(s => [normalize(s.adset), s]));
-      const used = new Set();
-      const blocks = entries.filter(e => normalize(e.campana) === normalize(c.campaign)).map(e => {
-        const own = e.conjuntos.map(n => sets.get(normalize(n))).filter(Boolean);
-        own.forEach(s => used.add(s));
-        return own.length ? setBlockHtml(own, e, mes, familias) : '';
-      });
-      c.adSets.filter(s => !used.has(s)).forEach(s => blocks.push(setBlockHtml([s], null, mes, familias)));
+  // Checklist del conjunto: primero los artes que faltan (con el formato que pide el reporte y la idea escrita para
+  // cubrirlos), después las familias ya cubiertas. La lectura y las hipótesis quedan plegadas.
+  function checklistHtml(cov, div) {
+    const { familias } = div;
+    const props = cov.entry?.propuestas || [];
+    const missing = familias.length - cov.done;
+    const head = cov.unmeasured ? 'Diversidad sin medir: ningún anuncio de este conjunto tiene arte en Drive'
+      : missing ? `${missing === 1 ? 'Falta 1 arte' : `Faltan ${missing} artes`} para la diversidad creativa`
+        : 'Diversidad creativa completa';
+    const items = [...familias].sort((a, b) => cov.present.get(a.key).length - cov.present.get(b.key).length).map(f => {
+      const ads = cov.present.get(f.key);
+      const on = ads.length > 0;
+      const detail = on ? `Lo cubre: ${ads.join(', ')}` : cov.unmeasured ? f.que : (f.formato || f.que);
       return `
-        <details class="ad-camp" open style="--gp-row-c:${c.groupColor}">
-          <summary class="ad-camp-head">
-            <span class="ad-camp-title"><i class="gp-dot-c"></i><span class="ad-camp-name">${esc(c.campaign)}</span><span class="ad-camp-group">${esc(c.groupLabel)}</span></span>
-            <span class="ad-camp-stats">${plural(c.adSets.length, 'conjunto', 'conjuntos')}</span>
-          </summary>
-          ${blocks.join('')}
-        </details>`;
+        <li class="ad-check${on ? ' is-on' : ''}${cov.unmeasured ? ' is-unknown' : ''}">
+          <span class="ad-check-box" aria-hidden="true">${on ? '✓' : cov.unmeasured ? '?' : ''}</span>
+          <div>
+            <span class="ad-check-label"><span class="sr-only">${on ? 'Cubierta' : cov.unmeasured ? 'Sin medir' : 'Falta'}: </span>${esc(f.label)}</span>
+            <small>${esc(detail)}</small>
+            ${props.filter(p => p.familia === f.key).map(p => `<small class="ad-check-idea">Idea: <b>${esc(p.titulo)}</b> · ${esc(p.formato)}</small>`).join('')}
+          </div>
+        </li>`;
     }).join('');
-    host.innerHTML = `
-      <div class="panel-title">Diversidad creativa por conjunto | ${esc(period.month.name)} ${period.year}</div>
-      <div class="panel-sub">Cada conjunto debería cubrir las ${familias.length} familias del ${esc(state.propuestas.fuente || 'reporte de diversidad creativa')}. Se marcan los formatos que faltan y las sugerencias para cubrirlos. Lectura del ${esc(mes.corte)}.</div>
-      <ul class="ad-arte-notes ad-div-comment">${(mes.comentario || []).map(c => `<li>${esc(c)}</li>`).join('')}</ul>
-      ${campaigns}`;
-    host.hidden = false;
+    const why = cov.entry?.lectura || props.length ? `
+      <details class="ad-check-more">
+        <summary>Lectura e hipótesis</summary>
+        ${cov.entry?.lectura ? `<p>${esc(cov.entry.lectura)}</p>` : ''}
+        ${props.length ? `<ul>${props.map(p => `<li><b>${esc(p.titulo)}</b> · ${esc(p.hipotesis)} <span>Se mide con: ${esc(p.metrica)}.</span></li>`).join('')}</ul>` : ''}
+      </details>` : '';
+    return `
+      <div class="ad-checklist">
+        <div class="ad-checklist-head">${esc(head)}</div>
+        <ul class="ad-check-list">${items}</ul>
+        ${cov.unclassified.length && !cov.unmeasured ? `<p class="ad-check-note">Sin clasificar por falta de arte en Drive: ${esc(cov.unclassified.join(', '))}.</p>` : ''}
+        ${why}
+      </div>`;
   }
 
   function renderAdsMeta() {
@@ -2364,7 +2346,6 @@
     });
     renderAdTree(period);
     renderAds(period, groups);
-    renderPropuestas(period);
   }
 
   function renderAdsGoogle() {

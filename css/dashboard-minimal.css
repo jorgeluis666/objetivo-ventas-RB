@@ -3143,44 +3143,43 @@ body.gp-table-fullscreen { overflow: hidden; }
 .ad-card-notes { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
 .ad-card-notes summary { color: var(--brand); font-size: 12px; font-weight: 600; cursor: pointer; }
 .ad-card-notes .ad-arte-notes { margin-top: 8px; font-size: 12px; }
-/* Diversidad creativa por conjunto y propuestas para Nano Banana (final del módulo Anuncios) */
-.ad-div-comment { margin-top: 12px; }
-.ad-div-panel > .gp-note { margin-top: 12px; }
-.ad-fam-list { display: flex; flex-wrap: wrap; gap: 6px; }
-.ad-fam {
-  padding: 3px 10px;
-  border: 1px dashed #cbd5e1;
-  border-radius: 999px;
-  color: var(--muted);
-  font-size: 11.5px;
-  font-weight: 600;
-  cursor: help;
+/* Diversidad creativa dentro de cada conjunto: familias por anuncio y checklist de los artes que faltan */
+.ad-card-fam { margin-top: 4px; overflow: hidden; color: var(--brand-text); font-size: 11px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.ad-div-note { margin-top: 10px; }
+.ad-div-note summary, .ad-check-more summary { color: var(--brand); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.ad-div-note .ad-arte-notes { margin-top: 8px; color: var(--text-2); font-size: 12.5px; }
+.ad-checklist { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); }
+.ad-checklist-head { color: var(--text); font-size: 12.5px; font-weight: 700; }
+.ad-check-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 8px 20px; margin: 10px 0 0; padding: 0; list-style: none; }
+.ad-check { display: flex; gap: 9px; min-width: 0; }
+.ad-check-box {
+  display: inline-grid;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  place-items: center;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
 }
-.ad-fam.is-on { border: 1px solid transparent; background: var(--brand-soft); color: var(--brand-text); }
-.ad-fam.is-unknown { border-style: solid; border-color: var(--border); background: var(--surface-2, #f8fafc); }
-.ad-div-unclassified { margin: 8px 0 0; color: var(--muted); font-size: 11.5px; }
-.ad-div-lectura { margin: 10px 0 0; color: var(--text-2); font-size: 12.5px; line-height: 1.5; }
-.ad-prop-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 12px; margin-top: 12px; }
-.ad-prop { display: flex; flex-direction: column; min-width: 0; padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
-.ad-prop-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; }
-.ad-prop-format { color: var(--muted); font-size: 11px; }
-.ad-prop-title { margin-top: 8px; color: var(--text); font-size: 14px; font-weight: 700; }
-.ad-prop-meta { display: grid; gap: 6px; margin: 10px 0 0; }
-.ad-prop-meta > div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px; }
-.ad-prop-meta dt { color: var(--muted); font-size: 11px; }
-.ad-prop-meta dd { margin: 0; color: var(--text-2); font-size: 12px; line-height: 1.45; }
-/* Formatos que le faltan al conjunto: el aviso principal de cada bloque */
-.ad-div-missing { margin-top: 12px; padding: 10px 14px; border: 1px solid #fde68a; border-radius: 8px; background: #fffbeb; color: var(--text); font-size: 12.5px; }
-.ad-div-missing ul { display: grid; gap: 4px; margin: 8px 0 0; padding: 0; list-style: none; }
-.ad-div-missing li { color: var(--text-2); line-height: 1.45; }
-.ad-div-missing li span { margin-right: 6px; color: var(--text); font-weight: 700; }
-.ad-div-missing li span::after { content: ' ·'; color: var(--muted); font-weight: 400; }
-.ad-div-missing.is-unknown { border-color: var(--border); background: var(--surface-2, #f8fafc); color: var(--text-2); }
-.ad-div-missing.is-done { border-color: #bbf7d0; background: #f0fdf4; }
-.ad-div-sug-head { margin-top: 16px; color: var(--text); font-size: 13px; font-weight: 700; }
-.ad-div-sug-head + .ad-prop-list { margin-top: 8px; }
+.ad-check.is-on .ad-check-box { border-color: var(--brand); background: var(--brand); }
+.ad-check.is-unknown .ad-check-box { color: var(--muted); }
+.ad-check-label { color: var(--text); font-size: 12.5px; font-weight: 700; }
+.ad-check small { display: block; margin-top: 1px; color: var(--text-2); font-size: 11.5px; line-height: 1.45; }
+.ad-check.is-on .ad-check-label { color: var(--text-2); font-weight: 600; }
+.ad-check.is-on small { color: var(--muted); }
+.ad-check small.ad-check-idea { margin-top: 3px; color: var(--text); }
+.ad-check-note { margin: 10px 0 0; color: var(--muted); font-size: 11.5px; }
+.ad-check-more { margin-top: 10px; }
+.ad-check-more p, .ad-check-more ul { margin: 8px 0 0; color: var(--text-2); font-size: 12px; line-height: 1.5; }
+.ad-check-more ul { padding-left: 18px; }
+.ad-check-more li + li { margin-top: 6px; }
+.ad-check-more li b { color: var(--text); }
+.ad-check-more li span { color: var(--muted); }
 @media (max-width: 600px) {
-  .ad-prop-meta > div { grid-template-columns: 1fr; gap: 0; }
   .ad-camp-head, .ad-set { padding-right: 12px; padding-left: 12px; }
   .ad-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .ad-card { padding: 8px; }

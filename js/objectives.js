@@ -68,6 +68,8 @@
     ventasInfo: null,      // { generated, fuente } de las ventas mostradas
     vista: 'avance',       // vista del cuadro del mes: 'avance' (vs meta) o 'ventas' (vs 2025)
     weeklyData: null,
+    daily2026: null,       // ventas por día y columna: { Octubre: { Web: [día 1, …] } } (Notificaciones)
+    notifOpen: false,
     transactions: null,
     avgTickets: {},
     d2025Ref: d2025,
@@ -451,122 +453,175 @@
       ${weekRows}`;
   }
 
-  // ── Panel de alertas: objetivo cumplido + brecha a mitad de mes ──
-  function refreshAlertPanel(m) {
-    const el = document.getElementById(`alert-panel-${m}`);
-    if (!el) return;
+  // ── Notificaciones: los avisos del mes en curso, en el desplegable de la barra superior ──
+  // Venta de una columna en un día del mes; los días ≤ 0 caen en el mes anterior.
+  function ventaDia(m, col, d) {
+    let mi = months.indexOf(m);
+    while (d < 1 && mi > 0) { mi--; d += objectiveDays(months[mi]); }
+    return d < 1 ? 0 : state.daily2026?.[months[mi]]?.[col]?.[d - 1] || 0;
+  }
+  function diaLabel(m, d) {
+    let mi = months.indexOf(m);
+    while (d < 1 && mi > 0) { mi--; d += objectiveDays(months[mi]); }
+    return { d, mes: MONTH_ABR[months[mi]] };
+  }
+  const rangoLabel = (m, desde, hasta) => {
+    const a = diaLabel(m, desde), b = diaLabel(m, hasta);
+    return a.mes === b.mes ? `${a.d}–${b.d} ${b.mes}` : `${a.d} ${a.mes} – ${b.d} ${b.mes}`;
+  };
+  const pctTxt = p => `${p >= 0 ? '+' : '−'}${Math.abs(Math.round(p))}%`;
 
-    const status = monthStatus(m);
-    if (status === 'future' || !isLiveMonth(m)) { el.innerHTML = ''; return; }
+  // Últimos 7 días con ventas frente a los 7 anteriores, por columna del archivo de ventas.
+  // Solo se comparan canales que vendieron en la semana previa (sin base no hay porcentaje).
+  function crecimientoSemanal(m) {
+    const fin = daysPassed(m);
+    if (!state.daily2026 || fin < 1) return null;
+    const suma = (col, desde, hasta) => { let s = 0; for (let d = desde; d <= hasta; d++) s += ventaDia(m, col, d); return s; };
+    const filas = VENTAS_COLS.map(col => {
+      const actual = suma(col, fin - 6, fin), previa = suma(col, fin - 13, fin - 7);
+      return { col, actual, previa, pct: previa > 0 ? (actual / previa - 1) * 100 : null };
+    });
+    const medibles = filas.filter(f => f.pct !== null).sort((a, b) => b.pct - a.pct);
+    if (!medibles.length) return null;
+    return {
+      lider: medibles[0], resto: medibles.slice(1),
+      nuevos: filas.filter(f => f.pct === null && f.actual > 0),
+      actual: rangoLabel(m, fin - 6, fin), previa: rangoLabel(m, fin - 13, fin - 7),
+    };
+  }
 
+  // Avisos del mes: crecimiento semanal, brecha a mitad de mes y objetivos alcanzados.
+  function avisosMes(m) {
+    const items = [];
+    const cs = crecimientoSemanal(m);
+    if (cs) {
+      const { lider: l } = cs;
+      items.push({
+        tone: l.pct > 0 ? 'green' : 'amber',
+        titulo: l.pct > 0 ? `${colName(l.col)} creció más rápido esta semana` : `Ningún canal creció · ${colName(l.col)} cayó menos`,
+        lineas: [
+          `S/. ${fmt(l.actual)} del ${cs.actual} frente a S/. ${fmt(l.previa)} del ${cs.previa} (${l.actual >= l.previa ? '+' : '−'}S/. ${fmt(Math.abs(l.actual - l.previa))})`,
+          cs.resto.length ? `Le siguen: ${cs.resto.map(f => `${f.col} ${pctTxt(f.pct)}`).join(' · ')}` : '',
+          cs.nuevos.length ? `Sin ventas la semana previa: ${cs.nuevos.map(f => `${f.col} S/. ${fmt(f.actual)}`).join(' · ')}` : '',
+        ],
+        badge: { valor: pctTxt(l.pct), etiqueta: 'vs sem. ant.' },
+      });
+    }
+
+    if (!hasMeta(m)) return items;
+    const status     = monthStatus(m);
     const d2026Month = state.d2026?.[m] || {};
     const passed     = daysPassed(m);
     const totalDays  = objectiveDays(m);
-
-    // Estadísticas por canal del plan
     const stats = planChannels().map(c => {
       const real = chReal(d2026Month, c);
       const tgt  = target(m, c.key);
-      const pct  = tgt > 0 ? real / tgt * 100 : 0;
-      const expectedReal = tgt > 0 ? tgt * passed / totalDays : 0;
-      return { ch: c.label, color: chColor(c), real, tgt, pct, expectedReal, surplus: real - tgt, gap: tgt - real };
+      return { ch: esc(c.label), color: chColor(c), real, tgt, pct: tgt > 0 ? real / tgt * 100 : 0,
+        expectedReal: tgt > 0 ? tgt * passed / totalDays : 0, surplus: real - tgt, gap: tgt - real };
     }).filter(s => s.tgt > 0);
+    const nombre = s => `<span class="ch-name"><span class="ch-pip" style="background:${s.color}"></span>${s.ch}</span>`;
 
-    // Canales que superaron el objetivo mensual
+    // Canales por debajo del 80 % del ritmo esperado, desde la mitad del mes
+    const lagging = status === 'current' && passed >= Math.floor(totalDays / 2)
+      ? stats.filter(s => s.pct < 100 && s.real < s.expectedReal * 0.80) : [];
+    lagging.forEach(b => items.push({
+      tone: 'red',
+      titulo: `Brecha a mitad de mes · ${nombre(b)}`,
+      lineas: [`S/. ${fmt(b.real)} vendidos · esperado al ${corteLabel(m)} S/. ${fmt(b.expectedReal)} · brecha S/. ${fmt(b.expectedReal - b.real)}`],
+      badge: { valor: `${Math.round(b.real / b.expectedReal * 100)}%`, etiqueta: 'del ritmo' },
+    }));
+    if (lagging.length) {
+      const falta = lagging.reduce((s, b) => s + b.gap, 0);
+      const quedan = Math.max(totalDays - passed, 1);
+      items.push({
+        tone: 'amber',
+        titulo: `Faltan S/. ${fmt(falta)} para la meta de ${lagging.length === 1 ? 'este canal' : `estos ${lagging.length} canales`}`,
+        lineas: [`Se necesitan S/. ${fmt(falta / quedan)} por día en los ${totalDays - passed} días que quedan del mes.`],
+        badge: { valor: totalDays - passed, etiqueta: 'días' },
+      });
+    }
+
+    // Canales que superaron el objetivo mensual + a dónde llevar el excedente
     const achieved = stats.filter(s => s.pct >= 100);
-
-    // Canales por debajo del ritmo esperado a mitad de mes
-    const pastMidMonth = status === 'current' && passed >= Math.floor(totalDays / 2);
-    const lagging = pastMidMonth
-      ? stats.filter(s => s.pct < 100 && s.real < s.expectedReal * 0.80)
-      : [];
-
-    if (achieved.length === 0 && lagging.length === 0) { el.innerHTML = ''; return; }
-
-    let html = '<div class="obj-alerts-wrap">';
-
-    // ── Objetivo alcanzado + sugerencia de redistribución ──
-    if (achieved.length > 0) {
-      const totalSurplus = achieved.reduce((s, a) => s + a.surplus, 0);
-      // Canales con mayor brecha que aún no alcanzaron el objetivo
-      const topNeed = stats
-        .filter(s => s.pct < 90 && !achieved.find(a => a.ch === s.ch))
-        .sort((a, b) => b.gap - a.gap)
-        .slice(0, 2);
-
-      html += `
-        <div class="obj-alert obj-alert-green">
-          <div class="obj-alert-head">
-            <span class="obj-alert-icon">🎯</span>
-            <div class="obj-alert-text">
-              <div class="obj-alert-title">Objetivo alcanzado</div>
-              <div class="obj-alert-sub">
-                ${achieved.map(a =>
-                  `<span class="ch-pip" style="background:${a.color};display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:3px;"></span>
-                   <strong>${a.ch}</strong> ${a.pct.toFixed(0)}% · excedente S/. ${fmt(a.surplus)}`
-                ).join(' &nbsp;·&nbsp; ')}
-              </div>
-            </div>
-          </div>
-          ${topNeed.length > 0 ? `
-          <div class="obj-alert-sug">
-            <span>💡</span>
-            <span>
-              Excedente total <strong>S/. ${fmt(totalSurplus)}</strong>.
-              Considerá traspasar presupuesto a
-              ${topNeed.map(n =>
-                `<strong>${n.ch}</strong> <span style="color:var(--red-text)">(brecha S/. ${fmt(n.gap)})</span>`
-              ).join(' y ')}
-              para reforzar las campañas de mayor brecha.
-            </span>
-          </div>` : ''}
-        </div>`;
+    achieved.forEach(a => items.push({
+      tone: 'green',
+      titulo: `Objetivo alcanzado · ${nombre(a)}`,
+      lineas: [`S/. ${fmt(a.real)} vendidos de una meta de S/. ${fmt(a.tgt)} · excedente S/. ${fmt(a.surplus)}`],
+      badge: { valor: `${a.pct.toFixed(0)}%`, etiqueta: 'de la meta' },
+    }));
+    const topNeed = stats.filter(s => s.pct < 90 && !achieved.includes(s)).sort((a, b) => b.gap - a.gap).slice(0, 2);
+    if (achieved.length && topNeed.length) {
+      items.push({
+        tone: 'blue',
+        titulo: `Redistribuir el excedente de S/. ${fmt(achieved.reduce((s, a) => s + a.surplus, 0))}`,
+        lineas: [`Considera traspasar presupuesto a ${topNeed.map(n => `<strong>${n.ch}</strong> <span class="notif-neg">(brecha S/. ${fmt(n.gap)})</span>`).join(' y ')} para reforzar las campañas de mayor brecha.`],
+      });
     }
+    return items;
+  }
 
-    // ── Alerta de brecha a mitad de mes ──
-    if (lagging.length > 0) {
-      html += `
-        <div class="obj-alert obj-alert-amber">
-          <div class="obj-alert-head">
-            <span class="obj-alert-icon">⚠️</span>
-            <div class="obj-alert-text">
-              <div class="obj-alert-title">Brecha a mitad de mes · día ${passed} de ${totalDays}</div>
-              <div class="obj-alert-sub">Canales por debajo del 80% del ritmo esperado</div>
-            </div>
+  // El mes de los avisos: el que está en curso; si aún no tiene ventas, el último que las tiene.
+  const notifMonth = () => [months[currentMonthIdx()]].find(m => m && conVentas(m)) || [...months].reverse().find(conVentas);
+
+  function renderNotificaciones() {
+    const zone = document.getElementById('notif-zone');
+    if (!zone) return;
+    const m = notifMonth();
+    if (!m) { zone.hidden = true; return; }
+    const items = avisosMes(m);
+    const open  = state.notifOpen;
+    const countTone = items.some(i => i.tone === 'red') ? 'red' : items.length ? 'blue' : 'none';
+    const corte = monthStatus(m) === 'current' ? `ventas al ${corteLabel(m)}` : 'mes cerrado';
+    const itemHTML = i => `
+      <button class="notif-item ${i.tone}" type="button" data-notif-month="${m}" title="Abrir ${m.toLowerCase()} en Objetivos 2026">
+        <span>
+          <strong>${i.titulo}</strong>
+          ${i.lineas.filter(Boolean).map(l => `<span class="notif-meta">${l}</span>`).join('')}
+        </span>
+        ${i.badge ? `<span class="notif-badge"><strong>${i.badge.valor}</strong><span>${i.badge.etiqueta}</span></span>` : ''}
+      </button>`;
+    zone.hidden = false;
+    zone.innerHTML = `
+      <button class="notif-toggle${open ? ' open' : ''}" id="notif-toggle" type="button" aria-expanded="${open}" aria-controls="notif-panel" title="Notificaciones del mes">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        <span class="notif-toggle-text">Notificaciones</span>
+        <span class="notif-count ${countTone}">${items.length}</span>
+      </button>
+      <div class="notif-panel" id="notif-panel" role="dialog" aria-label="Notificaciones del mes"${open ? '' : ' hidden'}>
+        <div class="notif-head">
+          <div>
+            <strong>Avisos de ${m.toLowerCase()} 2026</strong>
+            <p>${corte} · ${items.length ? `${items.length} ${items.length === 1 ? 'aviso' : 'avisos'}` : 'sin avisos'}</p>
           </div>
-          <div class="obj-alert-rows">
-            ${lagging.map(b => `
-              <div class="obj-alert-row">
-                <span class="ch-pip" style="background:${b.color};display:inline-block;width:7px;height:7px;border-radius:2px;flex-shrink:0;"></span>
-                <span>
-                  <strong>${b.ch}</strong>:
-                  real S/. ${fmt(b.real)} ·
-                  esperado S/. ${fmt(b.expectedReal)} ·
-                  <span style="color:var(--red-text);font-weight:600;">brecha S/. ${fmt(Math.abs(b.real - b.expectedReal))}</span>
-                </span>
-              </div>`).join('')}
-          </div>
-          <div class="obj-alert-sug">
-            <span>💡</span>
-            <span>
-              Quedan <strong>${totalDays - passed} días</strong> en el mes.
-              Para cerrar la brecha de
-              <strong>S/. ${fmt(lagging.reduce((s, b) => s + b.gap, 0))}</strong>
-              se necesita un incremento diario de
-              <strong>S/. ${fmt(lagging.reduce((s, b) => s + b.gap, 0) / Math.max(totalDays - passed, 1))}</strong>.
-            </span>
-          </div>
-        </div>`;
+          <button class="notif-close" type="button" data-notif-close>Cerrar</button>
+        </div>
+        <div class="notif-list">
+          ${items.length ? items.map(itemHTML).join('') : '<div class="notif-empty">No hay avisos para este mes.</div>'}
+        </div>
+        <p class="notif-foot">La semana es de los últimos 7 días con ventas cargadas frente a los 7 anteriores. Haz clic en un aviso para abrir el mes en Objetivos 2026.</p>
+      </div>`;
+
+    const toggle = v => { state.notifOpen = typeof v === 'boolean' ? v : !state.notifOpen; renderNotificaciones(); };
+    zone.querySelector('#notif-toggle').addEventListener('click', e => { e.stopPropagation(); toggle(); });
+    zone.querySelector('[data-notif-close]').addEventListener('click', () => toggle(false));
+    zone.querySelectorAll('[data-notif-month]').forEach(b => b.addEventListener('click', () => {
+      toggle(false);
+      document.querySelector('.s-item[data-view="view-obj"]')?.click();
+      selectMonth(b.dataset.notifMonth);
+    }));
+    // Se cierra al hacer clic fuera o con Escape (una sola vez por página).
+    if (!state.notifWired) {
+      state.notifWired = true;
+      document.addEventListener('click', e => { if (state.notifOpen && !document.getElementById('notif-zone')?.contains(e.target)) toggle(false); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.notifOpen) toggle(false); });
     }
-
-    html += '</div>';
-    el.innerHTML = html;
   }
 
   // ── Render principal de la vista ──
   function render({ d2026, weeklyData, transactions, weekly2025, d2025Ref, plan,
-                   ventasInfo, onSyncVentas, onPlanChange }) {
+                   ventasInfo, onSyncVentas, onPlanChange, daily2026 }) {
     state.d2026        = d2026;
+    state.daily2026    = daily2026 || null;
     state.weeklyData   = weeklyData;
     state.transactions = transactions;
     state.weekly2025   = weekly2025 || {};
@@ -923,6 +978,7 @@
     }
     renderMonthPanels();
     renderPlanNotes();
+    renderNotificaciones();
   }
 
   // Debajo del cuadro solo van los avisos de la lectura del archivo de objetivos (vacío si no hay
@@ -1021,10 +1077,7 @@
       if (m === ANUAL) {
         document.getElementById('pace-' + ANUAL).innerHTML = anualKpis();
       } else {
-        if (hasMeta(m)) {
-          refreshObjTotal(m);
-          refreshAlertPanel(m);
-        }
+        if (hasMeta(m)) refreshObjTotal(m);
         refreshPaceCards(m);
       }
 
@@ -1067,7 +1120,6 @@
     return `
       ${statusNote}
       <div id="pace-${m}" style="margin-bottom:16px;"></div>
-      <div id="alert-panel-${m}"></div>
       <div class="panel">
         <div class="panel-head">
           <div>

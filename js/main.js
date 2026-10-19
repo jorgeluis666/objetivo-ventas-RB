@@ -456,6 +456,7 @@
     window.Objectives.render({
       d2026: state.d2026,
       weeklyData: state.weeklyData,
+      daily2026: liveData.daily2026 || null,
       transactions: state.transactions,
       weekly2025: state.weekly2025,
       d2025Ref: ds.d2025,

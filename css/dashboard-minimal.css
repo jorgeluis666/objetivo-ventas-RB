@@ -2506,13 +2506,9 @@ tbody tr:hover td {
   .shell.sidebar-collapsed .s-brand .s-sub,
   .shell.sidebar-collapsed .s-group-lbl,
   .shell.sidebar-collapsed .s-text,
-  .shell.sidebar-collapsed .s-chevron,
-  .shell.sidebar-collapsed .s-modulo-activo {
-  margin-top: auto;
-  padding: 16px 14px 18px;
-  border: 0;
-  background: none;
-}
+  .shell.sidebar-collapsed .s-chevron {
+    display: none;
+  }
 
   .shell.sidebar-collapsed .s-group-lbl[style*="margin-top:auto"] {
     display: block;

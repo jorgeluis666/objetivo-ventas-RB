@@ -2055,12 +2055,10 @@ body {
 }
 
 .s-modulo-activo {
-  margin-top: 2px;
-  background: #eff6ff;
-  border: 1px solid #b9d6ff;
-  border-radius: 10px;
-  padding: 15px 16px;
-  color: #0f172a;
+  margin-top: auto;
+  padding: 16px 14px 18px;
+  border: 0;
+  background: none;
 }
 
 .s-ma-label {
@@ -2426,8 +2424,11 @@ tbody tr:hover td {
   .shell.sidebar-collapsed .s-text,
   .shell.sidebar-collapsed .s-chevron,
   .shell.sidebar-collapsed .s-modulo-activo {
-    display: none;
-  }
+  margin-top: auto;
+  padding: 16px 14px 18px;
+  border: 0;
+  background: none;
+}
 
   .shell.sidebar-collapsed .s-group-lbl[style*="margin-top:auto"] {
     display: block;
@@ -3126,3 +3127,37 @@ body.gp-table-fullscreen { overflow: hidden; }
   .gp-ads-table .gp-ad-col { position: static; }
   .gp-ads-table thead th:nth-child(-n+2) { left: auto; }
 }
+
+/* ===== Pie del panel: cuenta, WhatsApp de Lima Retail y web ===== */
+
+.s-wa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 36px;
+  margin-top: 12px;
+  padding: 0 10px;
+  border-radius: 9px;
+  background: #25d366;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.s-wa:hover { background: #1da851; }
+
+.s-wa svg { width: 16px; height: 16px; flex: none; fill: currentColor; }
+
+.s-web {
+  display: block;
+  margin-top: 9px;
+  color: inherit;
+  font-size: 10px;
+  text-align: center;
+  text-decoration: none;
+  opacity: .7;
+}
+
+.s-web:hover { opacity: 1; text-decoration: underline; }

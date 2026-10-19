@@ -16,7 +16,6 @@
     'view-proj': 'Proyecciones mensuales',
     'view-rep':  'Gasto publicitario',
     'view-ads':  'Anuncios',
-    'view-config': 'Usuarios y Claves',
   };
 
   // Descripción corta que va bajo el título de la barra superior
@@ -29,7 +28,6 @@
     'view-proj':   'Ritmo del mes y plan por campaña',
     'view-rep':    'Meta Ads y Google Ads',
     'view-ads':    'Meta Ads y Google Ads por anuncio',
-    'view-config': 'Gestión de accesos y alertas',
   };
 
   // Charts que hay que re-animar al mostrar cada vista.
@@ -42,7 +40,6 @@
     'view-proj':   ['chart-proj-ritmo', 'chart-proj-fuentes', 'chart-src-*', 'chart-plan-*'],
     'view-rep':    [],  // Gasto.init() re-anima los charts de la pestaña activa
     'view-ads':    [],
-    'view-config': [],
   };
 
   const state = {
@@ -55,7 +52,6 @@
     plan: null,          // data/objetivos-2026.json: objetivos de la marca (Drive)
     live: null,          // último juego de datos de ventas renderizado (publicado o sincronizado)
     renderedProducts: false,
-    configInited: false,
     metaInited: false,
     projDirty: true,     // Proyecciones tiene datos nuevos sin dibujar
   };
@@ -74,12 +70,6 @@
     if (caption) caption.textContent = VIEW_DESCRIPTIONS[id] || '';
     window.Sheets?.setView(id);
     history.replaceState(null, '', '#' + id);
-
-    // Init perezoso del módulo de configuración
-    if (id === 'view-config' && !state.configInited) {
-      state.configInited = true;
-      window.Config?.init();
-    }
 
     if (id === 'view-meta' && !state.metaInited) {
       state.metaInited = true;

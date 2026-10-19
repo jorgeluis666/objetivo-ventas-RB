@@ -1,6 +1,6 @@
 {
   "name": "objetivo-ventas-rb",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "private": true,
   "description": "Dashboard de ventas por canal con pipeline automatizado desde Google Sheets",
   "scripts": {

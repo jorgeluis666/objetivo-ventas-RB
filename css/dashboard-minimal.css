@@ -3313,3 +3313,53 @@ body.gp-table-fullscreen { overflow: hidden; }
     margin-top: 12px;
   }
 }
+
+/* ===== Panel lateral en ventanas muy angostas (hasta 280px) ===== */
+/* A ese ancho el nombre de cada modulo se partia letra por letra ("O..", "G.") y aplastaba
+   su icono, y el nombre de la marca se montaba sobre el logo. El panel pasa a mostrar solo
+   los iconos, como cuando se minimiza; el nombre de cada modulo queda en su title. */
+
+@media(max-width:280px) {
+  .s-brand {
+    display: block;
+    padding: 62px 0 16px;
+    text-align: center;
+  }
+
+  .s-brand::before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .s-logo {
+    margin: 0 auto 10px;
+  }
+
+  .s-brand .s-title {
+    font-size: 14px;
+  }
+
+  .s-brand .s-sub,
+  .s-group-lbl,
+  .s-item .s-text,
+  .s-item .s-chevron,
+  .s-ma-label,
+  .s-ma-name,
+  .s-web {
+    display: none;
+  }
+
+  .s-item::after {
+    display: none;
+  }
+
+  .s-item {
+    justify-content: center;
+    gap: 0;
+    padding: 8px;
+  }
+
+  .s-icon {
+    margin: 0 auto;
+  }
+}

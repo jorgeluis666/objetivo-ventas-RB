@@ -16,6 +16,8 @@
     'view-proj': 'Proyecciones mensuales',
     'view-rep':  'Gasto publicitario',
     'view-ads':  'Anuncios',
+    'view-arch': 'Archivo de Reportes',
+    'view-week': 'Archivo de Reportes',
   };
 
   // Descripción corta que va bajo el título de la barra superior
@@ -28,6 +30,13 @@
     'view-proj':   'Ritmo del mes y plan por campaña',
     'view-rep':    'Meta Ads y Google Ads',
     'view-ads':    'Meta Ads y Google Ads por anuncio',
+    'view-arch':   'Documentos en Drive',
+    'view-week':   'Generación de Reporte · semana de lunes a domingo',
+  };
+
+  // Secciones que van dentro de otro módulo, con su pestaña: el menú marca el módulo.
+  const VIEW_PARENT = {
+    'view-week': 'view-arch',
   };
 
   // Charts que hay que re-animar al mostrar cada vista.
@@ -40,6 +49,8 @@
     'view-proj':   ['chart-proj-ritmo', 'chart-proj-fuentes', 'chart-src-*', 'chart-plan-*'],
     'view-rep':    [],  // Gasto.init() re-anima los charts de la pestaña activa
     'view-ads':    [],
+    'view-arch':   [],
+    'view-week':   [],  // ReporteSemanal.init() dibuja su gráfico ya visible
   };
 
   const state = {
@@ -61,9 +72,14 @@
     document.querySelectorAll('.view').forEach(v => v.classList.remove('visible'));
     document.querySelectorAll('.s-item').forEach(n => n.classList.remove('active'));
     const view = document.getElementById(id);
-    const btn  = document.querySelector(`.s-item[data-view="${id}"]`);
+    const btn  = document.querySelector(`.s-item[data-view="${VIEW_PARENT[id] || id}"]`);
     if (view) view.classList.add('visible');
     if (btn)  btn.classList.add('active');
+    document.querySelectorAll('.arch-tabs [data-view]').forEach(tab => {
+      const on = tab.dataset.view === id;
+      tab.classList.toggle('active', on);
+      tab.setAttribute('aria-selected', String(on));
+    });
     const title = document.getElementById('topbar-title');
     if (title) title.textContent = VIEW_TITLES[id] || '';
     const caption = document.getElementById('topbar-caption');
@@ -91,6 +107,9 @@
     if (id === 'view-rep') window.Gasto?.init();
     // Anuncios usa los mismos datos de Meta Ads y Google Ads (js/gasto.js)
     if (id === 'view-ads') window.Gasto?.initAds();
+    // Archivo de Reportes: la lista de la carpeta y el reporte de la semana (este lee los datos de Gasto.load())
+    if (id === 'view-arch') window.Reportes?.init();
+    if (id === 'view-week') window.ReporteSemanal?.init();
 
     // Render perezoso de productos para no bloquear primera pantalla
     if (id === 'view-prod' && !state.renderedProducts) {
@@ -108,7 +127,7 @@
   }
 
   function wireNav() {
-    document.querySelectorAll('.s-item[data-view]').forEach(btn => {
+    document.querySelectorAll('.s-item[data-view], .arch-tabs [data-view]').forEach(btn => {
       btn.addEventListener('click', () => showView(btn.dataset.view));
     });
   }
@@ -538,7 +557,7 @@
     wireSidebarToggle();
     // Un módulo oculto en el menú tampoco se abre por enlace (#view-…)
     const hashView = window.location.hash.slice(1);
-    const hashBtn  = hashView && document.querySelector(`.s-item[data-view="${hashView}"]`);
+    const hashBtn  = hashView && document.querySelector(`.s-item[data-view="${VIEW_PARENT[hashView] || hashView}"]`);
     showView(hashBtn && !hashBtn.hidden ? hashView : 'view-obj');
 
     // Carga paralela: ventas, objetivos e inversión publicitaria. Publicados, los tres vienen

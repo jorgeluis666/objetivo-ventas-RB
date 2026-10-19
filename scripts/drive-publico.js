@@ -47,6 +47,24 @@ async function listWithApi(folderId, key) {
   return (payload.files || []).map(f => ({ id: f.id, name: f.name, mimeType: f.mimeType, modifiedTime: f.modifiedTime || null }));
 }
 
+// Fecha de modificación de la vista pública (en inglés: "5:30 PM" hoy, "Jul 20" este año, "11/5/25" antes)
+// → 'YYYY-MM-DD', o null. Solo el día: la vista no trae la hora de las fechas pasadas.
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function publicViewDate(text) {
+  const pad = n => String(n).padStart(2, '0');
+  const today = new Date(Date.now() - 5 * 3600000).toISOString().slice(0, 10);   // Lima (UTC−5)
+  if (/^\d{1,2}:\d{2}\s*[AP]M$/i.test(text)) return today;
+  let m = text.match(/^([A-Z][a-z]{2}) (\d{1,2})$/);
+  if (m && MON.includes(m[1])) {
+    let year = +today.slice(0, 4);
+    const md = `${pad(MON.indexOf(m[1]) + 1)}-${pad(m[2])}`;
+    if (`${year}-${md}` > today) year--;
+    return `${year}-${md}`;
+  }
+  m = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2})$/);
+  return m ? `20${m[3]}-${pad(m[1])}-${pad(m[2])}` : null;
+}
+
 // La vista pública trae el mimeType en el ícono de cada archivo (…/type/<mimeType>).
 async function listWithPublicView(folderId) {
   const html = await fetchText(`https://drive.google.com/embeddedfolderview?id=${encodeURIComponent(folderId)}`);
@@ -55,7 +73,8 @@ async function listWithPublicView(folderId) {
     const id = (block.match(/^\s*id="entry-([-\w]{20,})"/) || [])[1];
     const name = (block.match(/class="flip-entry-title">([^<]+)</) || [])[1];
     const mimeType = (block.match(/\/type\/([^"?]+)"/) || [])[1] || null;
-    if (id && name) files.push({ id, name: decodeHtml(name.trim()), mimeType, modifiedTime: null });
+    const modified = (block.match(/class="flip-entry-last-modified"><div>([^<]*)</) || [])[1];
+    if (id && name) files.push({ id, name: decodeHtml(name.trim()), mimeType, modifiedTime: publicViewDate(decodeHtml(modified || '').trim()) });
   }
   return files;
 }

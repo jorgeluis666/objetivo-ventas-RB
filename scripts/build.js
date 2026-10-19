@@ -31,6 +31,7 @@ const EMBEDDED_DATA = {
   RB_GASTO_DATA:     'data/ads-2026.json',
   RB_ARTES_DATA:     'data/artes-2026.json',
   RB_PROPUESTAS_DATA: 'data/propuestas-creativas-2026.json',
+  RB_REPORTES_DATA:  'data/reportes-2026.json',
 };
 
 // Campos que el tablero no lee: se quitan al incrustar para no inflar el HTML cifrado.

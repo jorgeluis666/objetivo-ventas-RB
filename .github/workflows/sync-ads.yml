@@ -8,6 +8,9 @@ name: Sincronizar inversión publicitaria
 # data/artes-2026.json: es el arte que el módulo Anuncios pone al lado de cada anuncio.
 # Van juntos porque las piezas se suben a Drive al mismo ritmo que los informes.
 #
+# Al final lista la carpeta de reportes con scripts/sync-reportes.js y commitea
+# data/reportes-2026.json: es el índice del módulo Archivo de Reportes.
+#
 # Corre todos los días a las 10:30 de Lima, lanzado por el Apps Script scripts/disparar-actualizacion.gs
 # (el cron de las 07:00 queda de respaldo), y a mano (Run workflow). No hay botón en
 # el tablero: dispararlo desde el navegador exigiría un token de GitHub y el tablero
@@ -62,13 +65,18 @@ jobs:
           RB_DRIVE_API_KEY: ${{ secrets.RB_DRIVE_API_KEY }}
         run: node scripts/sync-artes.js
 
+      - name: Leer la carpeta de reportes
+        env:
+          RB_DRIVE_API_KEY: ${{ secrets.RB_DRIVE_API_KEY }}
+        run: node scripts/sync-reportes.js
+
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/ads-2026.json data/artes-2026.json
+          git add data/ads-2026.json data/artes-2026.json data/reportes-2026.json
           if git diff --cached --quiet; then
-            echo "Sin cambios en los datos de anuncios ni de artes"
+            echo "Sin cambios en los datos de anuncios, artes ni reportes"
             exit 0
           fi
           TODAY=$(TZ='America/Lima' date +'%Y-%m-%d')

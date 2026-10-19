@@ -113,6 +113,17 @@
       <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
     </button>
 
+    <button title="Archivo de Reportes" class="s-item" data-view="view-arch">
+      <div class="s-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="16" x2="13" y2="16"/></svg>
+      </div>
+      <div class="s-text">
+        <div class="s-title-nav">Archivo de Reportes</div>
+        <div class="s-desc-nav">Documentos y reporte semanal</div>
+      </div>
+      <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </button>
+
     <div class="s-modulo-activo">
       <div class="s-ma-label">CUENTA</div>
       <div class="s-ma-name">Royal Baby</div>
@@ -837,6 +848,82 @@
         </div>
       </section>
 
+      <!-- ══ VIEW: Archivo de Reportes · Documentos en Drive ══ -->
+      <!-- Un módulo con dos pestañas: los documentos de la carpeta Reportes (js/reportes.js) y el reporte
+           de la semana armado con las descargas de Meta Ads y Google Ads (js/reporte-semanal.js). -->
+      <section class="view" id="view-arch">
+        <div class="section-title">Archivo de Reportes</div>
+        <div class="section-desc">
+          Los reportes de Royal Baby guardados en la carpeta <a href="https://drive.google.com/drive/folders/1TxuNI5ig8xnakT0JhH56iv-M3zyKWeR6" target="_blank" rel="noopener"><strong>Reportes</strong></a> de Drive. Cada uno se puede ver sin salir del tablero, abrir en Drive o descargar en PDF.
+        </div>
+        <div class="gp-tabs arch-tabs" role="tablist" aria-label="Secciones de Archivo de Reportes">
+          <button class="gp-tab" type="button" role="tab" data-view="view-arch">
+            <span class="gp-tab-ic">D</span>
+            <span><span class="gp-tab-name">Documentos en Drive</span><span class="gp-tab-src">Carpeta Reportes · Drive</span></span>
+          </button>
+          <button class="gp-tab" type="button" role="tab" data-view="view-week">
+            <span class="gp-tab-ic">S</span>
+            <span><span class="gp-tab-name">Generación de Reporte</span><span class="gp-tab-src">Semana de lunes a domingo</span></span>
+          </button>
+        </div>
+        <div class="panel">
+          <div class="panel-head arch-head">
+            <div>
+              <div class="panel-title">Documentos de la carpeta</div>
+              <div class="panel-sub" id="arch-sub">Cargando documentos…</div>
+            </div>
+            <div class="gp-table-tools">
+              <input class="arch-search" id="arch-search" type="search" placeholder="Buscar por nombre o periodo" aria-label="Buscar documento">
+              <label class="gp-tool-select"><span class="sr-only">Tipo de reporte</span><select id="arch-type"><option value="">Todos los tipos</option></select></label>
+              <a class="gp-tool-btn" id="arch-folder" href="https://drive.google.com/drive/folders/1TxuNI5ig8xnakT0JhH56iv-M3zyKWeR6" target="_blank" rel="noopener">Abrir carpeta</a>
+            </div>
+          </div>
+          <div class="gp-table-wrap">
+            <table class="rep-table arch-table">
+              <thead><tr><th>Documento</th><th>Tipo</th><th>Actualizado</th><th class="r">Acciones</th></tr></thead>
+              <tbody id="arch-body"><tr><td class="gp-table-empty" colspan="4">Cargando documentos…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ VIEW: Archivo de Reportes · Generación de Reporte ══ -->
+      <section class="view" id="view-week">
+        <div class="section-title">Generación de Reporte</div>
+        <div class="section-desc">
+          El reporte de la semana que acaba de pasar, de lunes a domingo, frente a la semana anterior y con el orden de los reportes de la carpeta: Meta Ads por grupo de campañas y conjunto, Google Ads y conclusiones. Se arma con las mismas descargas de Drive que <strong>Gasto publicitario</strong>: solo hay que revisar las conclusiones y descargarlo en PDF.
+        </div>
+        <div class="gp-tabs arch-tabs" role="tablist" aria-label="Secciones de Archivo de Reportes">
+          <button class="gp-tab" type="button" role="tab" data-view="view-arch">
+            <span class="gp-tab-ic">D</span>
+            <span><span class="gp-tab-name">Documentos en Drive</span><span class="gp-tab-src">Carpeta Reportes · Drive</span></span>
+          </button>
+          <button class="gp-tab" type="button" role="tab" data-view="view-week">
+            <span class="gp-tab-ic">S</span>
+            <span><span class="gp-tab-name">Generación de Reporte</span><span class="gp-tab-src">Semana de lunes a domingo</span></span>
+          </button>
+        </div>
+        <div class="panel week-toolbar">
+          <label class="gp-tool-select"><span class="sr-only">Semana del reporte</span><select id="week-select"><option value="">Cargando semanas…</option></select></label>
+          <span class="week-model" id="week-model"></span>
+          <button class="btn primary" type="button" id="week-print" title="Abre el diálogo de impresión para guardar el reporte como PDF">Descargar PDF</button>
+        </div>
+        <div id="week-report"><div class="panel"><div class="gp-table-empty">Cargando la semana…</div></div></div>
+      </section>
+
+      <div class="modal-overlay arch-preview" id="arch-preview" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="arch-preview-title">
+          <div class="arch-preview-head">
+            <h3 id="arch-preview-title">Vista previa</h3>
+            <div class="arch-preview-actions">
+              <a class="gp-tool-btn" id="arch-preview-open" href="#" target="_blank" rel="noopener">Abrir en Drive</a>
+              <button class="gp-tool-btn" type="button" data-arch-close>Cerrar</button>
+            </div>
+          </div>
+          <iframe id="arch-preview-frame" title="Vista previa del documento" loading="lazy" allow="autoplay"></iframe>
+        </div>
+      </div>
+
       <div class="site-footer">
         <span>Fuente: Tasa de ventas diarias 2026 · pipeline automático</span>
         <span>Lima Retail Design System v1.0</span>
@@ -856,6 +943,8 @@
 <script src="js/plan-campanas.js"></script>
 <script src="js/projections.js"></script>
 <script src="js/gasto.js"></script>
+<script src="js/reportes.js"></script>
+<script src="js/reporte-semanal.js"></script>
 <script src="js/main.js"></script>
 
 </body>

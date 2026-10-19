@@ -36,16 +36,20 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
     projections.js        Módulo Proyecciones (datos de Objetivos y Gasto publicitario): pestaña Ritmo del mes
     plan-campanas.js      Proyecciones · pestaña Plan por campaña (estrategia Plano + Picos)
     gasto.js              Módulo Gasto publicitario (Meta Ads y Google Ads desde Drive)
+    reportes.js           Archivo de Reportes · pestaña Documentos en Drive (carpeta Reportes)
+    reporte-semanal.js    Archivo de Reportes · pestaña Generación de Reporte (semana de lunes a domingo)
     main.js               Orquestación: init, navegación, render
   data/
     ventas-2026.json      Generado por fetch-data.js (no editar a mano)
     objetivos-2026.json   Objetivos de la marca desde Drive, generado por sync-objetivos.js (no editar a mano)
     ads-2026.json         Google Ads + Meta Ads desde Drive, para Gasto publicitario y Proyecciones (generado por sync-ads.js)
+    reportes-2026.json    Lista de la carpeta Reportes de Drive, para Archivo de Reportes (generado por sync-reportes.js)
   scripts/
     fetch-data.js         Ventas: carpeta de Drive (2026) + Google Sheet (2025) → data/ventas-2026.json
     sync-objetivos.js     Objetivos: carpeta de Drive → data/objetivos-2026.json
     drive-publico.js      Encuentra la hoja de una carpeta de Drive compartida por enlace
     sync-ads.js           Lee las carpetas de Drive de Google Ads y Meta → data/ads-2026.json
+    sync-reportes.js      Lista la carpeta Reportes de Drive → data/reportes-2026.json
     build.js              Arma dist/ (HTML con todo incrustado, cifrado con la clave)
     alertas.js            Correo semanal de alertas
     weekly-check.js       Revisión semanal del pipeline
@@ -54,7 +58,7 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
   .github/workflows/
     update-data.yml       Ventas, todos los días a las 10:30 Lima (Apps Script) y 06:00 de respaldo + workflow_dispatch
     sync-objetivos.yml    Objetivos, todos los días a las 06:05 Lima + workflow_dispatch
-    sync-ads.yml          Sync diario de las carpetas de Meta Ads y Google Ads (07:00 Lima) + workflow_dispatch
+    sync-ads.yml          Sync diario de las carpetas de Meta Ads, Google Ads, artes y reportes (07:00 Lima) + workflow_dispatch
     deploy.yml            Build cifrado + deploy a GitHub Pages
     alertas-semanales.yml Correo semanal después de cada actualización
     weekly-check.yml      Revisión semanal del pipeline
@@ -145,6 +149,13 @@ Los archivos son hojas de cálculo de Google: se descargan exportándolas a CSV 
 `sync-ads.yml` corre todos los días a las 07:00 de Lima (`0 12 * * *` UTC) y a mano (`Actions → Sincronizar inversión publicitaria → Run workflow`). Ejecuta `npm ci` y `node scripts/sync-ads.js`, y commitea `data/ads-2026.json` solo si cambió (con `git pull --rebase` antes del push, por si otro workflow de datos commiteó). Como ese commit lo hace `GITHUB_TOKEN`, el deploy se encadena con `workflow_run`.
 
 Si un archivo falla, el workflow queda en rojo, el JSON anterior se conserva y no hay deploy. El secret `RB_DRIVE_API_KEY` es opcional: sin él se usa la vista pública de las carpetas.
+
+## Archivo de Reportes
+
+Módulo del menú con dos pestañas (vistas `view-arch` y `view-week`; el menú marca Archivo de Reportes en las dos).
+
+- **Documentos en Drive** (`js/reportes.js`): los reportes de la carpeta [Reportes](https://drive.google.com/drive/folders/1TxuNI5ig8xnakT0JhH56iv-M3zyKWeR6), con búsqueda, filtro por tipo y, por documento, vista previa dentro del tablero, enlace a Drive y PDF. La lista la escribe `scripts/sync-reportes.js` en `data/reportes-2026.json` dentro del workflow `sync-ads.yml` (publicada, va incrustada como `window.RB_REPORTES_DATA`). El tipo (Semanal, Mensual, Anual, Ejecutivo, Estrategia) sale del nombre del archivo: un reporte nuevo aparece solo.
+- **Generación de Reporte** (`js/reporte-semanal.js`): la semana cerrada de lunes a domingo frente a la anterior, en el orden de los reportes semanales de la carpeta (el último va enlazado como modelo). Meta Ads por grupo de campañas (E-commerce, Mensajes WhatsApp, Reconocimiento, Interacción) con sus conjuntos, la variación de resultados, el costo por resultado, el ROAS en E-commerce y el mejor anuncio; Google Ads por campaña con el informe por día (`google.detail`), avisando los días que no cubre; y tres conclusiones editables, las dos primeras propuestas con los números y guardadas por semana en el navegador (`rb-week-notes-v1`). Usa los mismos datos que Gasto publicitario (`Gasto.load()`); **Descargar PDF** imprime solo el documento (`@media print`).
 
 ## Gasto publicitario
 

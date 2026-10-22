@@ -52,6 +52,11 @@ jobs:
         id: alerta
         run: node scripts/alertas.js
         env:
+          # Correo del hosting (alertas@limaretail.com). Si faltan, se usa Resend.
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           # URL del tablero en el hosting (variable del repo); si falta se usa la de alertas-config.json.
           DASHBOARD_URL: ${{ vars.DASHBOARD_URL }}

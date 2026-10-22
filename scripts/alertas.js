@@ -7,7 +7,7 @@
      data/objetivos-2026.json  → objetivos de la marca (Drive): canales y metas por mes
      data/alertas-config.json  → destinatarios y config de envío
 
-   Envía email HTML via Resend API.
+   Envía email HTML por el correo del hosting (SMTP) o, si no está configurado, por Resend.
    Registra el envío en data/alertas-envios.json (idempotencia).
 
    Uso:
@@ -15,7 +15,8 @@
      node scripts/alertas.js --dry-run   # simula sin enviar
      node scripts/alertas.js --force     # ignora idempotencia (reenvía)
 
-   Variables de entorno requeridas (envío real):
+   Variables de entorno para el envío real (una de las dos opciones):
+     SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS → cuenta de correo del hosting (alertas@limaretail.com)
      RESEND_API_KEY   → API key de Resend
    Variables opcionales:
      DRY_RUN=true     → equivale a --dry-run (para GitHub Actions)
@@ -434,14 +435,15 @@ const htmlEmail = `<!DOCTYPE html>
 </body>
 </html>`;
 
-// Asunto — añade prefijos especiales si hay alertas destacadas
-const subjectPrefix = achievedChannels.length > 0
-  ? `🎯 Objetivo alcanzado ·`
+// Asunto: el nivel del total del mes manda; los canales que ya llegaron a su meta o van atrasados
+// se nombran después (un canal en meta no significa que el mes lo esté).
+const subjectDetalle = achievedChannels.length > 0
+  ? ` · ${achievedChannels.map(r => r.ch).join(' y ')} en meta`
   : laggingChannels.length > 0
-    ? `⚠️ Brecha a mitad de mes ·`
-    : NIVEL_LABEL[NIVEL].split(' ')[0];
+    ? ' · brecha a mitad de mes'
+    : '';
 
-const subject = `${subjectPrefix} ${curMonth} ${limaYear} · ${proyPct.toFixed(0)}% proyectado · Lima Retail`;
+const subject = `${NIVEL_LABEL[NIVEL]} · ${curMonth} ${limaYear} · ${proyPct.toFixed(0)}% proyectado${subjectDetalle} · Lima Retail`;
 
 // ── Dry-run ───────────────────────────────────────────────────
 if (DRY_RUN) {
@@ -454,18 +456,53 @@ if (DRY_RUN) {
   process.exit(0);
 }
 
-// ── Envío via Resend ──────────────────────────────────────────
+// ── Registrar envío ──────────────────────────────────────────
+function registrarEnvio() {
+  enviosData.enviados[weekKey] = new Date().toISOString();
+  fs.writeFileSync(enviosPath, JSON.stringify(enviosData, null, 2) + '\n', 'utf8');
+  console.log(`📝 Registrado en alertas-envios.json: ${weekKey}\n`);
+}
+
+// ── Envío por el correo del hosting (SMTP) ────────────────────
+// El remitente es la misma cuenta que se autentica: los hostings rechazan un "From" de otra cuenta.
+async function enviarSmtp(toList) {
+  const nodemailer = require('nodemailer');
+  const port = Number(process.env.SMTP_PORT) || 465;
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port,
+    secure: port === 465,
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+  });
+  const from = /@/.test(process.env.SMTP_USER) ? process.env.SMTP_USER : config.from_email;
+  const info = await transporter.sendMail({
+    from: `${config.from_name} <${from}>`,
+    to: toList,
+    subject,
+    html: htmlEmail,
+  });
+  return info.messageId || '(sin id)';
+}
+
 (async () => {
+  const toList = config.destinatarios.map(d => d.email);
+  const smtp = ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS'].every(name => process.env[name]);
   const RESEND_KEY = process.env.RESEND_API_KEY;
-  if (!RESEND_KEY) {
-    console.error('\n❌ Falta RESEND_API_KEY en el entorno.');
-    console.error('   Exportá la variable o usá --dry-run para simular.\n');
+  if (!smtp && !RESEND_KEY) {
+    console.error('\n❌ Falta la configuración de envío: SMTP_HOST, SMTP_USER y SMTP_PASS (correo del hosting) o RESEND_API_KEY.');
+    console.error('   Exportá las variables o usá --dry-run para simular.\n');
     process.exit(1);
   }
 
-  const toList = config.destinatarios.map(d => d.email);
   console.log(`\n📧 Enviando a: ${config.destinatarios.map(d => `${d.nombre} <${d.email}>`).join(', ')}`);
   console.log(`   Asunto: ${subject}`);
+
+  if (smtp) {
+    const id = await enviarSmtp(toList);
+    console.log(`\n✅ Email enviado por el correo del hosting (${process.env.SMTP_HOST}). ID: ${id}`);
+    registrarEnvio();
+    return;
+  }
 
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -489,11 +526,7 @@ if (DRY_RUN) {
   }
 
   console.log(`\n✅ Email enviado. Resend ID: ${body.id || '(desconocido)'}`);
-
-  // ── Registrar envío ──────────────────────────────────────────
-  enviosData.enviados[weekKey] = new Date().toISOString();
-  fs.writeFileSync(enviosPath, JSON.stringify(enviosData, null, 2) + '\n', 'utf8');
-  console.log(`📝 Registrado en alertas-envios.json: ${weekKey}\n`);
+  registrarEnvio();
 })().catch(err => {
   console.error('\n❌ Error fatal:', err.message);
   process.exit(1);

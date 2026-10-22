@@ -253,7 +253,7 @@ Las sesiones abiertas con la clave anterior siguen hasta que se cierre la pesta�
 3. Compartir el Google Sheet de 2025 con el email del service account (permiso lector).
 4. Secret `RB_PAGE_PASSWORD`: clave de acceso al tablero (16 caracteres o más).
 5. Opcional: secret `RB_DRIVE_API_KEY` (clave de API de Google con Drive API habilitada) para que `sync-ads.yml`, `update-data.yml` y `sync-objetivos.yml` listen las carpetas con la API en vez de la vista pública.
-6. Secret `RESEND_API_KEY` para el correo de alertas. Opcional: variable `DASHBOARD_URL` si el enlace del correo debe ser otro que el de `data/alertas-config.json`.
+6. Secrets `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` y `SMTP_PASS` para el correo de alertas: la cuenta alertas@limaretail.com del hosting, que también es el remitente. Sin ellos se usa `RESEND_API_KEY` si existe. Opcional: variable `DASHBOARD_URL` si el enlace del correo debe ser otro que el de `data/alertas-config.json`.
 7. DNS de `limaretail.com`: registro CNAME `royalbaby` → `jorgeluis666.github.io`.
 8. `Settings → Pages`: Source **GitHub Actions**, Custom domain `royalbaby.limaretail.com` y **Enforce HTTPS**.
 9. Pushear a `main`: el deploy corre solo.

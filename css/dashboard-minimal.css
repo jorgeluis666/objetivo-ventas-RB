@@ -2966,6 +2966,9 @@ tbody tr:hover td {
   background: color-mix(in srgb, var(--gp-chip-c) 8%, #fff);
 }
 .gp-chip:focus-within { box-shadow: 0 0 0 3px rgba(37, 99, 235, .2); }
+/* Botón "Un solo cuadro": al final de los indicadores, separado de las casillas. */
+.gp-combine { margin-left: auto; font-family: inherit; line-height: inherit; }
+.gp-combine:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, .2); }
 
 .gp-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; color: var(--text-2); font-size: 11px; }
 .gp-legend span { display: inline-flex; align-items: center; gap: 7px; }

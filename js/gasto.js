@@ -214,18 +214,22 @@
     { match: /interacciones/, label: 'Interacciones' },
   ];
   const SUM_FIELDS = ['spend', 'impressions', 'reach', 'clicks', 'results', 'purchases', 'purchaseValue', 'conversations'];
+  // Vistas del gráfico de cada campaña (Meta y Google). Sin "Acumulado del mes": un total corrido siempre sube y
+  // hace ver un crecimiento que no hay (una vista guardada en acumulado vuelve a Por día).
   const MODES = [
-    { key: 'cumulative', label: 'Acumulado del mes' },
     { key: 'daily', label: 'Por día' },
     { key: 'monthly', label: 'Por mes' },
   ];
   // Indicadores del gráfico de cada campaña (Resultados toma el nombre del resultado del grupo). Se puede elegir
   // más de uno; por defecto va el resultado junto a la inversión, que es la relación que se quiere leer.
+  // tone: el color de su línea cuando los indicadores van juntos en un solo cuadro (si no, todos llevan el del grupo).
   const CAMPAIGN_METRICS = [
-    { key: 'results', label: 'Resultados', field: 'results', unit: 'count' },
-    { key: 'spend', label: 'Inversión', field: 'spend', unit: 'money' },
-    { key: 'impressions', label: 'Impresiones', field: 'impressions', unit: 'count' },
-    { key: 'reach', label: 'Alcance', field: 'reach', unit: 'count' },
+    { key: 'results', label: 'Resultados', field: 'results', unit: 'count', tone: '#0F766E' },
+    { key: 'spend', label: 'Inversión', field: 'spend', unit: 'money', tone: '#2563EB' },
+    { key: 'impressions', label: 'Impresiones', field: 'impressions', unit: 'count', tone: '#EA580C' },
+    { key: 'reach', label: 'Alcance', field: 'reach', unit: 'count', tone: '#7C3AED' },
+    // Cociente: inversión / resultados sumados del día o del mes; sin resultados queda como hueco.
+    { key: 'costPerResult', label: 'Costo por resultado', ratio: ['spend', 'results'], unit: 'money', tone: '#DB2777' },
   ];
   const DEFAULT_CAMPAIGN_METRICS = ['results', 'spend'];
   // KPIs de la cabecera de cada campaña, con su variación contra el mismo tramo del mes anterior. El ROAS solo
@@ -609,8 +613,11 @@
     const metrics = CAMPAIGN_METRICS.map(m => m.key).filter(k => Array.isArray(saved.metrics) && saved.metrics.includes(k));
     return {
       metrics: metrics.length ? metrics : DEFAULT_CAMPAIGN_METRICS,
-      mode: MODES.some(m => m.key === saved.mode) ? saved.mode : 'cumulative',
+      // Abre por día; una vista guardada que ya no existe (el acumulado) también vuelve a Por día.
+      mode: MODES.some(m => m.key === saved.mode) ? saved.mode : 'daily',
       collapsed: saved.collapsed === true,
+      // Varios indicadores en un solo cuadro (cada uno con su escala) en vez de un panel por indicador.
+      combined: saved.combined === true,
     };
   }
   function saveCampaignSettings(key, changes) {
@@ -768,7 +775,8 @@
     if (!m?.hasData) return null;
     const rows = m.rows.filter(r => r.group === metric.group);
     if (!rows.some(hasActivity)) return null;
-    return rows.reduce((s, r) => s + r[metric.field], 0);
+    const sum = field => rows.reduce((s, r) => s + r[field], 0);
+    return metric.ratio ? ratio(sum(metric.ratio[0]), sum(metric.ratio[1])) : sum(metric.field);
   }
 
   // Valores por día (índice 0 = día 1). Los días posteriores al último dato quedan en null.
@@ -777,12 +785,15 @@
     m.rows.forEach(r => { if (r.group === group && values[r.d - 1] != null) values[r.d - 1] += r[field]; });
     return values;
   }
-  function cumulative(values) {
-    let total = 0;
-    return values.map(v => (v == null ? null : (total += v)));
-  }
+  // Cociente día a día de dos series sumadas: un día sin denominador (sin resultados) queda como hueco.
+  const divideValues = (nums, dens) => nums.map((n, i) => ratio(n, dens[i]));
+  const metricDaily = (m, metric) => (metric.ratio
+    ? divideValues(dailyValues(m, metric.ratio[0], metric.group), dailyValues(m, metric.ratio[1], metric.group))
+    : dailyValues(m, metric.field, metric.group));
+  // Puntos visibles donde hay dato: cada uno lleva su valor (gpValueLabels).
+  const dotRadius = (values, size) => values.map(v => (v == null ? 0 : size));
 
-  // Total de cada mes del año, o día a día del mes (acumulado o no) frente al mes anterior en el mismo día.
+  // Total de cada mes del año, o día a día del mes frente al mes anterior en el mismo día.
   // compare = false deja solo el mes elegido (varios indicadores a la vez).
   function lineSeries(metric, modeKey, m, compare = true) {
     if (modeKey === 'monthly') {
@@ -793,16 +804,15 @@
         legend: [`<span><i class="gp-legend-line" style="background:${metric.color}"></i><b>${esc(metric.label)} por mes</b></span>`],
       };
     }
-    const isCumulative = modeKey === 'cumulative';
-    const transform = values => (isCumulative ? cumulative(values) : values);
+    const values = metricDaily(m, metric);
     const series = {
       labels: Array.from({ length: m.daysInMonth }, (_, i) => `${i + 1}`),
-      datasets: [{ label: compare ? m.name : metric.label, unit: metric.unit, data: transform(dailyValues(m, metric.field, metric.group)), borderColor: metric.color, backgroundColor: `${metric.color}14`, fill: isCumulative, borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 4, tension: 0.2 }],
+      datasets: [{ label: compare ? m.name : metric.label, unit: metric.unit, data: values, borderColor: metric.color, backgroundColor: `${metric.color}14`, fill: false, borderWidth: 2.5, pointRadius: dotRadius(values, 2), pointHoverRadius: 4, pointBackgroundColor: metric.color, tension: 0.2, spanGaps: false, valueLabels: true }],
       legend: [`<span><i class="gp-legend-line" style="background:${metric.color}"></i><b>${esc(m.name)} ${m.year}</b></span>`],
     };
     const prev = previousMonth(m);
     if (compare && prev?.hasData) {
-      const prevValues = transform(dailyValues(prev, metric.field, metric.group)).slice(0, m.daysInMonth);
+      const prevValues = metricDaily(prev, metric).slice(0, m.daysInMonth);
       if (prevValues.some(v => v)) {
         series.datasets.push({ label: prev.name, unit: metric.unit, data: prevValues, borderColor: PREVIOUS_COLOR, borderDash: [6, 5], fill: false, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.2 });
         series.legend.push(`<span><i class="gp-legend-line dashed" style="color:${PREVIOUS_COLOR}"></i><b>${esc(prev.name)} (mismo día del mes)</b></span>`);
@@ -811,33 +821,55 @@
     return series;
   }
 
+  // Varios indicadores en un solo cuadro: un color por indicador (tone), sin relleno, y la leyenda con cada color.
+  // what: el periodo ("Por día, Octubre 2026"); hint: la nota extra de la leyenda.
+  function combinedSeries(metrics, parts, what, hint = '') {
+    return {
+      labels: parts[0].labels,
+      datasets: parts.map((part, i) => ({ ...part.datasets[0], fill: false, yAxisID: `y${i}` })),
+      legend: metrics.map(metric => `<span><i class="gp-legend-line" style="background:${metric.tone}"></i><b>${esc(metric.label)}</b></span>`)
+        .concat(`<span>${what}. Cada indicador con su escala: compara la forma y lee el valor en el punto.${hint}</span>`),
+    };
+  }
+
   // Un indicador: su línea contra el mes anterior. Varios: una línea por indicador, sin comparación, cada una en su
-  // propio panel (eje y) para ver cómo se mueve el resultado frente a la inversión sin mezclar escalas.
-  function campaignSeries(metrics, modeKey, m) {
+  // propio panel (eje y) para ver cómo se mueve el resultado frente a la inversión sin mezclar escalas; con combined,
+  // todas en un solo cuadro con un color cada una.
+  function campaignSeries(metrics, modeKey, m, combined = false) {
     if (metrics.length === 1) return lineSeries(metrics[0], modeKey, m);
-    const parts = metrics.map(metric => lineSeries(metric, modeKey, m, false));
-    const what = modeKey === 'monthly' ? `${metrics.length} indicadores por mes` : `${esc(m.name)} ${m.year}`;
+    const parts = metrics.map(metric => lineSeries(combined ? { ...metric, color: metric.tone } : metric, modeKey, m, false));
     const prev = modeKey === 'monthly' ? null : previousMonth(m);
+    const hint = prev?.hasData ? ` Elige uno solo para compararlo con ${esc(prev.name)}.` : '';
+    if (combined) return combinedSeries(metrics, parts, modeKey === 'monthly' ? `Por mes, ${viewYear()}` : `Por día, ${esc(m.name)} ${m.year}`, hint);
+    const what = modeKey === 'monthly' ? `${metrics.length} indicadores por mes` : `${esc(m.name)} ${m.year}`;
     return {
       labels: parts[0].labels,
       datasets: parts.map((part, i) => ({ ...part.datasets[0], label: metrics[i].label, yAxisID: `y${i}` })),
       legend: [
         `<span><i class="gp-legend-line" style="background:${metrics[0].color}"></i><b>${what}</b></span>`,
-        `<span>Cada indicador con su escala.${prev?.hasData ? ` Elige uno solo para compararlo con ${esc(prev.name)}.` : ''}</span>`,
+        `<span>Cada indicador con su escala.${hint}</span>`,
       ],
     };
   }
 
-  const formatValue = (unit, v) => (unit === 'money' ? money(v, 2) : num(v));
+  // unitCost: los costos por resultado de centavos llevan más decimales (no quedan en S/. 0.00).
+  const formatValue = (unit, v) => (unit === 'money' ? unitCost(v) : num(v));
   const tickValue = (unit, v) => (unit === 'money'
-    ? (v === 0 ? 'S/. 0' : `S/. ${Number(v).toLocaleString('es-PE', { maximumFractionDigits: 0 })}`)
+    ? (v === 0 ? 'S/. 0' : `S/. ${Number(v).toLocaleString('es-PE', { maximumFractionDigits: Math.abs(v) >= 10 ? 0 : Math.abs(v) >= 0.1 ? 2 : 3 })}`)
     : Number(v).toLocaleString('es-PE', { notation: Math.abs(v) >= 100000 ? 'compact' : 'standard', maximumFractionDigits: 1 }));
+  // Etiqueta de un punto: soles sin decimales, salvo montos chicos (S/. 0.40 no debe leerse S/. 0).
+  const pointText = (unit, v) => (unit === 'money'
+    ? (Math.abs(v) >= 10 ? tickValue('money', Math.round(v)) : unitCost(v))
+    : Number(v).toLocaleString('es-PE', { notation: Math.abs(v) >= 10000 ? 'compact' : 'standard', maximumFractionDigits: 1 }));
 
   // Con un indicador hay un solo eje y; con varios, un eje por indicador apilado en vertical (paneles con su
-  // escala) sobre el mismo eje de días. Nunca dos escalas superpuestas: los cruces entre líneas no significarían nada.
-  function yScales(metrics) {
+  // escala) sobre el mismo eje de días. Nunca dos escalas a la vista sobre las mismas líneas: los cruces no
+  // significarían nada. En un solo cuadro (combined) cada indicador tiene su escala sin eje visible: el valor va
+  // en cada punto.
+  function yScales(metrics, combined = false) {
     const base = unit => ({ beginAtZero: true, border: { display: false }, ticks: { color: axisColor, font: { size: 10 }, callback: v => tickValue(unit, v) } });
-    if (metrics.length === 1) return { y: { ...base(metrics[0].unit), grid: { color: gridColor } } };
+    if (metrics.length === 1) return { y: { ...base(metrics[0].unit), grace: '12%', grid: { color: gridColor } } };
+    if (combined) return Object.fromEntries(metrics.map((metric, i) => [`y${i}`, { display: false, beginAtZero: true, grace: '18%' }]));
     // Chart.js apila de abajo hacia arriba en el orden de los ejes: se dan al revés para que el resultado quede arriba.
     return Object.fromEntries(metrics.map((metric, i) => [`y${i}`, {
       ...base(metric.unit),
@@ -853,20 +885,55 @@
   }
 
   const CHART_PLUGINS = [{
+    // Valor en cada punto (valueLabels), menos los ceros (el punto ya está en la base). Va arriba en un pico y abajo
+    // en un valle para no montarse en la línea, con halo blanco. Si choca con otra etiqueta o con el nombre de un
+    // panel, o se sale de su panel, prueba el otro lado; si tampoco cabe se omite (queda en el tooltip).
     id: 'gpValueLabels',
     afterDatasetsDraw(chart) {
       const ctx = chart.ctx;
+      const placed = [];
+      const overlaps = box => placed.some(o => !(box.right < o.left || box.left > o.right || box.bottom < o.top || box.top > o.bottom));
       ctx.save();
+      // Los nombres de los paneles (gpPanelLabels) también ocupan lugar.
+      ctx.font = '600 11px Inter, sans-serif';
+      Object.values(chart.scales).forEach(scale => {
+        const label = scale.options.panelLabel;
+        if (!label) return;
+        const left = chart.chartArea.left + 4;
+        placed.push({ left, right: left + ctx.measureText(label).width + 8, top: scale.top + 2, bottom: scale.top + 18 });
+      });
       ctx.font = '600 10px Inter, sans-serif';
       ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(255,255,255,.92)';
       chart.data.datasets.forEach((dataset, i) => {
-        if (!dataset.valueLabels) return;
+        const points = chart.getDatasetMeta(i);
+        if (!dataset.valueLabels || points.hidden) return;
+        const scale = chart.scales[points.yAxisID];
+        if (!scale) return;
+        // Solo el panel de arriba (o el cuadro único) puede usar el margen superior del gráfico.
+        const top = scale.top <= chart.chartArea.top + 1 ? chart.chartArea.top - 22 : scale.top;
         ctx.fillStyle = dataset.borderColor;
-        chart.getDatasetMeta(i).data.forEach((point, k) => {
+        points.data.forEach((point, k) => {
           const v = dataset.data[k];
-          if (v == null) return;
-          const text = dataset.unit === 'money' ? tickValue('money', Math.round(v)) : Number(v).toLocaleString('es-PE', { notation: v >= 10000 ? 'compact' : 'standard', maximumFractionDigits: 1 });
-          ctx.fillText(text, point.x, point.y - 12);
+          if (v == null || Number(v) === 0) return;
+          const text = pointText(dataset.unit, v);
+          const half = ctx.measureText(text).width / 2 + 2;
+          const before = dataset.data[k - 1];
+          const after = dataset.data[k + 1];
+          const valley = before != null && after != null && v < before && v < after;
+          const sides = valley ? [point.y + 13, point.y - 12] : [point.y - 12, point.y + 13];
+          // Pegada al borde, la etiqueta se corre hacia adentro para no cortarse.
+          const x = Math.min(Math.max(point.x, half), chart.width - half);
+          const box = sides
+            .map(y => ({ y, left: x - half, right: x + half, top: y - 6, bottom: y + 6 }))
+            .find(b => b.top >= top && b.bottom <= scale.bottom && !overlaps(b));
+          if (!box) return;
+          placed.push(box);
+          ctx.strokeText(text, x, box.y);
+          ctx.fillText(text, x, box.y);
         });
       });
       ctx.restore();
@@ -911,8 +978,9 @@
     },
   }];
 
-  // registry: los gráficos vivos de la pestaña, para destruirlos al repintar.
-  function drawLineChart(id, series, metrics, modeKey, registry = meta.charts) {
+  // registry: los gráficos vivos de la pestaña, para destruirlos al repintar. combined: varios indicadores en un
+  // solo cuadro.
+  function drawLineChart(id, series, metrics, modeKey, registry = meta.charts, combined = false) {
     registry.add(id);
     global.Charts.mount(id, {
       type: 'line',
@@ -935,7 +1003,7 @@
         },
         scales: {
           x: { grid: { display: false }, border: { color: '#cbd5e1' }, ticks: { color: axisColor, font: { size: 10 }, autoSkip: true, maxTicksLimit: modeKey === 'monthly' ? 12 : 16 } },
-          ...yScales(metrics),
+          ...yScales(metrics, combined),
         },
       },
       plugins: CHART_PLUGINS,
@@ -950,8 +1018,16 @@
   // La vista anual solo tiene sentido por mes; el modo elegido se conserva para cuando se vuelva a un mes.
   function chartModes(savedMode, annual) {
     if (annual) return { modes: MODES.filter(m => m.key === 'monthly'), modeKey: 'monthly' };
-    return { modes: MODES, modeKey: MODES.some(m => m.key === savedMode) ? savedMode : 'cumulative' };
+    return { modes: MODES, modeKey: MODES.some(m => m.key === savedMode) ? savedMode : 'daily' };
   }
+
+  // Botón "Un solo cuadro": aparece con dos o más indicadores marcados, al final de los chips.
+  const combineButton = (count, combined) => (count > 1
+    ? `<button type="button" class="gp-chip gp-combine${combined ? ' active' : ''}" style="--gp-chip-c:var(--brand)" data-camp-combine aria-pressed="${combined}" title="${combined ? 'Volver a un panel por indicador' : 'Juntar los indicadores en un solo cuadro'}">Un solo cuadro</button>`
+    : '');
+  // Alto del gráfico: cada panel extra suma alto para que ninguno quede aplastado; en un solo cuadro, algo más de
+  // alto para las etiquetas.
+  const chartHeight = (count, combined) => (combined ? '380px' : count > 1 ? `${90 + 135 * count}px` : '');
 
   // Los controles del cuadro lo redibujan solo con la clave; renderCampaigns le pasa el periodo y sus grupos.
   function renderCampaignChart(key, period = currentPeriod(), groups = period ? groupsOf(period.rows) : []) {
@@ -967,19 +1043,19 @@
     block.classList.toggle('is-collapsed', settings.collapsed);
     toggle.setAttribute('aria-expanded', String(!settings.collapsed));
     toggle.title = `${settings.collapsed ? 'Expandir' : 'Minimizar'} la campaña ${group.label}`;
+    const combined = settings.combined && selected.length > 1;
     keepFocus(block.querySelector('[data-camp-modes]'), () => { block.querySelector('[data-camp-modes]').innerHTML = chipsHtml(modes, modeKey, `gp-camp-mode-${key}`, 'var(--brand)'); });
-    keepFocus(block.querySelector('[data-camp-metrics]'), () => { block.querySelector('[data-camp-metrics]').innerHTML = chipsHtml(metrics, settings.metrics, `gp-camp-metric-${key}`, null, true); });
+    keepFocus(block.querySelector('[data-camp-metrics]'), () => { block.querySelector('[data-camp-metrics]').innerHTML = chipsHtml(metrics, settings.metrics, `gp-camp-metric-${key}`, null, true) + combineButton(selected.length, combined); });
     const id = `chart-gp-camp-${key}`;
     if (settings.collapsed) {
       global.Charts.destroy(id);
       meta.charts.delete(id);
       return;
     }
-    const series = campaignSeries(selected, modeKey, m);
-    // Cada panel extra suma alto para que ninguno quede aplastado.
-    block.querySelector('canvas').parentElement.style.height = selected.length > 1 ? `${90 + 135 * selected.length}px` : '';
+    const series = campaignSeries(selected, modeKey, m, combined);
+    block.querySelector('canvas').parentElement.style.height = chartHeight(selected.length, combined);
     block.querySelector('[data-camp-legend]').innerHTML = series.legend.join('');
-    drawLineChart(id, series, selected, modeKey);
+    drawLineChart(id, series, selected, modeKey, meta.charts, combined);
   }
 
   function renderCampaigns(period, groups) {
@@ -1237,6 +1313,13 @@
         const key = toggle.closest('.gp-camp-block').dataset.group;
         saveCampaignSettings(key, { collapsed: !campaignSettings(key).collapsed });
         renderCampaignChart(key);
+        return;
+      }
+      const combine = e.target.closest('[data-camp-combine]');
+      if (combine) {
+        const key = combine.closest('.gp-camp-block').dataset.group;
+        saveCampaignSettings(key, { combined: !campaignSettings(key).combined });
+        renderCampaignChart(key);
       }
     });
     body.addEventListener('change', e => {
@@ -1281,12 +1364,16 @@
   const G_SUMS = ['cost', 'impressions', 'clicks', 'conversions', 'purchases', 'conversionValue'];
   // Indicadores del gráfico de cada tipo. daily: el campo del informe por día (sin impresiones; ahí las compras
   // son las conversiones del informe).
+  // tone: el color de su línea en un solo cuadro, como en Meta.
   const G_METRICS = [
-    { key: 'cost', label: 'Inversión', unit: 'money', daily: 'cost' },
-    { key: 'clicks', label: 'Clics', unit: 'count', daily: 'clicks' },
-    { key: 'purchases', label: 'Compras', dailyLabel: 'Conversiones', unit: 'count', daily: 'conversions' },
-    { key: 'conversionValue', label: 'Valor de conversión', unit: 'money', daily: 'conversionValue' },
-    { key: 'impressions', label: 'Impresiones', unit: 'count', daily: null },
+    { key: 'cost', label: 'Inversión', unit: 'money', daily: 'cost', tone: '#2563EB' },
+    { key: 'clicks', label: 'Clics', unit: 'count', daily: 'clicks', tone: '#EA580C' },
+    { key: 'purchases', label: 'Compras', dailyLabel: 'Conversiones', unit: 'count', daily: 'conversions', tone: '#0F766E' },
+    { key: 'conversionValue', label: 'Valor de conversión', unit: 'money', daily: 'conversionValue', tone: '#7C3AED' },
+    { key: 'impressions', label: 'Impresiones', unit: 'count', daily: null, tone: '#CA8A04' },
+    // Cociente con los nombres de los KPIs y las tablas: costo por compra por mes y costo por conversión por día (el
+    // informe por día no separa las compras). Sale de sumar las dos cifras del día o del mes; sin ellas, hueco.
+    { key: 'costPerPurchase', label: 'Costo por compra', dailyLabel: 'Costo por conversión', unit: 'money', ratio: ['cost', 'purchases'], daily: ['cost', 'conversions'], tone: '#DB2777' },
   ];
   const G_DEFAULT_METRICS = ['cost', 'purchases'];
   const G_CAMPAIGN_KPIS = [
@@ -1312,6 +1399,12 @@
   ];
   FORMATS.pct2 = n => pct(n, 2);
   FORMATS.num2 = numDec;
+  // Sumas que trae el informe por día (no trae impresiones ni compras) y de las que sale cada cociente.
+  const G_DAILY_SUMS = ['cost', 'clicks', 'conversions', 'conversionValue'];
+  const G_SUM_NAMES = { cost: 'inversión', clicks: 'clics', conversions: 'conversiones', conversionValue: 'valor de conversión' };
+  const G_RATE_USES = { ctr: ['clicks', 'impressions'], cpc: ['cost', 'clicks'], costPerConversion: ['cost', 'conversions'], costPerPurchase: ['cost', 'purchases'], roas: ['conversionValue', 'cost'] };
+  const gUses = key => G_RATE_USES[key] || [key];
+  const listText = items => (items.length > 1 ? `${items.slice(0, -1).join(', ')} y ${items[items.length - 1]}` : items.join(''));
 
   const google = { months: [], latestKey: null, campaignCharts: readJson(G_CAMP_CHARTS_KEY), charts: new Set(), adsGroup: 'all' };
   let googleBodyTpl = '';  // HTML original de #gp-google-body (se guarda en init)
@@ -1407,8 +1500,50 @@
   }
   const gViewYear = () => gSelectedMonth()?.year ?? new Date().getFullYear();
 
-  // El mes en curso se compara con el mes anterior prorrateado a los mismos días: Google llega con un total por mes
-  // y no hay tramo diario del mes anterior. Un mes cerrado se compara completo. Los cocientes no cambian al prorratear.
+  // Tramo real del mes anterior (días from-to) para la cuenta o, con key, para un tipo de campaña: cada suma del
+  // informe por día, solo si ese informe está completo para ella, es decir, si en el mes suma lo mismo que el
+  // informe de campaña (totals). Cuando Google no detalla los términos con pocas impresiones suma menos y esa suma
+  // queda fuera (se prorratea).
+  function gTramo(prev, from, to, totals, key = null) {
+    const tramo = {};
+    if (!prev.detail) return tramo;
+    const rows = key ? prev.detail.filter(r => r.group === key) : prev.detail;
+    G_DAILY_SUMS.forEach(f => {
+      const total = totals[f];
+      // En 0 el prorrateo ya da lo mismo (0): no se nombra como tramo real.
+      if (total == null || total === 0) return;
+      const month = rows.reduce((s, r) => s + r[f], 0);
+      if (Math.abs(month - total) > Math.max(0.05, Math.abs(total) * 0.002)) return;
+      tramo[f] = rows.filter(r => r.d >= from && r.d <= to).reduce((s, r) => s + r[f], 0);
+    });
+    return tramo;
+  }
+
+  // Mes anterior en un mes en curso: las sumas del tramo real donde las hay y el resto prorrateado (factor); cada
+  // cociente, del tramo si sus dos sumas son reales y si no, el del mes anterior completo (no cambia al prorratear).
+  function gTramoTotals(totals, factor, tramo) {
+    const real = gDerive({ ...gScale(totals, factor), ...tramo });
+    const full = gDerive(totals);
+    return { ...real, ...Object.fromEntries(Object.entries(G_RATE_USES).map(([k, uses]) => [k, uses.every(f => f in tramo) ? real[k] : full[k]])) };
+  }
+
+  // Textos de la comparación de un mes en curso con el tramo dado (el de la cuenta o el de un tipo): label para los
+  // subtítulos y shortFor(uses) para cada KPI, el tramo si todas sus sumas son reales y si no, el prorrateo.
+  function gCompareText(compare, tramo) {
+    const { month: prev, from, to, days } = compare;
+    const tramoLabel = rangeLabel(prev, from, to);
+    const prorated = `${prev.name} prorrateado a ${days} ${days === 1 ? 'día' : 'días'}`;
+    const real = G_DAILY_SUMS.filter(f => f in tramo);
+    return {
+      label: real.length ? `${tramoLabel} en ${listText(real.map(f => G_SUM_NAMES[f]))} (informe por día); el resto, ${prorated}` : prorated,
+      shortFor: uses => (uses.length && uses.every(f => f in tramo) ? tramoLabel : `${prev.shortName} prorrateado`),
+    };
+  }
+
+  // Mes cerrado: contra el mes anterior completo. Mes en curso: cada suma contra el mismo tramo del mes anterior
+  // cuando el informe por día de ese mes la trae completa (inversión, clics, conversiones y valor); las demás
+  // (impresiones, compras), contra el mes anterior prorrateado a los mismos días, porque el informe de campaña llega
+  // con un total por mes.
   function gPeriodOf(m) {
     if (!m?.hasData) return null;
     const closed = m.complete || m.past;
@@ -1418,9 +1553,14 @@
     if (prev?.hasData) {
       const prevDays = prev.lastDay - prev.firstDay + 1;
       const factor = closed ? 1 : Math.min(1, days / prevDays);
-      compare = factor < 1
-        ? { month: prev, factor, label: `${prev.name} prorrateado a ${days} ${days === 1 ? 'día' : 'días'}`, short: `${prev.shortName} prorrateado` }
-        : { month: prev, factor: 1, label: rangeLabel(prev, prev.firstDay, prev.lastDay), short: rangeLabel(prev, prev.firstDay, prev.lastDay) };
+      if (factor >= 1) {
+        const full = rangeLabel(prev, prev.firstDay, prev.lastDay);
+        compare = { month: prev, factor: 1, tramo: {}, label: full, shortFor: () => full };
+      } else {
+        compare = { month: prev, factor, from: m.firstDay, to: Math.min(m.lastDay, prev.daysInMonth), days };
+        compare.tramo = gTramo(prev, compare.from, compare.to, prev.totals);
+        Object.assign(compare, gCompareText(compare, compare.tramo));
+      }
     }
     // Grupos, anuncios y términos con el mismo tramo del mes anterior, si ese mes también trae informe por día.
     const detailTo = m.detailLast || m.lastDay;
@@ -1452,7 +1592,7 @@
   const gCurrentPeriod = () => (gAnnualView() ? gYearPeriod(gViewYear()) : gPeriodOf(gSelectedMonth()));
 
   const gTotals = period => gDerive(period.annual ? gSum(period.months.map(m => m.totals)) : period.month.totals);
-  const gPrevTotals = period => (period.compare ? gDerive(gScale(period.compare.month.totals, period.compare.factor)) : null);
+  const gPrevTotals = period => (period.compare ? gTramoTotals(period.compare.month.totals, period.compare.factor, period.compare.tramo) : null);
 
   // Campañas del periodo (en Anual, sumadas por nombre).
   function gCampaigns(period) {
@@ -1473,13 +1613,14 @@
   }
 
   // Tipos de campaña del periodo (los cuadros): de los totales por tipo del informe, que vienen completos.
-  function gGroups(months, campaigns, factor = 1) {
+  // totalsOf(key, sums) da las cifras de cada tipo (para el mes anterior, con su tramo; ver renderGoogleCampaigns).
+  function gGroups(months, campaigns, totalsOf = (key, sums) => gDerive(sums)) {
     const byKey = new Map();
     months.forEach(m => m.byType.forEach(x => {
       if (!byKey.has(x.group.key)) byKey.set(x.group.key, { ...x.group, items: [] });
       byKey.get(x.group.key).items.push(x);
     }));
-    const groups = [...byKey.values()].map(g => ({ ...g, ...gDerive(gScale(gSum(g.items), factor)) })).filter(gActive);
+    const groups = [...byKey.values()].map(g => ({ ...g, ...totalsOf(g.key, gSum(g.items)) })).filter(gActive);
     const total = groups.reduce((s, g) => s + (g.cost || 0), 0);
     return groups
       .map(g => ({ ...g, share: total ? g.cost / total * 100 : 0, campaigns: (campaigns || []).filter(c => c.group === g.key).map(c => c.name) }))
@@ -1535,9 +1676,10 @@
       return;
     }
     title.textContent = `Periodo: ${period.label} ${period.year}${period.closed ? '' : ' (mes en curso)'}`;
-    sub.textContent = !period.compare ? 'Sin mes anterior para comparar'
-      : period.compare.factor < 1 ? `Comparación vs ${period.compare.label} (Google llega con un total por mes)`
-      : `Comparación vs ${period.compare.label}`;
+    const c = period.compare;
+    sub.textContent = !c ? 'Sin mes anterior para comparar'
+      : c.factor < 1 && !Object.keys(c.tramo).length ? `Comparación vs ${c.label} (Google llega con un total por mes)`
+      : `Comparación vs ${c.label}`;
   }
 
   function renderGoogleKpis(period) {
@@ -1552,7 +1694,8 @@
     }
     document.getElementById('gp-g-kpis').innerHTML = G_KPIS.map(k => {
       let line = `<small>${k.hint}</small>`;
-      if (previous) line = deltaHtml(current[k.key], previous[k.key], k.better, period.compare.short);
+      // Cada KPI dice contra qué se compara: el tramo real o el mes anterior prorrateado.
+      if (previous) line = deltaHtml(current[k.key], previous[k.key], k.better, period.compare.shortFor(gUses(k.key)));
       else if (average && k.perMonth) line = `<small title="${esc(average.basis)}">Prom. mensual: ${fmt(k.format, average[k.key])}</small>`;
       const note = k.note ? k.note(current) : '';
       return `
@@ -1626,9 +1769,11 @@
     const metrics = G_METRICS.map(m => m.key).filter(k => Array.isArray(saved.metrics) && saved.metrics.includes(k));
     return {
       metrics: metrics.length ? metrics : G_DEFAULT_METRICS,
-      // Como en Meta, abre en el acumulado del mes; sin informe por día el cuadro cae a "Por mes".
-      mode: MODES.some(m => m.key === saved.mode) ? saved.mode : 'cumulative',
+      // Como en Meta, abre por día (también una vista guardada en el acumulado, que ya no existe); sin informe por
+      // día el cuadro cae a "Por mes".
+      mode: MODES.some(m => m.key === saved.mode) ? saved.mode : 'daily',
       collapsed: saved.collapsed === true,
+      combined: saved.combined === true,
     };
   }
   function gSaveCampaignSettings(key, changes) {
@@ -1745,7 +1890,9 @@
       const months = period.months.filter(m => m.byType.some(x => x.group.key === group.key && gActive(x)));
       comparison = months.length === period.months.length ? `. Activo en los ${months.length} ${months.length === 1 ? 'mes' : 'meses'}` : `. Activo en ${months.map(m => m.shortName).join(', ')}`;
     } else if (period.compare) {
-      comparison = before ? ` vs ${period.compare.label}` : `. Nuevo: no corría en ${period.compare.month.name}`;
+      // En un mes en curso el tramo real es el del tipo (su informe por día puede estar completo o no).
+      const label = before && period.compare.factor < 1 ? gCompareText(period.compare, before.tramo).label : period.compare.label;
+      comparison = before ? ` vs ${label}` : `. Nuevo: no corría en ${period.compare.month.name}`;
     }
     const kpis = G_CAMPAIGN_KPIS.map(k => `
       <div><dt>${esc(k.label)}</dt><dd>${fmt(k.format, group[k.key])}${before ? deltaHtml(group[k.key], before[k.key], k.better) : ''}</dd></div>`).join('');
@@ -1779,13 +1926,20 @@
     return values;
   }
 
+  // Serie diaria de un indicador; un cociente (daily = [numerador, denominador]) se divide día a día.
+  const gMetricDaily = (m, metric) => (Array.isArray(metric.daily)
+    ? divideValues(gDailyValues(m, metric.daily[0], metric.group), gDailyValues(m, metric.daily[1], metric.group))
+    : gDailyValues(m, metric.daily, metric.group));
+
   function gLineSeries(metric, modeKey, m, compare = true) {
     if (modeKey === 'monthly') {
       const year = gViewYear();
       const values = MONTHS.map((_, k) => {
         const month = gMonthByKey(`${year}-${pad(k + 1)}`);
         const items = month?.hasData ? month.byType.filter(x => x.group.key === metric.group) : [];
-        return items.some(gActive) ? items.reduce((s, x) => s + (x[metric.key] || 0), 0) : null;
+        if (!items.some(gActive)) return null;
+        const sum = field => items.reduce((s, x) => s + (x[field] || 0), 0);
+        return metric.ratio ? ratio(sum(metric.ratio[0]), sum(metric.ratio[1])) : sum(metric.key);
       });
       return {
         labels: SHORT,
@@ -1793,17 +1947,16 @@
         legend: [`<span><i class="gp-legend-line" style="background:${metric.color}"></i><b>${esc(metric.label)} por mes</b></span>`],
       };
     }
-    const isCumulative = modeKey === 'cumulative';
-    const transform = values => (isCumulative ? cumulative(values) : values);
     const label = metric.dailyLabel || metric.label;
+    const values = gMetricDaily(m, metric);
     const series = {
       labels: Array.from({ length: m.daysInMonth }, (_, i) => `${i + 1}`),
-      datasets: [{ label: compare ? m.name : label, unit: metric.unit, data: transform(gDailyValues(m, metric.daily, metric.group)), borderColor: metric.color, backgroundColor: `${metric.color}14`, fill: isCumulative, borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 4, tension: 0.2, spanGaps: false }],
+      datasets: [{ label: compare ? m.name : label, unit: metric.unit, data: values, borderColor: metric.color, backgroundColor: `${metric.color}14`, fill: false, borderWidth: 2.5, pointRadius: dotRadius(values, 2), pointHoverRadius: 4, pointBackgroundColor: metric.color, tension: 0.2, spanGaps: false, valueLabels: true }],
       legend: [`<span><i class="gp-legend-line" style="background:${metric.color}"></i><b>${esc(m.name)} ${m.year} · informe por día (${esc(rangeLabel(m, m.detailFirst, m.detailLast))})</b></span>`],
     };
     const prev = gPrevious(m);
     if (compare && prev?.detail) {
-      const prevValues = transform(gDailyValues(prev, metric.daily, metric.group)).slice(0, m.daysInMonth);
+      const prevValues = gMetricDaily(prev, metric).slice(0, m.daysInMonth);
       if (prevValues.some(v => v)) {
         series.datasets.push({ label: prev.name, unit: metric.unit, data: prevValues, borderColor: PREVIOUS_COLOR, borderDash: [6, 5], fill: false, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.2 });
         series.legend.push(`<span><i class="gp-legend-line dashed" style="color:${PREVIOUS_COLOR}"></i><b>${esc(prev.name)} (mismo día del mes)</b></span>`);
@@ -1814,9 +1967,16 @@
     return series;
   }
 
-  function gCampaignSeries(metrics, modeKey, m) {
+  // Como campaignSeries de Meta: un indicador contra el mes anterior, varios en paneles o, con combined, en un
+  // solo cuadro.
+  function gCampaignSeries(metrics, modeKey, m, combined = false) {
     if (metrics.length === 1) return gLineSeries(metrics[0], modeKey, m);
-    const parts = metrics.map(metric => gLineSeries(metric, modeKey, m, false));
+    const parts = metrics.map(metric => gLineSeries(combined ? { ...metric, color: metric.tone } : metric, modeKey, m, false));
+    if (combined) {
+      return combinedSeries(metrics, parts, modeKey === 'monthly'
+        ? `Por mes, ${gViewYear()}`
+        : `Por día, ${esc(m.name)} ${m.year} · informe por día (${esc(rangeLabel(m, m.detailFirst, m.detailLast))})`);
+    }
     return {
       labels: parts[0].labels,
       datasets: parts.map((part, i) => ({ ...part.datasets[0], label: modeKey === 'monthly' ? metrics[i].label : metrics[i].dailyLabel || metrics[i].label, yAxisID: `y${i}` })),
@@ -1846,23 +2006,29 @@
     const modesHost = block.querySelector('[data-camp-modes]');
     const metricsHost = block.querySelector('[data-camp-metrics]');
     keepFocus(modesHost, () => { modesHost.innerHTML = chipsHtml(modes, modeKey, `gp-gcamp-mode-${key}`, 'var(--brand)'); });
-    keepFocus(metricsHost, () => { metricsHost.innerHTML = chipsHtml(metrics, selected.map(x => x.key), `gp-gcamp-metric-${key}`, null, true); });
+    const combined = settings.combined && selected.length > 1;
+    keepFocus(metricsHost, () => { metricsHost.innerHTML = chipsHtml(metrics, selected.map(x => x.key), `gp-gcamp-metric-${key}`, null, true) + combineButton(selected.length, combined); });
     const id = `chart-gp-gcamp-${key}`;
     if (settings.collapsed) {
       global.Charts.destroy(id);
       google.charts.delete(id);
       return;
     }
-    const series = gCampaignSeries(selected, modeKey, m);
-    block.querySelector('canvas').parentElement.style.height = selected.length > 1 ? `${90 + 135 * selected.length}px` : '';
+    const series = gCampaignSeries(selected, modeKey, m, combined);
+    block.querySelector('canvas').parentElement.style.height = chartHeight(selected.length, combined);
     block.querySelector('[data-camp-legend]').innerHTML = series.legend.join('');
-    drawLineChart(id, series, selected, modeKey, google.charts);
+    drawLineChart(id, series, selected, modeKey, google.charts, combined);
   }
 
   function renderGoogleCampaigns(period, groups) {
     google.charts.forEach(id => global.Charts.destroy(id));
     google.charts.clear();
-    const previous = period.compare ? gGroups([period.compare.month], period.compare.month.campaigns, period.compare.factor) : [];
+    // Cada tipo del mes anterior con la misma regla que el total, pero con el tramo de su propio informe por día.
+    const c = period.compare;
+    const previous = c ? gGroups([c.month], c.month.campaigns, (key, sums) => {
+      const tramo = c.factor < 1 ? gTramo(c.month, c.from, c.to, sums, key) : {};
+      return { ...gTramoTotals(sums, c.factor, tramo), tramo };
+    }) : [];
     document.getElementById('gp-g-blocks').innerHTML = groups.map(g => gCampaignHtml(period, g, previous.find(p => p.key === g.key))).join('');
     groups.forEach(g => renderGoogleChart(g.key, period, groups));
   }
@@ -1988,6 +2154,13 @@
       if (toggle) {
         const key = toggle.closest('.gp-camp-block').dataset.group;
         gSaveCampaignSettings(key, { collapsed: !gCampaignSettings(key).collapsed });
+        renderGoogleChart(key);
+        return;
+      }
+      const combine = e.target.closest('[data-camp-combine]');
+      if (combine) {
+        const key = combine.closest('.gp-camp-block').dataset.group;
+        gSaveCampaignSettings(key, { combined: !gCampaignSettings(key).combined });
         renderGoogleChart(key);
       }
     });

@@ -1,17 +1,33 @@
 {
   "version": "3",
   "anio": 2026,
-  "sincronizado": "2026-10-13T18:52:07",
+  "sincronizado": "2026-10-21T22:59:53",
   "fuente": {
     "carpeta": "1wfOOM4F3TRcxehX_dfZWDYSTVBPrPgjg",
     "archivo": {
       "id": "1kjygGtcL6HLFiDSltJX2eonouuMhsNpvBDa32_8lLCQ",
-      "nombre": "LIMA REATIL ULTIMO TRIMESTRE 2026"
+      "nombre": "Royal Baby - Objetivos trimestre"
     },
-    "pestana": "Hoja1"
+    "pestana": "Objetivos 2026"
   },
-  "nota": "Generado por scripts/sync-objetivos.js desde Drive (no editar a mano). La meta es la columna PROYECCIÓN de cada mes.",
+  "nota": "Generado por scripts/sync-objetivos.js desde Drive (no editar a mano). La meta de cada mes es la del archivo de objetivos de Drive.",
   "canales": [
+    {
+      "key": "Tienda",
+      "label": "Tienda Miraflores",
+      "sheet": [
+        "Tienda"
+      ],
+      "etiqueta": "Tienda Miraflores"
+    },
+    {
+      "key": "Web",
+      "label": "Página Web",
+      "sheet": [
+        "Web"
+      ],
+      "etiqueta": "Página Web"
+    },
     {
       "key": "Redes",
       "label": "Redes y WhatsApp",
@@ -20,23 +36,7 @@
         "Instagram",
         "Facebook"
       ],
-      "etiqueta": "WHATSAPP"
-    },
-    {
-      "key": "Tienda",
-      "label": "Tienda Miraflores",
-      "sheet": [
-        "Tienda"
-      ],
-      "etiqueta": "TIENDA"
-    },
-    {
-      "key": "Web",
-      "label": "Página Web",
-      "sheet": [
-        "Web"
-      ],
-      "etiqueta": "WEB"
+      "etiqueta": "Redes y WhatsApp"
     },
     {
       "key": "Outlet",
@@ -45,7 +45,7 @@
         "Showroom"
       ],
       "nota": "Mide solo el Showroom: las ventas outlet de la web se registran en Web y el histórico no las separa.",
-      "etiqueta": "OUTLET"
+      "etiqueta": "Outlet (Showroom)"
     }
   ],
   "meses": [
@@ -55,44 +55,44 @@
   ],
   "metas": {
     "Octubre": {
-      "Redes": 4437.95,
       "Tienda": 68405.04,
       "Web": 11492.03,
+      "Redes": 4437.95,
       "Outlet": 3000
     },
     "Noviembre": {
-      "Redes": 8426.06,
       "Tienda": 86383.88,
       "Web": 22489.16,
+      "Redes": 8426.06,
       "Outlet": 4000
     },
     "Diciembre": {
-      "Redes": 7616.68,
       "Tienda": 92132.15,
       "Web": 18526.05,
+      "Redes": 7616.68,
       "Outlet": 5000
     }
   },
   "referencia": {
     "anio": 2025,
-    "etiqueta": "TRIMESTRE 2025",
+    "etiqueta": "Venta 2025",
     "valores": {
       "Octubre": {
-        "Redes": 4034.5,
         "Tienda": 62186.4,
         "Web": 10447.3,
+        "Redes": 4034.5,
         "Outlet": 0
       },
       "Noviembre": {
-        "Redes": 7660.05,
         "Tienda": 78530.8,
         "Web": 20444.69,
+        "Redes": 7660.05,
         "Outlet": 1254.6
       },
       "Diciembre": {
-        "Redes": 6924.25,
         "Tienda": 83756.5,
         "Web": 16841.86,
+        "Redes": 6924.25,
         "Outlet": 2932.9
       }
     }

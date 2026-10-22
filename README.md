@@ -112,6 +112,8 @@ GitHub corre los cron con 5 a 9 horas de atraso (el de las 06:00 sale entre las 
 - El token va en *Configuración del proyecto → Propiedades de script* como `GITHUB_TOKEN`: fine-grained, solo este repo, permiso **Actions: Read and write**. Cuando venza, crear otro y reemplazar la propiedad.
 - Si GitHub rechaza la orden, el activador falla y Google avisa por correo.
 - La venta del día anterior aparece solo si ya está cargada en la hoja de Drive a esa hora.
+- Además, cada 15 minutos revisa la carpeta de ventas 2026 en Drive: si la hoja se editó después de la última lectura y lleva 10 minutos sin cambios, lanza solo `update-data.yml`, y con eso sale la alerta de ventas actualizadas. El botón **Sincronizar** del tablero no la dispara: lee la hoja solo en ese navegador.
+- Al cambiar el script: pegarlo, guardar y ejecutar `instalarActivador` una vez (deja los dos activadores y pide el permiso de Drive).
 
 ### Botones Sincronizar
 

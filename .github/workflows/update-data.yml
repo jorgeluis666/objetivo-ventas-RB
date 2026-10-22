@@ -6,7 +6,8 @@ name: Actualizar datos de ventas
 #   2025 → el Google Sheet de 2025 por la API de Sheets (secret SERVICE_ACCOUNT_JSON).
 #
 # Corre todos los días a las 10:30 de Lima, lanzado por el Apps Script scripts/disparar-actualizacion.gs
-# (GitHub atrasa sus cron varias horas); el cron de las 06:00 queda de respaldo. En el tablero, el botón
+# (GitHub atrasa sus cron varias horas), y también cuando ese script ve que la hoja de Drive se editó
+# (la revisa cada 15 min); el cron de las 06:00 queda de respaldo. En el tablero, el botón
 # Sincronizar de la zona de ventas lee la misma hoja al instante, solo en ese navegador.
 #
 # Si una lectura falla, el script no escribe nada y sale con código 1: queda publicado el último

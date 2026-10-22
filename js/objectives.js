@@ -70,6 +70,8 @@
     weeklyData: null,
     daily2026: null,       // ventas por día y columna: { Octubre: { Web: [día 1, …] } } (Notificaciones)
     notifOpen: false,
+    notifConfig: false,    // el panel muestra los correos de las alertas en vez de los avisos
+    alertas: null,         // { lista: [{ nombre, email }], estado, mensaje, tono, actualizado }
     transactions: null,
     avgTickets: {},
     d2025Ref: d2025,
@@ -560,6 +562,109 @@
     return items;
   }
 
+  // ── Correos de la alerta de ventas: la ruedita del panel de Notificaciones ──
+  // La lista vive en el Web App de scripts/apps-script/alertas-destinatarios.gs; el build deja su URL y su
+  // clave dentro del HTML cifrado (window.RB_ALERTAS). La alerta (scripts/alertas.js) la lee antes de cada
+  // envío. Sin conexión (copia local o sin los secrets) se muestra la lista del repositorio, sin poder guardarla.
+  const alertasConfig = () => window.RB_ALERTAS || null;
+  const alertasConectadas = () => !!(alertasConfig() && alertasConfig().url && alertasConfig().token);
+  const EMAIL_RE = /^[^\s@<>(),;:"]+@[^\s@<>(),;:"]+\.[a-z]{2,}$/i;
+  const ICONO_RUEDITA = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
+  const copiaLista = lista => (lista || []).map(d => ({ nombre: d.nombre || '', email: d.email || '' }));
+  const fechaCambio = iso => new Date(iso).toLocaleString('es-PE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'America/Lima' });
+
+  // GET lee la lista; con lista, POST la guarda (texto plano: el Web App no acepta la consulta previa de CORS).
+  async function llamarAlertas(lista) {
+    const { url, token } = alertasConfig();
+    const res = lista
+      ? await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ token, destinatarios: lista }) })
+      : await fetch(`${url}?token=${encodeURIComponent(token)}`);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || `respuesta ${res.status}`);
+    return data;
+  }
+
+  async function abrirAlertas() {
+    state.notifConfig = true;
+    const porDefecto = copiaLista(alertasConfig() && alertasConfig().porDefecto);
+    if (!alertasConectadas()) {
+      state.alertas = { lista: porDefecto, estado: 'sin-conexion' };
+      renderNotificaciones();
+      return;
+    }
+    state.alertas = { lista: [], estado: 'cargando' };
+    renderNotificaciones();
+    try {
+      const data = await llamarAlertas();
+      // Mientras nadie guardó una lista, la alerta usa la del repositorio: se muestra esa.
+      state.alertas = { lista: Array.isArray(data.destinatarios) ? copiaLista(data.destinatarios) : porDefecto, estado: 'listo', actualizado: data.actualizado || '' };
+    } catch (err) {
+      state.alertas = { lista: [], estado: 'error', mensaje: `No se pudo leer la lista (${err.message}).`, tono: 'red' };
+    }
+    if (state.notifOpen && state.notifConfig) renderNotificaciones();
+  }
+
+  async function guardarAlertas() {
+    const a = state.alertas;
+    const lista = a.lista
+      .map(d => ({ nombre: d.nombre.trim(), email: d.email.trim().toLowerCase() }))
+      .filter(d => d.nombre || d.email);
+    const mala = lista.find(d => !EMAIL_RE.test(d.email));
+    if (mala) {
+      Object.assign(a, { mensaje: `Revisa el correo «${mala.email || 'vacío'}».`, tono: 'red' });
+      renderNotificaciones();
+      return;
+    }
+    Object.assign(a, { estado: 'guardando', mensaje: '' });
+    renderNotificaciones();
+    try {
+      const data = await llamarAlertas(lista);
+      const guardada = copiaLista(data.destinatarios);
+      state.alertas = {
+        lista: guardada, estado: 'listo', actualizado: data.actualizado || '',
+        mensaje: guardada.length ? 'Guardado: la próxima alerta llega a estos correos.' : 'Guardado sin correos: las alertas no se enviarán.',
+        tono: guardada.length ? 'green' : 'amber',
+      };
+    } catch (err) {
+      Object.assign(a, { estado: 'listo', mensaje: `No se pudo guardar (${err.message}).`, tono: 'red' });
+    }
+    if (state.notifOpen && state.notifConfig) renderNotificaciones();
+  }
+
+  function alertasPanelHTML() {
+    const a = state.alertas || { lista: [], estado: 'cargando' };
+    const editable = a.estado === 'listo';
+    const off = editable ? '' : ' disabled';
+    const filas = a.lista.map((d, i) => `
+      <div class="notif-dest">
+        <input class="inp" type="text" value="${esc(d.nombre)}" placeholder="Nombre" maxlength="60" data-dest="${i}" data-campo="nombre" aria-label="Nombre"${off}>
+        <input class="inp" type="email" value="${esc(d.email)}" placeholder="correo@empresa.com" data-dest="${i}" data-campo="email" aria-label="Correo"${off}>
+        <button class="notif-dest-del" type="button" data-dest-del="${i}" title="Quitar este correo" aria-label="Quitar este correo"${off}>×</button>
+      </div>`).join('');
+    const estado = {
+      cargando: 'Cargando la lista…',
+      guardando: 'Guardando…',
+      'sin-conexion': 'La lista todavía no se puede editar: falta conectar el Web App de los correos (RB_ALERTAS_URL y RB_ALERTAS_TOKEN). Hoy la alerta llega a estos correos.',
+    }[a.estado] || a.mensaje || '';
+    return `
+        <div class="notif-head">
+          <div>
+            <strong>Correos de las alertas</strong>
+            <p>La alerta de ventas llega los lunes a las 6:00 p. m. y cada vez que se actualizan las ventas.</p>
+          </div>
+          <div class="notif-head-actions"><button class="notif-close" type="button" data-notif-back>Volver</button></div>
+        </div>
+        <div class="notif-config">
+          ${filas || (editable ? '<div class="notif-empty">Sin correos: las alertas no se enviarán.</div>' : '')}
+          ${editable ? '<button class="btn notif-dest-add" type="button" data-dest-add>+ Agregar correo</button>' : ''}
+        </div>
+        <div class="notif-config-foot">
+          <span class="notif-config-msg ${a.estado === 'sin-conexion' || a.estado === 'cargando' || a.estado === 'guardando' ? '' : esc(a.tono || '')}">${esc(estado)}</span>
+          ${editable || a.estado === 'guardando' ? `<button class="btn primary" type="button" data-dest-save${off}>Guardar</button>` : ''}
+        </div>
+        <p class="notif-foot">Quien entra al tablero puede cambiar esta lista.${a.actualizado ? ` Último cambio: ${esc(fechaCambio(a.actualizado))}` : ''}</p>`;
+  }
+
   // El mes de los avisos: el que está en curso; si aún no tiene ventas, el último que las tiene.
   const notifMonth = () => [months[currentMonthIdx()]].find(m => m && conVentas(m)) || [...months].reverse().find(conVentas);
 
@@ -587,28 +692,58 @@
         <span class="notif-toggle-text">Notificaciones</span>
         <span class="notif-count ${countTone}">${items.length}</span>
       </button>
-      <div class="notif-panel" id="notif-panel" role="dialog" aria-label="Notificaciones del mes"${open ? '' : ' hidden'}>
+      <div class="notif-panel" id="notif-panel" role="dialog" aria-label="Notificaciones del mes"${open ? '' : ' hidden'}>${state.notifConfig ? alertasPanelHTML() : `
         <div class="notif-head">
           <div>
             <strong>Avisos de ${m.toLowerCase()} 2026</strong>
             <p>${corte} · ${items.length ? `${items.length} ${items.length === 1 ? 'aviso' : 'avisos'}` : 'sin avisos'}</p>
           </div>
-          <button class="notif-close" type="button" data-notif-close>Cerrar</button>
+          <div class="notif-head-actions">
+            <button class="notif-gear" type="button" data-notif-config title="Correos de las alertas" aria-label="Configurar los correos de las alertas">${ICONO_RUEDITA}</button>
+            <button class="notif-close" type="button" data-notif-close>Cerrar</button>
+          </div>
         </div>
         <div class="notif-list">
           ${items.length ? items.map(itemHTML).join('') : '<div class="notif-empty">No hay avisos para este mes.</div>'}
         </div>
-        <p class="notif-foot">La semana es de los últimos 7 días con ventas cargadas frente a los 7 anteriores. Haz clic en un aviso para abrir el mes en Objetivos 2026.</p>
+        <p class="notif-foot">La semana es de los últimos 7 días con ventas cargadas frente a los 7 anteriores. Haz clic en un aviso para abrir el mes en Objetivos 2026.</p>`}
       </div>`;
 
-    const toggle = v => { state.notifOpen = typeof v === 'boolean' ? v : !state.notifOpen; renderNotificaciones(); };
+    // Al cerrar, el panel vuelve a los avisos.
+    const toggle = v => {
+      state.notifOpen = typeof v === 'boolean' ? v : !state.notifOpen;
+      if (!state.notifOpen) state.notifConfig = false;
+      renderNotificaciones();
+    };
+    // Los botones que repintan el panel no dejan subir el clic: el elemento ya no estaría dentro de la
+    // zona y el clic de afuera lo cerraría.
+    const solo = fn => e => { e.stopPropagation(); fn(e); };
     zone.querySelector('#notif-toggle').addEventListener('click', e => { e.stopPropagation(); toggle(); });
-    zone.querySelector('[data-notif-close]').addEventListener('click', () => toggle(false));
-    zone.querySelectorAll('[data-notif-month]').forEach(b => b.addEventListener('click', () => {
-      toggle(false);
-      document.querySelector('.s-item[data-view="view-obj"]')?.click();
-      selectMonth(b.dataset.notifMonth);
-    }));
+    if (state.notifConfig) {
+      const a = state.alertas;
+      zone.querySelector('[data-notif-back]').addEventListener('click', solo(() => { state.notifConfig = false; renderNotificaciones(); }));
+      zone.querySelectorAll('[data-dest]').forEach(inp => inp.addEventListener('input', () => { a.lista[Number(inp.dataset.dest)][inp.dataset.campo] = inp.value; }));
+      zone.querySelectorAll('[data-dest-del]').forEach(b => b.addEventListener('click', solo(() => {
+        a.lista.splice(Number(b.dataset.destDel), 1);
+        a.mensaje = '';
+        renderNotificaciones();
+      })));
+      zone.querySelector('[data-dest-add]')?.addEventListener('click', solo(() => {
+        a.lista.push({ nombre: '', email: '' });
+        a.mensaje = '';
+        renderNotificaciones();
+        zone.querySelector(`[data-dest="${a.lista.length - 1}"][data-campo="nombre"]`)?.focus();
+      }));
+      zone.querySelector('[data-dest-save]')?.addEventListener('click', solo(guardarAlertas));
+    } else {
+      zone.querySelector('[data-notif-close]').addEventListener('click', () => toggle(false));
+      zone.querySelector('[data-notif-config]').addEventListener('click', solo(abrirAlertas));
+      zone.querySelectorAll('[data-notif-month]').forEach(b => b.addEventListener('click', () => {
+        toggle(false);
+        document.querySelector('.s-item[data-view="view-obj"]')?.click();
+        selectMonth(b.dataset.notifMonth);
+      }));
+    }
     // Se cierra al hacer clic fuera o con Escape (una sola vez por página).
     if (!state.notifWired) {
       state.notifWired = true;

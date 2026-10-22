@@ -733,6 +733,69 @@ button.topbar-pill[aria-expanded="true"] .status-chevron { transform: rotate(180
   cursor: pointer;
 }
 .notif-close:hover { border-color: #bfdbfe; background: var(--brand-soft); color: var(--brand-text); }
+/* Ruedita de Notificaciones: los correos que reciben la alerta de ventas */
+.notif-head-actions { display: flex; align-items: center; gap: 6px; }
+.notif-gear {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 27px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text-2);
+  cursor: pointer;
+}
+.notif-gear svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.notif-gear:hover { border-color: #bfdbfe; background: var(--brand-soft); color: var(--brand-text); }
+.notif-gear:focus-visible, .notif-close:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, .25); }
+.notif-config {
+  display: grid;
+  max-height: min(360px, calc(100vh - 240px));
+  gap: 8px;
+  overflow-y: auto;
+}
+.notif-dest {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr) 32px;
+  gap: 6px;
+  align-items: center;
+}
+.notif-dest .inp {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  font: inherit;
+  font-size: 12px;
+}
+.notif-dest-del {
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+.notif-dest-del:hover:not(:disabled) { border-color: #fecaca; background: #fef2f2; color: #b91c1c; }
+.notif-dest-add {
+  justify-self: start;
+  padding: 6px 12px;
+  border-style: dashed;
+  border-color: #bfdbfe;
+  color: var(--brand-text);
+  font-size: 12px;
+}
+.notif-config-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.notif-config-foot .btn.primary { flex-shrink: 0; padding: 7px 16px; font-size: 12px; }
+.notif-config-msg { color: var(--muted); font-size: 12px; line-height: 1.4; }
+.notif-config-msg.green { color: #047857; }
+.notif-config-msg.amber { color: #b45309; }
+.notif-config-msg.red { color: #b91c1c; }
 .notif-list {
   display: grid;
   max-height: min(420px, calc(100vh - 180px));

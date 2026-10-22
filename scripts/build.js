@@ -96,6 +96,22 @@ function embedData(html) {
   return html.replace('</head>', () => `<script>\n${assignments.join('\n')}\n</script>\n</head>`);
 }
 
+// Correos de la alerta de ventas (ruedita de Notificaciones): el Web App de
+// scripts/apps-script/alertas-destinatarios.gs. URL y clave llegan por RB_ALERTAS_URL y RB_ALERTAS_TOKEN y
+// solo quedan dentro del HTML cifrado; sin ellos la ruedita muestra la lista del repositorio sin poder editarla.
+function embedAlertas(html) {
+  const config = JSON.parse(readFile('data/alertas-config.json'));
+  const alertas = {
+    url: process.env.RB_ALERTAS_URL || '',
+    token: process.env.RB_ALERTAS_TOKEN || '',
+    porDefecto: (config.destinatarios || []).map(d => ({ nombre: d.nombre || '', email: d.email })),
+  };
+  if (alertas.url && alertas.token) console.log('[build] correos de las alertas conectados al Web App');
+  else console.warn('[build] sin RB_ALERTAS_URL/RB_ALERTAS_TOKEN: la ruedita de Notificaciones no puede guardar');
+  const json = JSON.stringify(alertas).replace(/</g, '\\u003c');
+  return html.replace('</head>', () => `<script>\nwindow.RB_ALERTAS = ${json};\n</script>\n</head>`);
+}
+
 // dist/ solo lleva index.html, assets/ y CNAME: cualquier otro archivo local quedaría roto al publicar.
 function checkLocalReferences(rawHtml, html) {
   if (/<link[^>]*rel="stylesheet"[^>]*href="(?!https:)|<script[^>]*src="(?!https:)/.test(html)) {
@@ -134,6 +150,7 @@ function main() {
   html = inlineScripts(html);
   checkLocalReferences(rawHtml, html);
   html = embedData(html);
+  html = embedAlertas(html);
   html = html.replace(/\r\n?/g, '\n');
 
   const cname = readFile('CNAME').trim();
@@ -144,7 +161,7 @@ function main() {
 
   const password = process.env.RB_PAGE_PASSWORD || '';
   const output = password ? encryptPage(html, password) : html;
-  if (password && Object.keys(EMBEDDED_DATA).some(name => output.includes(name))) {
+  if (password && [...Object.keys(EMBEDDED_DATA), 'RB_ALERTAS'].some(name => output.includes(name))) {
     throw new Error('dist/index.html quedó con los datos en claro');
   }
   fs.writeFileSync(DIST_HTML, output, 'utf8');

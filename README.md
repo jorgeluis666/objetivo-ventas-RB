@@ -51,7 +51,8 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
     sync-ads.js           Lee las carpetas de Drive de Google Ads y Meta → data/ads-2026.json
     sync-reportes.js      Lista la carpeta Reportes de Drive → data/reportes-2026.json
     build.js              Arma dist/ (HTML con todo incrustado, cifrado con la clave)
-    alertas.js            Correo semanal de alertas
+    alertas.js            Correo de alertas: lunes 6:00 p. m. y cuando cambian las ventas
+    apps-script/alertas-destinatarios.gs  Web App con los correos de las alertas (ruedita de Notificaciones)
     weekly-check.js       Revisión semanal del pipeline
   deploy/
     pages-gate.html       Pantalla de acceso que descifra el tablero
@@ -60,7 +61,7 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
     sync-objetivos.yml    Objetivos, todos los días a las 06:05 Lima + workflow_dispatch
     sync-ads.yml          Sync diario de las carpetas de Meta Ads, Google Ads, artes y reportes (07:00 Lima) + workflow_dispatch
     deploy.yml            Build cifrado + deploy a GitHub Pages
-    alertas-semanales.yml Correo semanal después de cada actualización
+    alertas-semanales.yml Correo de alertas: lunes 6:00 p. m. Lima y después de cada lectura de ventas que cambió las cifras
     weekly-check.yml      Revisión semanal del pipeline
 ```
 
@@ -253,10 +254,20 @@ Las sesiones abiertas con la clave anterior siguen hasta que se cierre la pesta�
 3. Compartir el Google Sheet de 2025 con el email del service account (permiso lector).
 4. Secret `RB_PAGE_PASSWORD`: clave de acceso al tablero (16 caracteres o más).
 5. Opcional: secret `RB_DRIVE_API_KEY` (clave de API de Google con Drive API habilitada) para que `sync-ads.yml`, `update-data.yml` y `sync-objetivos.yml` listen las carpetas con la API en vez de la vista pública.
-6. Secrets `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` y `SMTP_PASS` para el correo de alertas: la cuenta alertas@limaretail.com del hosting, que también es el remitente. Sin ellos se usa `RESEND_API_KEY` si existe. Opcional: variable `DASHBOARD_URL` si el enlace del correo debe ser otro que el de `data/alertas-config.json`.
+6. Secrets `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` y `SMTP_PASS` para el correo de alertas: la cuenta alertas@limaretail.com del hosting, que también es el remitente. Sin ellos se usa `RESEND_API_KEY` si existe. Secrets `RB_ALERTAS_URL` y `RB_ALERTAS_TOKEN` para la lista de correos que se edita en el tablero (ver [Alerta de ventas](#alerta-de-ventas)). Opcional: variable `DASHBOARD_URL` si el enlace del correo debe ser otro que el de `data/alertas-config.json`.
 7. DNS de `limaretail.com`: registro CNAME `royalbaby` → `jorgeluis666.github.io`.
 8. `Settings → Pages`: Source **GitHub Actions**, Custom domain `royalbaby.limaretail.com` y **Enforce HTTPS**.
 9. Pushear a `main`: el deploy corre solo.
+
+## Alerta de ventas
+
+Correo con el avance del mes contra la meta (real acumulado, proyección de cierre, avance por canal y avisos), con la estética del tablero. Lo envía `scripts/alertas.js` desde `alertas-semanales.yml`:
+
+- **Lunes a las 6:00 p. m. de Lima**, una vez por semana.
+- **Cada vez que se actualizan las ventas**: después de cada corrida de «Actualizar datos de ventas», solo si las cifras de `data/ventas-2026.json` cambiaron desde el último envío (el archivo se reescribe en cada lectura, así que se compara una huella de las ventas, guardada en `data/alertas-envios.json`).
+- A mano: `Actions → Alerta semanal de ventas → Run workflow`, con «Simulación» para no enviar y «Reenviar» para mandarla aunque ya haya salido esa semana. `node scripts/alertas.js --preview correo.html` escribe el correo en un archivo sin enviarlo.
+
+**Destinatarios**: se configuran con la ruedita del panel de Notificaciones del tablero (nombre opcional y correo; hasta 25). La lista vive en el Web App de `scripts/apps-script/alertas-destinatarios.gs` (propiedades del script, no en el repo): el tablero publicado la edita con la URL y la clave que el build deja dentro del HTML cifrado, y la alerta la lee antes de cada envío. Mientras nadie guardó una lista, o si el Web App no responde, se usan los destinatarios de `data/alertas-config.json`; una lista guardada vacía no envía nada. Puesta en marcha del Web App: ver el encabezado del `.gs` (ejecutar `instalar()`, implementar como aplicación web con acceso «Cualquier persona» y crear los secrets `RB_ALERTAS_URL` y `RB_ALERTAS_TOKEN`).
 
 ## Objetivos 2026
 

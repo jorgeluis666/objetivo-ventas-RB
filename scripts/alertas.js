@@ -1,11 +1,18 @@
 #!/usr/bin/env node
 /* ============================================================
-   scripts/alertas.js — Alerta semanal de objetivos de venta.
+   scripts/alertas.js — Alerta de objetivos de venta.
+
+   Sale los lunes a las 6:00 p. m. (ALERTA_MOTIVO=lunes, una vez por semana) y cada vez que cambian
+   las ventas del archivo de Drive (ALERTA_MOTIVO=ventas, después de "Actualizar datos de ventas":
+   solo si las cifras de ventas-2026.json son otras que en el último envío).
 
    Lee:
      data/ventas-2026.json     → ventas reales acumuladas por canal
      data/objetivos-2026.json  → objetivos de la marca (Drive): canales y metas por mes
-     data/alertas-config.json  → destinatarios y config de envío
+     data/alertas-config.json  → remitente y destinatarios por defecto
+     Destinatarios: los que se configuran con la ruedita de Notificaciones del tablero (Web App de
+     scripts/apps-script/alertas-destinatarios.gs, por RB_ALERTAS_URL y RB_ALERTAS_TOKEN); si no
+     está conectado o todavía no se guardó una lista, los de alertas-config.json.
 
    Envía email HTML por el correo del hosting (SMTP) o, si no está configurado, por Resend.
    Registra el envío en data/alertas-envios.json (idempotencia).
@@ -21,18 +28,22 @@
      RESEND_API_KEY   → API key de Resend
    Variables opcionales:
      DRY_RUN=true     → equivale a --dry-run (para GitHub Actions)
+     ALERTA_MOTIVO    → lunes | ventas | manual (por defecto, manual: como el lunes)
+     RB_ALERTAS_URL, RB_ALERTAS_TOKEN → lista de destinatarios del tablero
    ============================================================ */
 
 'use strict';
 
-const fs   = require('fs');
-const path = require('path');
+const fs     = require('fs');
+const path   = require('path');
+const crypto = require('crypto');
 
 const ROOT    = path.join(__dirname, '..');
 const DRY_RUN = process.argv.includes('--dry-run') || process.env.DRY_RUN === 'true';
 const FORCE   = process.argv.includes('--force');
 // --preview archivo.html: escribe el correo en ese archivo y termina, sin enviar ni registrar.
 const PREVIEW = process.argv.includes('--preview') ? process.argv[process.argv.indexOf('--preview') + 1] : null;
+const MOTIVO  = ['lunes', 'ventas'].includes(process.env.ALERTA_MOTIVO) ? process.env.ALERTA_MOTIVO : 'manual';
 
 // ── Helpers ──────────────────────────────────────────────────
 const fmt     = n => Math.round(n).toLocaleString('es-PE');
@@ -92,10 +103,20 @@ console.log(`  Fecha Lima : ${fechaLabel}`);
 console.log(`  Mes actual : ${curMonth} ${limaYear} · día ${dayOfMonth} de ${curMonthDays}`);
 
 // ── Idempotencia ─────────────────────────────────────────────
-if (!FORCE && !DRY_RUN && !PREVIEW && enviosData.enviados[weekKey]) {
-  console.log(`\n⏭  Semana ${weekKey} ya registrada (${enviosData.enviados[weekKey]}).`);
-  console.log('   Usa --force para reenviar.\n');
-  process.exit(0);
+// Huella de las ventas: ventas-2026.json se reescribe en cada lectura diaria (cambia "generated"),
+// así que lo que cuenta es si cambiaron las cifras.
+const huellaVentas = crypto.createHash('sha256').update(JSON.stringify(salesData.d2026 || {})).digest('hex').slice(0, 16);
+console.log(`  Motivo     : ${MOTIVO}`);
+if (!FORCE && !DRY_RUN && !PREVIEW) {
+  if (MOTIVO === 'ventas' && enviosData.ultimaHuella === huellaVentas) {
+    console.log('\n⏭  Las ventas no cambiaron desde el último envío: no hay alerta que mandar.\n');
+    process.exit(0);
+  }
+  if (MOTIVO !== 'ventas' && enviosData.enviados[weekKey]) {
+    console.log(`\n⏭  Semana ${weekKey} ya registrada (${enviosData.enviados[weekKey]}).`);
+    console.log('   Usa --force para reenviar.\n');
+    process.exit(0);
+  }
 }
 
 // ── Cálculo de métricas ──────────────────────────────────────
@@ -326,7 +347,7 @@ const htmlEmail = `<!DOCTYPE html>
 
     <!-- Resumen del mes -->
     ${tarjeta(`
-      ${etiqueta(`Alerta semanal de ventas · ${weekKey}`)}
+      ${etiqueta(`${MOTIVO === 'ventas' ? 'Ventas actualizadas' : 'Alerta semanal de ventas'} · ${weekKey}`)}
       <div style="font-size:20px;font-weight:700;color:${C.text};letter-spacing:-0.02em;">${curMonth} ${limaYear}: ${proyPct.toFixed(0)}% del objetivo proyectado</div>
       <div style="font-size:14px;color:${C.text2};margin-top:6px;line-height:1.5;">
         ${fechaLabel.charAt(0).toUpperCase() + fechaLabel.slice(1)} · día ${dayOfMonth} de ${curMonthDays} (${diaPct}% del mes).
@@ -404,7 +425,7 @@ const htmlEmail = `<!DOCTYPE html>
       <a href="${config.url_dashboard}" style="display:inline-block;background:${C.brand};color:#ffffff;text-decoration:none;padding:11px 22px;border-radius:9px;font-size:14px;font-weight:600;font-family:${FONT};">Ver el tablero de ${MARCA}</a>
     </td></tr>
     <tr><td align="center" style="padding:8px 0 0;font-size:11px;line-height:1.6;color:${C.muted};font-family:${FONT};">
-      ${config.workspace} · alerta automática semanal (${weekKey})<br>
+      ${config.workspace} · alerta automática (${weekKey}): los lunes a las 6:00 p. m. y cada vez que se actualizan las ventas.<br>
       Metas por canal del archivo de objetivos de Drive; ventas del histórico de ${MARCA}.
     </td></tr>
 
@@ -430,22 +451,33 @@ const subjectDetalle = achievedChannels.length > 0
 
 const subject = `${NIVEL_LABEL[NIVEL]} · ${curMonth} ${limaYear} · ${proyPct.toFixed(0)}% proyectado${subjectDetalle} · Lima Retail`;
 
-// ── Dry-run ───────────────────────────────────────────────────
-if (DRY_RUN) {
-  console.log('\n─────────────────────────────────────────');
-  console.log('[DRY-RUN] Email que se enviaría:');
-  console.log('  Asunto :', subject);
-  console.log('  Para   :', config.destinatarios.map(d => `${d.nombre} <${d.email}>`).join(', '));
-  console.log('  Tamaño :', Math.round(htmlEmail.length / 1024), 'KB');
-  console.log('[DRY-RUN] Sin envíos reales. FIN.\n');
-  process.exit(0);
+// ── Destinatarios ─────────────────────────────────────────────
+// Los de la ruedita del tablero; si el Web App no está conectado, no responde o nunca se guardó una
+// lista, los de alertas-config.json. Una lista guardada vacía significa que no se envía.
+async function destinatarios() {
+  const url = process.env.RB_ALERTAS_URL;
+  const token = process.env.RB_ALERTAS_TOKEN;
+  const porDefecto = { lista: config.destinatarios || [], fuente: 'data/alertas-config.json' };
+  if (!url || !token) return porDefecto;
+  try {
+    const res = await fetch(`${url}?token=${encodeURIComponent(token)}`);
+    const body = await res.json();
+    if (!body.ok) throw new Error(body.error || `HTTP ${res.status}`);
+    if (!Array.isArray(body.destinatarios)) return { ...porDefecto, fuente: 'data/alertas-config.json (el tablero todavía no guardó una lista)' };
+    return { lista: body.destinatarios, fuente: 'configuración del tablero' };
+  } catch (err) {
+    console.warn(`::warning::No se pudo leer la lista del tablero (${err.message}); se usa data/alertas-config.json`);
+    return porDefecto;
+  }
 }
 
 // ── Registrar envío ──────────────────────────────────────────
 function registrarEnvio() {
-  enviosData.enviados[weekKey] = new Date().toISOString();
+  if (MOTIVO !== 'ventas') enviosData.enviados[weekKey] = new Date().toISOString();
+  enviosData.ultimaHuella = huellaVentas;
+  enviosData.ultimoEnvio = { fecha: new Date().toISOString(), motivo: MOTIVO };
   fs.writeFileSync(enviosPath, JSON.stringify(enviosData, null, 2) + '\n', 'utf8');
-  console.log(`📝 Registrado en alertas-envios.json: ${weekKey}\n`);
+  console.log(`📝 Registrado en alertas-envios.json: ${MOTIVO === 'ventas' ? 'ventas actualizadas' : weekKey}\n`);
 }
 
 // ── Envío por el correo del hosting (SMTP) ────────────────────
@@ -470,7 +502,26 @@ async function enviarSmtp(toList) {
 }
 
 (async () => {
-  const toList = config.destinatarios.map(d => d.email);
+  const { lista, fuente } = await destinatarios();
+  const para = lista.map(d => (d.nombre ? `${d.nombre} <${d.email}>` : d.email)).join(', ');
+
+  // ── Dry-run ───────────────────────────────────────────────────
+  if (DRY_RUN) {
+    console.log('\n─────────────────────────────────────────');
+    console.log('[DRY-RUN] Email que se enviaría:');
+    console.log('  Asunto :', subject);
+    console.log('  Para   :', para || '(nadie)', `· ${fuente}`);
+    console.log('  Tamaño :', Math.round(htmlEmail.length / 1024), 'KB');
+    console.log('[DRY-RUN] Sin envíos reales. FIN.\n');
+    return;
+  }
+
+  if (!lista.length) {
+    console.log(`\n⏭  La lista de destinatarios está vacía (${fuente}): no se envía.\n`);
+    return;
+  }
+
+  const toList = lista.map(d => d.email);
   const smtp = ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS'].every(name => process.env[name]);
   const RESEND_KEY = process.env.RESEND_API_KEY;
   if (!smtp && !RESEND_KEY) {
@@ -479,7 +530,7 @@ async function enviarSmtp(toList) {
     process.exit(1);
   }
 
-  console.log(`\n📧 Enviando a: ${config.destinatarios.map(d => `${d.nombre} <${d.email}>`).join(', ')}`);
+  console.log(`\n📧 Enviando a: ${para} (${fuente})`);
   console.log(`   Asunto: ${subject}`);
 
   if (smtp) {

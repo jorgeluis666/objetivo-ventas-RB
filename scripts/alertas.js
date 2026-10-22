@@ -14,6 +14,7 @@
      node scripts/alertas.js             # envío real
      node scripts/alertas.js --dry-run   # simula sin enviar
      node scripts/alertas.js --force     # ignora idempotencia (reenvía)
+     node scripts/alertas.js --preview correo.html   # escribe el correo en un archivo, sin enviar
 
    Variables de entorno para el envío real (una de las dos opciones):
      SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS → cuenta de correo del hosting (alertas@limaretail.com)
@@ -30,6 +31,8 @@ const path = require('path');
 const ROOT    = path.join(__dirname, '..');
 const DRY_RUN = process.argv.includes('--dry-run') || process.env.DRY_RUN === 'true';
 const FORCE   = process.argv.includes('--force');
+// --preview archivo.html: escribe el correo en ese archivo y termina, sin enviar ni registrar.
+const PREVIEW = process.argv.includes('--preview') ? process.argv[process.argv.indexOf('--preview') + 1] : null;
 
 // ── Helpers ──────────────────────────────────────────────────
 const fmt     = n => Math.round(n).toLocaleString('es-PE');
@@ -60,9 +63,6 @@ const MONTH_DAYS = {
   Enero:31,Febrero:28,Marzo:31,Abril:30,Mayo:31,Junio:30,
   Julio:31,Agosto:31,Septiembre:30,Octubre:31,Noviembre:30,Diciembre:31,
 };
-const CANAL_ICONS = {
-  Tienda:'🏪', Web:'🌐', Redes:'💬', Outlet:'🛍️',
-};
 
 // ── Cargar archivos ──────────────────────────────────────────
 const salesData  = readJson(path.join(ROOT, 'data/ventas-2026.json'));
@@ -92,7 +92,7 @@ console.log(`  Fecha Lima : ${fechaLabel}`);
 console.log(`  Mes actual : ${curMonth} ${limaYear} · día ${dayOfMonth} de ${curMonthDays}`);
 
 // ── Idempotencia ─────────────────────────────────────────────
-if (!FORCE && !DRY_RUN && enviosData.enviados[weekKey]) {
+if (!FORCE && !DRY_RUN && !PREVIEW && enviosData.enviados[weekKey]) {
   console.log(`\n⏭  Semana ${weekKey} ya registrada (${enviosData.enviados[weekKey]}).`);
   console.log('   Usa --force para reenviar.\n');
   process.exit(0);
@@ -111,7 +111,6 @@ function calcMonth(m) {
   const tgt  = targets[m] || {};
   const rows = canales.map(c => ({
     ch   : c.label,
-    icon : CANAL_ICONS[c.key] || '',
     real : c.sheet.reduce((s, col) => s + (data[col] || 0), 0),
     meta : tgt[c.key] || 0,
   }));
@@ -140,9 +139,6 @@ const dailyNeed  = diasRest > 0 && faltante > 0 ? faltante / diasRest : 0;
 // Nivel de alerta
 const NIVEL = proyPct >= 90 ? 'verde' : proyPct >= 70 ? 'ambar' : 'rojo';
 const NIVEL_LABEL  = { verde:'✅ En track', ambar:'⚠️ Atención', rojo:'🚨 Riesgo' };
-const NIVEL_COLOR  = { verde:'#16a34a', ambar:'#d97706', rojo:'#dc2626' };
-const NIVEL_BG     = { verde:'#f0fdf4', ambar:'#fffbeb', rojo:'#fef2f2' };
-const NIVEL_BORDER = { verde:'#bbf7d0', ambar:'#fde68a', rojo:'#fecaca' };
 
 // Meses anteriores cerrados con objetivo (hasta 3)
 const closedMonths = [];
@@ -201,39 +197,102 @@ if (laggingChannels.length > 0) {
 }
 
 // ── Helpers HTML ─────────────────────────────────────────────
-function pill(p) {
-  const [bg, color, label] =
-    p >= 100 ? ['#f0fdf4','#16a34a','✓ alcanzado'] :
-    p >= 90  ? ['#f0fdf4','#16a34a','▲ casi']       :
-    p >= 70  ? ['#fffbeb','#d97706','⚠ atención']   :
-               ['#fef2f2','#dc2626','▼ brecha'];
-  return `<span style="background:${bg};color:${color};padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">${label}</span>`;
+// El correo usa la estética del tablero (css/dashboard-minimal.css): fondo #f6f9fc, tarjetas blancas
+// con borde #dbe5f2 y radio 12px, Inter, etiquetas en mayúsculas espaciadas, píldoras verde / ámbar /
+// roja y el azul #2563eb de los botones. Todo va en tablas y estilos en línea para que Gmail y Outlook
+// lo respeten.
+const MARCA = 'Royal Baby';
+const LOGO  = new URL('assets/logo-royal-baby.jpg', config.url_dashboard).href;
+const C = {
+  bg: '#f6f9fc', card: '#ffffff', border: '#dbe5f2', head: '#f8fbff',
+  text: '#06132b', text2: '#52647d', muted: '#7b8da6', brand: '#2563eb', track: '#e2e8f0',
+};
+const FONT = "Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
+// Tonos de las píldoras del tablero: texto, fondo, borde y el color de las cifras y barras.
+const TONO = {
+  verde: { fg: '#047857', bg: '#d1fae5', bd: '#a7f3d0', val: '#059669', box: '#ecfdf5' },
+  ambar: { fg: '#b45309', bg: '#fef3c7', bd: '#fde68a', val: '#d97706', box: '#fffbeb' },
+  rojo:  { fg: '#b91c1c', bg: '#fee2e2', bd: '#fecaca', val: '#dc2626', box: '#fef2f2' },
+  gris:  { fg: '#52647d', bg: '#f1f5f9', bd: '#e2e8f0', val: '#52647d', box: '#f8fbff' },
+};
+const tonoDe = p => (p >= 90 ? TONO.verde : p >= 70 ? TONO.ambar : TONO.rojo);
+const tonoNivel = TONO[NIVEL];
+const money = n => `S/. ${fmt(n)}`;
+const signed = n => `${n >= 0 ? '+' : '−'}${money(Math.abs(n))}`;
+
+const pill = (texto, t) =>
+  `<span style="display:inline-block;background:${t.bg};color:${t.fg};border:1px solid ${t.bd};border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;white-space:nowrap;">${texto}</span>`;
+
+function pillAvance(p) {
+  if (p >= 100) return pill('✓ alcanzado', TONO.verde);
+  if (p >= 90)  return pill('▲ casi', TONO.verde);
+  if (p >= 70)  return pill('⚠ atención', TONO.ambar);
+  return pill('▼ brecha', TONO.rojo);
 }
+
+// Barra de avance como la del tablero: riel gris de 6px y el tramo cumplido en el color del avance.
+function barra(p, t, ancho = 72) {
+  const lleno = Math.max(2, Math.round(ancho * Math.min(p, 100) / 100));
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>
+    <td width="${lleno}" height="6" style="width:${lleno}px;height:6px;background:${t.val};border-radius:3px 0 0 3px;font-size:0;line-height:0;">&nbsp;</td>
+    ${ancho - lleno > 0 ? `<td width="${ancho - lleno}" height="6" style="width:${ancho - lleno}px;height:6px;background:${C.track};border-radius:0 3px 3px 0;font-size:0;line-height:0;">&nbsp;</td>` : ''}
+  </tr></table>`;
+}
+
+const etiqueta = texto =>
+  `<div style="font-size:11px;font-weight:700;color:${C.text2};text-transform:uppercase;letter-spacing:0.08em;margin:0 0 10px;">${texto}</div>`;
+
+function kpi(lbl, valor, color, sub, p, t) {
+  return `<td valign="top" style="background:${C.card};border:1px solid ${C.border};border-radius:12px;padding:12px 14px;">
+    <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.12em;">${lbl}</div>
+    <div style="font-size:20px;font-weight:600;color:${color};letter-spacing:-0.02em;margin-top:6px;white-space:nowrap;">${valor}</div>
+    ${p == null ? '' : `<div style="margin-top:8px;">${barra(p, t, 120)}</div>`}
+    <div style="font-size:11px;color:${C.text2};margin-top:6px;">${sub}</div>
+  </td>`;
+}
+
+const th = (texto, align = 'right') =>
+  `<th style="padding:9px 12px;text-align:${align};font-size:11px;font-weight:700;color:${C.text2};text-transform:uppercase;letter-spacing:0.08em;background:${C.head};border-bottom:1px solid ${C.border};white-space:nowrap;">${texto}</th>`;
 
 function channelRows(m) {
   return calcMonth(m).byChannel.map(r => {
-    const barW  = Math.min(r.pct, 100).toFixed(0);
-    const color = r.pct >= 90 ? '#16a34a' : r.pct >= 70 ? '#d97706' : '#dc2626';
-    const gap   = r.real - r.meta;
-    return `
-      <tr>
-        <td style="padding:8px 12px;font-size:13px;color:#374151;">${r.icon} ${r.ch}</td>
-        <td style="padding:8px 12px;text-align:right;font-size:13px;color:#374151;">S/. ${fmt(r.real)}</td>
-        <td style="padding:8px 12px;text-align:right;font-size:12px;color:#9ca3af;">/ S/. ${fmt(r.meta)}</td>
-        <td style="padding:8px 12px;text-align:right;">
-          <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;">
-            <div style="width:56px;height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden;">
-              <div style="width:${barW}%;height:100%;background:${color};border-radius:3px;"></div>
-            </div>
-            <span style="font-size:12px;font-weight:700;color:${color};min-width:32px;text-align:right;">${r.pct.toFixed(0)}%</span>
-          </div>
-        </td>
-        <td style="padding:8px 12px;text-align:right;font-size:12px;color:${gap >= 0 ? '#16a34a' : '#dc2626'};font-weight:600;">
-          ${gap >= 0 ? '+' : ''}S/. ${fmt(gap)}
-        </td>
-      </tr>`;
+    const t = tonoDe(r.pct);
+    const gap = r.real - r.meta;
+    const td = `padding:10px 12px;border-bottom:1px solid ${C.border};font-size:13px;color:${C.text};`;
+    return `<tr>
+      <td style="${td}font-weight:600;">${r.ch}</td>
+      <td style="${td}text-align:right;white-space:nowrap;">${money(r.real)}</td>
+      <td style="${td}text-align:right;white-space:nowrap;color:${C.muted};">${money(r.meta)}</td>
+      <td style="${td}text-align:right;">
+        <table role="presentation" cellpadding="0" cellspacing="0" align="right" style="border-collapse:collapse;"><tr>
+          <td style="padding-right:8px;">${barra(r.pct, t, 56)}</td>
+          <td style="font-size:12px;font-weight:700;color:${t.val};white-space:nowrap;">${r.pct.toFixed(0)}%</td>
+        </tr></table>
+      </td>
+      <td style="${td}text-align:right;white-space:nowrap;font-weight:600;color:${gap >= 0 ? TONO.verde.val : TONO.rojo.val};">${signed(gap)}</td>
+    </tr>`;
   }).join('');
 }
+
+// Recuadro de aviso con el tono de las píldoras (fondo suave y borde del mismo color).
+const aviso = (t, titulo, cuerpo) =>
+  `<tr><td style="padding:12px 0 0;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${t.box};border:1px solid ${t.bd};border-radius:12px;">
+      <tr><td style="padding:14px 18px;font-family:${FONT};">
+        <div style="font-size:14px;font-weight:700;color:${t.fg};margin-bottom:6px;">${titulo}</div>
+        <div style="font-size:13px;line-height:1.55;color:${C.text};">${cuerpo}</div>
+      </td></tr>
+    </table>
+  </td></tr>`;
+
+const tarjeta = cuerpo =>
+  `<tr><td style="padding:12px 0 0;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.card};border:1px solid ${C.border};border-radius:12px;">
+      <tr><td style="padding:20px;font-family:${FONT};">${cuerpo}</td></tr>
+    </table>
+  </td></tr>`;
+
+const brechaTotal = laggingChannels.reduce((s, r) => s + (r.meta - r.real), 0);
 
 // ── Template HTML del email ───────────────────────────────────
 const htmlEmail = `<!DOCTYPE html>
@@ -242,191 +301,111 @@ const htmlEmail = `<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>${MARCA} · Alerta semanal de ventas</title>
 </head>
-<body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
-  <tr><td align="center">
-  <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+<body style="margin:0;padding:0;background:${C.bg};font-family:${FONT};color:${C.text};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.bg};">
+  <tr><td align="center" style="padding:28px 12px;">
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;font-family:${FONT};">
 
-    <!-- ═══ HEADER ════ -->
-    <tr><td style="background:#b91c1c;border-radius:12px 12px 0 0;padding:24px 32px;">
-      <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:1;">Lima Retail</div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:4px;font-weight:500;">Alerta semanal de ventas · ${weekKey}</div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px;text-transform:capitalize;">${fechaLabel}</div>
-    </td></tr>
-
-    <!-- ═══ ALERTA BANNER ════ -->
-    <tr><td style="background:${NIVEL_BG[NIVEL]};border:1px solid ${NIVEL_BORDER[NIVEL]};border-top:none;padding:18px 32px;">
-      <div style="font-size:16px;font-weight:700;color:${NIVEL_COLOR[NIVEL]};margin-bottom:6px;">${NIVEL_LABEL[NIVEL]} · ${curMonth} ${limaYear}</div>
-      <div style="font-size:13px;color:#374151;line-height:1.5;">
-        Proyección al cierre:
-        <strong style="color:${NIVEL_COLOR[NIVEL]};font-size:15px;">S/. ${fmt(proyeccion)}</strong>
-        <span style="color:#9ca3af;margin:0 6px;">·</span>
-        <strong style="color:${NIVEL_COLOR[NIVEL]};">${proyPct.toFixed(1)}%</strong> del objetivo mensual
-        ${proyPct < 90 ? `<br><span style="font-size:12px;color:#6b7280;">Con el ritmo actual de <strong>S/. ${fmt(ritmo)}/día</strong> se estima un cierre de S/. ${fmt(proyeccion)}, S/. ${fmt(Math.abs(cur.meta - proyeccion))} ${proyeccion < cur.meta ? 'por debajo' : 'por encima'} de la meta.</span>` : ''}
-      </div>
-    </td></tr>
-
-    <!-- ═══ MES EN CURSO ════ -->
-    <tr><td style="background:#ffffff;border:1px solid #e5e7eb;border-top:none;padding:24px 32px;">
-
-      <!-- título de sección -->
-      <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:18px;">
-        ${curMonth} ${limaYear} &nbsp;·&nbsp; Día ${dayOfMonth} de ${curMonthDays} &nbsp;(${diaPct}% del mes)
-      </div>
-
-      <!-- KPIs 3 columnas -->
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:22px;">
+    <!-- Encabezado: marca como en el panel lateral del tablero -->
+    <tr><td>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.card};border:1px solid ${C.border};border-radius:12px;">
         <tr>
-          <td style="text-align:center;padding:14px 10px;background:#f9fafb;border-radius:10px;border:1px solid #e5e7eb;">
-            <div style="font-size:10px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;">Real acumulado</div>
-            <div style="font-size:24px;font-weight:800;color:#111827;margin-top:6px;letter-spacing:-0.02em;">S/. ${fmt(cur.real)}</div>
-            <div style="font-size:11px;color:#9ca3af;margin-top:2px;">${diaPct}% del mes</div>
+          <td style="padding:16px 12px 16px 20px;width:44px;" width="44"><img src="${LOGO}" width="44" height="44" alt="${MARCA}" style="display:block;width:44px;height:44px;border-radius:50%;border:0;"></td>
+          <td style="padding:16px 0;">
+            <div style="font-size:18px;font-weight:800;color:#0f172a;line-height:1.1;">${MARCA}</div>
+            <div style="font-size:12px;color:${C.muted};margin-top:3px;">BI Agencia Lima Retail</div>
           </td>
-          <td width="10"></td>
-          <td style="text-align:center;padding:14px 10px;background:#f9fafb;border-radius:10px;border:1px solid #e5e7eb;">
-            <div style="font-size:10px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;">Proyección cierre</div>
-            <div style="font-size:24px;font-weight:800;color:${NIVEL_COLOR[NIVEL]};margin-top:6px;letter-spacing:-0.02em;">S/. ${fmt(proyeccion)}</div>
-            <div style="font-size:11px;color:${NIVEL_COLOR[NIVEL]};margin-top:2px;">${proyPct.toFixed(1)}% del objetivo</div>
-          </td>
-          <td width="10"></td>
-          <td style="text-align:center;padding:14px 10px;background:#f9fafb;border-radius:10px;border:1px solid #e5e7eb;">
-            <div style="font-size:10px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;">Objetivo mensual</div>
-            <div style="font-size:24px;font-weight:800;color:#374151;margin-top:6px;letter-spacing:-0.02em;">S/. ${fmt(cur.meta)}</div>
-            <div style="font-size:11px;color:#9ca3af;margin-top:2px;">${curMonth} ${limaYear}</div>
-          </td>
+          <td align="right" style="padding:16px 20px;">${pill(NIVEL_LABEL[NIVEL], tonoNivel)}</td>
         </tr>
       </table>
-
-      <!-- Tabla por canal -->
-      <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;">Avance por canal</div>
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-             style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;border-collapse:separate;">
-        <thead>
-          <tr style="background:#f9fafb;">
-            <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid #e5e7eb;">Canal</th>
-            <th style="padding:9px 12px;text-align:right;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid #e5e7eb;">Real MTD</th>
-            <th style="padding:9px 12px;text-align:right;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid #e5e7eb;">Objetivo</th>
-            <th style="padding:9px 12px;text-align:right;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid #e5e7eb;">Avance</th>
-            <th style="padding:9px 12px;text-align:right;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid #e5e7eb;">Brecha</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${channelRows(curMonth)}
-        </tbody>
-      </table>
-
-      ${ritmo > 0 && faltante > 0 ? `
-      <!-- Nota de ritmo -->
-      <div style="background:#f9fafb;border-radius:8px;padding:12px 16px;margin-top:16px;font-size:13px;color:#374151;border:1px solid #e5e7eb;">
-        📈 Ritmo actual: <strong>S/. ${fmt(ritmo)}/día</strong> &nbsp;·&nbsp;
-        Para alcanzar la meta necesitás vender <strong>S/. ${fmt(dailyNeed)}/día</strong>
-        durante los próximos <strong>${diasRest} días</strong>.
-        Faltante total: <strong style="color:#dc2626;">S/. ${fmt(faltante)}</strong>.
-      </div>` : ritmo > 0 && faltante === 0 ? `
-      <div style="background:#f0fdf4;border-radius:8px;padding:12px 16px;margin-top:16px;font-size:13px;color:#16a34a;border:1px solid #bbf7d0;font-weight:600;">
-        🎉 ¡Objetivo de ${curMonth} alcanzado! Excedente: S/. ${fmt(cur.real - cur.meta)}.
-      </div>` : ''}
-
     </td></tr>
 
-    ${closedMonths.length > 0 ? `
-    <!-- ═══ MESES CERRADOS ════ -->
-    <tr><td style="background:#ffffff;border:1px solid #e5e7eb;border-top:none;padding:16px 32px 20px;">
-      <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:14px;">Meses anteriores</div>
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <!-- Resumen del mes -->
+    ${tarjeta(`
+      ${etiqueta(`Alerta semanal de ventas · ${weekKey}`)}
+      <div style="font-size:20px;font-weight:700;color:${C.text};letter-spacing:-0.02em;">${curMonth} ${limaYear}: ${proyPct.toFixed(0)}% del objetivo proyectado</div>
+      <div style="font-size:14px;color:${C.text2};margin-top:6px;line-height:1.5;">
+        ${fechaLabel.charAt(0).toUpperCase() + fechaLabel.slice(1)} · día ${dayOfMonth} de ${curMonthDays} (${diaPct}% del mes).
+        ${proyPct < 90
+          ? `Al ritmo de <strong style="color:${C.text};">${money(ritmo)} por día</strong>, el mes cerraría en ${money(proyeccion)}, ${money(Math.abs(cur.meta - proyeccion))} ${proyeccion < cur.meta ? 'por debajo' : 'por encima'} de la meta.`
+          : `Al ritmo de <strong style="color:${C.text};">${money(ritmo)} por día</strong>, el mes cerraría en ${money(proyeccion)}.`}
+      </div>
+
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;">
+        <tr>
+          ${kpi('Real acumulado', money(cur.real), C.text, `${pctOf(cur.real, cur.meta).toFixed(0)}% de la meta · día ${dayOfMonth}`, pctOf(cur.real, cur.meta), TONO.gris)}
+          <td width="10" style="width:10px;"></td>
+          ${kpi('Proyección de cierre', money(proyeccion), tonoNivel.val, `${proyPct.toFixed(1)}% del objetivo`, proyPct, tonoNivel)}
+          <td width="10" style="width:10px;"></td>
+          ${kpi('Objetivo del mes', money(cur.meta), C.text, `Falta ${money(faltante)}`, null, null)}
+        </tr>
+      </table>
+    `)}
+
+    <!-- Avance por canal -->
+    ${tarjeta(`
+      ${etiqueta('Avance por canal')}
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${C.border};border-radius:12px;border-collapse:separate;border-spacing:0;overflow:hidden;">
+        <thead><tr>${th('Canal', 'left')}${th('Real')}${th('Meta')}${th('Avance')}${th('Brecha')}</tr></thead>
+        <tbody>${channelRows(curMonth)}</tbody>
+      </table>
+      ${ritmo > 0 && faltante > 0 ? `
+      <div style="font-size:13px;color:${C.text2};margin-top:14px;line-height:1.55;">
+        Para llegar a la meta hay que vender <strong style="color:${C.text};">${money(dailyNeed)} por día</strong> en los
+        <strong style="color:${C.text};">${diasRest} días</strong> que quedan (ritmo actual: ${money(ritmo)} por día).
+        Faltan <strong style="color:${TONO.rojo.val};">${money(faltante)}</strong>.
+      </div>` : ritmo > 0 && faltante === 0 ? `
+      <div style="margin-top:14px;">${pill(`Objetivo de ${curMonth} alcanzado · excedente ${money(cur.real - cur.meta)}`, TONO.verde)}</div>` : ''}
+    `)}
+
+    ${achievedChannels.length > 0 ? aviso(TONO.verde,
+      `${achievedChannels.map(r => r.ch).join(' y ')} ${achievedChannels.length > 1 ? 'llegaron' : 'llegó'} a su meta`,
+      `${achievedChannels.map(r => `<strong>${r.ch}</strong> va en ${r.pct.toFixed(0)}% de su meta, con ${money(r.real - r.meta)} de excedente.`).join(' ')}
+      ${topNeedChannels.length > 0 ? `<br>Ese excedente (${money(totalSurplus)}) podría reforzar las campañas de ${topNeedChannels.map(n => `<strong>${n.ch}</strong> (brecha ${money(n.meta - n.real)})`).join(' y ')}.` : ''}`) : ''}
+
+    ${laggingChannels.length > 0 ? aviso(TONO.ambar,
+      `Brecha a mitad de mes · día ${dayOfMonth} de ${curMonthDays}`,
+      `Estos canales van por debajo del 80% del ritmo esperado:
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0;font-size:13px;">
+        ${laggingChannels.map(r => `<tr>
+          <td style="padding:4px 0;font-weight:600;color:${C.text};">${r.ch}</td>
+          <td style="padding:4px 8px;text-align:right;color:${C.text2};white-space:nowrap;">real ${money(r.real)}</td>
+          <td style="padding:4px 8px;text-align:right;color:${C.muted};white-space:nowrap;">esperado ${money(r.expectedReal)}</td>
+          <td style="padding:4px 0;text-align:right;font-weight:700;color:${TONO.rojo.val};white-space:nowrap;">${money(Math.abs(r.lag))}</td>
+        </tr>`).join('')}
+      </table>
+      Para cerrar ${money(brechaTotal)} en ${diasRest} días hacen falta ${money(brechaTotal / Math.max(diasRest, 1))} por día adicionales en estos canales.`) : ''}
+
+    ${closedMonths.length > 0 ? tarjeta(`
+      ${etiqueta('Meses anteriores')}
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${C.border};border-radius:12px;border-collapse:separate;border-spacing:0;overflow:hidden;">
+        <thead><tr>${th('Mes', 'left')}${th('Real')}${th('Meta')}${th('Avance')}${th('', 'right')}</tr></thead>
+        <tbody>
         ${closedMonths.map(({ m, real, meta, pct: p }) => {
-          const color = p >= 90 ? '#16a34a' : p >= 70 ? '#d97706' : '#dc2626';
-          const gap   = real - meta;
-          return `
-          <tr style="border-bottom:1px solid #f3f4f6;">
-            <td style="padding:10px 0;font-size:13px;color:#374151;font-weight:600;width:120px;">${m}</td>
-            <td style="padding:10px 0;text-align:right;font-size:13px;color:#374151;">S/. ${fmt(real)}</td>
-            <td style="padding:10px 0;text-align:right;font-size:12px;color:#9ca3af;">/ S/. ${fmt(meta)}</td>
-            <td style="padding:10px 12px;text-align:right;font-size:14px;font-weight:700;color:${color};">${p.toFixed(1)}%</td>
-            <td style="padding:10px 0;text-align:right;font-size:12px;font-weight:600;color:${color};">${gap >= 0 ? '+' : ''}S/. ${fmt(gap)}</td>
-            <td style="padding:10px 0 10px 12px;">${pill(p)}</td>
+          const td = `padding:10px 12px;border-bottom:1px solid ${C.border};font-size:13px;color:${C.text};`;
+          return `<tr>
+            <td style="${td}font-weight:600;">${m}</td>
+            <td style="${td}text-align:right;white-space:nowrap;">${money(real)}</td>
+            <td style="${td}text-align:right;white-space:nowrap;color:${C.muted};">${money(meta)}</td>
+            <td style="${td}text-align:right;font-weight:700;color:${tonoDe(p).val};">${p.toFixed(1)}%</td>
+            <td style="${td}text-align:right;">${pillAvance(p)}</td>
           </tr>`;
         }).join('')}
+        </tbody>
       </table>
-    </td></tr>` : ''}
+    `) : ''}
 
-    ${achievedChannels.length > 0 ? `
-    <!-- ═══ OBJETIVO CUMPLIDO ════ -->
-    <tr><td style="background:#f0fdf4;border:1px solid #bbf7d0;border-top:none;padding:20px 32px;">
-      <div style="display:flex;align-items:flex-start;gap:12px;">
-        <span style="font-size:20px;flex-shrink:0;">🎯</span>
-        <div style="flex:1;">
-          <div style="font-size:14px;font-weight:700;color:#16a34a;margin-bottom:6px;">
-            Objetivo alcanzado · ${achievedChannels.map(r => r.ch).join(', ')}
-          </div>
-          <div style="font-size:12px;color:#374151;margin-bottom:10px;">
-            ${achievedChannels.map(r =>
-              `<strong>${r.ch}</strong> llegó al ${r.pct.toFixed(0)}% con un excedente de <strong>S/. ${fmt(r.real - r.meta)}</strong>`
-            ).join(' · ')}
-          </div>
-          ${topNeedChannels.length > 0 ? `
-          <div style="background:rgba(255,255,255,0.7);border-radius:8px;padding:10px 14px;border:1px solid #bbf7d0;font-size:12px;color:#374151;">
-            💡 <strong>Sugerencia:</strong> El excedente de <strong>S/. ${fmt(totalSurplus)}</strong> podría
-            redistribuirse a
-            ${topNeedChannels.map(n =>
-              `<strong>${n.ch}</strong> (brecha S/. ${fmt(n.meta - n.real)})`
-            ).join(' y ')}
-            para reforzar sus campañas de marketing.
-          </div>` : ''}
-        </div>
-      </div>
-    </td></tr>` : ''}
-
-    ${laggingChannels.length > 0 ? `
-    <!-- ═══ ALERTA BRECHA MID-MONTH ════ -->
-    <tr><td style="background:#fffbeb;border:1px solid #fde68a;border-top:none;padding:20px 32px;">
-      <div style="display:flex;align-items:flex-start;gap:12px;">
-        <span style="font-size:20px;flex-shrink:0;">⚠️</span>
-        <div style="flex:1;">
-          <div style="font-size:14px;font-weight:700;color:#d97706;margin-bottom:4px;">
-            Alerta de brecha · día ${dayOfMonth} de ${curMonthDays}
-          </div>
-          <div style="font-size:12px;color:#92400e;margin-bottom:10px;">
-            Los siguientes canales están por debajo del 80% del ritmo esperado a mitad de mes:
-          </div>
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:12px;">
-            ${laggingChannels.map(r => `
-            <tr>
-              <td style="padding:5px 0;color:#374151;font-weight:600;">${r.icon} ${r.ch}</td>
-              <td style="padding:5px 8px;text-align:right;color:#374151;">real S/. ${fmt(r.real)}</td>
-              <td style="padding:5px 8px;text-align:right;color:#9ca3af;">esperado S/. ${fmt(r.expectedReal)}</td>
-              <td style="padding:5px 0;text-align:right;color:#dc2626;font-weight:700;">brecha S/. ${fmt(Math.abs(r.lag))}</td>
-            </tr>`).join('')}
-          </table>
-          <div style="background:rgba(255,255,255,0.6);border-radius:8px;padding:10px 14px;margin-top:10px;border:1px solid #fde68a;font-size:12px;color:#374151;">
-            💡 Quedan <strong>${curMonthDays - dayOfMonth} días</strong>.
-            Para cerrar la brecha de
-            <strong>S/. ${fmt(laggingChannels.reduce((s, r) => s + (r.meta - r.real), 0))}</strong>
-            se necesita un promedio de
-            <strong>S/. ${fmt(laggingChannels.reduce((s, r) => s + (r.meta - r.real), 0) / Math.max(curMonthDays - dayOfMonth, 1))}/día adicional</strong>
-            en estos canales.
-          </div>
-        </div>
-      </div>
-    </td></tr>` : ''}
-
-    <!-- ═══ CTA ════ -->
-    <tr><td style="background:#ffffff;border:1px solid #e5e7eb;border-top:none;padding:16px 32px 28px;text-align:center;">
-      <a href="${config.url_dashboard}"
-         style="display:inline-block;background:#b91c1c;color:#ffffff;text-decoration:none;
-                padding:13px 28px;border-radius:8px;font-size:14px;font-weight:700;
-                letter-spacing:-0.01em;">
-        Ver dashboard completo →
-      </a>
+    <!-- Botón y pie -->
+    <tr><td align="center" style="padding:22px 0 8px;">
+      <a href="${config.url_dashboard}" style="display:inline-block;background:${C.brand};color:#ffffff;text-decoration:none;padding:11px 22px;border-radius:9px;font-size:14px;font-weight:600;font-family:${FONT};">Ver el tablero de ${MARCA}</a>
     </td></tr>
-
-    <!-- ═══ FOOTER ════ -->
-    <tr><td style="background:#f9fafb;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;padding:16px 32px;text-align:center;">
-      <div style="font-size:11px;color:#9ca3af;line-height:1.6;">
-        ${config.workspace} &nbsp;·&nbsp; Alerta automática semanal (${weekKey})<br>
-        Ajustar objetivos: <a href="${config.url_dashboard}" style="color:#b91c1c;text-decoration:none;">${config.url_dashboard}</a>
-      </div>
+    <tr><td align="center" style="padding:8px 0 0;font-size:11px;line-height:1.6;color:${C.muted};font-family:${FONT};">
+      ${config.workspace} · alerta automática semanal (${weekKey})<br>
+      Metas por canal del archivo de objetivos de Drive; ventas del histórico de ${MARCA}.
     </td></tr>
 
   </table>
@@ -434,6 +413,12 @@ const htmlEmail = `<!DOCTYPE html>
 </table>
 </body>
 </html>`;
+
+if (PREVIEW) {
+  fs.writeFileSync(PREVIEW, htmlEmail, 'utf8');
+  console.log(`\n🖼  Vista previa escrita en ${PREVIEW} (sin envío).\n`);
+  process.exit(0);
+}
 
 // Asunto: el nivel del total del mes manda; los canales que ya llegaron a su meta o van atrasados
 // se nombran después (un canal en meta no significa que el mes lo esté).

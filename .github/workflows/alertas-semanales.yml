@@ -20,6 +20,10 @@ on:
         description: 'Simulación (no envía email real)'
         type: boolean
         default: true
+      reenviar:
+        description: 'Reenviar aunque el correo de esta semana ya salió (para pruebas)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write   # necesario para commitear alertas-envios.json
@@ -50,7 +54,7 @@ jobs:
 
       - name: Ejecutar alerta semanal
         id: alerta
-        run: node scripts/alertas.js
+        run: node scripts/alertas.js ${{ github.event_name == 'workflow_dispatch' && inputs.reenviar && '--force' || '' }}
         env:
           # Correo del hosting (alertas@limaretail.com). Si faltan, se usa Resend.
           SMTP_HOST: ${{ secrets.SMTP_HOST }}

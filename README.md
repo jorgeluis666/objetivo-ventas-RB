@@ -100,7 +100,7 @@ Dos workflows leen las carpetas de Drive de la marca todos los días y commitean
 - **Objetivos**: la hoja de la carpeta [Objetivos Royal Baby](https://drive.google.com/drive/folders/1wfOOM4F3TRcxehX_dfZWDYSTVBPrPgjg).
 - Las carpetas están compartidas como "Cualquier persona con el enlace": se leen sin credenciales (vista pública de la carpeta y exportación `.xlsx` de la hoja). Con el secret opcional `RB_DRIVE_API_KEY` la carpeta se lista con la API de Drive.
 - Cada carpeta debe tener **una sola** hoja de cálculo de Google. Si el archivo se reemplaza por otro, la corrida siguiente lo encuentra solo.
-- Si una lectura falla (archivo no compartido, falta la pestaña de un mes cerrado, falta la columna PROYECCIÓN, canal desconocido), el script no escribe nada: queda publicado el último JSON válido y el workflow termina en rojo.
+- Si una lectura falla (archivo no compartido, falta la pestaña de un mes cerrado, falta la fila de meses, canal desconocido), el script no escribe nada: queda publicado el último JSON válido y el workflow termina en rojo.
 
 Esos commits los hace `GITHUB_TOKEN`, que no dispara otros workflows: el deploy y las alertas se encadenan con `workflow_run` al terminar cada uno. Para forzar una corrida: `Actions → <workflow> → Run workflow`.
 
@@ -267,13 +267,14 @@ Arriba van las dos fuentes de Drive (objetivos y ventas), cada una con su fecha 
 
 `data/objetivos-2026.json` es la única fuente de metas: lo leen el módulo, Proyecciones, el KPI anual del Comparativo YoY y el correo semanal (`alertas.js`). Al publicar, el build lo incrusta en la página.
 
-**Formato del archivo de objetivos** (hoy *LIMA REATIL ULTIMO TRIMESTRE 2026*):
+**Formato del archivo de objetivos** (hoy *Royal Baby - Objetivos trimestre*, la única hoja de cálculo de la carpeta Objetivos):
 
-- Una fila con los meses (OCTUBRE, NOVIEMBRE…) y debajo, en el bloque de cada mes, las columnas **PROYECCIÓN** y **VENTA**. La meta es la PROYECCIÓN.
-- Una fila por canal con su nombre a la izquierda: `WHATSAPP` (o `REDES`), `TIENDA`, `WEB`, `OUTLET` (o `SHOWROOM`). Un canal con otro nombre hace fallar la lectura, para no perderlo en silencio.
-- Arriba, opcional, un bloque con un título con año (`TRIMESTRE 2025`) y una fila de montos por canal en el mismo orden: es la referencia del año anterior.
+- Pestaña **Objetivos 2026**: una fila de encabezado con `Canal` y los meses a la derecha (`Octubre`, `Noviembre`…), una fila por canal y la fila `Total`. La meta de cada mes es el monto de su columna. Los totales y la fila «Crecimiento sobre 2025» son fórmulas; el tablero solo usa el total para avisar si no cuadra con la suma de canales.
+- Pestaña **Venta 2025**: la misma tabla con la venta del año anterior. Es la referencia; el año sale del nombre de la pestaña.
+- Canales, con su nombre en la columna `Canal`: `Tienda Miraflores` (o `Tienda`), `Página Web` (o `Web`), `Redes y WhatsApp` (o `WhatsApp`, `Redes`), `Outlet (Showroom)` (o `Outlet`, `Showroom`). Un canal con otro nombre hace fallar la lectura, para no perderlo en silencio.
+- El lector también acepta el formato anterior: una fila con los meses (OCTUBRE, NOVIEMBRE…) con las columnas **PROYECCIÓN** y **VENTA** debajo, y arriba el bloque `TRIMESTRE 2025` como referencia.
 - Solo hay metas para los meses del archivo: la pestaña por mes, Proyecciones y el correo solo muestran objetivo en esos meses. El KPI anual del YoY compara contra objetivo solo si el archivo cubre los 12 meses.
-- La columna **VENTA** del archivo no se usa: la venta sale del histórico de ventas, siempre con el mismo criterio.
+- El archivo no lleva la venta: la venta sale del histórico de ventas, siempre con el mismo criterio.
 
 **Canales**: Tienda Miraflores (`Tienda`), Página Web (`Web`), Redes y WhatsApp (`WhatsApp` + `Instagram` + `Facebook`; en el archivo, `WHATSAPP`) y Outlet (`Showroom`). Cada canal indica en `sheet` qué columnas del histórico suma. **Outlet** son los saldos, que se venden en la web y en el Showroom; el histórico no separa la venta outlet de la web, así que el canal Outlet mide solo el Showroom.
 

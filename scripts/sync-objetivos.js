@@ -4,7 +4,8 @@
  * data/objetivos-2026.json.
  *
  * Fuente: la hoja de cálculo de la carpeta "Objetivos Royal Baby" (compartida por enlace).
- * La meta de cada mes es su columna PROYECCIÓN; el bloque "TRIMESTRE 2025" es la referencia.
+ * La meta de cada mes sale de la pestaña "Objetivos 2026" (una fila por canal, una columna por mes);
+ * la pestaña "Venta 2025" es la referencia del año anterior.
  * El formato lo lee js/fuentes-drive.js, el mismo código que usa el botón Sincronizar del tablero.
  *
  * Uso:
@@ -43,7 +44,7 @@ async function main() {
       archivo: { id: hoja.id, nombre: hoja.name },
       pestana: leido.pestana,
     },
-    nota: 'Generado por scripts/sync-objetivos.js desde Drive (no editar a mano). La meta es la columna PROYECCIÓN de cada mes.',
+    nota: 'Generado por scripts/sync-objetivos.js desde Drive (no editar a mano). La meta de cada mes es la del archivo de objetivos de Drive.',
     canales: leido.canales,
     meses: leido.meses,
     metas: leido.metas,

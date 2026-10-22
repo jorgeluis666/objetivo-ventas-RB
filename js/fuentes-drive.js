@@ -5,11 +5,12 @@
    y la corrida diaria (scripts/sync-objetivos.js y fetch-data.js):
    con la misma hoja, ambos producen las mismas cifras.
 
-   - Objetivos: carpeta "Objetivos Royal Baby". Meses con columnas
-     PROYECCIÓN / VENTA, una fila por canal y, arriba, el bloque de
-     referencia del año anterior ("TRIMESTRE 2025"). La meta es la
-     columna PROYECCIÓN; la columna VENTA no se usa (la venta sale
-     del histórico).
+   - Objetivos: carpeta "Objetivos Royal Baby". Pestaña "Objetivos 2026":
+     encabezado «Canal» con los meses a la derecha, una fila por canal
+     y la fila «Total»; pestaña "Venta 2025" con la misma tabla, que es
+     la referencia del año anterior. También lee el formato anterior
+     (meses con columnas PROYECCIÓN / VENTA y el bloque "TRIMESTRE 2025"
+     arriba). La venta del tablero sale siempre del histórico.
    - Ventas: carpeta "Ventas Royal Baby - 2026". Una pestaña por mes
      con pares de filas CANTIDAD / MONTO por día.
 
@@ -102,7 +103,7 @@
     { key: 'Web',    label: 'Página Web',        sheet: ['Web'],    alias: ['WEB', 'PAGINA WEB'] },
     { key: 'Redes',  label: 'Redes y WhatsApp',  sheet: ['WhatsApp', 'Instagram', 'Facebook'],
       alias: ['WHATSAPP', 'REDES', 'REDES Y WHATSAPP', 'REDES Y WSP'] },
-    { key: 'Outlet', label: 'Outlet (Showroom)', sheet: ['Showroom'], alias: ['OUTLET', 'SHOWROOM'],
+    { key: 'Outlet', label: 'Outlet (Showroom)', sheet: ['Showroom'], alias: ['OUTLET', 'SHOWROOM', 'OUTLET (SHOWROOM)'],
       nota: 'Mide solo el Showroom: las ventas outlet de la web se registran en Web y el histórico no las separa.' },
   ];
   const CANAL_POR_ALIAS = {};
@@ -196,8 +197,76 @@
     return { canales, meses: meses.map(m => m.mes), metas, referencia, avisos };
   }
 
-  // Busca la pestaña con objetivos: la primera que se puede leer.
+  // Formato tabla (el archivo de objetivos desde octubre de 2026): una fila de encabezado con «Canal»
+  // y los meses a su derecha («Octubre», «Noviembre»…), una fila por canal debajo y, al final, la fila
+  // «Total». Devuelve null si la pestaña no tiene ese encabezado; lanza un error si lo tiene pero un
+  // canal no se reconoce.
+  function parseTablaObjetivos(filas) {
+    const mesDe = celda => MES_POR_NOMBRE[norm(celda).replace(/\s*\b20\d{2}$/, '')];
+    let filaHead = -1, colCanal = -1, meses = [];
+    filas.forEach((fila, r) => {
+      if (filaHead >= 0) return;
+      const c = (fila || []).findIndex(celda => norm(celda) === 'CANAL');
+      if (c < 0) return;
+      const encontrados = [];
+      (fila || []).forEach((celda, col) => { if (col > c && mesDe(celda)) encontrados.push({ mes: mesDe(celda), col }); });
+      if (encontrados.length) { filaHead = r; colCanal = c; meses = encontrados; }
+    });
+    if (filaHead < 0) return null;
+
+    const avisos = [];
+    const canales = [];
+    const metas = Object.fromEntries(meses.map(m => [m.mes, {}]));
+    let filaTotal = null;
+    for (let r = filaHead + 1; r < filas.length; r++) {
+      const fila = filas[r] || [];
+      const etiqueta = esVacia(fila[colCanal]) ? '' : String(fila[colCanal]).trim();
+      if (!etiqueta) break;
+      if (norm(etiqueta).startsWith('TOTAL')) { filaTotal = fila; break; }
+      const def = CANAL_POR_ALIAS[norm(etiqueta)];
+      if (!def) throw new Error(`canal desconocido «${etiqueta}»: el tablero reconoce Tienda, Web, WhatsApp/Redes y Outlet`);
+      if (canales.some(c => c.key === def.key)) throw new Error(`el canal «${etiqueta}» aparece dos veces`);
+      const { alias, ...canal } = def;
+      canales.push({ ...canal, etiqueta });
+      meses.forEach(m => { metas[m.mes][def.key] = round2(toNumber(fila[m.col])); });
+    }
+    if (!canales.length) throw new Error('no encontré filas de canal debajo del encabezado «Canal»');
+    if (filaTotal) {
+      meses.forEach(m => {
+        if (esVacia(filaTotal[m.col])) return;
+        const suma = canales.reduce((s, c) => s + metas[m.mes][c.key], 0);
+        const total = toNumber(filaTotal[m.col]);
+        if (Math.abs(total - suma) > 1) avisos.push(`${m.mes}: el total del archivo (S/ ${round2(total)}) no coincide con la suma de canales (S/ ${round2(suma)})`);
+      });
+    }
+    return { canales, meses: meses.map(m => m.mes), metas, avisos };
+  }
+
+  // Libro en formato tabla: la pestaña con «Objetivo» en el nombre trae las metas y otra pestaña con un
+  // año en el nombre («Venta 2025»), la referencia del año anterior. null si ninguna pestaña es una tabla.
+  function objetivosDeTablas(tabs) {
+    const tablas = Object.entries(tabs)
+      .map(([pestana, filas]) => ({ pestana, tabla: parseTablaObjetivos(filas) }))
+      .filter(t => t.tabla);
+    if (!tablas.length) return null;
+    const principal = tablas.find(t => norm(t.pestana).includes('OBJETIVO')) || tablas[0];
+    const { canales, meses, metas, avisos } = principal.tabla;
+    let referencia = null;
+    const ref = tablas.find(t => t !== principal && /\b20\d{2}\b/.test(t.pestana));
+    if (ref) {
+      const valores = Object.fromEntries(meses.map(mes => [mes,
+        Object.fromEntries(canales.map(c => [c.key, (ref.tabla.metas[mes] || {})[c.key] || 0]))]));
+      referencia = { anio: Number(ref.pestana.match(/\b(20\d{2})\b/)[1]), etiqueta: ref.pestana.trim(), valores };
+      ref.tabla.avisos.forEach(a => avisos.push(`${ref.pestana.trim()}: ${a}`));
+    }
+    return { pestana: principal.pestana, canales, meses, metas, referencia, avisos };
+  }
+
+  // Busca la pestaña con objetivos: el formato tabla si el libro lo tiene; si no, el formato anterior
+  // (meses con PROYECCIÓN y VENTA), la primera pestaña que se puede leer.
   function objetivosDelLibro(tabs) {
+    const tablas = objetivosDeTablas(tabs);
+    if (tablas) return tablas;
     let primerError = null;
     for (const [pestana, filas] of Object.entries(tabs)) {
       try {
@@ -514,7 +583,7 @@
     CARPETAS, MESES, CANALES, COLS_2025, COLS_2026,
     urlHoja, urlXlsx, urlCarpeta, ahoraLima,
     toNumber, round2, descargarLibro,
-    parseObjetivos, objetivosDelLibro,
+    parseObjetivos, parseTablaObjetivos, objetivosDelLibro,
     monthsForYear, monthsUpTo, isClosedMonth, resolveTabName,
     parseSheet, buildCommercialYear, dailyByMonth, leerAnio, ventas2026,
   };

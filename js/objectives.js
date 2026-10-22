@@ -973,7 +973,7 @@
     if (errorEl) {
       errorEl.hidden = !!(state.plan && objMonths().length);
       errorEl.innerHTML = state.plan
-        ? '<b>Sin objetivos:</b> el archivo de objetivos de Drive no tiene meses con PROYECCIÓN.'
+        ? '<b>Sin objetivos:</b> el archivo de objetivos de Drive no tiene metas por mes.'
         : '<b>Objetivos no disponibles:</b> no se pudo cargar <code>data/objetivos-2026.json</code>.';
     }
     renderMonthPanels();
@@ -1200,7 +1200,7 @@
           <td>
             <div class="ch-cell">${toggle}${colName(col)}</div>
             <div class="ch-parts${c?.nota ? ' has-note' : ''}" title="${c
-              ? `Meta de «${esc(c.etiqueta)}» (columna PROYECCIÓN del archivo de objetivos)${c.nota ? ` · ${esc(c.nota)}` : ''}`
+              ? `Meta de «${esc(c.etiqueta)}» (archivo de objetivos de Drive)${c.nota ? ` · ${esc(c.nota)}` : ''}`
               : 'Ningún objetivo del archivo nombra este canal: va con meta 0'}">${c ? `meta «${esc(c.etiqueta)}»` : 'sin meta propia'}</div>
           </td>
           <td class="r mono text-2">${c && state.plan?.referencia ? 'S/. ' + fmt(colRef(m, col)) : '—'}</td>

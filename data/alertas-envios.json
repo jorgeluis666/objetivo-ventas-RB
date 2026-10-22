@@ -1,4 +1,6 @@
 {
   "nota": "Registro de alertas enviadas. Clave = ISO week (YYYY-Www). Generado automáticamente por scripts/alertas.js.",
-  "enviados": {}
+  "enviados": {
+    "2026-W43": "2026-10-22T04:16:04.336Z"
+  }
 }

@@ -66,14 +66,9 @@ function isoWeek(d) {
   return `${date.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
 }
 
-const MONTHS = [
-  'Enero','Febrero','Marzo','Abril','Mayo','Junio',
-  'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre',
-];
-const MONTH_DAYS = {
-  Enero:31,Febrero:28,Marzo:31,Abril:30,Mayo:31,Junio:30,
-  Julio:31,Agosto:31,Septiembre:30,Octubre:31,Noviembre:30,Diciembre:31,
-};
+// Ciclo de venta de la marca: cada mes va del 27 del mes anterior al 26 (js/ciclo.js).
+const Ciclo  = require('../js/ciclo.js');
+const MONTHS = Ciclo.MESES;
 
 // ── Cargar archivos ──────────────────────────────────────────
 const salesData  = readJson(path.join(ROOT, 'data/ventas-2026.json'));
@@ -85,13 +80,16 @@ const enviosPath = path.join(ROOT, 'data/alertas-envios.json');
 const enviosData = readJson(enviosPath);
 
 // ── Fecha Lima ───────────────────────────────────────────────
+// Mes en curso por el ciclo de venta (desde el 27, el siguiente) y día dentro del ciclo.
 const lima        = limaDate();
 const weekKey     = isoWeek(lima);
-const monthIdx    = lima.getUTCMonth();        // 0 = Enero
-const dayOfMonth  = lima.getUTCDate();
-const limaYear    = lima.getUTCFullYear();
+const cicloHoy    = Ciclo.mesDe(lima.toISOString().slice(0, 10));
+const monthIdx    = cicloHoy.mi;               // 0 = Enero
+const dayOfMonth  = cicloHoy.dia;
+const limaYear    = cicloHoy.year;
 const curMonth    = MONTHS[monthIdx];
-const curMonthDays = MONTH_DAYS[curMonth];
+const curMonthDays = cicloHoy.dias;
+const cicloLabel  = Ciclo.rangoMes(limaYear, monthIdx);
 
 // Fecha legible en español (Lima)
 const fechaLabel = lima.toLocaleDateString('es-PE', {
@@ -100,7 +98,7 @@ const fechaLabel = lima.toLocaleDateString('es-PE', {
 
 console.log(`\n▶ Alerta semanal ${weekKey}${DRY_RUN ? ' [DRY-RUN]' : ''}`);
 console.log(`  Fecha Lima : ${fechaLabel}`);
-console.log(`  Mes actual : ${curMonth} ${limaYear} · día ${dayOfMonth} de ${curMonthDays}`);
+console.log(`  Mes actual : ${curMonth} ${limaYear} (ciclo ${cicloLabel}) · día ${dayOfMonth} de ${curMonthDays}`);
 
 // ── Idempotencia ─────────────────────────────────────────────
 // Huella de las ventas: ventas-2026.json se reescribe en cada lectura diaria (cambia "generated"),
@@ -350,7 +348,7 @@ const htmlEmail = `<!DOCTYPE html>
       ${etiqueta(`${MOTIVO === 'ventas' ? 'Ventas actualizadas' : 'Alerta semanal de ventas'} · ${weekKey}`)}
       <div style="font-size:20px;font-weight:700;color:${C.text};letter-spacing:-0.02em;">${curMonth} ${limaYear}: ${proyPct.toFixed(0)}% del objetivo proyectado</div>
       <div style="font-size:14px;color:${C.text2};margin-top:6px;line-height:1.5;">
-        ${fechaLabel.charAt(0).toUpperCase() + fechaLabel.slice(1)} · día ${dayOfMonth} de ${curMonthDays} (${diaPct}% del mes).
+        ${fechaLabel.charAt(0).toUpperCase() + fechaLabel.slice(1)} · día ${dayOfMonth} de ${curMonthDays} del ciclo ${cicloLabel} (${diaPct}% del mes).
         ${proyPct < 90
           ? `Al ritmo de <strong style="color:${C.text};">${money(ritmo)} por día</strong>, el mes cerraría en ${money(proyeccion)}, ${money(Math.abs(cur.meta - proyeccion))} ${proyeccion < cur.meta ? 'por debajo' : 'por encima'} de la meta.`
           : `Al ritmo de <strong style="color:${C.text};">${money(ritmo)} por día</strong>, el mes cerraría en ${money(proyeccion)}.`}

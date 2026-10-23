@@ -163,7 +163,7 @@
   const planTargets = () => state.plan?.metas || null;
 
   // Proyecciones toma sus datos de dos módulos: Objetivos (objetivos de la marca y el histórico de
-  // ventas por mes calendario, con las semanas de 2025 para el plan por campaña) y Gasto
+  // ventas por ciclo de venta, con las semanas de 2025 para el plan por campaña) y Gasto
   // publicitario. Se dibuja con la vista visible; si los datos cambian con la vista oculta, se
   // dibuja al abrirla.
   function renderProjections() {
@@ -275,12 +275,12 @@
     }
   }
 
-  // Meses 2026 cerrados (no el actual). Hoy en mayo → Ene-Abr.
+  // Meses 2026 cerrados por el ciclo de venta (no el actual). El 23 oct → Ene-Sep; el 27 oct → Ene-Oct.
   function closedMonths2026() {
-    const today = new Date();
-    if (today.getFullYear() < 2026) return [];
-    if (today.getFullYear() > 2026) return months;
-    return months.slice(0, today.getMonth());
+    const hoy = window.Ciclo.mesDe(window.Ciclo.hoyLima());
+    if (hoy.year < 2026) return [];
+    if (hoy.year > 2026) return months;
+    return months.slice(0, hoy.mi);
   }
 
   function renderYoYTable(d2026) {
@@ -471,7 +471,7 @@
           : `${closed[0]} – ${closed[closed.length - 1]} (meses cerrados)`;
     }
 
-    // Objetivos va por mes calendario, como el histórico de la marca.
+    // Todo el tablero va por el ciclo de venta de la marca (js/ciclo.js), como su hoja de ventas.
     window.Objectives.render({
       d2026: state.d2026,
       weeklyData: state.weeklyData,

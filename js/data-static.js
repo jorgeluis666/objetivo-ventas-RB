@@ -2,7 +2,7 @@
    Datos estáticos — no cambian con el pipeline de Sheets.
    Expone window.DataStatic con:
      - channels, palette, palette de tipos de prenda
-     - d2025, monthDays (las metas viven en data/objetivos-2026.json)
+     - d2025 (las metas viven en data/objetivos-2026.json; los días de cada mes, en js/ciclo.js)
      - productos: top unidades / ingreso / ticket / tipos
      - copurchase, nextSales, multiData, bundleIdeas
    ============================================================ */
@@ -38,11 +38,6 @@
     Diciembre:  { Tienda: 0, Web: 0, WhatsApp: 0, Showroom: 0, Instagram: 0, Facebook: 0 },
   };
 
-  const monthDays = {
-    Enero: 31, Febrero: 28, Marzo: 31, Abril: 30,
-    Mayo: 31, Junio: 30, Julio: 31, Agosto: 31,
-    Septiembre: 30, Octubre: 31, Noviembre: 30, Diciembre: 31,
-  };
   const months = [
     'Enero', 'Febrero', 'Marzo', 'Abril',
     'Mayo', 'Junio', 'Julio', 'Agosto',
@@ -187,7 +182,7 @@
 
   global.DataStatic = {
     channels, palette, typeColors,
-    d2025, monthDays, months, monthsWith2026Data,
+    d2025, months, monthsWith2026Data,
     prodTopUnits, prodTopRev, prodTopTicket, prodTypes,
     copurchaseData, nextSales, multiData, bundleIdeas,
     chToUpper,

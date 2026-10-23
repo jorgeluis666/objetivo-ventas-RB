@@ -43,11 +43,12 @@ const TRIM_DATA = {
         delete month.google.checks;
         delete month.google.repairs;
       }
-      // Por día y campaña, la inversión diaria (js/gasto.js) usa inversión, compras y conversaciones, y las
-      // tarjetas de Proyecciones (js/projections.js) además el valor de las compras.
+      // Por día y campaña, la inversión diaria (js/gasto.js) usa inversión, compras y conversaciones, y
+      // Proyecciones (js/projections.js, js/plan-campanas.js), que suma la pauta por ciclo de venta, además
+      // el valor de las compras, impresiones, clics y resultados.
       month.meta?.daily?.forEach(row => {
         for (const field of Object.keys(row)) {
-          if (!['day', 'campaign', 'spend', 'purchases', 'purchaseValue', 'conversations'].includes(field)) delete row[field];
+          if (!['day', 'campaign', 'spend', 'purchases', 'purchaseValue', 'conversations', 'impressions', 'linkClicks', 'results'].includes(field)) delete row[field];
         }
       });
       // Los anuncios del módulo salen de meta.table; el top del mes ya no se lee.

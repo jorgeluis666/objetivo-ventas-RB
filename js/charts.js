@@ -363,29 +363,23 @@
   function combinedWeeklyChart(weeklyRef, weeklyCurrent, channelKey) {
     // channelKey: 'TOTAL' (default) o clave de canal como 'TIENDA', 'WEB', etc.
     const field = channelKey || 'TOTAL';
-    // Aplana las semanas del año en una serie continua
-    const flatten = (weekMap) => {
-      const labels = [];
-      const values = [];
-      months.forEach(m => {
-        const weeks = weekMap[m] || [];
-        weeks.forEach((w, i) => {
-          // Primera semana del mes muestra la abreviatura; las demás solo "S<n>"
-          labels.push(i === 0 ? `${MONTH_SHORT[m]} S${w.w}` : `S${w.w}`);
-          values.push(w[field] || 0);
-        });
-      });
-      return { labels, values };
-    };
-
-    // La referencia (2025) da la longitud del eje X (año completo)
-    const ref = flatten(weeklyRef);
-    const cur = flatten(weeklyCurrent);
-
-    // El año en curso se alinea al inicio de la serie (primera semana = Enero)
-    const curAligned = ref.labels.map((_, i) =>
-      i < cur.values.length && cur.values[i] > 0 ? cur.values[i] : null
-    );
+    // Aplana las semanas del año en una serie continua, mes a mes: los dos años tienen semanas de
+    // lunes a domingo recortadas al ciclo de cada mes y pueden tener una semana más o menos, así que
+    // cada mes ocupa las semanas del que tenga más y la semana n de 2026 queda frente a la n de 2025.
+    const labels = [];
+    const ref = { values: [] };
+    const curAligned = [];
+    months.forEach(m => {
+      const r = weeklyRef[m] || [];
+      const c = weeklyCurrent[m] || [];
+      for (let i = 0; i < Math.max(r.length, c.length); i++) {
+        // Primera semana del mes muestra la abreviatura; las demás solo "S<n>"
+        labels.push(i === 0 ? `${MONTH_SHORT[m]} S1` : `S${i + 1}`);
+        ref.values.push(r[i] ? r[i][field] || 0 : null);
+        curAligned.push(c[i]?.[field] > 0 ? c[i][field] : null);
+      }
+    });
+    ref.labels = labels;
 
     return mount('chart-weekly-combined', {
       type: 'line',

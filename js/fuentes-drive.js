@@ -12,7 +12,9 @@
      (meses con columnas PROYECCIÓN / VENTA y el bloque "TRIMESTRE 2025"
      arriba). La venta del tablero sale siempre del histórico.
    - Ventas: carpeta "Ventas Royal Baby - 2026". Una pestaña por mes
-     con pares de filas CANTIDAD / MONTO por día.
+     con pares de filas CANTIDAD / MONTO por día y la fecha en FECHA.
+     Las ventas se agrupan por el ciclo de venta (js/ciclo.js: cada mes
+     va del 27 del anterior al 26), según la fecha de cada día.
 
    Los archivos se descargan como .xlsx desde la exportación pública
    de Google Sheets (compartidos por enlace, sin credenciales).
@@ -20,10 +22,11 @@
    ============================================================ */
 
 (function (root, factory) {
-  const api = factory();
-  if (typeof module === 'object' && module.exports) module.exports = api;
+  const node = typeof module === 'object' && module.exports;
+  const api = factory(node ? require('./ciclo.js') : root.Ciclo);
+  if (node) module.exports = api;
   else root.FuentesDrive = api;
-})(typeof self !== 'undefined' ? self : this, function () {
+})(typeof self !== 'undefined' ? self : this, function (Ciclo) {
   const CARPETAS = {
     objetivos: '1wfOOM4F3TRcxehX_dfZWDYSTVBPrPgjg',
     ventas:    '1JJdjIzDu2CrhcBI9gBUTUuPAXnKYUQal',
@@ -313,54 +316,47 @@
     return availableTabs.find(t => MES_POR_NOMBRE[norm(t)] === mes) || null;
   }
 
-  // Un mes está cerrado si es de un año anterior o de un mes anterior al actual del año en curso.
+  // Un mes está cerrado si su ciclo ya terminó (después del 26; diciembre, después del 31).
   // Sus ventas ya existen: si no se pueden leer, publicar 0 falsearía el tablero.
-  function isClosedMonth(year, monthIndex, today = new Date()) {
-    return year < today.getFullYear() || (year === today.getFullYear() && monthIndex < today.getMonth());
+  function isClosedMonth(year, monthIndex, today = Ciclo.hoyLima()) {
+    return Ciclo.estado(year, monthIndex, today) === 'past';
   }
 
-  // Meses que se leen de un año: el año completo si ya pasó; si está en curso, hasta el mes
-  // actual + 1 (margen para el mes recién creado).
-  function monthsUpTo(year, today = new Date()) {
+  // Meses que se leen de un año: el año completo si ya pasó; si está en curso, hasta el mes del
+  // ciclo actual + 1 (margen para la pestaña recién creada).
+  function monthsUpTo(year, today = Ciclo.hoyLima()) {
     const all = monthsForYear(year);
-    if (today.getFullYear() < year) return [];
-    if (today.getFullYear() > year) return all;
-    return all.slice(0, today.getMonth() + 2);
+    const actual = Ciclo.mesDe(today);
+    if (actual.year < year) return [];
+    if (actual.year > year) return all;
+    return all.slice(0, actual.mi + 2);
   }
 
-  /**
-   * Agrupa días del mes en semanas calendario (Lun–Dom, clipadas al mes).
-   * Día 1 arranca en W1; cada lunes subsecuente incrementa el número de semana.
-   */
-  function buildWeekMap(year, monthIndex, daysInMonth) {
-    const dayToWeek = new Array(daysInMonth + 1);
-    let weekNum = 1;
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dow = new Date(year, monthIndex, d).getDay(); // 0=Dom, 1=Lun, ..., 6=Sab
-      if (d > 1 && dow === 1) weekNum++;
-      dayToWeek[d] = weekNum;
-    }
-    return dayToWeek;
+  // Fecha ISO de la celda FECHA: número de serie de Sheets/Excel, Date, «27/09/2026» (día/mes/año)
+  // o «2026-09-27». null si la celda no trae una fecha.
+  function parseFecha(v) {
+    if (v instanceof Date && !isNaN(v)) return new Date(Date.UTC(v.getFullYear(), v.getMonth(), v.getDate())).toISOString().slice(0, 10);
+    if (typeof v === 'number' && v > 30000 && v < 80000) return new Date(Date.UTC(1899, 11, 30) + Math.round(v) * 86400000).toISOString().slice(0, 10);
+    const s = String(v == null ? '' : v).trim();
+    let m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+    m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
   }
 
+  // Días de una pestaña: [{ fecha, totals, transactions }]. La fecha sale de FECHA (en la fila
+  // CANTIDAD); si una fila no la trae, es el día siguiente al anterior (o el 1 del mes de la pestaña,
+  // como en las hojas viejas sin fechas). Lanza un error si una fecha no cae en el mes de la pestaña
+  // ni en su ciclo: un año o un mes mal tipeado movería ventas a otro mes sin aviso.
   function parseSheet(rows, monthConfig, year, cols) {
-    const totals = {};
-    const transactions = {};
-    cols.forEach(c => { totals[c.title] = 0; transactions[c.upper] = 0; });
+    const ciclo = Ciclo.periodo(year, monthConfig.monthIndex);
+    const calendario = { inicio: `${year}-${String(monthConfig.monthIndex + 1).padStart(2, '0')}-01` };
+    calendario.fin = Ciclo.sumarDias(calendario.inicio, monthConfig.days - 1);
+    const dentro = f => (f >= ciclo.inicio && f <= ciclo.fin) || (f >= calendario.inicio && f <= calendario.fin);
 
-    const dayToWeek = buildWeekMap(year, monthConfig.monthIndex, monthConfig.days);
-    const weekCount = dayToWeek[monthConfig.days];
-
-    const weeklyTotals = [];
     const dailyRows = [];
-    for (let w = 1; w <= weekCount; w++) {
-      const row = { w, TOTAL: 0 };
-      cols.forEach(c => { row[c.upper] = 0; });
-      weeklyTotals.push(row);
-    }
-
-    let dayCounter = 0;
     let pendingCantidad = null;
+    let anterior = null;
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i] || [];
@@ -368,208 +364,147 @@
       if (label === 'CANTIDAD') {
         pendingCantidad = row;
       } else if (label === 'MONTO' && pendingCantidad) {
-        dayCounter++;
-        if (dayCounter > monthConfig.days) break;
-        const w = dayToWeek[dayCounter];
-        const weekRow = weeklyTotals[w - 1];
-
-        const dailyTotals = {};
-        const dailyTransactions = {};
-        cols.forEach(c => { dailyTotals[c.title] = 0; dailyTransactions[c.upper] = 0; });
-
+        const totals = {};
+        const transactions = {};
+        cols.forEach(c => { totals[c.title] = 0; transactions[c.upper] = 0; });
         for (const c of cols) {
           if (c.col == null) continue; // Canal no presente en la hoja (ej. Showroom en 2025)
-          const qty = toNumber(pendingCantidad[c.col]);
-          const amount = toNumber(row[c.col]);
-          transactions[c.upper] += qty;
-          totals[c.title] += amount;
-          weekRow[c.upper] += amount;
-          weekRow.TOTAL += amount;
-          dailyTransactions[c.upper] += qty;
-          dailyTotals[c.title] += amount;
+          transactions[c.upper] += toNumber(pendingCantidad[c.col]);
+          totals[c.title] = round2(totals[c.title] + toNumber(row[c.col]));
         }
 
-        dailyRows.push({
-          year,
-          monthIndex: monthConfig.monthIndex,
-          day: dayCounter,
-          totals: dailyTotals,
-          transactions: dailyTransactions,
-        });
+        const conFecha = parseFecha(pendingCantidad[0]) || parseFecha(row[0]);
+        const cantidad = pendingCantidad;
         pendingCantidad = null;
-      }
-    }
-
-    cols.forEach(c => { totals[c.title] = round2(totals[c.title]); });
-    weeklyTotals.forEach(wr => {
-      wr.TOTAL = round2(wr.TOTAL);
-      cols.forEach(c => { wr[c.upper] = round2(wr[c.upper]); });
-    });
-    dailyRows.forEach(dr => {
-      Object.keys(dr.totals).forEach(k => { dr.totals[k] = round2(dr.totals[k]); });
-    });
-
-    return { totals, transactions, weeklyTotals, dailyRows };
-  }
-
-  function commercialPeriodDays(year, targetMonthIndex) {
-    const start = new Date(year, targetMonthIndex - 1, 26);
-    const end = new Date(year, targetMonthIndex, 25);
-    return Math.round((end - start) / 86400000) + 1;
-  }
-
-  function buildEmptyWeekly(cols, days) {
-    const weekCount = Math.ceil(days / 7);
-    const weeks = [];
-    for (let w = 1; w <= weekCount; w++) {
-      const row = { w, TOTAL: 0 };
-      cols.forEach(c => { row[c.upper] = 0; });
-      weeks.push(row);
-    }
-    return weeks;
-  }
-
-  // Ciclo comercial 26–25: las ventas del 26 al fin de mes cuentan para el mes siguiente.
-  function buildCommercialYear(dailyRows, sourceYear, cols) {
-    const monthConfigs = monthsForYear(sourceYear);
-    const totals = {};
-    const weekly = {};
-    const transactions = {};
-    const periodDays = {};
-
-    monthConfigs.forEach(m => {
-      periodDays[m.name] = commercialPeriodDays(sourceYear, m.monthIndex);
-      totals[m.name] = Object.fromEntries(cols.map(c => [c.title, 0]));
-      transactions[m.name] = Object.fromEntries(cols.map(c => [c.upper, 0]));
-      weekly[m.name] = buildEmptyWeekly(cols, periodDays[m.name]);
-    });
-
-    dailyRows.forEach(dr => {
-      let targetYear = dr.year;
-      let targetMonthIndex = dr.monthIndex;
-      let periodDay;
-
-      if (dr.day > 25) {
-        targetMonthIndex = dr.monthIndex + 1;
-        periodDay = dr.day - 25;
-        if (targetMonthIndex > 11) {
-          targetMonthIndex = 0;
-          targetYear += 1;
+        // Las plantillas traen filas de más al final, sin fecha y vacías (el «día 31» de junio).
+        if (!conFecha && cols.every(c => c.col == null || (esVacia(cantidad[c.col]) && esVacia(row[c.col])))) continue;
+        const fecha = conFecha || (anterior ? Ciclo.sumarDias(anterior, 1) : calendario.inicio);
+        if (!dentro(fecha)) {
+          throw new Error(`la fila del ${fecha} no corresponde a ${monthConfig.name} (ciclo ${Ciclo.rango(ciclo.inicio, ciclo.fin)})`);
         }
-      } else {
-        const previousMonthDays = new Date(dr.year, dr.monthIndex, 0).getDate();
-        periodDay = previousMonthDays - 25 + dr.day;
+        anterior = fecha;
+        dailyRows.push({ fecha, totals, transactions });
       }
+    }
+    return dailyRows;
+  }
 
-      if (targetYear !== sourceYear) return;
-      const monthName = monthConfigs[targetMonthIndex]?.name;
-      if (!monthName || !totals[monthName]) return;
+  // Agrupa los días por el ciclo de venta de `year`: totales, transacciones, semanas de lunes a
+  // domingo recortadas al ciclo (con sus fechas) y ventas por día del ciclo. Los días de otro año
+  // no entran.
+  function agruparPorCiclo(dailyRows, year, cols) {
+    const totals = {};
+    const transactions = {};
+    const weekly = {};
+    const daily = {};
+    const periodos = {};
+    const conDias = new Set();
+    MESES.forEach((mes, mi) => {
+      const p = Ciclo.periodo(year, mi);
+      periodos[mes] = { inicio: p.inicio, fin: p.fin, dias: p.dias };
+      totals[mes] = Object.fromEntries(cols.map(c => [c.title, 0]));
+      transactions[mes] = Object.fromEntries(cols.map(c => [c.upper, 0]));
+      weekly[mes] = Ciclo.semanas(year, mi).map(s => {
+        const row = { w: s.w, desde: s.inicio, hasta: s.fin, TOTAL: 0 };
+        cols.forEach(c => { row[c.upper] = 0; });
+        return row;
+      });
+      daily[mes] = Object.fromEntries(cols.map(c => [c.title, []]));
+    });
 
-      const weekIndex = Math.max(0, Math.ceil(periodDay / 7) - 1);
-      const weekRow = weekly[monthName][weekIndex];
-      if (!weekRow) return;
-
+    for (const dr of dailyRows) {
+      const p = Ciclo.mesDe(dr.fecha);
+      if (p.year !== year) continue;
+      conDias.add(p.mes);
+      const week = weekly[p.mes].find(w => dr.fecha >= w.desde && dr.fecha <= w.hasta);
       cols.forEach(c => {
         const amount = dr.totals[c.title] || 0;
-        const qty = dr.transactions[c.upper] || 0;
-        totals[monthName][c.title] += amount;
-        transactions[monthName][c.upper] += qty;
-        weekRow[c.upper] += amount;
-        weekRow.TOTAL += amount;
+        totals[p.mes][c.title] += amount;
+        transactions[p.mes][c.upper] += dr.transactions[c.upper] || 0;
+        week[c.upper] += amount;
+        week.TOTAL += amount;
+        daily[p.mes][c.title][p.dia - 1] = amount;
       });
-    });
+    }
 
-    Object.values(totals).forEach(month => {
-      Object.keys(month).forEach(k => { month[k] = round2(month[k]); });
+    MESES.forEach(mes => {
+      Object.keys(totals[mes]).forEach(k => { totals[mes][k] = round2(totals[mes][k]); });
+      weekly[mes].forEach(wr => {
+        wr.TOTAL = round2(wr.TOTAL);
+        cols.forEach(c => { wr[c.upper] = round2(wr[c.upper]); });
+      });
+      // Un mes sin días leídos no tiene semanas ni ventas por día (como antes, sin pestaña).
+      if (!conDias.has(mes)) { weekly[mes] = []; delete daily[mes]; }
     });
-    Object.values(weekly).forEach(weeks => weeks.forEach(wr => {
-      wr.TOTAL = round2(wr.TOTAL);
-      cols.forEach(c => { wr[c.upper] = round2(wr[c.upper]); });
-    }));
-
-    return { totals, weekly, transactions, periodDays };
+    return { totals, transactions, weekly, daily, periodos };
   }
 
-  // Lee las pestañas de un año. getRows(mes, pestaña) devuelve las filas (o una promesa);
-  // las pestañas que no existen se completan con 0 y, si el mes ya cerró, cuentan como falla.
-  async function leerAnio({ year, cols, tabs, getRows, today = new Date(), log = () => {} }) {
-    const totals = {};
-    const weekly = {};
-    const transactions = {};
+  // Lee las pestañas de un año y agrupa sus días por el ciclo de venta. getRows(mes, pestaña)
+  // devuelve las filas (o una promesa). Si falta la pestaña de un mes cerrado o una pestaña no se
+  // puede leer, cuenta como falla; si una fecha aparece en dos pestañas, también (se sumaría dos veces).
+  async function leerAnio({ year, cols, tabs, getRows, today = Ciclo.hoyLima(), log = () => {} }) {
     const dailyRows = [];
     const failures = [];
-    const vacio = () => ({
-      totals: Object.fromEntries(cols.map(c => [c.title, 0])),
-      transactions: Object.fromEntries(cols.map(c => [c.upper, 0])),
-    });
+    const vistas = new Map();   // fecha → pestaña
 
-    for (const m of (today.getFullYear() === year ? monthsUpTo(year, today) : monthsForYear(year))) {
+    const enCurso = Ciclo.mesDe(today).year === year;
+    for (const m of (enCurso ? monthsUpTo(year, today) : monthsForYear(year))) {
       const pestana = tabs ? resolveTabName(m.sheet, tabs) : m.sheet;
       if (!pestana) {
         if (isClosedMonth(year, m.monthIndex, today)) failures.push(`${year} ${m.name}: falta la pestaña de un mes cerrado`);
-        const v = vacio();
-        totals[m.name] = v.totals; transactions[m.name] = v.transactions; weekly[m.name] = [];
         continue;
       }
-      let rows;
+      let dias;
       try {
-        rows = await getRows(m, pestana);
+        dias = parseSheet(await getRows(m, pestana), m, year, cols);
       } catch (err) {
         failures.push(`${year} ${pestana}: ${err.message}`);
-        const v = vacio();
-        totals[m.name] = v.totals; transactions[m.name] = v.transactions; weekly[m.name] = [];
         continue;
       }
-      const parsed = parseSheet(rows, m, year, cols);
-      totals[m.name]       = parsed.totals;
-      transactions[m.name] = parsed.transactions;
-      weekly[m.name]       = parsed.weeklyTotals;
-      dailyRows.push(...parsed.dailyRows);
-      const total = round2(Object.values(parsed.totals).reduce((a, b) => a + b, 0));
-      log(`${year} · ${m.name} («${pestana}»): S/. ${total.toLocaleString('es-PE')}`);
+      for (const d of dias) {
+        if (vistas.has(d.fecha)) failures.push(`${year}: el ${d.fecha} está en «${vistas.get(d.fecha)}» y en «${pestana}»`);
+        vistas.set(d.fecha, pestana);
+      }
+      dailyRows.push(...dias);
+      const total = round2(dias.reduce((s, d) => s + Object.values(d.totals).reduce((a, b) => a + b, 0), 0));
+      const rango = dias.length ? ` ${Ciclo.rango(dias[0].fecha, dias[dias.length - 1].fecha)}` : '';
+      log(`${year} · ${m.name} («${pestana}»${rango}): S/. ${total.toLocaleString('es-PE')}`);
     }
-    return { totals, weekly, transactions, dailyRows, failures };
-  }
-
-  // Ventas por día, por mes calendario y canal: { Octubre: { Web: [día 1, día 2, …], … } }.
-  // Proyecciones mide con ellas el ritmo de los últimos 7 o 14 días.
-  function dailyByMonth(dailyRows, cols) {
-    const out = {};
-    for (const dr of dailyRows) {
-      const mes = out[MESES[dr.monthIndex]] ||= Object.fromEntries(cols.map(c => [c.title, []]));
-      cols.forEach(c => { mes[c.title][dr.day - 1] = dr.totals[c.title] || 0; });
-    }
-    return out;
+    dailyRows.sort((a, b) => (a.fecha < b.fecha ? -1 : 1));
+    return { ...agruparPorCiclo(dailyRows, year, cols), dailyRows, failures };
   }
 
   // Campos 2026 de data/ventas-2026.json a partir de las pestañas del libro de ventas.
-  async function ventas2026(tabs, { today = new Date(), log } = {}) {
+  async function ventas2026(tabs, { today = Ciclo.hoyLima(), log } = {}) {
     const leido = await leerAnio({
       year: 2026, cols: COLS_2026, tabs: Object.keys(tabs), today, log,
       getRows: (m, pestana) => tabs[pestana],
     });
-    const commercial = buildCommercialYear(leido.dailyRows, 2026, COLS_2026);
     const conVentas = leido.dailyRows.filter(d => Object.values(d.totals).some(v => v > 0));
-    const ultimo = conVentas[conVentas.length - 1];
     return {
       failures: leido.failures,
-      ultimoDia: ultimo ? `2026-${String(ultimo.monthIndex + 1).padStart(2, '0')}-${String(ultimo.day).padStart(2, '0')}` : null,
-      fields: {
-        d2026:                   leido.totals,
-        d2026_calendar:          leido.totals,
-        d2026_commercial:        commercial.totals,
-        weeklyData:              leido.weekly,
-        weeklyData_calendar:     leido.weekly,
-        weeklyData_commercial:   commercial.weekly,       // nombre legacy, usado por objectives.js
-        weekly2026:              leido.weekly,
-        weekly2026_calendar:     leido.weekly,
-        weekly2026_commercial:   commercial.weekly,       // alias explícito
-        transactions:            leido.transactions,
-        transactions_calendar:   leido.transactions,
-        transactions_commercial: commercial.transactions,
-        commercialPeriodDays:    commercial.periodDays,   // legacy → usado por pace cards
-        daily2026:               dailyByMonth(leido.dailyRows, COLS_2026),
-      },
+      ultimoDia: conVentas.length ? conVentas[conVentas.length - 1].fecha : null,
+      fields: camposVentas(leido, 2026),
+    };
+  }
+
+  // Campos de un año leído con leerAnio: 2026 con sus nombres de siempre y 2025 con los suyos.
+  function camposVentas(leido, year) {
+    if (year === 2026) {
+      return {
+        ciclo:        { cierre: Ciclo.CIERRE, periodos: leido.periodos },
+        d2026:        leido.totals,
+        weeklyData:   leido.weekly,
+        transactions: leido.transactions,
+        daily2026:    leido.daily,     // { Octubre: { Web: [día 1 del ciclo (27 sep), …] } }
+      };
+    }
+    return {
+      ciclo2025:        { cierre: Ciclo.CIERRE, periodos: leido.periodos },
+      d2025_live:       leido.totals,
+      weekly2025:       leido.weekly,
+      transactions2025: leido.transactions,
+      daily2025:        leido.daily,
     };
   }
 
@@ -585,6 +520,6 @@
     toNumber, round2, descargarLibro,
     parseObjetivos, parseTablaObjetivos, objetivosDelLibro,
     monthsForYear, monthsUpTo, isClosedMonth, resolveTabName,
-    parseSheet, buildCommercialYear, dailyByMonth, leerAnio, ventas2026,
+    parseFecha, parseSheet, agruparPorCiclo, leerAnio, camposVentas, ventas2026,
   };
 });

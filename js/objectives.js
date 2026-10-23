@@ -4,7 +4,8 @@
         metas por canal y una pestaña por mes con ritmo y detalle semanal.
      2. Ventas 2026, histórico de la marca: ventas por canal y mes y la
         evolución semanal 2025 vs 2026.
-   Todo va por mes calendario, como el histórico de la marca. Cada zona tiene un botón
+   Todo va por el ciclo de venta de la marca (js/ciclo.js: cada mes va del 27 del mes anterior
+   al 26), como su hoja de ventas. Cada zona tiene un botón
    Sincronizar que relee su hoja de Drive en el navegador (fuentes-drive.js).
    Expone window.Objectives.render({ d2026, weeklyData, transactions, plan, … }).
    ============================================================ */
@@ -12,8 +13,9 @@
 (function (global) {
   const ds = global.DataStatic;
   const {
-    channels, palette, d2025, monthDays, months, chToUpper,
+    channels, palette, d2025, months, chToUpper,
   } = ds;
+  const Ciclo = global.Ciclo;
 
   const fmt = n => Math.round(n).toLocaleString('es-PE');
   const tot = o => channels.reduce((s, c) => s + (o[c] || 0), 0);
@@ -64,7 +66,7 @@
   // Estado interno
   const state = {
     plan: null,            // data/objetivos-2026.json: objetivos de la marca (Drive)
-    d2026: null,           // ventas 2026 por mes calendario
+    d2026: null,           // ventas 2026 por ciclo de venta (del 27 al 26)
     ventasInfo: null,      // { generated, fuente } de las ventas mostradas
     vista: 'avance',       // vista del cuadro del mes: 'avance' (vs meta) o 'ventas' (vs 2025)
     weeklyData: null,
@@ -110,36 +112,41 @@
   // ── Calendar helpers (año en curso = 2026) ──
   const YEAR = 2026;
 
-  // Índice del mes que estamos viviendo hoy dentro de months[] (0=Enero, 11=Diciembre).
-  // -2 si todo el año es futuro, 12 si todo es pasado.
-  // Llama new Date() en cada invocación para que funcione correctamente si la
-  // página queda abierta de un día para otro.
+  // Índice del mes del ciclo que estamos viviendo hoy dentro de months[] (0=Enero, 11=Diciembre):
+  // desde el 27, el mes siguiente. -2 si todo el año es futuro, 12 si todo es pasado.
+  // Lee la fecha en cada invocación para que funcione si la página queda abierta de un día para otro.
   function currentMonthIdx() {
-    const now = new Date();
-    if (now.getFullYear() < YEAR) return -2;
-    if (now.getFullYear() > YEAR) return 12;
-    return now.getMonth();
+    const hoy = Ciclo.mesDe(Ciclo.hoyLima());
+    if (hoy.year < YEAR) return -2;
+    if (hoy.year > YEAR) return 12;
+    return hoy.mi;
   }
+  const periodoMes = m => Ciclo.periodo(YEAR, months.indexOf(m));
+  // Días del ciclo del mes (Octubre: del 27 sep al 26 oct, 30 días).
   function objectiveDays(m) {
-    return monthDays[m];
+    return periodoMes(m).dias;
   }
-  function currentCalendarDay() {
-    return new Date().getDate();
+  // Fecha del día d del ciclo del mes; d ≤ 0 cae en el ciclo anterior.
+  const fechaDia = (m, d) => Ciclo.fechaDe(YEAR, months.indexOf(m), d);
+  // Día de hoy dentro del ciclo en curso (1 = el 27 del mes anterior).
+  function currentCycleDay() {
+    return Ciclo.mesDe(Ciclo.hoyLima()).dia;
   }
+  // La regla del avance va del primer al último día del ciclo, con fechas: «27 sep» … «26 oct».
   function visualRulerStart(m) {
-    return '1';
+    return Ciclo.corta(periodoMes(m).inicio);
   }
   function visualRulerEnd(m) {
-    return String(objectiveDays(m));
+    return Ciclo.corta(periodoMes(m).fin);
   }
   function visualTodayPct(m) {
     return (daysPassed(m) / objectiveDays(m) * 100).toFixed(1);
   }
-  // Último día con ventas del histórico (fuente2026.ultimoDia, "2026-10-11"). La hoja se carga con
-  // un día o dos de atraso: el avance se mide hasta ese día, no hasta hoy.
+  // Último día con ventas del histórico (fuente2026.ultimoDia, "2026-10-11"), como mes y día del
+  // ciclo. La hoja se carga con un día o dos de atraso: el avance se mide hasta ese día, no hasta hoy.
   function ultimoDiaVentas() {
     const u = state.ventasInfo?.fuente?.ultimoDia;
-    return u ? { monthIndex: +u.slice(5, 7) - 1, day: +u.slice(8, 10) } : null;
+    return u ? Ciclo.mesDe(u) : null;
   }
   function monthStatus(m) {
     const idx = months.indexOf(m);
@@ -154,8 +161,8 @@
     if (s === 'past')    return objectiveDays(m);
     if (s === 'future')  return 0;
     const u = ultimoDiaVentas();
-    if (!u) return Math.min(objectiveDays(m), currentCalendarDay());
-    return u.monthIndex === months.indexOf(m) ? Math.min(objectiveDays(m), u.day) : 0;
+    if (!u) return Math.min(objectiveDays(m), currentCycleDay());
+    return u.year === YEAR && u.mi === months.indexOf(m) ? Math.min(objectiveDays(m), u.dia) : 0;
   }
   function daysRemaining(m) {
     return Math.max(0, objectiveDays(m) - daysPassed(m));
@@ -163,7 +170,7 @@
   // Lo que debería llevar vendido a la fecha de corte si avanzara parejo hacia la meta.
   const expectedTo = (m, tgt) => tgt * daysPassed(m) / objectiveDays(m);
   // Fecha de corte de las ventas: "11 oct" en el mes en curso, "cierre" en uno pasado.
-  const corteLabel = m => monthStatus(m) === 'current' ? `${daysPassed(m)} ${MONTH_ABR[m]}` : 'cierre';
+  const corteLabel = m => monthStatus(m) === 'current' ? Ciclo.corta(fechaDia(m, daysPassed(m))) : 'cierre';
 
   // Píldoras y tarjetas KPI: los mismos componentes que Gasto publicitario y Proyecciones.
   const pill = (cls, text, title) => `<span class="pill ${cls}"${title ? ` title="${esc(title)}"` : ''}>${text}</span>`;
@@ -340,28 +347,16 @@
   }
 
   // ── Detalle semanal por canal (expandible desde la fila de la tabla) ──
-  // wk.w es el número de semana DENTRO del mes (1 = primera semana del mes)
-  const MONTH_ABR = { Enero:'ene', Febrero:'feb', Marzo:'mar', Abril:'abr', Mayo:'may',
-    Junio:'jun', Julio:'jul', Agosto:'ago', Septiembre:'sep', Octubre:'oct',
-    Noviembre:'nov', Diciembre:'dic' };
+  // wk.w es el número de semana DENTRO del ciclo del mes (1 = la que empieza el 27 del mes anterior)
+  const MONTH_ABR = Object.fromEntries(months.map((m, i) => [m, Ciclo.ABR[i]]));
 
-  // Semanas del mes como las arma el pipeline (fuentes-drive.js buildWeekMap): de lunes a
-  // domingo, recortadas al mes; la primera y la última pueden tener menos de 7 días.
-  function monthWeeks(m) {
-    const mi = months.indexOf(m);
-    const weeks = [];
-    for (let d = 1; d <= objectiveDays(m); d++) {
-      if (d === 1 || new Date(YEAR, mi, d).getDay() === 1) weeks.push({ w: weeks.length + 1, start: d, end: d });
-      weeks[weeks.length - 1].end = d;
-    }
-    weeks.forEach(wk => { wk.days = wk.end - wk.start + 1; });
-    return weeks;
-  }
+  // Semanas del ciclo como las arma el pipeline (fuentes-drive.js agruparPorCiclo): de lunes a
+  // domingo, recortadas al ciclo; la primera y la última pueden tener menos de 7 días.
+  const monthWeeks = m => Ciclo.semanas(YEAR, months.indexOf(m));
 
   function weekDateRange(m, w) {
     const wk = monthWeeks(m)[w - 1];
-    if (!wk) return '';
-    return wk.start === wk.end ? `${wk.start} ${MONTH_ABR[m]}` : `${wk.start}–${wk.end} ${MONTH_ABR[m]}`;
+    return wk ? Ciclo.rango(wk.inicio, wk.fin) : '';
   }
 
   // Construye el HTML interno del desplegable semanal de un canal del plan.
@@ -374,10 +369,10 @@
     const monthChTgt  = target(m, c.key);
     // La meta de cada semana es proporcional a sus días (las semanas de borde son más cortas).
     const semanas     = monthWeeks(m);
-    const weekTgt     = w => monthChTgt > 0 && semanas[w - 1] ? monthChTgt * semanas[w - 1].days / objectiveDays(m) : 0;
+    const weekTgt     = w => monthChTgt > 0 && semanas[w - 1] ? monthChTgt * semanas[w - 1].dias / objectiveDays(m) : 0;
     const fullWeekTgt = monthChTgt > 0 ? monthChTgt * 7 / objectiveDays(m) : 0;
-    const hoy         = currentCalendarDay();
-    const curWeekNum  = status === 'current' ? (semanas.find(s => hoy >= s.start && hoy <= s.end)?.w ?? -1) : -1;
+    const hoy         = currentCycleDay();
+    const curWeekNum  = status === 'current' ? (semanas.find(s => hoy >= s.desde && hoy <= s.hasta)?.w ?? -1) : -1;
 
     let carry = 0;   // brecha arrastrada de semanas anteriores
 
@@ -456,21 +451,13 @@
   }
 
   // ── Notificaciones: los avisos del mes en curso, en el desplegable de la barra superior ──
-  // Venta de una columna en un día del mes; los días ≤ 0 caen en el mes anterior.
+  // Venta de una columna en un día del ciclo del mes; los días ≤ 0 caen en el ciclo anterior.
   function ventaDia(m, col, d) {
     let mi = months.indexOf(m);
     while (d < 1 && mi > 0) { mi--; d += objectiveDays(months[mi]); }
     return d < 1 ? 0 : state.daily2026?.[months[mi]]?.[col]?.[d - 1] || 0;
   }
-  function diaLabel(m, d) {
-    let mi = months.indexOf(m);
-    while (d < 1 && mi > 0) { mi--; d += objectiveDays(months[mi]); }
-    return { d, mes: MONTH_ABR[months[mi]] };
-  }
-  const rangoLabel = (m, desde, hasta) => {
-    const a = diaLabel(m, desde), b = diaLabel(m, hasta);
-    return a.mes === b.mes ? `${a.d}–${b.d} ${b.mes}` : `${a.d} ${a.mes} – ${b.d} ${b.mes}`;
-  };
+  const rangoLabel = (m, desde, hasta) => Ciclo.rango(fechaDia(m, desde), fechaDia(m, hasta));
   const pctTxt = p => `${p >= 0 ? '+' : '−'}${Math.abs(Math.round(p))}%`;
 
   // Últimos 7 días con ventas frente a los 7 anteriores, por columna del archivo de ventas.
@@ -1244,13 +1231,13 @@
     const live   = status !== 'future' && isLiveMonth(m);
     const corte  = corteLabel(m);
     const refTxt = meta && state.plan?.referencia ? ` · ${refLabel().replace('Ref.', 'referencia')}: <strong>S/. ${fmt(monthRef2025(m))}</strong>` : '';
-    const hoy    = currentCalendarDay();
+    const ciclo  = Ciclo.rangoMes(YEAR, months.indexOf(m));
     const statusNote = status === 'current'
-      ? `<div class="period-note">${m} 2026 está en curso · ventas cargadas al ${corte} (día ${daysPassed(m)} de ${objectiveDays(m)})${hoy > daysPassed(m) ? ` · hoy es ${hoy}` : ''}${refTxt}</div>`
+      ? `<div class="period-note">${m} 2026 está en curso (ciclo ${ciclo}) · ventas cargadas al ${corte} (día ${daysPassed(m)} de ${objectiveDays(m)})${currentCycleDay() > daysPassed(m) ? ` · hoy es ${Ciclo.corta(Ciclo.hoyLima())}` : ''}${refTxt}</div>`
       : status === 'future'
         ? `<div class="period-note">${m} 2026 es mes futuro${meta ? ` · meta <strong>S/. ${fmt(monthTarget(m))}</strong>` : ''}${refTxt}</div>`
         : '';
-    const sub = [`${m} 2026`, meta ? 'meta del archivo de objetivos' : 'sin metas en el archivo de objetivos', live ? `ventas al ${corte}` : '']
+    const sub = [`${m} 2026 · ${ciclo}`, meta ? 'meta del archivo de objetivos' : 'sin metas en el archivo de objetivos', live ? `ventas al ${corte}` : '']
       .filter(Boolean).join(' · ');
     return `
       ${statusNote}
@@ -1282,8 +1269,8 @@
     const realCell   = v => showReal ? 'S/. ' + fmt(v) : '<span class="muted">—</span>';
     const todayPct   = status === 'current' ? visualTodayPct(m) : null;
     const todayPin   = todayPct !== null
-      ? `<div class="pb-today-pin" style="left:${todayPct}%" title="Ventas cargadas al ${corte} · hoy es ${currentCalendarDay()}">
-           <span class="pb-today-day">${daysPassed(m)}</span>
+      ? `<div class="pb-today-pin" style="left:${todayPct}%" title="Ventas cargadas al ${corte} · hoy es ${Ciclo.corta(Ciclo.hoyLima())}">
+           <span class="pb-today-day">${+fechaDia(m, daysPassed(m)).slice(8, 10)}</span>
            <div class="pb-today-tri"></div>
          </div>`
       : '';
@@ -1502,7 +1489,7 @@
         <div class="panel-head">
           <div>
             <div class="panel-title">Ventas por canal y mes</div>
-            <div class="panel-sub">2026 por mes calendario, como lo registra la marca</div>
+            <div class="panel-sub">2026 por ciclo de venta (del 27 al 26), como lo registra la marca</div>
           </div>
           ${vistaToggle(false, 'Las metas se ven en cada mes')}
         </div>

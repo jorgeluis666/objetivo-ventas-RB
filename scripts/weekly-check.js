@@ -15,6 +15,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const Ciclo = require('../js/ciclo.js');
 
 const JSON_PATH = path.join(__dirname, '..', 'data', 'ventas-2026.json');
 const MONTHS_12 = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -83,8 +84,9 @@ function checkAnyActivity(j, findings) {
 // Compara los dos últimos meses CERRADOS — si un canal pasó de tener
 // ventas significativas a cero, es señal de que algo se rompió.
 function checkChannelDropoff(j, findings) {
-  const today = new Date();
-  const currentMonthIdx = today.getFullYear() === 2026 ? today.getMonth() : 12;
+  // Mes en curso por el ciclo de venta (cada mes va del 27 del anterior al 26)
+  const hoy = Ciclo.mesDe(Ciclo.hoyLima());
+  const currentMonthIdx = hoy.year === 2026 ? hoy.mi : 12;
   // Mes cerrado más reciente y el anterior
   if (currentMonthIdx < 2) return; // necesitamos al menos 2 meses cerrados
   const last = MONTHS_12[currentMonthIdx - 1];

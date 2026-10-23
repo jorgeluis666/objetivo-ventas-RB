@@ -1,6 +1,7 @@
 /* ============================================================
    Datos vivos — data/ventas-2026.json generado por el pipeline
-   scripts/fetch-data.js (GitHub Actions / local).
+   scripts/fetch-data.js (GitHub Actions / local), por ciclo de venta
+   (js/ciclo.js: cada mes va del 27 del anterior al 26).
    En el sitio publicado no hay carpeta data/: scripts/build.js
    incrusta el JSON en window.RB_VENTAS_DATA, dentro del HTML cifrado.
    En local (npm run dev) se lee el archivo.
@@ -33,13 +34,6 @@
       weekly2025:        weeksShape(MONTHS_12),
       d2025_live:        monthsShape(MONTHS_12, zero),
       transactions2025:  monthsShape(MONTHS_12, zeroTx),
-      d2026_commercial:        monthsShape(liveMonths, zero),
-      weeklyData_commercial:   weeksShape(liveMonths),
-      transactions_commercial: monthsShape(liveMonths, zeroTx),
-      weekly2025_commercial:   weeksShape(MONTHS_12),
-      d2025_commercial:        monthsShape(MONTHS_12, zero),
-      commercialPeriodDays:    global.DataStatic?.monthDays || {},
-      commercialCycleLabel:    '26-25',
     };
   }
 
@@ -57,14 +51,7 @@
         d2026:             json.d2026,
         weeklyData:        json.weeklyData,
         transactions:      json.transactions,
-        d2026_commercial:        json.d2026_commercial        || null,
-        weeklyData_commercial:   json.weeklyData_commercial   || null,
-        transactions_commercial: json.transactions_commercial || null,
-        weekly2025_commercial:   json.weekly2025_commercial   || null,
-        d2025_commercial:        json.d2025_commercial        || null,
-        commercialPeriodDays:    json.commercialPeriodDays    || null,
-        commercialCycleLabel:    json.commercialCycleLabel    || null,
-        daily2026:               json.daily2026               || null,  // ventas por día (Proyecciones)
+        daily2026:               json.daily2026               || null,  // ventas por día del ciclo (Proyecciones)
         // Nuevos (2025 live completo)
         weekly2025:        json.weekly2025       || {},
         d2025_live:        json.d2025_live       || {},

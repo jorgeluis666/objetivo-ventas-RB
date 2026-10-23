@@ -25,6 +25,7 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
     ds.css                Design system (tokens + componentes)
     dashboard-minimal.css Estilos del dashboard
   js/
+    ciclo.js              Ciclo de venta de la marca (cada mes va del 27 del anterior al 26), navegador y scripts
     data-static.js        Datos 2025 y productos web
     data-live.js          Datos 2026: incrustados en el sitio publicado, data/ventas-2026.json en local
     charts.js             Instancias de Chart.js
@@ -194,12 +195,12 @@ Módulo del menú, después de Gasto publicitario (vista `view-ads`, en `js/gast
 
 Módulo del grupo Reportes (`js/projections.js`, vista `view-proj`). No tiene datos propios: los toma de otros dos módulos, y una franja arriba dice hasta qué día llega cada uno, con un botón para abrirlo.
 
-- **Objetivos 2026**: los objetivos de la marca (`data/objetivos-2026.json`) y su histórico de ventas por mes calendario (`data/ventas-2026.json`). Cuando se pulsa **Sincronizar** en Objetivos, Proyecciones se vuelve a dibujar con lo nuevo.
+- **Objetivos 2026**: los objetivos de la marca (`data/objetivos-2026.json`) y su histórico de ventas por ciclo de venta (`data/ventas-2026.json`). Cuando se pulsa **Sincronizar** en Objetivos, Proyecciones se vuelve a dibujar con lo nuevo.
 - **Gasto publicitario**: la inversión y los resultados de Meta Ads y Google Ads (`data/ads-2026.json`, la misma carga que usa ese módulo con `Gasto.load()`).
 
 Cómo calcula:
 
-- **Por mes calendario**, como Gasto publicitario y Objetivos.
+- **Por ciclo de venta** (del 27 del mes anterior al 26), como Objetivos. Los informes de pauta van por mes calendario, así que la inversión de cada ciclo se arma día por día: Meta llega por día y campaña (exacto); Google, con un total por mes que se reparte entre los días que cubre (estimado, y la vista lo dice). La pestaña Plan por campaña usa la misma regla para sus ROAS por mes.
 - **Venta digital**: Web + Redes y WhatsApp, los canales que mueve la pauta, con las columnas del histórico que indica cada canal del archivo de objetivos (`sheet`). Se compara con la suma de los objetivos de esos dos canales; los meses que no están en el archivo quedan sin objetivo.
 - **Proyección**: lo que va del mes (real) más los días que quedan al ritmo de la **base** que se elige en «Proyectar con»: **Última semana** (los 7 días que terminan en el último día con datos), **Últimas 2 semanas** (14 días) o **Mes anterior** (completo). Las ventanas de 7 y 14 días cruzan al mes anterior cuando hace falta. La elección se recuerda en el navegador; en un mes cerrado no hay proyección y el selector queda inactivo.
 - **Ritmo de la base**: las ventas, hasta el último día con ventas del histórico (`fuente2026.ultimoDia`), salen de `daily2026` (ventas por día y canal; si el JSON no lo trae, el total del mes se reparte entre sus días). Cada plataforma, hasta donde llega su informe (`coverage`): Meta, con su serie diaria real; Google, con su total del mes repartido entre los días que cubre (estimado). Una franja bajo el selector dice qué días entraron y qué se estimó.
@@ -293,8 +294,15 @@ Arriba van las dos fuentes de Drive (objetivos y ventas), cada una con su fecha 
 
 El total de cada mes suma toda la venta registrada.
 
-### Mes calendario
+### Ciclo de venta (27 → 26)
 
-Desde el 6 de octubre de 2026 el módulo compara por **mes calendario** (del 1 al último día del mes), igual que el histórico de la marca, Proyecciones y el correo semanal. Las semanas del detalle van de lunes a domingo, recortadas al mes; la meta de cada semana es proporcional a sus días.
+Desde el 23 de octubre de 2026 todo el tablero va por el **ciclo de venta** de la marca: cada mes cierra el 26 y el 27 empieza el siguiente (Octubre = del 27 sep al 26 oct). Enero arranca el 1 de enero y Diciembre cierra el 31, para que el año sea el año calendario. La regla vive en un solo lugar, `js/ciclo.js`, que usan el navegador y los scripts.
 
-Entre el 22 de julio y el 6 de octubre usó el ciclo comercial 26–25 (las ventas del 26 al fin de mes contaban para el mes siguiente). El pipeline sigue generando los campos `*_commercial` de `data/ventas-2026.json`, aunque el tablero ya no los usa. Hito de rollback antes del ciclo 26–25: `hito-pre-cierre-25-20260722`.
+- **Hoja de ventas**: un script de la marca ya arma cada pestaña de la hoja de Drive con su ciclo (la pestaña OCTUBRE va del 27/09 al 26/10). `js/fuentes-drive.js` lee la fecha de la columna FECHA de cada día y agrupa por ciclo; si una fecha no cae en el mes de su pestaña (ni en su ciclo ni en el mes calendario) o aparece en dos pestañas, la lectura falla en vez de mover o duplicar ventas. Las filas de más sin fecha y vacías se ignoran.
+- **2025** se agrupa igual, día por día desde su hoja (que va por mes calendario), para que la comparación sea ciclo contra ciclo. El total del año no cambia. `--solo-2026` exige un 2025 ya agrupado por ciclo (campo `ciclo2025`); sin la cuenta de servicio, `node scripts/fetch-data.js --csv-2025=data/csv-backups` lo arma desde los CSV de respaldo.
+- **`data/ventas-2026.json`**: `d2026`, `weeklyData`, `transactions` y `daily2026` (ventas por día del ciclo: el índice 0 es el 27 del mes anterior) van por ciclo; `ciclo` y `ciclo2025` traen el inicio, el fin y los días de cada mes. Las semanas llevan sus fechas (`desde`, `hasta`).
+- **Objetivos**: días del mes, día en curso, lo esperado al corte, la regla del avance (27 sep … 26 oct) y el detalle semanal (lunes a domingo, recortadas al ciclo; la meta de cada semana es proporcional a sus días).
+- **YoY, Distribución, Proyecciones, correo de alertas y revisión semanal** usan los mismos meses. Un mes está cerrado cuando pasa su día 26.
+- **Gasto publicitario y Anuncios** siguen por mes calendario: muestran los informes de Meta y Google tal como llegan (Google solo trae un total por mes). Donde la pauta se cruza con las ventas (Proyecciones) se suma por ciclo.
+
+Antes: hasta el 6 de octubre de 2026 usó el ciclo comercial 26–25 (hito de rollback `hito-pre-cierre-25-20260722`) y del 6 al 23 de octubre, mes calendario.

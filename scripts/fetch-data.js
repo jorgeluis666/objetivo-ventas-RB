@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 /**
- * Genera data/ventas-2026.json con totales mensuales, datos semanales y transacciones por canal.
+ * Genera data/ventas-2026.json con totales mensuales, datos semanales, ventas por día y transacciones
+ * por canal, agrupados por el ciclo de venta de la marca (js/ciclo.js: cada mes va del 27 del anterior
+ * al 26). 2025 se agrupa igual, día por día, para comparar mes contra mes.
  *
  * Fuentes:
  *   2026 → la hoja de la carpeta de Drive "Ventas Royal Baby - 2026" (compartida por enlace,
@@ -12,6 +14,7 @@
  *   node scripts/fetch-data.js                   → Drive (2026) + Sheets API (2025)
  *   node scripts/fetch-data.js --solo-2026       → Drive (2026); 2025 se conserva del JSON actual
  *   node scripts/fetch-data.js --csv-dir=<path>  → lee CSVs locales de ambos años (dev / bootstrap)
+ *   node scripts/fetch-data.js --csv-2025=<path> → Drive (2026) + CSVs locales de 2025 (sin service account)
  */
 
 const fs = require('fs');
@@ -25,8 +28,8 @@ const OUTPUT_PATH = path.join(__dirname, '..', 'data', 'ventas-2026.json');
 
 const SHEET_2025 = { id: '13gqg8ZueL4YOj3wQ7gypf3Mem3oNBSFyPNJE67cICQ0', range: 'A1:H100' };
 
-const FIELDS_2025 = ['d2025_live', 'd2025_commercial', 'weekly2025', 'weekly2025_commercial',
-  'transactions2025', 'transactions2025_commercial'];
+// ciclo2025 marca que 2025 ya está agrupado por ciclo: un JSON anterior (por mes calendario) no sirve.
+const FIELDS_2025 = ['ciclo2025', 'd2025_live', 'weekly2025', 'transactions2025', 'daily2025'];
 
 // --- CSV parser (mínimo, maneja campos entrecomillados) ---
 function parseCSVText(text) {
@@ -110,9 +113,10 @@ function loadRowsFromCsv(monthConfig, csvDir, year) {
 }
 
 function parseArgs(argv) {
-  const args = { csvDir: null, solo2026: false };
+  const args = { csvDir: null, csv2025: null, solo2026: false };
   for (const a of argv.slice(2)) {
     if (a.startsWith('--csv-dir=')) args.csvDir = a.substring('--csv-dir='.length);
+    if (a.startsWith('--csv-2025=')) args.csv2025 = a.substring('--csv-2025='.length);
     if (a === '--solo-2026') args.solo2026 = true;
   }
   return args;
@@ -127,18 +131,7 @@ async function read2026(args) {
       year: 2026, cols: FD.COLS_2026, tabs: null, log,
       getRows: m => loadRowsFromCsv(m, args.csvDir, 2026),
     });
-    const commercial = FD.buildCommercialYear(leido.dailyRows, 2026, FD.COLS_2026);
-    return {
-      failures: leido.failures, fuente: null,
-      fields: {
-        d2026: leido.totals, d2026_calendar: leido.totals, d2026_commercial: commercial.totals,
-        weeklyData: leido.weekly, weeklyData_calendar: leido.weekly, weeklyData_commercial: commercial.weekly,
-        weekly2026: leido.weekly, weekly2026_calendar: leido.weekly, weekly2026_commercial: commercial.weekly,
-        transactions: leido.transactions, transactions_calendar: leido.transactions,
-        transactions_commercial: commercial.transactions, commercialPeriodDays: commercial.periodDays,
-        daily2026: FD.dailyByMonth(leido.dailyRows, FD.COLS_2026),
-      },
-    };
+    return { failures: leido.failures, fuente: null, fields: FD.camposVentas(leido, 2026) };
   }
   const carpeta = FD.CARPETAS.ventas;
   console.log(`[fetch 2026] carpeta ${FD.urlCarpeta(carpeta)}`);
@@ -164,8 +157,9 @@ async function read2025(args) {
     console.log('[fetch 2025] --solo-2026: se conserva 2025 del JSON actual');
     return { failures: [], fields: Object.fromEntries(FIELDS_2025.map(f => [f, actual[f]])) };
   }
+  const csvDir = args.csvDir || args.csv2025;
   let tabs = null;
-  if (!args.csvDir) {
+  if (!csvDir) {
     try {
       tabs = await listTabs(SHEET_2025.id);
       console.log(`[fetch 2025] pestañas: ${tabs.map(t => `"${t}"`).join(', ')}`);
@@ -175,20 +169,9 @@ async function read2025(args) {
   }
   const leido = await FD.leerAnio({
     year: 2025, cols: FD.COLS_2025, tabs, log,
-    getRows: (m, tab) => args.csvDir ? loadRowsFromCsv(m, args.csvDir, 2025) : loadRowsFromApi(tab, SHEET_2025.id, SHEET_2025.range),
+    getRows: (m, tab) => csvDir ? loadRowsFromCsv(m, csvDir, 2025) : loadRowsFromApi(tab, SHEET_2025.id, SHEET_2025.range),
   });
-  const commercial = FD.buildCommercialYear(leido.dailyRows, 2025, FD.COLS_2025);
-  return {
-    failures: leido.failures,
-    fields: {
-      d2025_live:                  leido.totals,
-      d2025_commercial:            commercial.totals,
-      weekly2025:                  leido.weekly,
-      weekly2025_commercial:       commercial.weekly,
-      transactions2025:            leido.transactions,
-      transactions2025_commercial: commercial.transactions,
-    },
-  };
+  return { failures: leido.failures, fields: FD.camposVentas(leido, 2025) };
 }
 
 async function main() {
@@ -208,8 +191,6 @@ async function main() {
   const output = {
     // Hora Lima (UTC-5) sin zona: el tablero la lee añadiendo "-05:00" (ver sheets.js formatRelative).
     generated: FD.ahoraLima(),
-    commercialCutoffDay: 25,
-    commercialCycleLabel: '26-25',
     // Hoja de Drive de la que salió 2026: el botón Sincronizar del tablero la vuelve a leer.
     fuente2026: r2026.fuente,
     // 2026 (en curso)

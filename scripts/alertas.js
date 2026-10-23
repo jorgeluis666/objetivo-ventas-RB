@@ -91,6 +91,14 @@ const curMonth    = MONTHS[monthIdx];
 const curMonthDays = cicloHoy.dias;
 const cicloLabel  = Ciclo.rangoMes(limaYear, monthIdx);
 
+// Último día con ventas cargadas en la hoja (fuente2026.ultimoDia). La hoja se carga con uno o dos
+// días de atraso: el ritmo, la proyección, lo esperado y los días que quedan se miden hasta ese día,
+// no hasta hoy (con hoy, el ritmo divide la venta entre días sin cargar y la proyección queda baja).
+// Sin el dato, hasta hoy.
+const ultimoDia   = salesData.fuente2026?.ultimoDia || null;
+const diasVentas  = ultimoDia ? Ciclo.diasHasta(limaYear, monthIdx, ultimoDia) : dayOfMonth;
+const corteLabel  = Ciclo.corta(Ciclo.fechaDe(limaYear, monthIdx, diasVentas));
+
 // Fecha legible en español (Lima)
 const fechaLabel = lima.toLocaleDateString('es-PE', {
   weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC',
@@ -98,7 +106,8 @@ const fechaLabel = lima.toLocaleDateString('es-PE', {
 
 console.log(`\n▶ Alerta semanal ${weekKey}${DRY_RUN ? ' [DRY-RUN]' : ''}`);
 console.log(`  Fecha Lima : ${fechaLabel}`);
-console.log(`  Mes actual : ${curMonth} ${limaYear} (ciclo ${cicloLabel}) · día ${dayOfMonth} de ${curMonthDays}`);
+console.log(`  Mes actual : ${curMonth} ${limaYear} (ciclo ${cicloLabel}) · hoy es el día ${dayOfMonth} de ${curMonthDays}`);
+console.log(`  Ventas al  : ${corteLabel} (día ${diasVentas} de ${curMonthDays})`);
 
 // ── Idempotencia ─────────────────────────────────────────────
 // Huella de las ventas: ventas-2026.json se reescribe en cada lectura diaria (cambia "generated"),
@@ -147,12 +156,12 @@ if (cur.meta === 0) {
   console.log(`\n⏭  ${curMonth} no tiene objetivos en data/objetivos-2026.json: no hay alerta que enviar.\n`);
   process.exit(0);
 }
-const ritmo    = dayOfMonth > 0 && cur.real > 0 ? cur.real / dayOfMonth : 0;
+const ritmo    = diasVentas > 0 && cur.real > 0 ? cur.real / diasVentas : 0;
 const proyeccion = ritmo > 0 ? ritmo * curMonthDays : 0;
 const proyPct    = pctOf(proyeccion, cur.meta);
-const diaPct     = Math.round(dayOfMonth / curMonthDays * 100);
+const diaPct     = Math.round(diasVentas / curMonthDays * 100);
 const faltante   = Math.max(0, cur.meta - cur.real);
-const diasRest   = Math.max(0, curMonthDays - dayOfMonth);
+const diasRest   = Math.max(0, curMonthDays - diasVentas);
 const dailyNeed  = diasRest > 0 && faltante > 0 ? faltante / diasRest : 0;
 
 // Nivel de alerta
@@ -181,15 +190,15 @@ const topNeedChannels  = cur.byChannel
 
 // ── Alerta de brecha a mitad de mes ─────────────────────────
 // Solo aplica si ya pasó la mitad del mes
-const pastMidMonth = dayOfMonth >= Math.floor(curMonthDays / 2);
+const pastMidMonth = diasVentas >= Math.floor(curMonthDays / 2);
 const laggingChannels = pastMidMonth
   ? cur.byChannel.filter(r => {
-      const expectedReal = r.meta * dayOfMonth / curMonthDays;
+      const expectedReal = r.meta * diasVentas / curMonthDays;
       return r.pct < 100 && r.real < expectedReal * 0.80;
     }).map(r => ({
       ...r,
-      expectedReal: r.meta * dayOfMonth / curMonthDays,
-      lag: r.real - (r.meta * dayOfMonth / curMonthDays),
+      expectedReal: r.meta * diasVentas / curMonthDays,
+      lag: r.real - (r.meta * diasVentas / curMonthDays),
     }))
   : [];
 
@@ -209,7 +218,7 @@ if (achievedChannels.length > 0) {
   console.log(`\n🎯 Objetivo alcanzado: ${achievedChannels.map(r => r.ch).join(', ')}  |  Excedente: S/. ${fmt(totalSurplus)}`);
 }
 if (laggingChannels.length > 0) {
-  console.log(`\n⚠️  Brecha a mitad de mes (día ${dayOfMonth}/${curMonthDays}):`);
+  console.log(`\n⚠️  Brecha a mitad de mes (día ${diasVentas}/${curMonthDays}):`);
   laggingChannels.forEach(r => {
     console.log(`     ${r.ch.padEnd(18)} lag: S/. ${fmt(Math.abs(r.lag))}`);
   });
@@ -348,7 +357,7 @@ const htmlEmail = `<!DOCTYPE html>
       ${etiqueta(`${MOTIVO === 'ventas' ? 'Ventas actualizadas' : 'Alerta semanal de ventas'} · ${weekKey}`)}
       <div style="font-size:20px;font-weight:700;color:${C.text};letter-spacing:-0.02em;">${curMonth} ${limaYear}: ${proyPct.toFixed(0)}% del objetivo proyectado</div>
       <div style="font-size:14px;color:${C.text2};margin-top:6px;line-height:1.5;">
-        ${fechaLabel.charAt(0).toUpperCase() + fechaLabel.slice(1)} · día ${dayOfMonth} de ${curMonthDays} del ciclo ${cicloLabel} (${diaPct}% del mes).
+        ${fechaLabel.charAt(0).toUpperCase() + fechaLabel.slice(1)} · ventas cargadas al ${corteLabel}, día ${diasVentas} de ${curMonthDays} del ciclo ${cicloLabel} (${diaPct}% del mes).
         ${proyPct < 90
           ? `Al ritmo de <strong style="color:${C.text};">${money(ritmo)} por día</strong>, el mes cerraría en ${money(proyeccion)}, ${money(Math.abs(cur.meta - proyeccion))} ${proyeccion < cur.meta ? 'por debajo' : 'por encima'} de la meta.`
           : `Al ritmo de <strong style="color:${C.text};">${money(ritmo)} por día</strong>, el mes cerraría en ${money(proyeccion)}.`}
@@ -356,7 +365,7 @@ const htmlEmail = `<!DOCTYPE html>
 
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;">
         <tr>
-          ${kpi('Real acumulado', money(cur.real), C.text, `${pctOf(cur.real, cur.meta).toFixed(0)}% de la meta · día ${dayOfMonth}`, pctOf(cur.real, cur.meta), TONO.gris)}
+          ${kpi('Real acumulado', money(cur.real), C.text, `${pctOf(cur.real, cur.meta).toFixed(0)}% de la meta · al ${corteLabel}`, pctOf(cur.real, cur.meta), TONO.gris)}
           <td width="10" style="width:10px;"></td>
           ${kpi('Proyección de cierre', money(proyeccion), tonoNivel.val, `${proyPct.toFixed(1)}% del objetivo`, proyPct, tonoNivel)}
           <td width="10" style="width:10px;"></td>
@@ -387,7 +396,7 @@ const htmlEmail = `<!DOCTYPE html>
       ${topNeedChannels.length > 0 ? `<br>Ese excedente (${money(totalSurplus)}) podría reforzar las campañas de ${topNeedChannels.map(n => `<strong>${n.ch}</strong> (brecha ${money(n.meta - n.real)})`).join(' y ')}.` : ''}`) : ''}
 
     ${laggingChannels.length > 0 ? aviso(TONO.ambar,
-      `Brecha a mitad de mes · día ${dayOfMonth} de ${curMonthDays}`,
+      `Brecha a mitad de mes · día ${diasVentas} de ${curMonthDays}`,
       `Estos canales van por debajo del 80% del ritmo esperado:
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0;font-size:13px;">
         ${laggingChannels.map(r => `<tr>

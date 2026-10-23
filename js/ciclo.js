@@ -2,9 +2,12 @@
    ciclo.js — ciclo de venta de Royal Baby: cada mes cierra el 26.
 
    El mes M va del 27 del mes anterior al 26 de M: Octubre es del
-   27 sep al 26 oct. Enero arranca el 1 de enero y Diciembre cierra
-   el 31, para que el año sea el año calendario. La hoja de ventas de
-   Drive ya viene armada así (la pestaña OCTUBRE empieza el 27/09).
+   27 sep al 26 oct. Diciembre también cierra el 26: del 27 al 31 de
+   diciembre es Enero del año siguiente. 2026 es el primer año con
+   ciclo: su Enero arranca el 1 de enero (así viene la hoja) y 2025,
+   que se compara contra él, se arma igual; su 27–31 dic no entra en
+   ningún mes. La hoja de ventas de Drive ya viene armada así (la
+   pestaña OCTUBRE empieza el 27/09).
 
    Todas las fechas son ISO (YYYY-MM-DD) y se calculan en UTC para
    no depender de la zona del navegador. «Hoy» es hoy en Lima.
@@ -17,6 +20,8 @@
   else root.Ciclo = api;
 })(typeof self !== 'undefined' ? self : this, function () {
   const CIERRE = 26;
+  // Primer año con ciclo: hasta este año, Enero arranca el 1 de enero (sin el 27–31 dic anterior).
+  const PRIMER_ANIO = 2026;
   const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
     'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   const ABR = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -31,16 +36,18 @@
 
   // Periodo de un mes: { year, mi, mes, inicio, fin, dias }.
   function periodo(year, mi) {
-    const inicio = mi === 0 ? iso(year, 0, 1) : iso(year, mi - 1, CIERRE + 1);
-    const fin    = mi === 11 ? iso(year, 11, 31) : iso(year, mi, CIERRE);
+    const inicio = mi === 0 && year <= PRIMER_ANIO ? iso(year, 0, 1) : iso(year, mi - 1, CIERRE + 1);
+    const fin    = iso(year, mi, CIERRE);
     return { year, mi, mes: MESES[mi], inicio, fin, dias: entre(inicio, fin) + 1 };
   }
   const periodoDe = (year, mes) => periodo(year, MESES.indexOf(mes));
 
-  // Mes del ciclo al que pertenece una fecha, con el día dentro del periodo (1 = el 27 del mes anterior).
+  // Mes del ciclo al que pertenece una fecha, con el día dentro del periodo (1 = el 27 del mes
+  // anterior). Del 27 al 31 de diciembre es Enero del año siguiente; hasta el primer año con ciclo
+  // esos días no entran en ningún mes y `dia` sale ≤ 0.
   function mesDe(fecha) {
     const y = +fecha.slice(0, 4), mi = +fecha.slice(5, 7) - 1, d = +fecha.slice(8, 10);
-    const p = periodo(y, d > CIERRE && mi < 11 ? mi + 1 : mi);
+    const p = d > CIERRE ? (mi === 11 ? periodo(y + 1, 0) : periodo(y, mi + 1)) : periodo(y, mi);
     return { ...p, dia: entre(p.inicio, fecha) + 1 };
   }
 
@@ -82,7 +89,7 @@
   const rangoMes = (year, mi) => { const p = periodo(year, mi); return rango(p.inicio, p.fin); };
 
   return {
-    CIERRE, MESES, ABR,
+    CIERRE, PRIMER_ANIO, MESES, ABR,
     periodo, periodoDe, mesDe, fechaDe, estado, diasHasta, semanas,
     sumarDias, entre, diaSemana, hoyLima, corta, rango, rangoMes,
   };

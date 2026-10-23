@@ -414,7 +414,7 @@
 
     for (const dr of dailyRows) {
       const p = Ciclo.mesDe(dr.fecha);
-      if (p.year !== year) continue;
+      if (p.year !== year || p.dia < 1) continue;
       conDias.add(p.mes);
       const week = weekly[p.mes].find(w => dr.fecha >= w.desde && dr.fecha <= w.hasta);
       cols.forEach(c => {

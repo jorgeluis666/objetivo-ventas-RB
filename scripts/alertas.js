@@ -98,6 +98,7 @@ const cicloLabel  = Ciclo.rangoMes(limaYear, monthIdx);
 const ultimoDia   = salesData.fuente2026?.ultimoDia || null;
 const diasVentas  = ultimoDia ? Ciclo.diasHasta(limaYear, monthIdx, ultimoDia) : dayOfMonth;
 const corteLabel  = Ciclo.corta(Ciclo.fechaDe(limaYear, monthIdx, diasVentas));
+const cierreLabel = Ciclo.corta(Ciclo.periodo(limaYear, monthIdx).fin);
 
 // Fecha legible en español (Lima)
 const fechaLabel = lima.toLocaleDateString('es-PE', {
@@ -188,7 +189,7 @@ const topNeedChannels  = cur.byChannel
   .sort((a, b) => (b.meta - b.real) - (a.meta - a.real))
   .slice(0, 2);
 
-// ── Alerta de brecha a mitad de mes ─────────────────────────
+// ── Canales atrasados (desde la mitad del ciclo) ────────────
 // Solo aplica si ya pasó la mitad del mes
 const pastMidMonth = diasVentas >= Math.floor(curMonthDays / 2);
 const laggingChannels = pastMidMonth
@@ -218,7 +219,7 @@ if (achievedChannels.length > 0) {
   console.log(`\n🎯 Objetivo alcanzado: ${achievedChannels.map(r => r.ch).join(', ')}  |  Excedente: S/. ${fmt(totalSurplus)}`);
 }
 if (laggingChannels.length > 0) {
-  console.log(`\n⚠️  Brecha a mitad de mes (día ${diasVentas}/${curMonthDays}):`);
+  console.log(`\n⚠️  Canales atrasados al ${corteLabel} (día ${diasVentas}/${curMonthDays}):`);
   laggingChannels.forEach(r => {
     console.log(`     ${r.ch.padEnd(18)} lag: S/. ${fmt(Math.abs(r.lag))}`);
   });
@@ -396,8 +397,8 @@ const htmlEmail = `<!DOCTYPE html>
       ${topNeedChannels.length > 0 ? `<br>Ese excedente (${money(totalSurplus)}) podría reforzar las campañas de ${topNeedChannels.map(n => `<strong>${n.ch}</strong> (brecha ${money(n.meta - n.real)})`).join(' y ')}.` : ''}`) : ''}
 
     ${laggingChannels.length > 0 ? aviso(TONO.ambar,
-      `Brecha a mitad de mes · día ${diasVentas} de ${curMonthDays}`,
-      `Estos canales van por debajo del 80% del ritmo esperado:
+      `Canales atrasados · ventas al ${corteLabel} (día ${diasVentas} de ${curMonthDays} del ciclo ${cicloLabel})`,
+      `Estos canales van por debajo del 80% de lo esperado al ${corteLabel} (su meta repartida por día hasta esa fecha):
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0;font-size:13px;">
         ${laggingChannels.map(r => `<tr>
           <td style="padding:4px 0;font-weight:600;color:${C.text};">${r.ch}</td>
@@ -406,7 +407,7 @@ const htmlEmail = `<!DOCTYPE html>
           <td style="padding:4px 0;text-align:right;font-weight:700;color:${TONO.rojo.val};white-space:nowrap;">${money(Math.abs(r.lag))}</td>
         </tr>`).join('')}
       </table>
-      Para cerrar ${money(brechaTotal)} en ${diasRest} días hacen falta ${money(brechaTotal / Math.max(diasRest, 1))} por día adicionales en estos canales.`) : ''}
+      Para cerrar ${money(brechaTotal)} en los ${diasRest} días que quedan hasta el cierre del ${cierreLabel} hacen falta ${money(brechaTotal / Math.max(diasRest, 1))} por día adicionales en estos canales.`) : ''}
 
     ${closedMonths.length > 0 ? tarjeta(`
       ${etiqueta('Meses anteriores')}
@@ -453,7 +454,7 @@ if (PREVIEW) {
 const subjectDetalle = achievedChannels.length > 0
   ? ` · ${achievedChannels.map(r => r.ch).join(' y ')} en meta`
   : laggingChannels.length > 0
-    ? ' · brecha a mitad de mes'
+    ? ' · canales atrasados'
     : '';
 
 const subject = `${NIVEL_LABEL[NIVEL]} · ${curMonth} ${limaYear} · ${proyPct.toFixed(0)}% proyectado${subjectDetalle} · Lima Retail`;

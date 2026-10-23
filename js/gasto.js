@@ -70,6 +70,15 @@
   const safeUrl = url => (/^https:\/\//i.test(String(url || '')) ? String(url) : null);
   const normalize = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase().replace(/\s+/g, ' ');
   const pad = n => String(n).padStart(2, '0');
+  // Ciclo de venta (js/ciclo.js): cada mes va del 27 del anterior al 26. Los informes llegan por mes calendario
+  // y aquí se reagrupan por ciclo; la clave de un mes (YYYY-MM) es la de su ciclo y d, el día dentro de él.
+  const Ciclo = global.Ciclo;
+  const cicloKey = c => `${c.year}-${pad(c.mi + 1)}`;
+  const fechaCiclo = (m, d) => Ciclo.fechaDe(m.year, m.month - 1, d);
+  // Eje de los gráficos por día: el día del mes de cada fecha del ciclo (27, 28, … 1, 2, …)
+  const etiquetasCiclo = m => Array.from({ length: m.daysInMonth }, (_, i) => String(+fechaCiclo(m, i + 1).slice(8)));
+  const minIso = (a, b) => (a < b ? a : b);
+  const maxIso = (a, b) => (a > b ? a : b);
 
   const fechaCorta = iso => { const [, mm, dd] = iso.split('-'); return `${+dd} ${SHORT[+mm - 1].toLowerCase()}`; };
 
@@ -168,11 +177,14 @@
       </div>`;
   }
 
-  // Avisos del sync: los de la plataforma en ese mes, los de su carpeta y lo pendiente.
-  function renderAlerts(hostId, p, m) {
+  // Avisos del sync: los de la plataforma en los informes del periodo (raws, los meses de data/ads-2026.json que
+  // toca el ciclo), los de su carpeta y lo pendiente.
+  function renderAlerts(hostId, p, m, raws = []) {
     const label = PLATFORMS[p].label;
-    const monthPrefix = `${label} ${m.label}: `;
-    const own = (m.warnings || []).filter(w => w.startsWith(monthPrefix)).map(w => w.slice(monthPrefix.length));
+    const own = raws.flatMap(r => {
+      const monthPrefix = `${label} ${r.label}: `;
+      return (r.warnings || []).filter(w => w.startsWith(monthPrefix)).map(w => (raws.length > 1 ? `${r.label}: ` : '') + w.slice(monthPrefix.length));
+    });
     const inMonths = new Set((state.data.months || []).flatMap(x => x.warnings || []));
     const folder = (state.data.warnings || []).filter(w => !inMonths.has(w) && w.startsWith(`${label}: `)).map(w => w.slice(label.length + 2));
     const pending = (state.data.pending || []).filter(w => w.startsWith(`${label}: `)).map(w => w.slice(label.length + 2));
@@ -290,12 +302,11 @@
     return RESULT_LABELS.find(r => r.match.test(text))?.label || String(type).trim();
   }
 
-  function normalizeMetaMonth(m) {
+  // Filas de un export de Meta (un mes calendario), con su fecha (day) y el índice del export (raw).
+  function metaRows(m, raw) {
     const t = m.meta.table;
     const at = Object.fromEntries(t.columns.map((name, i) => [name, i]));
-    const [year, month] = m.id.split('-').map(Number);
-    const daysInMonth = new Date(year, month, 0).getDate();
-    const rows = t.rows.map(r => {
+    return t.rows.map(r => {
       const campaign = t.campaigns[r[at.campaign]] || '';
       const ad = t.ads[r[at.ad]] || {};
       const group = groupFor(campaign);
@@ -318,21 +329,41 @@
         group: group.key,
         groupLabel: group.label,
         groupColor: group.color,
+        raw,
       };
     });
-    const days = rows.filter(hasActivity).map(r => r.d);
-    // El export llega hasta coverage.end aunque el último día no tenga gasto.
-    const end = m.meta.coverage?.end?.startsWith(m.id) ? +m.meta.coverage.end.slice(8) : null;
-    const firstDay = days.length ? Math.min(...days) : null;
-    const lastDay = end || (days.length ? Math.max(...days) : null);
-    return {
-      key: m.id, label: m.label, name: MONTHS[month - 1], shortName: SHORT[month - 1], year, month, daysInMonth,
-      rows, firstDay, lastDay, hasData: days.length > 0, complete: lastDay === daysInMonth, raw: m,
-    };
   }
 
+  // Los exports de Meta van por mes calendario y traen cada día: sus filas se reagrupan por el ciclo de venta.
+  // parts: cada export que toca el ciclo con la parte de su inversión que cae en él (f); el embudo y el público
+  // llegan con un total por mes y se reparten con ella.
   function buildMetaMonths() {
-    meta.months = (state.data?.months || []).filter(m => m.meta?.table).map(normalizeMetaMonth);
+    const raws = (state.data?.months || []).filter(m => m.meta?.table);
+    // El export llega hasta coverage.end aunque el último día no tenga gasto.
+    const covEnd = raws.map(m => m.meta.coverage?.end).filter(Boolean).sort().pop() || null;
+    const rawSpend = raws.map(() => 0);
+    const byKey = new Map();
+    raws.forEach((m, i) => metaRows(m, i).forEach(r => {
+      rawSpend[i] += r.spend;
+      const c = Ciclo.mesDe(r.day);
+      if (c.dia < 1) return;
+      r.d = c.dia;
+      const key = cicloKey(c);
+      if (!byKey.has(key)) byKey.set(key, { c, rows: [] });
+      byKey.get(key).rows.push(r);
+    }));
+    meta.months = [...byKey.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1)).map(([key, { c, rows }]) => {
+      const days = rows.filter(hasActivity).map(r => r.d);
+      const firstDay = days.length ? Math.min(...days) : null;
+      const lastDay = covEnd && covEnd >= c.inicio ? Ciclo.diasHasta(c.year, c.mi, covEnd) : (days.length ? Math.max(...days) : null);
+      const spendIn = raws.map(() => 0);
+      rows.forEach(r => { spendIn[r.raw] += r.spend; });
+      const parts = raws.map((raw, i) => ({ raw, f: rawSpend[i] ? spendIn[i] / rawSpend[i] : 0, spend: spendIn[i] })).filter(p => p.f > 0);
+      return {
+        key, label: `${c.mes} ${c.year}`, name: c.mes, shortName: SHORT[c.mi], year: c.year, month: c.mi + 1, daysInMonth: c.dias,
+        rows, firstDay, lastDay, hasData: days.length > 0, complete: lastDay === c.dias, parts,
+      };
+    });
     const withData = meta.months.filter(m => m.hasData);
     meta.latestKey = withData.length ? withData[withData.length - 1].key : null;
     // Un mes anterior al último con datos ya terminó aunque su export no llegue al último día.
@@ -344,7 +375,8 @@
     const date = new Date(m.year, m.month - 2, 1);
     return monthByKey(`${date.getFullYear()}-${pad(date.getMonth() + 1)}`);
   }
-  const rangeLabel = (m, from, to) => (from === to ? `${from} ${m.name}` : `${from}-${to} ${m.name}`);
+  // Tramo de días del ciclo con sus fechas: «27 sep – 13 oct».
+  const rangeLabel = (m, from, to) => Ciclo.rango(fechaCiclo(m, from), fechaCiclo(m, to));
   const rowsBetween = (m, from, to) => m.rows.filter(r => r.d >= from && r.d <= to);
 
   // ── Métricas (se recalculan sobre las sumas; nunca se promedian) ──
@@ -468,7 +500,7 @@
       annual: true, month: null, months, year, compare: null,
       closed: last.month === 12 && last.complete,
       rows: months.flatMap(m => m.rows),
-      label: `${first.firstDay} ${first.name} - ${last.lastDay} ${last.name}`,
+      label: `${Ciclo.corta(fechaCiclo(first, first.firstDay))} - ${Ciclo.corta(fechaCiclo(last, last.lastDay))}`,
     };
   }
 
@@ -687,7 +719,6 @@
     const compare = Boolean(period.compare);
     const commerce = group.purchases > 0;
     const manySets = new Set(ads.flatMap(a => a.adSets)).size > 1;
-    const monthShort = period.month?.shortName.toLowerCase();
     // Con compras, Ventas y ROAS van junto al anuncio; el nombre enlaza a la vista previa en Meta.
     const head = [['Anuncio']].concat(commerce ? [['Ventas', true], ['ROAS', true]] : [], manySets ? [['Conjunto']] : [], [['Resultados', true]])
       .concat(compare ? [[`Resultados ${period.compare.label}`, true], ['Variación', true]] : [])
@@ -695,8 +726,7 @@
     const body = ads.map((a, k) => {
       const before = previous.get(a.key);
       let days = '—';
-      if (period.annual && a.firstDate) days = a.firstDate === a.lastDate ? fechaCorta(a.firstDate) : `${fechaCorta(a.firstDate)} - ${fechaCorta(a.lastDate)}`;
-      else if (!period.annual && a.firstDay) days = a.firstDay === a.lastDay ? `${a.firstDay} ${monthShort}` : `${a.firstDay}-${a.lastDay} ${monthShort}`;
+      if (a.firstDate) days = Ciclo.rango(a.firstDate, a.lastDate);
       const share = group.spend ? a.spend / group.spend * 100 : 0;
       return `
         <tr>
@@ -806,7 +836,7 @@
     }
     const values = metricDaily(m, metric);
     const series = {
-      labels: Array.from({ length: m.daysInMonth }, (_, i) => `${i + 1}`),
+      labels: etiquetasCiclo(m),
       datasets: [{ label: compare ? m.name : metric.label, unit: metric.unit, data: values, borderColor: metric.color, backgroundColor: `${metric.color}14`, fill: false, borderWidth: 2.5, pointRadius: dotRadius(values, 2), pointHoverRadius: 4, pointBackgroundColor: metric.color, tension: 0.2, spanGaps: false, valueLabels: true }],
       legend: [`<span><i class="gp-legend-line" style="background:${metric.color}"></i><b>${esc(m.name)} ${m.year}</b></span>`],
     };
@@ -815,7 +845,7 @@
       const prevValues = metricDaily(prev, metric).slice(0, m.daysInMonth);
       if (prevValues.some(v => v)) {
         series.datasets.push({ label: prev.name, unit: metric.unit, data: prevValues, borderColor: PREVIOUS_COLOR, borderDash: [6, 5], fill: false, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.2 });
-        series.legend.push(`<span><i class="gp-legend-line dashed" style="color:${PREVIOUS_COLOR}"></i><b>${esc(prev.name)} (mismo día del mes)</b></span>`);
+        series.legend.push(`<span><i class="gp-legend-line dashed" style="color:${PREVIOUS_COLOR}"></i><b>${esc(prev.name)} (mismo día del ciclo)</b></span>`);
       }
     }
     return series;
@@ -1096,14 +1126,11 @@
       body.innerHTML = '<tr><td class="gp-table-empty" colspan="16">No hay anuncios de este grupo en el periodo.</td></tr>';
       return;
     }
-    const monthShort = period.month?.shortName.toLowerCase();
-    const dateShort = iso => fechaCorta(iso);
     // Ventas y ROAS van junto al anuncio; el nombre enlaza a la vista previa en Meta.
     body.innerHTML = rows.map(a => {
       const before = previous.get(a.key);
       let days = '—';
-      if (period.annual && a.firstDate) days = a.firstDate === a.lastDate ? dateShort(a.firstDate) : `${dateShort(a.firstDate)} - ${dateShort(a.lastDate)}`;
-      else if (!period.annual && a.firstDay) days = a.firstDay === a.lastDay ? `${a.firstDay} ${monthShort}` : `${a.firstDay}-${a.lastDay} ${monthShort}`;
+      if (a.firstDate) days = Ciclo.rango(a.firstDate, a.lastDate);
       return `
         <tr style="--gp-row-c:${a.groupColor}">
           <td class="gp-type-col"><span class="gp-group"><i class="gp-dot-c"></i>${esc(a.groupLabel)}</span></td>
@@ -1178,27 +1205,46 @@
   }
   const closeFullscreens = () => Object.keys(AD_TABLES).forEach(p => { if (adTables[p].fullscreen) toggleFullscreen(p, false); });
 
-  // ── Embudo y público (del archivo de cada mes: un total por mes) ──
-  // Suma de los totales de los meses del periodo; un paso en null en todos los meses = el export no trae la columna.
-  function funnelTotals(months) {
-    const fields = ['impressions', 'linkClicks', 'landingViews', 'addToCart', 'checkouts', 'purchases', 'conversations', 'spend'];
-    return Object.fromEntries(fields.map(f => {
-      const values = months.map(m => m.meta.totals[f]).filter(v => v != null);
-      return [f, values.length ? values.reduce((s, v) => s + v, 0) : null];
-    }));
+  // ── Embudo y público ──
+  // Impresiones, clics, compras, conversaciones e inversión salen de las filas del periodo (por día, exactas).
+  // Visitas a la web, agregados al carrito y pagos iniciados llegan solo con un total por export (mes calendario):
+  // cada export entra con la parte de su inversión que cae en el periodo (parts: { raw, f }). Un paso en null en
+  // todos los exports = el export no trae la columna.
+  function funnelTotals(rows, parts) {
+    const t = summarize(rows);
+    const prorated = f => {
+      const values = parts.map(p => (p.raw.meta.totals[f] == null ? null : p.raw.meta.totals[f] * p.f)).filter(v => v != null);
+      return values.length ? values.reduce((s, v) => s + v, 0) : null;
+    };
+    return {
+      impressions: t.impressions, linkClicks: t.clicks, purchases: t.purchases, conversations: t.conversations, spend: t.spend,
+      landingViews: prorated('landingViews'), addToCart: prorated('addToCart'), checkouts: prorated('checkouts'),
+    };
   }
 
-  function audienceOf(months) {
+  function audienceOf(parts) {
     const merge = (field) => {
       const byKey = new Map();
-      months.forEach(m => (m.meta.audience?.[field] || []).forEach(item => {
+      parts.forEach(({ raw, f }) => (raw.meta.audience?.[field] || []).forEach(item => {
         const prev = byKey.get(item[field]) || { [field]: item[field], spend: 0, purchases: 0, conversations: 0 };
-        prev.spend += item.spend || 0; prev.purchases += item.purchases || 0; prev.conversations += item.conversations || 0;
+        prev.spend += (item.spend || 0) * f; prev.purchases += (item.purchases || 0) * f; prev.conversations += (item.conversations || 0) * f;
         byKey.set(item[field], prev);
       }));
       return [...byKey.values()];
     };
     return { age: merge('age'), gender: merge('gender') };
+  }
+
+  // Exports que toca el periodo, con su parte (en Anual, cada export una vez y entero si cae completo en el año).
+  function partsOf(period) {
+    if (!period.annual) return period.month.parts;
+    const byRaw = new Map();
+    period.months.flatMap(m => m.parts).forEach(p => {
+      const prev = byRaw.get(p.raw) || { raw: p.raw, f: 0, spend: 0 };
+      prev.f += p.f; prev.spend += p.spend;
+      byRaw.set(p.raw, prev);
+    });
+    return [...byRaw.values()];
   }
 
   // Embudo: cada barra = conversión respecto al paso anterior registrado.
@@ -1267,13 +1313,16 @@
   }
 
   function renderFunnelAudience(period) {
-    const months = period.annual ? period.months.map(m => m.raw) : [period.month.raw];
-    const t = funnelTotals(months);
-    const what = period.annual ? `Acumulado ${period.year}` : esc(period.month.raw.meta.source?.name || period.month.label);
-    document.getElementById('gp-meta-funnel-sub').innerHTML = `De la impresión a la compra · % respecto al paso anterior · ${what}`;
-    document.getElementById('gp-meta-audience-sub').innerHTML = `Compras e inversión por edad y sexo · ${what}`;
+    const parts = partsOf(period);
+    const t = funnelTotals(period.rows, parts);
+    const repartido = parts.some(p => p.f < 0.999);
+    const archivos = parts.map(p => esc(p.raw.meta.source?.name || p.raw.label)).join(' + ');
+    const what = period.annual ? `Acumulado ${period.year}` : archivos;
+    const nota = repartido ? ' · los totales por mes de cada export se reparten según su inversión en el ciclo' : '';
+    document.getElementById('gp-meta-funnel-sub').innerHTML = `De la impresión a la compra · % respecto al paso anterior · ${what}${repartido ? ' · visitas, carrito y pagos repartidos según la inversión de cada export en el ciclo' : ''}`;
+    document.getElementById('gp-meta-audience-sub').innerHTML = `Compras e inversión por edad y sexo · ${what}${nota}`;
     renderFunnel(t);
-    renderAudience(audienceOf(months), t.spend);
+    renderAudience(audienceOf(parts), t.spend);
   }
 
   // ── Render ──
@@ -1288,12 +1337,13 @@
     // Los grupos del periodo se calculan una vez para la distribución y los cuadros (con sus anuncios).
     const groups = groupsOf(period.rows);
     renderMetaTabs(period);
-    renderAlerts('gp-meta-alerts', 'meta', period.annual ? { label: String(period.year), warnings: [] } : period.month.raw);
+    renderAlerts('gp-meta-alerts', 'meta', { label: period.annual ? String(period.year) : period.month.label }, period.annual ? [] : period.month.parts.map(p => p.raw));
     renderPeriod(period);
     renderKpis(period);
     renderDistribution(period);
     renderCampaigns(period, groups);
     renderFunnelAudience(period);
+    renderPresupuesto(period.annual ? null : period.month.key);
   }
 
   // Eventos por delegación en #gp-meta-body: sobreviven a que el estado vacío reemplace su contenido.
@@ -1441,13 +1491,15 @@
   const gScale = (t, factor) => Object.fromEntries(G_SUMS.map(f => [f, t[f] == null ? null : t[f] * factor]));
   const gActive = x => (x.cost || 0) > 0 || (x.impressions || 0) > 0 || (x.clicks || 0) > 0;
 
+  // Un informe de Google Ads (un mes calendario): sus totales, campañas y tipos, el informe por día si lo trae, y
+  // los días que cubre (start-end).
   function normalizeGoogleMonth(m) {
     const g = m.google;
     const [year, month] = m.id.split('-').map(Number);
-    const daysInMonth = new Date(year, month, 0).getDate();
+    const finDeMes = new Date(Date.UTC(year, month, 0)).toISOString().slice(0, 10);
     const cov = g.coverage?.start?.startsWith(m.id) ? g.coverage : null;
-    const firstDay = cov ? +cov.start.slice(8) : 1;
-    const lastDay = cov && cov.end.startsWith(m.id) ? +cov.end.slice(8) : daysInMonth;
+    const start = cov ? cov.start : `${m.id}-01`;
+    const end = cov && cov.end.startsWith(m.id) ? cov.end : finDeMes;
     const typeOf = new Map();
     const campaigns = (g.campaigns || []).map(c => {
       const group = typeGroup(c.type);
@@ -1475,15 +1527,66 @@
     }
     const dcov = g.detail?.coverage;
     return {
-      key: m.id, label: m.label, name: MONTHS[month - 1], shortName: SHORT[month - 1], year, month, daysInMonth,
-      firstDay, lastDay, complete: cov ? cov.complete : true, totals, campaigns, byType, detail,
-      detailFirst: dcov ? +dcov.start.slice(8) : null, detailLast: dcov ? +dcov.end.slice(8) : null,
-      hasData: gActive(totals), raw: m,
+      start, end, totals, campaigns, byType, detail, detailStart: dcov?.start || null, detailEnd: dcov?.end || null,
+      conversionsByCategory: g.conversionsByCategory || null, campaignsComplete: g.campaignsComplete, raw: m,
+    };
+  }
+
+  // Un mes del ciclo de venta con los informes que toca. Google llega con un total por mes, así que cada informe
+  // entra con la parte de sus días que cae en el ciclo (f): totales, campañas y tipos son un estimado. El informe
+  // por día y palabra clave sí se reagrupa por fecha.
+  function googleCycle(c, reports) {
+    const parts = reports.map(r => {
+      const desde = maxIso(r.start, c.inicio);
+      const hasta = minIso(r.end, c.fin);
+      return desde > hasta ? null : { r, desde, hasta, f: (Ciclo.entre(desde, hasta) + 1) / (Ciclo.entre(r.start, r.end) + 1) };
+    }).filter(Boolean);
+    if (!parts.length) return null;
+    const scaled = (x, f) => ({ ...x, ...gScale(x, f) });
+    const sumBy = (items, keyOf) => {
+      const by = new Map();
+      items.forEach(x => {
+        const key = keyOf(x);
+        if (!by.has(key)) by.set(key, { first: x, items: [] });
+        by.get(key).items.push(x);
+      });
+      return [...by.values()].map(({ first, items }) => ({ ...items[items.length - 1], ...first, ...gSum(items), status: items[items.length - 1].status }));
+    };
+    const campaigns = sumBy(parts.flatMap(p => p.r.campaigns.map(x => scaled(x, p.f))), x => x.name);
+    const byType = sumBy(parts.flatMap(p => p.r.byType.map(x => scaled(x, p.f))), x => x.group.key);
+    const totals = gSum(parts.map(p => gScale(p.r.totals, p.f)));
+    const conversionsByCategory = {};
+    parts.forEach(p => Object.entries(p.r.conversionsByCategory || {}).forEach(([k, v]) => { conversionsByCategory[k] = (conversionsByCategory[k] || 0) + (v || 0) * p.f; }));
+    const conDetalle = parts.filter(p => p.r.detail);
+    const detail = conDetalle.length
+      ? conDetalle.flatMap(p => p.r.detail.filter(r => r.day >= c.inicio && r.day <= c.fin).map(r => ({ ...r, d: Ciclo.mesDe(r.day).dia })))
+      : null;
+    const dia = fecha => Ciclo.entre(c.inicio, fecha) + 1;
+    const desde = parts.map(p => p.desde).reduce(minIso);
+    const hasta = parts.map(p => p.hasta).reduce(maxIso);
+    const dStart = conDetalle.length ? maxIso(c.inicio, conDetalle.map(p => p.r.detailStart).reduce(minIso)) : null;
+    const dEnd = conDetalle.length ? minIso(c.fin, conDetalle.map(p => p.r.detailEnd).reduce(maxIso)) : null;
+    const firstDay = dia(desde);
+    const lastDay = dia(hasta);
+    return {
+      key: cicloKey(c), label: `${c.mes} ${c.year}`, name: c.mes, shortName: SHORT[c.mi], year: c.year, month: c.mi + 1, daysInMonth: c.dias,
+      firstDay, lastDay, complete: firstDay === 1 && lastDay === c.dias, totals, campaigns, byType, detail,
+      detailFirst: dStart ? dia(dStart) : null, detailLast: dEnd ? dia(dEnd) : null,
+      conversionsByCategory, campaignsComplete: parts.every(p => p.r.campaignsComplete !== false),
+      estimated: parts.some(p => p.f < 0.999), raws: parts.map(p => p.r.raw),
+      hasData: gActive(totals),
     };
   }
 
   function buildGoogleMonths() {
-    google.months = (state.data?.months || []).filter(m => m.google).map(normalizeGoogleMonth);
+    const reports = (state.data?.months || []).filter(m => m.google).map(normalizeGoogleMonth);
+    // Ciclos que tocan los informes: el del primer y el del último día de cada uno
+    const ciclos = new Map();
+    reports.forEach(r => [r.start, r.end].forEach(f => {
+      const c = Ciclo.mesDe(f);
+      if (c.dia >= 1) ciclos.set(cicloKey(c), c);
+    }));
+    google.months = [...ciclos.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1)).map(([, c]) => googleCycle(c, reports)).filter(Boolean);
     const withData = google.months.filter(m => m.hasData);
     google.latestKey = withData.length ? withData[withData.length - 1].key : null;
     google.months.forEach(m => { m.past = Boolean(google.latestKey && m.key < google.latestKey); });
@@ -1583,7 +1686,7 @@
     return {
       annual: true, month: null, months, year, compare: null, detailCompare: null,
       closed: last.month === 12 && last.complete,
-      label: `${first.firstDay} ${first.name} - ${last.lastDay} ${last.name}`,
+      label: `${Ciclo.corta(fechaCiclo(first, first.firstDay))} - ${Ciclo.corta(fechaCiclo(last, last.lastDay))}`,
       detail: withDetail.length ? withDetail.flatMap(m => m.detail) : null,
       detailLabel: withDetail.length ? withDetail.map(m => m.shortName).join(', ') : null,
     };
@@ -1677,9 +1780,11 @@
     }
     title.textContent = `Periodo: ${period.label} ${period.year}${period.closed ? '' : ' (mes en curso)'}`;
     const c = period.compare;
-    sub.textContent = !c ? 'Sin mes anterior para comparar'
+    const estimado = period.month.estimated
+      ? ` · Ciclo ${Ciclo.rangoMes(period.year, period.month.month - 1)}: Google llega con un total por mes calendario y se reparte por día (estimado)` : '';
+    sub.textContent = (!c ? 'Sin mes anterior para comparar'
       : c.factor < 1 && !Object.keys(c.tramo).length ? `Comparación vs ${c.label} (Google llega con un total por mes)`
-      : `Comparación vs ${c.label}`;
+      : `Comparación vs ${c.label}`) + estimado;
   }
 
   function renderGoogleKpis(period) {
@@ -1707,7 +1812,7 @@
     }).join('');
     // Las conversiones de Google suman Compra y Contacto (clics a WhatsApp): se explican cuando difieren de las compras.
     const categories = {};
-    period.months.forEach(m => Object.entries(m.raw.google.conversionsByCategory || {}).forEach(([k, v]) => { categories[k] = (categories[k] || 0) + (v || 0); }));
+    period.months.forEach(m => Object.entries(m.conversionsByCategory || {}).forEach(([k, v]) => { categories[k] = (categories[k] || 0) + (v || 0); }));
     const cats = Object.entries(categories).filter(([, v]) => v).sort((a, b) => b[1] - a[1]);
     const note = document.getElementById('gp-g-kpis-note');
     const differs = current.conversions != null && (current.conversions !== current.purchases || cats.some(([k]) => !/compra/i.test(k)));
@@ -1721,7 +1826,7 @@
   function renderGoogleDistribution(period) {
     const rows = gCampaigns(period);
     const total = gTotals(period);
-    const incomplete = period.months.filter(m => m.raw.google.campaignsComplete === false);
+    const incomplete = period.months.filter(m => m.campaignsComplete === false);
     document.getElementById('gp-g-dist-sub').textContent = `${period.label} | ${rows.length} ${rows.length === 1 ? 'campaña' : 'campañas'} con costo, impresiones o clics.`;
     const cell = (v, f) => (v == null ? '<span class="gp-no-data">—</span>' : f(v));
     document.getElementById('gp-g-dist-body').innerHTML = rows.map(c => `
@@ -1950,7 +2055,7 @@
     const label = metric.dailyLabel || metric.label;
     const values = gMetricDaily(m, metric);
     const series = {
-      labels: Array.from({ length: m.daysInMonth }, (_, i) => `${i + 1}`),
+      labels: etiquetasCiclo(m),
       datasets: [{ label: compare ? m.name : label, unit: metric.unit, data: values, borderColor: metric.color, backgroundColor: `${metric.color}14`, fill: false, borderWidth: 2.5, pointRadius: dotRadius(values, 2), pointHoverRadius: 4, pointBackgroundColor: metric.color, tension: 0.2, spanGaps: false, valueLabels: true }],
       legend: [`<span><i class="gp-legend-line" style="background:${metric.color}"></i><b>${esc(m.name)} ${m.year} · informe por día (${esc(rangeLabel(m, m.detailFirst, m.detailLast))})</b></span>`],
     };
@@ -1959,7 +2064,7 @@
       const prevValues = gMetricDaily(prev, metric).slice(0, m.daysInMonth);
       if (prevValues.some(v => v)) {
         series.datasets.push({ label: prev.name, unit: metric.unit, data: prevValues, borderColor: PREVIOUS_COLOR, borderDash: [6, 5], fill: false, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.2 });
-        series.legend.push(`<span><i class="gp-legend-line dashed" style="color:${PREVIOUS_COLOR}"></i><b>${esc(prev.name)} (mismo día del mes)</b></span>`);
+        series.legend.push(`<span><i class="gp-legend-line dashed" style="color:${PREVIOUS_COLOR}"></i><b>${esc(prev.name)} (mismo día del ciclo)</b></span>`);
       }
     } else if (compare) {
       series.legend.push(`<span>${prev ? `${esc(prev.name)} no tiene informe por día para comparar.` : ''}</span>`);
@@ -2131,12 +2236,13 @@
       year, has: key => Boolean(gMonthByKey(key)?.hasData), latestKey: google.latestKey,
       selected: period.month?.key, annual: Boolean(period.annual), yearOk: Boolean(gYearPeriod(year)), what: 'informe de Google Ads',
     });
-    renderAlerts('gp-google-alerts', 'google', period.annual ? { label: String(period.year), warnings: [] } : period.month.raw);
+    renderAlerts('gp-google-alerts', 'google', { label: period.annual ? String(period.year) : period.month.label }, period.annual ? [] : period.month.raws);
     renderGooglePeriod(period);
     renderGoogleKpis(period);
     renderGoogleDistribution(period);
     renderGoogleCampaigns(period, groups);
     renderGoogleTerms(period);
+    renderPresupuesto(period.annual ? null : period.month.key);
   }
 
   function wireGoogle() {
@@ -2640,11 +2746,74 @@
         state.loaded = true;
         buildMetaMonths();
         buildGoogleMonths();
-        const months = data?.months || [];
-        state.month = months.length ? months[months.length - 1].id : null;
+        // Abre en el último ciclo con datos (los informes van por mes calendario: el último puede ser de otro ciclo)
+        state.month = [meta.latestKey, google.latestKey].filter(Boolean).sort().pop() || null;
       });
     }
     return ready;
+  }
+
+  // ── Presupuesto del mes comercial ──
+  // Monto mensual por ciclo de venta, desde el ciclo de octubre de 2026. Cada plataforma tiene el suyo y
+  // Oportunidades es una bolsa común: la usa lo que una plataforma invierta por encima de su monto.
+  const PRESUPUESTO = { desde: '2026-10', meta: 1500, google: 1500, oportunidades: 1000 };
+
+  // key: el mes del periodo que se ve (null en Anual, que no lleva presupuesto).
+  function renderPresupuesto(key) {
+    const host = document.getElementById('gp-presupuesto');
+    if (!host) return;
+    if (!key || key < PRESUPUESTO.desde) { host.hidden = true; return; }
+    const m = monthByKey(key);
+    const g = gMonthByKey(key);
+    const [year, month] = key.split('-').map(Number);
+    const p = Ciclo.periodo(year, month - 1);
+    // Invertido en el ciclo y, si el informe aún no llega al cierre, al mismo ritmo hasta el 26
+    const plat = (spend, lastDay) => ({
+      spend, lastDay,
+      proj: lastDay && lastDay < p.dias ? spend / lastDay * p.dias : spend,
+    });
+    const meta = plat(m?.hasData ? summarize(m.rows).spend : 0, m?.lastDay || 0);
+    const goo = plat(g?.hasData ? g.totals.cost || 0 : 0, g?.lastDay || 0);
+    const exceso = x => Math.max(0, x);
+    const oport = exceso(meta.spend - PRESUPUESTO.meta) + exceso(goo.spend - PRESUPUESTO.google);
+    const oportProj = exceso(meta.proj - PRESUPUESTO.meta) + exceso(goo.proj - PRESUPUESTO.google);
+    const total = PRESUPUESTO.meta + PRESUPUESTO.google + PRESUPUESTO.oportunidades;
+    const cerrado = Ciclo.estado(year, month - 1) === 'past';
+    const bar = (value, budget) => {
+      const r = budget ? value / budget : 0;
+      return `<div class="kpi-bar" title="${pct(r * 100, 0)} del presupuesto"><i class="${r > 1 ? 'red' : r >= 0.9 ? 'amber' : 'green'}" style="width:${Math.min(r * 100, 100).toFixed(1)}%"></i></div>`;
+    };
+    const alDia = x => (x.lastDay ? fechaCorta(Ciclo.fechaDe(year, month - 1, x.lastDay)) : null);
+    const pill = (label, x, budget, nota) => `
+      <div class="kpi-pill">
+        <span>${label}</span>
+        <strong>${money(x.spend)} <small class="muted">de ${money(budget)}</small></strong>
+        ${bar(x.spend, budget)}
+        <small>${!x.lastDay ? 'Sin informe del ciclo' : x.lastDay < p.dias && !cerrado
+          ? `al ${alDia(x)} · al ritmo cierra en ${money(x.proj)}` : 'ciclo completo'}${nota ? ` · ${nota}` : ''}</small>
+      </div>`;
+    host.hidden = false;
+    host.innerHTML = `
+      <div class="gp-period-head">
+        <div class="panel-title">Presupuesto de ${esc(p.mes.toLowerCase())} · ciclo ${Ciclo.rangoMes(year, month - 1)}</div>
+        <div class="panel-sub">${money(total)} al mes: ${money(PRESUPUESTO.meta)} Meta Ads, ${money(PRESUPUESTO.google)} Google Ads y ${money(PRESUPUESTO.oportunidades)} para oportunidades, que cubre lo que una plataforma invierta por encima de su monto.</div>
+      </div>
+      <div class="kpi-strip gp-kpis" role="group" aria-label="Presupuesto del mes">
+        ${pill('Meta Ads', meta, PRESUPUESTO.meta)}
+        ${pill('Google Ads', goo, PRESUPUESTO.google, g?.estimated ? 'estimado: Google llega por mes calendario' : '')}
+        <div class="kpi-pill">
+          <span>Oportunidades</span>
+          <strong>${money(oport)} <small class="muted">de ${money(PRESUPUESTO.oportunidades)}</small></strong>
+          ${bar(oport, PRESUPUESTO.oportunidades)}
+          <small>${oport ? 'Lo invertido por encima del monto de cada plataforma' : 'Sin uso: ninguna plataforma pasó su monto'}${!cerrado && oportProj > oport ? ` · al ritmo usaría ${money(oportProj)}` : ''}</small>
+        </div>
+        <div class="kpi-pill">
+          <span>Total invertido</span>
+          <strong>${money(meta.spend + goo.spend)} <small class="muted">de ${money(total)}</small></strong>
+          ${bar(meta.spend + goo.spend, total)}
+          <small>${cerrado ? `Disponible ${money(total - meta.spend - goo.spend)}` : `Al ritmo cierra en ${money(meta.proj + goo.proj)} · disponible ${money(total - meta.spend - goo.spend)}`}</small>
+        </div>
+      </div>`;
   }
 
   const RENDER = { meta: renderMeta, google: renderGoogle };

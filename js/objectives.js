@@ -515,7 +515,7 @@
       ? stats.filter(s => s.pct < 100 && s.real < s.expectedReal * 0.80) : [];
     lagging.forEach(b => items.push({
       tone: 'red',
-      titulo: `Brecha a mitad de mes · ${nombre(b)}`,
+      titulo: `Atrasado frente a lo esperado al ${corteLabel(m)} · ${nombre(b)}`,
       lineas: [`S/. ${fmt(b.real)} vendidos · esperado al ${corteLabel(m)} S/. ${fmt(b.expectedReal)} · brecha S/. ${fmt(b.expectedReal - b.real)}`],
       badge: { valor: `${Math.round(b.real / b.expectedReal * 100)}%`, etiqueta: 'del ritmo' },
     }));

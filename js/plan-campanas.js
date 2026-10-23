@@ -118,8 +118,6 @@
     const mm = String(monthIdx(p.mes) + 1).padStart(2, '0');
     return { desde: `${y}-${mm}-${String(p.desde).padStart(2, '0')}`, hasta: `${y}-${mm}-${String(p.hasta).padStart(2, '0')}` };
   };
-  // ¿La ventana del pico cae (en parte) en el ciclo de m?
-  const picoEnCiclo = (p, m) => { const v = ventanaIso(p); return v.hasta >= periodo(m).inicio && v.desde <= periodo(m).fin; };
   // Último día con ventas en el histórico (sin el dato, ayer en Lima)
   const ventasHasta = () => _ventas?.ultimoDia || ayerLima();
   // Mes cerrado: el histórico ya trae la venta del mes completa
@@ -218,10 +216,12 @@
     });
   }
 
-  // Línea del plan de una campaña de Meta en el ciclo m: la de un pico que cae en el ciclo si su
-  // nombre coincide; si no, por su tipo de resultado, como las fuentes de Proyecciones.
+  // Línea del plan de una campaña de Meta en el ciclo m: la del pico del mes si su nombre coincide;
+  // si no, por su tipo de resultado, como las fuentes de Proyecciones. Se respeta el cierre del 26:
+  // los días de un pico que caen en el ciclo siguiente (Black Days, 27–28 nov) cuentan ahí como su
+  // tipo de campaña, no como el pico de ese mes; ese tramo se analiza aparte.
   function lineaMeta(c, m) {
-    if (ESTRATEGIA.picos.some(p => picoEnCiclo(p, m) && p.campaña?.test(c.campaign || ''))) return 'pico';
+    if (ESTRATEGIA.picos.some(p => p.mes === m && p.campaña?.test(c.campaign || ''))) return 'pico';
     if (c.resultType === 'Compras en el sitio web') return 'web';
     if (c.resultType === 'Conversaciones con mensajes iniciadas') return 'wa';
     if (c.objective === 'Reconocimiento') return 'branding';
@@ -511,7 +511,7 @@
     const dia = !v ? 'aún no empieza' : v.hasta === lastIso(p.mes) ? 'mes cerrado' : `día ${v.dias} de ${daysIn(p.mes)}`;
     // El pico cuyo tramo cruza el cierre del 26: sus últimos días caen en el ciclo siguiente
     const cruza = p.pico && ventanaIso(p.pico).hasta > lastIso(p.mes)
-      ? ` · la ventana cruza el cierre del ${fecha(lastIso(p.mes))}: del ${fecha(Ciclo.sumarDias(lastIso(p.mes), 1))} al ${fecha(ventanaIso(p.pico).hasta)} cae en el ciclo de ${months[monthIdx(p.mes) + 1]?.toLowerCase() || 'enero'}` : '';
+      ? ` · la ventana cruza el cierre del ${fecha(lastIso(p.mes))}: del ${fecha(Ciclo.sumarDias(lastIso(p.mes), 1))} al ${fecha(ventanaIso(p.pico).hasta)} cae en el ciclo de ${months[monthIdx(p.mes) + 1]?.toLowerCase() || 'enero'} y se analiza aparte` : '';
     // Un solo elemento: dentro del flex de .rep-period-meta, el texto corta como texto corrido
     el.innerHTML = `<span>${p.mes} ${YEAR} · ciclo ${Ciclo.rangoMes(YEAR, monthIdx(p.mes))} · ${dia} · ${rol}${cruza}</span>`;
   }

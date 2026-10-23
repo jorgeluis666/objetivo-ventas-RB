@@ -2754,9 +2754,9 @@
   }
 
   // ── Presupuesto del mes comercial ──
-  // Monto mensual por ciclo de venta, desde el ciclo de octubre de 2026. Cada plataforma tiene el suyo y
-  // Oportunidades es una bolsa común: la usa lo que una plataforma invierta por encima de su monto.
-  const PRESUPUESTO = { desde: '2026-10', meta: 1500, google: 1500, oportunidades: 1000 };
+  // Monto mensual por ciclo de venta y plataforma, desde el ciclo de octubre de 2026. El de Meta ya incluye
+  // los S/. 1,000 para oportunidades.
+  const PRESUPUESTO = { desde: '2026-10', meta: 2880, google: 1500 };
 
   // key: el mes del periodo que se ve (null en Anual, que no lleva presupuesto).
   function renderPresupuesto(key) {
@@ -2774,10 +2774,9 @@
     });
     const meta = plat(m?.hasData ? summarize(m.rows).spend : 0, m?.lastDay || 0);
     const goo = plat(g?.hasData ? g.totals.cost || 0 : 0, g?.lastDay || 0);
-    const exceso = x => Math.max(0, x);
-    const oport = exceso(meta.spend - PRESUPUESTO.meta) + exceso(goo.spend - PRESUPUESTO.google);
-    const oportProj = exceso(meta.proj - PRESUPUESTO.meta) + exceso(goo.proj - PRESUPUESTO.google);
-    const total = PRESUPUESTO.meta + PRESUPUESTO.google + PRESUPUESTO.oportunidades;
+    const total = PRESUPUESTO.meta + PRESUPUESTO.google;
+    // Lo que queda; si ya se pasó, cuánto
+    const queda = (spend, budget) => (spend <= budget ? `queda ${money(budget - spend)}` : `<b style="color:var(--red-text)">${money(spend - budget)} por encima</b>`);
     const cerrado = Ciclo.estado(year, month - 1) === 'past';
     const bar = (value, budget) => {
       const r = budget ? value / budget : 0;
@@ -2789,30 +2788,20 @@
         <span>${label}</span>
         <strong>${money(x.spend)} <small class="muted">de ${money(budget)}</small></strong>
         ${bar(x.spend, budget)}
-        <small>${!x.lastDay ? 'Sin informe del ciclo' : x.lastDay < p.dias && !cerrado
-          ? `al ${alDia(x)} · al ritmo cierra en ${money(x.proj)}` : 'ciclo completo'}${nota ? ` · ${nota}` : ''}</small>
+        <small>${!x.lastDay ? 'Sin informe del ciclo' : `${queda(x.spend, budget)} · ${x.lastDay < p.dias && !cerrado
+          ? `al ${alDia(x)} · al ritmo cierra en ${money(x.proj)}` : 'ciclo completo'}`}${nota ? ` · ${nota}` : ''}</small>
       </div>`;
+    const totalX = { spend: meta.spend + goo.spend, proj: meta.proj + goo.proj, lastDay: Math.min(meta.lastDay || p.dias, goo.lastDay || p.dias) };
     host.hidden = false;
     host.innerHTML = `
       <div class="gp-period-head">
         <div class="panel-title">Presupuesto de ${esc(p.mes.toLowerCase())} · ciclo ${Ciclo.rangoMes(year, month - 1)}</div>
-        <div class="panel-sub">${money(total)} al mes: ${money(PRESUPUESTO.meta)} Meta Ads, ${money(PRESUPUESTO.google)} Google Ads y ${money(PRESUPUESTO.oportunidades)} para oportunidades, que cubre lo que una plataforma invierta por encima de su monto.</div>
+        <div class="panel-sub">${money(total)} al mes: ${money(PRESUPUESTO.meta)} Meta Ads (incluye ${money(1000)} para oportunidades) y ${money(PRESUPUESTO.google)} Google Ads. Lo invertido llega hasta el último día de los informes de Drive.</div>
       </div>
       <div class="kpi-strip gp-kpis" role="group" aria-label="Presupuesto del mes">
         ${pill('Meta Ads', meta, PRESUPUESTO.meta)}
         ${pill('Google Ads', goo, PRESUPUESTO.google, g?.estimated ? 'estimado: Google llega por mes calendario' : '')}
-        <div class="kpi-pill">
-          <span>Oportunidades</span>
-          <strong>${money(oport)} <small class="muted">de ${money(PRESUPUESTO.oportunidades)}</small></strong>
-          ${bar(oport, PRESUPUESTO.oportunidades)}
-          <small>${oport ? 'Lo invertido por encima del monto de cada plataforma' : 'Sin uso: ninguna plataforma pasó su monto'}${!cerrado && oportProj > oport ? ` · al ritmo usaría ${money(oportProj)}` : ''}</small>
-        </div>
-        <div class="kpi-pill">
-          <span>Total invertido</span>
-          <strong>${money(meta.spend + goo.spend)} <small class="muted">de ${money(total)}</small></strong>
-          ${bar(meta.spend + goo.spend, total)}
-          <small>${cerrado ? `Disponible ${money(total - meta.spend - goo.spend)}` : `Al ritmo cierra en ${money(meta.proj + goo.proj)} · disponible ${money(total - meta.spend - goo.spend)}`}</small>
-        </div>
+        ${pill('Total', totalX, total)}
       </div>`;
   }
 

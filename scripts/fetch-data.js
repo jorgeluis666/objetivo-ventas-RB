@@ -5,9 +5,9 @@
  * al 26). 2025 se agrupa igual, día por día, para comparar mes contra mes.
  *
  * Fuentes:
- *   2026 → la hoja de la carpeta de Drive "Ventas Royal Baby - 2026" (compartida por enlace,
- *          sin credenciales). Se lee con js/fuentes-drive.js, el mismo código que usa el botón
- *          Sincronizar del tablero.
+ *   2026 → la hoja de la carpeta de Drive "Ventas Royal Baby - 2026" (privada: la entrega el Apps
+ *          Script de Royal Baby con RB_DRIVE_SCRIPT_URL y RB_DRIVE_READ_KEY). Se lee con
+ *          js/fuentes-drive.js, el mismo código que usa el botón Sincronizar del tablero.
  *   2025 → el Google Sheet "TASA DE VENTAS DIARIAS 2025" por la API de Sheets (service account).
  *
  * Modos:

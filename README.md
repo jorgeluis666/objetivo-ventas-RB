@@ -48,7 +48,7 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
   scripts/
     fetch-data.js         Ventas: carpeta de Drive (2026) + Google Sheet (2025) → data/ventas-2026.json
     sync-objetivos.js     Objetivos: carpeta de Drive → data/objetivos-2026.json
-    drive-publico.js      Encuentra la hoja de una carpeta de Drive compartida por enlace
+    drive-publico.js      Encuentra la hoja de una carpeta de Drive (privada, por el Apps Script)
     sync-ads.js           Lee las carpetas de Drive de Google Ads y Meta → data/ads-2026.json
     sync-reportes.js      Lista la carpeta Reportes de Drive → data/reportes-2026.json
     build.js              Arma dist/ (HTML con todo incrustado, cifrado con la clave)
@@ -100,7 +100,7 @@ Dos workflows leen las carpetas de Drive de la marca todos los días y commitean
 
 - **Ventas 2026**: la hoja de la carpeta [Ventas Royal Baby - 2026](https://drive.google.com/drive/folders/1JJdjIzDu2CrhcBI9gBUTUuPAXnKYUQal). Es la fuente de 2026 de todo el tablero (Objetivos, YoY, Distribución, Proyecciones y correo). **2025** sigue saliendo de su Google Sheet con el secret `SERVICE_ACCOUNT_JSON` (JSON del service account pegado entero).
 - **Objetivos**: la hoja de la carpeta [Objetivos Royal Baby](https://drive.google.com/drive/folders/1wfOOM4F3TRcxehX_dfZWDYSTVBPrPgjg).
-- Las carpetas están compartidas como "Cualquier persona con el enlace": se leen sin credenciales (vista pública de la carpeta y exportación `.xlsx` de la hoja). Con el secret opcional `RB_DRIVE_API_KEY` la carpeta se lista con la API de Drive.
+- Las carpetas de ventas, objetivos e inversión publicitaria son privadas (sus IDs están en este repositorio público): se leen por el Apps Script de Royal Baby, ver [Carpetas privadas](#carpetas-privadas). Artes y Reportes siguen compartidas por enlace, porque el tablero muestra sus miniaturas y vistas previas, y se leen por la vista pública.
 - Cada carpeta debe tener **una sola** hoja de cálculo de Google. Si el archivo se reemplaza por otro, la corrida siguiente lo encuentra solo.
 - Si una lectura falla (archivo no compartido, falta la pestaña de un mes cerrado, falta la fila de meses, canal desconocido), el script no escribe nada: queda publicado el último JSON válido y el workflow termina en rojo.
 
@@ -118,7 +118,7 @@ GitHub corre los cron con 5 a 9 horas de atraso (el de las 06:00 sale entre las 
 
 ### Botones Sincronizar
 
-Cada zona del módulo Objetivos tiene un botón **Sincronizar** que vuelve a leer su hoja de Drive en el navegador y redibuja la zona al instante (la de ventas, todo el tablero). Lo que se sincroniza así vale para quien lo presionó y hasta que recargue la página: para todos, el tablero publicado se actualiza con la corrida diaria. El botón lee la hoja de la que salió lo publicado; si en Drive se reemplazó el archivo por otro, lo toma recién la corrida diaria (el navegador no puede listar la carpeta).
+Cada zona del módulo Objetivos tiene un botón **Sincronizar** que vuelve a leer su hoja de Drive en el navegador (por el Apps Script de [Carpetas privadas](#carpetas-privadas), con la URL y la clave que el build deja dentro del HTML cifrado) y redibuja la zona al instante (la de ventas, todo el tablero). Lo que se sincroniza así vale para quien lo presionó y hasta que recargue la página: para todos, el tablero publicado se actualiza con la corrida diaria. El botón lee la hoja de la que salió lo publicado; si en Drive se reemplazó el archivo por otro, lo toma recién la corrida diaria (el navegador no puede listar la carpeta).
 
 El navegador y los scripts leen las hojas con el mismo código (`js/fuentes-drive.js`, con SheetJS), así que dan las mismas cifras.
 
@@ -136,7 +136,7 @@ Lee dos carpetas compartidas por enlace, una por plataforma:
 - **Google Ads** ([carpeta](https://drive.google.com/drive/folders/1TT5KTVZuGlFc7OqvGAz9nuRVyJFvwJpd)): informe de campaña del mes (`Royal Baby GA - <Mes> 2026`) y, opcional, el informe de anuncios por día y palabra clave del mismo mes (`Royal Baby - <Mes> 2026`). El script los distingue por el contenido, no por el nombre (octubre tiene los nombres cruzados: `Royal Baby - Octubrel 2026` es el de campaña).
 - **Meta Ads** ([carpeta](https://drive.google.com/drive/folders/1kjz_QSgFpkd9semvyjrlLQi3ETH8-DPm)): `Royal Baby - <Mes> 2026`, export del Administrador de anuncios con desglose diario, por edad, sexo y anuncio. El gasto puede venir como «Importe gastado» o «Monto gastado» (nombre de Meta desde octubre de 2026).
 
-Los archivos son hojas de cálculo de Google: se descargan exportándolas a CSV (solo la primera pestaña). Un CSV subido sin convertir también se lee. Con la variable `RB_DRIVE_API_KEY` usa la API de Drive; sin ella, la vista pública de la carpeta.
+Los archivos son hojas de cálculo de Google: se descargan exportándolas a CSV (solo la primera pestaña). Un CSV subido sin convertir también se lee. Las dos carpetas son privadas: se listan y se descargan por el Apps Script de [Carpetas privadas](#carpetas-privadas).
 
 - **Mes**: sale del contenido (rango del informe en Google Ads, columna Día en Meta); el nombre del archivo es solo respaldo. Un mes puede tener una sola plataforma.
 - **Meta**: la serie diaria va por día y campaña (`daily`), con edad, sexo y anuncio sumados. Por mes se guardan además el público por edad y sexo (`audience`) y los 10 anuncios con más compras y conversaciones (`ads.top`, con su enlace de vista previa; dos anuncios con el mismo nombre se separan por el ID del enlace). Para el módulo va también `table`: una fila por día, campaña, conjunto y anuncio (edad y sexo sumados) con inversión, impresiones, alcance, clics en el enlace, compras, valor, conversaciones y resultados con su tipo; los nombres van una vez en sus listas (`campaigns`, `adsets`, `ads`, `types`) y cada fila lleva su índice. El alcance solo va en `table` (suma de las filas del export, como en los reportes de la agencia); los totales y las campañas no lo traen. CTR, CPM y costo por resultado se recalculan sobre los totales. Cada campaña conserva su objetivo y su tipo de resultado, y el mes no suma resultados de tipos distintos.
@@ -152,7 +152,7 @@ Los archivos son hojas de cálculo de Google: se descargan exportándolas a CSV 
 
 `sync-ads.yml` corre todos los días a las 07:00 de Lima (`0 12 * * *` UTC) y a mano (`Actions → Sincronizar inversión publicitaria → Run workflow`). Ejecuta `npm ci` y `node scripts/sync-ads.js`, y commitea `data/ads-2026.json` solo si cambió (con `git pull --rebase` antes del push, por si otro workflow de datos commiteó). Como ese commit lo hace `GITHUB_TOKEN`, el deploy se encadena con `workflow_run`.
 
-Si un archivo falla, el workflow queda en rojo, el JSON anterior se conserva y no hay deploy. El secret `RB_DRIVE_API_KEY` es opcional: sin él se usa la vista pública de las carpetas.
+Si un archivo falla, el workflow queda en rojo, el JSON anterior se conserva y no hay deploy. Las carpetas se leen por el Apps Script (secrets `RB_DRIVE_SCRIPT_URL` y `RB_DRIVE_READ_KEY`).
 
 ## Archivo de Reportes
 
@@ -250,13 +250,22 @@ El repositorio es público: lo que está en `data/` y en el historial se puede v
 
 Las sesiones abiertas con la clave anterior siguen hasta que se cierre la pestaña o haya otro deploy.
 
+## Carpetas privadas
+
+Las carpetas Ventas, Objetivos, Google Files y Meta Files no se comparten por enlace. Las lee el proyecto de Apps Script **Royal Baby - Actualizacion diaria** (`scripts/disparar-actualizacion.gs`), que corre con la cuenta de Lima Retail y está publicado como aplicación web (ejecutar como "Yo", acceso "Cualquier persona"):
+
+- `action=listar` devuelve los archivos de una carpeta y `action=descargar` un archivo en base64 (las hojas de Google exportadas a `.xlsx` o `.csv`). Solo responde con la clave `LECTURA_CLAVE` de las Propiedades del script, enviada por POST (nunca en la URL), y solo para las carpetas de `CARPETAS_LECTURA` y los archivos dentro de ellas.
+- Lo usan `js/fuentes-drive.js` (ventas y objetivos, en los scripts y en los botones Sincronizar), `scripts/drive-publico.js` y `scripts/sync-ads.js`. En GitHub la URL y la clave son los secrets `RB_DRIVE_SCRIPT_URL` y `RB_DRIVE_READ_KEY`; `scripts/build.js` los deja como `window.RB_DRIVE_LECTURA` solo dentro del HTML cifrado.
+- Al editar el script: Implementar > Gestionar implementaciones > lápiz > Versión: Nueva versión, para que la URL no cambie. `probarLectura` lista las cuatro carpetas y sirve para aceptar el permiso de Drive.
+- Para probar en local: `RB_DRIVE_SCRIPT_URL=<url> RB_DRIVE_READ_KEY=<clave> node scripts/sync-objetivos.js --check`.
+
 ## Configuración inicial (una vez)
 
 1. En Google Cloud Console: habilitar **Sheets API** y crear un service account.
 2. Pegar el JSON de credenciales completo como secret `SERVICE_ACCOUNT_JSON` en `Settings → Secrets and variables → Actions`.
 3. Compartir el Google Sheet de 2025 con el email del service account (permiso lector).
 4. Secret `RB_PAGE_PASSWORD`: clave de acceso al tablero (16 caracteres o más).
-5. Opcional: secret `RB_DRIVE_API_KEY` (clave de API de Google con Drive API habilitada) para que `sync-ads.yml`, `update-data.yml` y `sync-objetivos.yml` listen las carpetas con la API en vez de la vista pública.
+5. Lector de las carpetas privadas: publicar `scripts/disparar-actualizacion.gs` como aplicación web y guardar los secrets `RB_DRIVE_SCRIPT_URL` y `RB_DRIVE_READ_KEY` (ver [Carpetas privadas](#carpetas-privadas)).
 6. Secrets `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` y `SMTP_PASS` para el correo de alertas: la cuenta alertas@limaretail.com del hosting, que también es el remitente. Sin ellos se usa `RESEND_API_KEY` si existe. Secrets `RB_ALERTAS_URL` y `RB_ALERTAS_TOKEN` para la lista de correos que se edita en el tablero (ver [Alerta de ventas](#alerta-de-ventas)). Opcional: variable `DASHBOARD_URL` si el enlace del correo debe ser otro que el de `data/alertas-config.json`.
 7. DNS de `limaretail.com`: registro CNAME `royalbaby` → `jorgeluis666.github.io`.
 8. `Settings → Pages`: Source **GitHub Actions**, Custom domain `royalbaby.limaretail.com` y **Enforce HTTPS**.

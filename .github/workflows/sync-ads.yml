@@ -16,9 +16,10 @@ name: Sincronizar inversión publicitaria
 # el tablero: dispararlo desde el navegador exigiría un token de GitHub y el tablero
 # lo abren clientes.
 #
-# Las carpetas están compartidas como "Cualquier persona con el enlace": sin
-# credenciales el script usa la vista pública. Con el secret opcional RB_DRIVE_API_KEY
-# usa la API de Drive.
+# Las carpetas de Meta Ads y Google Ads son privadas: sync-ads.js las lee por el Apps
+# Script de Royal Baby (secrets RB_DRIVE_SCRIPT_URL y RB_DRIVE_READ_KEY). Artes y Reportes
+# siguen compartidas por enlace (el tablero muestra sus miniaturas) y se leen por la vista
+# pública.
 #
 # Si un archivo no se puede descargar o leer, ese mes y plataforma queda como estaba en
 # el JSON anterior, el resto se actualiza y el fallo sale como anotación (warning) de la
@@ -57,6 +58,9 @@ jobs:
 
       - name: Leer las carpetas de Meta Ads y Google Ads
         env:
+          # Las carpetas son privadas: las lee el Apps Script de Royal Baby con su clave.
+          RB_DRIVE_SCRIPT_URL: ${{ secrets.RB_DRIVE_SCRIPT_URL }}
+          RB_DRIVE_READ_KEY: ${{ secrets.RB_DRIVE_READ_KEY }}
           RB_DRIVE_API_KEY: ${{ secrets.RB_DRIVE_API_KEY }}
         run: node scripts/sync-ads.js
 

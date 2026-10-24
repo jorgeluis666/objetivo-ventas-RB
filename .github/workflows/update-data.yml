@@ -51,6 +51,9 @@ jobs:
 
       - name: Leer ventas (Drive 2026 + Sheet 2025)
         env:
+          # Las carpetas son privadas: las lee el Apps Script de Royal Baby con su clave.
+          RB_DRIVE_SCRIPT_URL: ${{ secrets.RB_DRIVE_SCRIPT_URL }}
+          RB_DRIVE_READ_KEY: ${{ secrets.RB_DRIVE_READ_KEY }}
           RB_DRIVE_API_KEY: ${{ secrets.RB_DRIVE_API_KEY }}
         run: node scripts/fetch-data.js
 

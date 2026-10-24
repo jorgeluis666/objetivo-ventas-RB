@@ -3,7 +3,8 @@
  * sync-objetivos.js — lee los objetivos comerciales de la marca desde Drive y escribe
  * data/objetivos-2026.json.
  *
- * Fuente: la hoja de cálculo de la carpeta "Objetivos Royal Baby" (compartida por enlace).
+ * Fuente: la hoja de cálculo de la carpeta "Objetivos Royal Baby" (privada: la entrega el Apps Script
+ * de Royal Baby con RB_DRIVE_SCRIPT_URL y RB_DRIVE_READ_KEY).
  * La meta de cada mes sale de la pestaña "Objetivos 2026" (una fila por canal, una columna por mes);
  * la pestaña "Venta 2025" es la referencia del año anterior.
  * El formato lo lee js/fuentes-drive.js, el mismo código que usa el botón Sincronizar del tablero.

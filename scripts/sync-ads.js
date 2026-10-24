@@ -11,8 +11,10 @@
  * descargan con la exportación a CSV. Un CSV subido tal cual se baja con alt=media.
  * El método se elige por el mimeType de cada archivo.
  *
- * Descubrimiento: API de Drive si hay RB_DRIVE_API_KEY (o GOOGLE_API_KEY); si no, la
- * vista pública de la carpeta, que alcanza mientras siga compartida por enlace.
+ * Las carpetas son privadas: con RB_DRIVE_SCRIPT_URL y RB_DRIVE_READ_KEY se listan y se
+ * descargan por el Apps Script de Royal Baby (scripts/disparar-actualizacion.gs). Si no,
+ * API de Drive si hay RB_DRIVE_API_KEY (o GOOGLE_API_KEY), y como ultimo recurso la vista
+ * pública de la carpeta, que solo sirve si siguiera compartida por enlace.
  *
  * El mes sale del contenido (rango del informe en Google Ads, columna Día en Meta); el
  * nombre del archivo es solo respaldo. Un mes puede existir con una sola plataforma.
@@ -31,6 +33,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const FD = require('../js/fuentes-drive.js');
 
 const OUTPUT_PATH = path.join(__dirname, '..', 'data', 'ads-2026.json');
 const USER_AGENT = 'royal-baby-dashboard-sync/1.0';
@@ -1023,6 +1026,14 @@ async function listWithPublicView(folderId) {
 }
 
 async function listFolder(folderId) {
+  if (FD.lecturaPrivada()) {
+    try {
+      const files = await FD.listarPrivado(folderId);
+      if (files.length) return { files, discovery: 'apps script' };
+    } catch (err) {
+      console.warn(`  ! ${err.message}; pruebo las otras vías`);
+    }
+  }
   const key = apiKey();
   if (key) {
     try {
@@ -1033,7 +1044,7 @@ async function listFolder(folderId) {
     }
   }
   const files = await listWithPublicView(folderId);
-  if (!files.length) throw new Error('la carpeta no devolvió archivos (¿dejó de estar compartida por enlace?)');
+  if (!files.length) throw new Error('la carpeta no devolvió archivos (si es privada, falta el lector de Drive)');
   return { files, discovery: 'pública' };
 }
 
@@ -1058,6 +1069,14 @@ function downloadUrls(file, key) {
 }
 
 async function download(file) {
+  if (FD.lecturaPrivada()) {
+    try {
+      const bytes = await FD.descargarPrivado(file.id, 'csv');
+      return new TextDecoder('utf-8').decode(bytes);   // TextDecoder ya quita el BOM
+    } catch (err) {
+      console.warn(`  ! ${file.name}: ${err.message}; pruebo las otras vías`);
+    }
+  }
   let lastError = null;
   for (const url of downloadUrls(file, apiKey())) {
     try {

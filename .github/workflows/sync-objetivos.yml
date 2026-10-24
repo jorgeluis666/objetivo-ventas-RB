@@ -9,8 +9,8 @@ name: Sincronizar objetivos comerciales
 # En el tablero, el botón Sincronizar de la zona de objetivos lee la misma hoja al instante,
 # solo en ese navegador.
 #
-# La carpeta está compartida como "Cualquier persona con el enlace": sin credenciales el script
-# usa la vista pública. Con el secret opcional RB_DRIVE_API_KEY usa la API de Drive.
+# La carpeta es privada: el script la lee por el Apps Script de Royal Baby
+# (scripts/disparar-actualizacion.gs, secrets RB_DRIVE_SCRIPT_URL y RB_DRIVE_READ_KEY).
 #
 # Si la hoja no se puede leer (no está compartida, faltan los meses o la columna PROYECCIÓN, o
 # aparece un canal desconocido), el script no escribe nada y sale con código 1: queda publicado
@@ -47,6 +47,9 @@ jobs:
 
       - name: Leer la carpeta de objetivos
         env:
+          # Las carpetas son privadas: las lee el Apps Script de Royal Baby con su clave.
+          RB_DRIVE_SCRIPT_URL: ${{ secrets.RB_DRIVE_SCRIPT_URL }}
+          RB_DRIVE_READ_KEY: ${{ secrets.RB_DRIVE_READ_KEY }}
           RB_DRIVE_API_KEY: ${{ secrets.RB_DRIVE_API_KEY }}
         run: node scripts/sync-objetivos.js
 

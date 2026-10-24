@@ -12,6 +12,12 @@
 //
 // Configuracion del proyecto > Propiedades del script: GITHUB_TOKEN = token fine-grained solo para
 // el repo objetivo-ventas-RB con el permiso Actions: Read and write. Nunca escribirlo en este archivo.
+//
+// Tambien es el lector de las carpetas privadas (ver "Lectura de Drive" al final): publicado como
+// aplicacion web, entrega a los scripts de GitHub y a los botones Sincronizar del tablero las hojas de
+// ventas, objetivos e inversion publicitaria, que ya no se comparten por enlace. Propiedad LECTURA_CLAVE =
+// la misma clave del secret RB_DRIVE_READ_KEY. Al cambiar el codigo: Implementar > Gestionar
+// implementaciones > lapiz > Version: Nueva version, para que la URL (secret RB_DRIVE_SCRIPT_URL) no cambie.
 const REPO = 'jorgeluis666/objetivo-ventas-RB';
 const TIMEZONE = 'America/Lima';
 const RUN_HOUR = 10;
@@ -105,4 +111,84 @@ function instalarActivador() {
   guardarLeidoHasta(ultimaEdicionVentas());
   console.log(`Activador instalado: todos los dias a las ${RUN_HOUR}:${RUN_MINUTE} (${TIMEZONE}), +-15 min`);
   console.log(`Revision de la carpeta de ventas: cada ${REVISAR_CADA_MIN} minutos`);
+}
+
+// ── Lectura de Drive ─────────────────────────────────────────────────────────────────────────────
+// Las carpetas de abajo ya no se comparten por enlace (sus IDs estan en el repositorio publico). Este
+// script corre con la cuenta de Lima Retail, que si tiene acceso, y solo responde con la clave
+// LECTURA_CLAVE (enviada por POST, nunca en la URL):
+//   action=listar&carpeta=<id>             → los archivos de la carpeta (sin subcarpetas)
+//   action=descargar&id=<id>&formato=xlsx  → el archivo en base64; las hojas de Google se exportan a
+//                                            xlsx o csv, los archivos subidos (CSV) se entregan tal cual
+// Solo entrega archivos que esten dentro de estas carpetas. Las de Artes y Reportes siguen compartidas
+// por enlace (el tablero muestra sus miniaturas) y no pasan por aqui.
+const CARPETAS_LECTURA = {
+  '1JJdjIzDu2CrhcBI9gBUTUuPAXnKYUQal': 'Ventas',
+  '1wfOOM4F3TRcxehX_dfZWDYSTVBPrPgjg': 'Objetivos',
+  '1TT5KTVZuGlFc7OqvGAz9nuRVyJFvwJpd': 'Google Files',
+  '1kjz_QSgFpkd9semvyjrlLQi3ETH8-DPm': 'Meta Files',
+};
+const FORMATOS = { xlsx: 'xlsx', csv: 'csv' };
+
+function doPost(event) {
+  const params = (event && event.parameter) || {};
+  const clave = PropertiesService.getScriptProperties().getProperty('LECTURA_CLAVE');
+  if (!clave || String(params.clave || '') !== clave) return respuesta_({ ok: false, error: 'Clave no valida.' });
+  try {
+    if (params.action === 'listar') return respuesta_(listarCarpeta_(String(params.carpeta || '')));
+    if (params.action === 'descargar') return respuesta_(descargarArchivo_(String(params.id || ''), String(params.formato || '')));
+    return respuesta_({ ok: false, error: 'Solicitud no valida.' });
+  } catch (error) {
+    console.error('lectura', error);
+    return respuesta_({ ok: false, error: 'No se pudo leer Drive.' });
+  }
+}
+
+function listarCarpeta_(carpeta) {
+  if (!CARPETAS_LECTURA[carpeta]) return { ok: false, error: 'Carpeta no permitida.' };
+  const files = [];
+  const archivos = DriveApp.getFolderById(carpeta).getFiles();
+  while (archivos.hasNext()) {
+    const file = archivos.next();
+    files.push({
+      id: file.getId(),
+      name: file.getName(),
+      mimeType: file.getMimeType(),
+      modifiedTime: file.getLastUpdated().toISOString(),
+    });
+  }
+  return { ok: true, files: files };
+}
+
+function descargarArchivo_(id, formato) {
+  const file = DriveApp.getFileById(id);
+  const padres = file.getParents();
+  let permitido = false;
+  while (padres.hasNext()) permitido = permitido || Boolean(CARPETAS_LECTURA[padres.next().getId()]);
+  if (!permitido) return { ok: false, error: 'Archivo no permitido.' };
+  let bytes;
+  if (file.getMimeType() === MimeType.GOOGLE_SHEETS) {
+    if (!FORMATOS[formato]) return { ok: false, error: 'Formato no valido.' };
+    const res = UrlFetchApp.fetch(`https://docs.google.com/spreadsheets/d/${id}/export?format=${FORMATOS[formato]}`, {
+      headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+      muteHttpExceptions: true,
+    });
+    if (res.getResponseCode() !== 200) throw new Error(`Export ${id}: ${res.getResponseCode()}`);
+    bytes = res.getBlob().getBytes();
+  } else {
+    bytes = file.getBlob().getBytes();
+  }
+  return { ok: true, name: file.getName(), mimeType: file.getMimeType(), base64: Utilities.base64Encode(bytes) };
+}
+
+function respuesta_(body) {
+  return ContentService.createTextOutput(JSON.stringify(body)).setMimeType(ContentService.MimeType.JSON);
+}
+
+// Ejecutar una vez desde el editor para aceptar el permiso de Drive (y comprobar que lee las carpetas).
+function probarLectura() {
+  Object.keys(CARPETAS_LECTURA).forEach(carpeta => {
+    const nombres = listarCarpeta_(carpeta).files.map(f => f.name);
+    console.log(`${CARPETAS_LECTURA[carpeta]}: ${nombres.join(', ') || 'sin archivos'}`);
+  });
 }

@@ -16,8 +16,12 @@
      Las ventas se agrupan por el ciclo de venta (js/ciclo.js: cada mes
      va del 27 del anterior al 26), según la fecha de cada día.
 
-   Los archivos se descargan como .xlsx desde la exportación pública
-   de Google Sheets (compartidos por enlace, sin credenciales).
+   Las carpetas son privadas: los archivos se descargan como .xlsx por
+   el Apps Script de Royal Baby (scripts/disparar-actualizacion.gs),
+   con su clave de lectura. En Node la URL y la clave llegan por
+   RB_DRIVE_SCRIPT_URL y RB_DRIVE_READ_KEY; en el navegador, por
+   window.RB_DRIVE_LECTURA, que solo existe dentro del HTML cifrado.
+   Sin ellas se usa la exportación pública de Google Sheets.
    Expone window.FuentesDrive en el navegador y module.exports en Node.
    ============================================================ */
 
@@ -69,20 +73,64 @@
 
   // ── Descarga ─────────────────────────────────────────────────────
 
+  // { url, clave } del lector privado (Apps Script), o null si no está configurado.
+  function lecturaPrivada() {
+    const env = typeof process !== 'undefined' && process.env ? process.env : {};
+    const cfg = env.RB_DRIVE_SCRIPT_URL
+      ? { url: env.RB_DRIVE_SCRIPT_URL, clave: env.RB_DRIVE_READ_KEY }
+      : (typeof globalThis !== 'undefined' && globalThis.RB_DRIVE_LECTURA) || {};
+    const url = String(cfg.url || '').trim();
+    const clave = String(cfg.clave || '').trim();
+    return url && clave ? { url, clave } : null;
+  }
+
+  // Le pide algo al Apps Script. La clave va en el cuerpo del POST, nunca en la URL; el cuerpo como
+  // formulario no necesita preflight de CORS y el Apps Script lo lee en event.parameter.
+  async function pedirLectura(campos, { fetchImpl, timeoutMs = 120000 } = {}) {
+    const cfg = lecturaPrivada();
+    if (!cfg) throw new Error('falta la URL o la clave del lector de Drive');
+    const opts = { method: 'POST', body: new URLSearchParams({ ...campos, clave: cfg.clave }), redirect: 'follow' };
+    if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) opts.signal = AbortSignal.timeout(timeoutMs);
+    const res = await (fetchImpl || fetch)(cfg.url, opts);
+    if (!res.ok) throw new Error(`el lector de Drive respondió HTTP ${res.status}`);
+    const body = await res.json().catch(() => ({}));
+    if (!body.ok) throw new Error(`el lector de Drive no lo entregó: ${body.error || 'respuesta inválida'}`);
+    return body;
+  }
+
+  // Los archivos de una carpeta privada: [{ id, name, mimeType, modifiedTime }].
+  async function listarPrivado(carpeta, opts) {
+    return (await pedirLectura({ action: 'listar', carpeta }, opts)).files || [];
+  }
+
+  // Un archivo de una carpeta privada como bytes. Las hojas de Google salen en `formato` (xlsx o csv).
+  async function descargarPrivado(id, formato, opts) {
+    const { base64 } = await pedirLectura({ action: 'descargar', id, formato }, opts);
+    if (typeof Buffer !== 'undefined') return new Uint8Array(Buffer.from(base64 || '', 'base64'));
+    const bin = atob(base64 || '');
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  }
+
   // Devuelve { pestaña: filas } con los valores crudos de cada celda. Las filas arrancan
   // siempre en A1, aunque la hoja tenga filas o columnas vacías al inicio: los índices
   // de columna del parser de ventas dependen de eso.
   async function descargarLibro(id, { XLSX, fetchImpl, timeoutMs = 60000 } = {}) {
     if (!XLSX) throw new Error('falta la librería SheetJS (XLSX)');
-    const doFetch = fetchImpl || fetch;
-    const opts = { redirect: 'follow' };
-    if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) opts.signal = AbortSignal.timeout(timeoutMs);
-    const res = await doFetch(urlXlsx(id), opts);
-    if (!res.ok) throw new Error(`Drive respondió HTTP ${res.status}`);
-    const bytes = new Uint8Array(await res.arrayBuffer());
-    // Un .xlsx es un zip ("PK"). Si el archivo dejó de estar compartido, Drive devuelve una página de acceso.
+    let bytes;
+    if (lecturaPrivada()) {
+      bytes = await descargarPrivado(id, 'xlsx', { fetchImpl, timeoutMs: Math.max(timeoutMs, 120000) });
+    } else {
+      const opts = { redirect: 'follow' };
+      if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) opts.signal = AbortSignal.timeout(timeoutMs);
+      const res = await (fetchImpl || fetch)(urlXlsx(id), opts);
+      if (!res.ok) throw new Error(`Drive respondió HTTP ${res.status}`);
+      bytes = new Uint8Array(await res.arrayBuffer());
+    }
+    // Un .xlsx es un zip ("PK"). Si el archivo no es accesible, Drive devuelve una página de acceso.
     if (bytes[0] !== 0x50 || bytes[1] !== 0x4b) {
-      throw new Error('Drive no devolvió una hoja de cálculo (¿el archivo dejó de estar compartido por enlace?)');
+      throw new Error('Drive no devolvió una hoja de cálculo (la carpeta es privada: falta el lector de Drive)');
     }
     const wb = XLSX.read(bytes, { type: 'array' });
     const tabs = {};
@@ -517,7 +565,7 @@
   return {
     CARPETAS, MESES, CANALES, COLS_2025, COLS_2026,
     urlHoja, urlXlsx, urlCarpeta, ahoraLima,
-    toNumber, round2, descargarLibro,
+    toNumber, round2, descargarLibro, lecturaPrivada, listarPrivado, descargarPrivado,
     parseObjetivos, parseTablaObjetivos, objetivosDelLibro,
     monthsForYear, monthsUpTo, isClosedMonth, resolveTabName,
     parseFecha, parseSheet, agruparPorCiclo, leerAnio, camposVentas, ventas2026,

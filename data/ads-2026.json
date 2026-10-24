@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-24T15:22:01.822Z",
+  "generatedAt": "2026-10-24T22:41:24.760Z",
   "currency": "PEN",
   "rules": [
     "Google Ads llega mensual: sin serie diaria real. Meta Ads llega por día y la serie diaria es real.",
@@ -17,55 +17,55 @@
     "google": {
       "folderId": "1TT5KTVZuGlFc7OqvGAz9nuRVyJFvwJpd",
       "folderUrl": "https://drive.google.com/drive/folders/1TT5KTVZuGlFc7OqvGAz9nuRVyJFvwJpd",
-      "discovery": "pública",
+      "discovery": "apps script",
       "files": [
-        { "id": "14Zup74K5jYQJ4XcOt-Bi7lBjSlT76Zh0msMblN2f4qE", "name": "Royal Baby - Abril 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1pNGQFycVHdysHcniamA_xtS6T_R_uCkQBrvE7q5u3-E", "name": "Royal Baby - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "14CTJBdwrckXwvSkEcMhihZdu4_AGcVblckHiY45jJhA", "name": "Royal Baby - Enero 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1BD9OIt5ZK-89B-IUkjqc5qEPMWalzGpVUxgPNCAim_0", "name": "Royal Baby - Febrero 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1gYDwpcr7uk076D8JkE-0irYww6cSNHtRCDrXxEyaDbI", "name": "Royal Baby - Julio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1MBTrsZ_d2JtsSLo6neprv_uEaOhEdS5fAh2yVX-4MOg", "name": "Royal Baby - Junio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "15jMakzX2hFubnaVnxC2bHHKqx6fum7-xSZFz9VebirE", "name": "Royal Baby - Marzo 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "18LChCLMEotShDDP-4fvdZSW00CsJyBIrxMmqixKmLL0", "name": "Royal Baby - Mayo 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "16TNwvsUj-yQ-J78-UFtwWjmIHKXKVVswL1XWAwe1mPU", "name": "Royal Baby - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null }
+        { "id": "16TNwvsUj-yQ-J78-UFtwWjmIHKXKVVswL1XWAwe1mPU", "name": "Royal Baby - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-23T23:44:14.294Z" },
+        { "id": "1pNGQFycVHdysHcniamA_xtS6T_R_uCkQBrvE7q5u3-E", "name": "Royal Baby - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-14T13:38:06.385Z" },
+        { "id": "1gYDwpcr7uk076D8JkE-0irYww6cSNHtRCDrXxEyaDbI", "name": "Royal Baby - Julio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-14T13:36:53.830Z" },
+        { "id": "1MBTrsZ_d2JtsSLo6neprv_uEaOhEdS5fAh2yVX-4MOg", "name": "Royal Baby - Junio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-14T13:36:26.847Z" },
+        { "id": "18LChCLMEotShDDP-4fvdZSW00CsJyBIrxMmqixKmLL0", "name": "Royal Baby - Mayo 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-14T13:36:06.123Z" },
+        { "id": "14Zup74K5jYQJ4XcOt-Bi7lBjSlT76Zh0msMblN2f4qE", "name": "Royal Baby - Abril 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-14T13:35:41.327Z" },
+        { "id": "15jMakzX2hFubnaVnxC2bHHKqx6fum7-xSZFz9VebirE", "name": "Royal Baby - Marzo 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-14T13:35:13.073Z" },
+        { "id": "1BD9OIt5ZK-89B-IUkjqc5qEPMWalzGpVUxgPNCAim_0", "name": "Royal Baby - Febrero 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-14T13:33:16.757Z" },
+        { "id": "14CTJBdwrckXwvSkEcMhihZdu4_AGcVblckHiY45jJhA", "name": "Royal Baby - Enero 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-14T13:32:28.435Z" }
       ]
     },
     "meta": {
       "folderId": "1kjz_QSgFpkd9semvyjrlLQi3ETH8-DPm",
       "folderUrl": "https://drive.google.com/drive/folders/1kjz_QSgFpkd9semvyjrlLQi3ETH8-DPm",
-      "discovery": "pública",
+      "discovery": "apps script",
       "files": [
-        { "id": "1v1ncU8_skA4HOYUU9-jE82BGz-65b1OA1iDYmZLZGg4", "name": "Royal Baby - Abril 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1hRh2Xh8l1Cd2GMDX7m46S21w_0nnYKXWH0JbHOCbsec", "name": "Royal Baby - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1kT_gzULng0zjHIJl8HPFjk1_uzpMsJvxuHY9Ei1rolM", "name": "Royal Baby - Enero 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1HIdZP-s5gegOAL3j_c8ubnZr-8gpDuHFJ8HYFd4N330", "name": "Royal Baby - Febrero 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "150oEt3NUe97HJl1eexW-WhXEftoIvL5gY72KSUosNQM", "name": "Royal Baby - Julio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "12RQtiz2cDh444ValF1gUsF_NsfjLi2mBwHhLCsa7_Oo", "name": "Royal Baby - Junio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1W8zZfl2eQ1UruK0GkEzGvKus0PSV-J0HmskS6Qt_wE4", "name": "Royal Baby - Marzo 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1M8eLU8sswwFVIV2U6SoBTTx4se2nr2jtG5VLsmT2h3U", "name": "Royal Baby - Mayo 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1uuPg8ygy1NX-9oYCS17pPrr3XoA-6-plQYBygs_5o-I", "name": "Royal Baby - Octube 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
-        { "id": "1_iTA-Gaj1YTI8JjL2_JgwlyzYLf5obuMR4Pm9BZMlSI", "name": "Royal Baby - Septiembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null }
+        { "id": "1uuPg8ygy1NX-9oYCS17pPrr3XoA-6-plQYBygs_5o-I", "name": "Royal Baby - Octube 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-23T23:34:38.722Z" },
+        { "id": "1_iTA-Gaj1YTI8JjL2_JgwlyzYLf5obuMR4Pm9BZMlSI", "name": "Royal Baby - Septiembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-05T17:16:07.944Z" },
+        { "id": "1hRh2Xh8l1Cd2GMDX7m46S21w_0nnYKXWH0JbHOCbsec", "name": "Royal Baby - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T04:00:41.081Z" },
+        { "id": "150oEt3NUe97HJl1eexW-WhXEftoIvL5gY72KSUosNQM", "name": "Royal Baby - Julio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:59:21.745Z" },
+        { "id": "12RQtiz2cDh444ValF1gUsF_NsfjLi2mBwHhLCsa7_Oo", "name": "Royal Baby - Junio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:58:35.548Z" },
+        { "id": "1M8eLU8sswwFVIV2U6SoBTTx4se2nr2jtG5VLsmT2h3U", "name": "Royal Baby - Mayo 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:57:50.150Z" },
+        { "id": "1v1ncU8_skA4HOYUU9-jE82BGz-65b1OA1iDYmZLZGg4", "name": "Royal Baby - Abril 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:56:51.358Z" },
+        { "id": "1W8zZfl2eQ1UruK0GkEzGvKus0PSV-J0HmskS6Qt_wE4", "name": "Royal Baby - Marzo 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:56:27.377Z" },
+        { "id": "1HIdZP-s5gegOAL3j_c8ubnZr-8gpDuHFJ8HYFd4N330", "name": "Royal Baby - Febrero 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:54:56.780Z" },
+        { "id": "1kT_gzULng0zjHIJl8HPFjk1_uzpMsJvxuHY9Ei1rolM", "name": "Royal Baby - Enero 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:53:55.509Z" }
       ]
     }
   },
   "pending": [],
   "warnings": [
-    "Google Ads: «Royal Baby - Abril 2026» es el informe por día de Abril 2026, pero falta el informe de campaña de ese mes; no se usa",
+    "Google Ads: «Royal Baby - Octubre 2026» es el informe por día de Octubre 2026, pero falta el informe de campaña de ese mes; no se usa",
     "Google Ads: «Royal Baby - Agosto 2026» es el informe por día de Agosto 2026, pero falta el informe de campaña de ese mes; no se usa",
-    "Google Ads: «Royal Baby - Enero 2026» es el informe por día de Enero 2026, pero falta el informe de campaña de ese mes; no se usa",
-    "Google Ads: «Royal Baby - Febrero 2026» es el informe por día de Febrero 2026, pero falta el informe de campaña de ese mes; no se usa",
     "Google Ads: «Royal Baby - Julio 2026» es el informe por día de Julio 2026, pero falta el informe de campaña de ese mes; no se usa",
     "Google Ads: «Royal Baby - Junio 2026» es el informe por día de Junio 2026, pero falta el informe de campaña de ese mes; no se usa",
-    "Google Ads: «Royal Baby - Marzo 2026» es el informe por día de Marzo 2026, pero falta el informe de campaña de ese mes; no se usa",
     "Google Ads: «Royal Baby - Mayo 2026» es el informe por día de Mayo 2026, pero falta el informe de campaña de ese mes; no se usa",
-    "Google Ads: «Royal Baby - Octubre 2026» es el informe por día de Octubre 2026, pero falta el informe de campaña de ese mes; no se usa"
+    "Google Ads: «Royal Baby - Abril 2026» es el informe por día de Abril 2026, pero falta el informe de campaña de ese mes; no se usa",
+    "Google Ads: «Royal Baby - Marzo 2026» es el informe por día de Marzo 2026, pero falta el informe de campaña de ese mes; no se usa",
+    "Google Ads: «Royal Baby - Febrero 2026» es el informe por día de Febrero 2026, pero falta el informe de campaña de ese mes; no se usa",
+    "Google Ads: «Royal Baby - Enero 2026» es el informe por día de Enero 2026, pero falta el informe de campaña de ese mes; no se usa"
   ],
   "months": [
     {
       "id": "2026-01",
       "label": "Enero 2026",
       "meta": {
-        "source": { "name": "Royal Baby - Enero 2026", "id": "1kT_gzULng0zjHIJl8HPFjk1_uzpMsJvxuHY9Ei1rolM", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby - Enero 2026", "id": "1kT_gzULng0zjHIJl8HPFjk1_uzpMsJvxuHY9Ei1rolM", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:53:55.509Z" },
         "monthFrom": "contenido",
         "granularity": "diaria",
         "coverage": { "start": "2026-01-01", "end": "2026-01-31", "days": 31, "daysInMonth": 31, "complete": true },
@@ -626,7 +626,7 @@
       "id": "2026-02",
       "label": "Febrero 2026",
       "meta": {
-        "source": { "name": "Royal Baby - Febrero 2026", "id": "1HIdZP-s5gegOAL3j_c8ubnZr-8gpDuHFJ8HYFd4N330", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby - Febrero 2026", "id": "1HIdZP-s5gegOAL3j_c8ubnZr-8gpDuHFJ8HYFd4N330", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:54:56.780Z" },
         "monthFrom": "contenido",
         "granularity": "diaria",
         "coverage": { "start": "2026-02-01", "end": "2026-02-28", "days": 28, "daysInMonth": 28, "complete": true },
@@ -1204,7 +1204,7 @@
       "id": "2026-03",
       "label": "Marzo 2026",
       "meta": {
-        "source": { "name": "Royal Baby - Marzo 2026", "id": "1W8zZfl2eQ1UruK0GkEzGvKus0PSV-J0HmskS6Qt_wE4", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby - Marzo 2026", "id": "1W8zZfl2eQ1UruK0GkEzGvKus0PSV-J0HmskS6Qt_wE4", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:56:27.377Z" },
         "monthFrom": "contenido",
         "granularity": "diaria",
         "coverage": { "start": "2026-03-01", "end": "2026-03-31", "days": 31, "daysInMonth": 31, "complete": true },
@@ -1771,7 +1771,7 @@
       "id": "2026-04",
       "label": "Abril 2026",
       "meta": {
-        "source": { "name": "Royal Baby - Abril 2026", "id": "1v1ncU8_skA4HOYUU9-jE82BGz-65b1OA1iDYmZLZGg4", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby - Abril 2026", "id": "1v1ncU8_skA4HOYUU9-jE82BGz-65b1OA1iDYmZLZGg4", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:56:51.358Z" },
         "monthFrom": "contenido",
         "granularity": "diaria",
         "coverage": { "start": "2026-04-01", "end": "2026-04-30", "days": 30, "daysInMonth": 30, "complete": true },
@@ -2262,7 +2262,7 @@
       "id": "2026-05",
       "label": "Mayo 2026",
       "meta": {
-        "source": { "name": "Royal Baby - Mayo 2026", "id": "1M8eLU8sswwFVIV2U6SoBTTx4se2nr2jtG5VLsmT2h3U", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby - Mayo 2026", "id": "1M8eLU8sswwFVIV2U6SoBTTx4se2nr2jtG5VLsmT2h3U", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:57:50.150Z" },
         "monthFrom": "contenido",
         "granularity": "diaria",
         "coverage": { "start": "2026-05-01", "end": "2026-05-31", "days": 31, "daysInMonth": 31, "complete": true },
@@ -2964,7 +2964,7 @@
       "id": "2026-06",
       "label": "Junio 2026",
       "meta": {
-        "source": { "name": "Royal Baby - Junio 2026", "id": "12RQtiz2cDh444ValF1gUsF_NsfjLi2mBwHhLCsa7_Oo", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby - Junio 2026", "id": "12RQtiz2cDh444ValF1gUsF_NsfjLi2mBwHhLCsa7_Oo", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:58:35.548Z" },
         "monthFrom": "contenido",
         "granularity": "diaria",
         "coverage": { "start": "2026-06-01", "end": "2026-06-30", "days": 30, "daysInMonth": 30, "complete": true },
@@ -3755,7 +3755,7 @@
       "id": "2026-07",
       "label": "Julio 2026",
       "meta": {
-        "source": { "name": "Royal Baby - Julio 2026", "id": "150oEt3NUe97HJl1eexW-WhXEftoIvL5gY72KSUosNQM", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby - Julio 2026", "id": "150oEt3NUe97HJl1eexW-WhXEftoIvL5gY72KSUosNQM", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:59:21.745Z" },
         "monthFrom": "contenido",
         "granularity": "diaria",
         "coverage": { "start": "2026-07-01", "end": "2026-07-31", "days": 31, "daysInMonth": 31, "complete": true },
@@ -4648,7 +4648,7 @@
       "id": "2026-08",
       "label": "Agosto 2026",
       "meta": {
-        "source": { "name": "Royal Baby - Agosto 2026", "id": "1hRh2Xh8l1Cd2GMDX7m46S21w_0nnYKXWH0JbHOCbsec", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby - Agosto 2026", "id": "1hRh2Xh8l1Cd2GMDX7m46S21w_0nnYKXWH0JbHOCbsec", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T04:00:41.081Z" },
         "monthFrom": "contenido",
         "granularity": "diaria",
         "coverage": { "start": "2026-08-01", "end": "2026-08-31", "days": 31, "daysInMonth": 31, "complete": true },
@@ -5552,7 +5552,7 @@
       "id": "2026-09",
       "label": "Septiembre 2026",
       "meta": {
-        "source": { "name": "Royal Baby - Septiembre 2026", "id": "1_iTA-Gaj1YTI8JjL2_JgwlyzYLf5obuMR4Pm9BZMlSI", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby - Septiembre 2026", "id": "1_iTA-Gaj1YTI8JjL2_JgwlyzYLf5obuMR4Pm9BZMlSI", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-05T17:16:07.944Z" },
         "monthFrom": "contenido",
         "granularity": "diaria",
         "coverage": { "start": "2026-09-01", "end": "2026-09-30", "days": 30, "daysInMonth": 30, "complete": true },
@@ -6244,7 +6244,7 @@
       "id": "2026-10",
       "label": "Octubre 2026",
       "meta": {
-        "source": { "name": "Royal Baby - Octube 2026", "id": "1uuPg8ygy1NX-9oYCS17pPrr3XoA-6-plQYBygs_5o-I", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": null },
+        "source": { "name": "Royal Baby - Octube 2026", "id": "1uuPg8ygy1NX-9oYCS17pPrr3XoA-6-plQYBygs_5o-I", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-23T23:34:38.722Z" },
         "monthFrom": "contenido",
         "granularity": "diaria",
         "coverage": { "start": "2026-10-01", "end": "2026-10-22", "days": 22, "daysInMonth": 31, "complete": false },

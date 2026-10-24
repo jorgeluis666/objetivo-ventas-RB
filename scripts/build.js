@@ -113,6 +113,20 @@ function embedAlertas(html) {
   return html.replace('</head>', () => `<script>\nwindow.RB_ALERTAS = ${json};\n</script>\n</head>`);
 }
 
+// Lector de las carpetas privadas de Drive (Web App de scripts/disparar-actualizacion.gs): los botones
+// Sincronizar de Objetivos le piden las hojas de ventas y objetivos. URL y clave llegan por RB_DRIVE_SCRIPT_URL
+// y RB_DRIVE_READ_KEY y solo quedan dentro del HTML cifrado; sin ellas los botones no pueden leer Drive.
+function embedLectura(html) {
+  const lectura = { url: process.env.RB_DRIVE_SCRIPT_URL || '', clave: process.env.RB_DRIVE_READ_KEY || '' };
+  if (!lectura.url || !lectura.clave) {
+    console.warn('[build] sin RB_DRIVE_SCRIPT_URL/RB_DRIVE_READ_KEY: los botones Sincronizar no pueden leer Drive');
+    return html;
+  }
+  console.log('[build] botones Sincronizar conectados al lector de Drive');
+  const json = JSON.stringify(lectura).replace(/</g, '\\u003c');
+  return html.replace('</head>', () => `<script>\nwindow.RB_DRIVE_LECTURA = ${json};\n</script>\n</head>`);
+}
+
 // dist/ solo lleva index.html, assets/ y CNAME: cualquier otro archivo local quedaría roto al publicar.
 function checkLocalReferences(rawHtml, html) {
   if (/<link[^>]*rel="stylesheet"[^>]*href="(?!https:)|<script[^>]*src="(?!https:)/.test(html)) {
@@ -152,6 +166,7 @@ function main() {
   checkLocalReferences(rawHtml, html);
   html = embedData(html);
   html = embedAlertas(html);
+  html = embedLectura(html);
   html = html.replace(/\r\n?/g, '\n');
 
   const cname = readFile('CNAME').trim();
@@ -162,7 +177,7 @@ function main() {
 
   const password = process.env.RB_PAGE_PASSWORD || '';
   const output = password ? encryptPage(html, password) : html;
-  if (password && [...Object.keys(EMBEDDED_DATA), 'RB_ALERTAS'].some(name => output.includes(name))) {
+  if (password && [...Object.keys(EMBEDDED_DATA), 'RB_ALERTAS', 'RB_DRIVE_LECTURA'].some(name => output.includes(name))) {
     throw new Error('dist/index.html quedó con los datos en claro');
   }
   fs.writeFileSync(DIST_HTML, output, 'utf8');

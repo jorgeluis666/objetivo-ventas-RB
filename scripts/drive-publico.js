@@ -1,10 +1,14 @@
 /**
- * drive-publico.js — encuentra la hoja de cálculo de una carpeta de Drive compartida por enlace.
+ * drive-publico.js — encuentra la hoja de cálculo de una carpeta de Drive.
  *
- * Con RB_DRIVE_API_KEY (o GOOGLE_API_KEY) lista la carpeta con la API de Drive; sin clave, o si
- * la API falla, lee la vista pública de la carpeta (embeddedfolderview), igual que sync-ads.js.
- * La usan scripts/sync-objetivos.js y scripts/fetch-data.js.
+ * Con RB_DRIVE_SCRIPT_URL y RB_DRIVE_READ_KEY lista la carpeta (privada) por el Apps Script de
+ * Royal Baby. Si no, con RB_DRIVE_API_KEY (o GOOGLE_API_KEY) usa la API de Drive; sin clave, o si
+ * falla, lee la vista pública de la carpeta (embeddedfolderview), igual que sync-ads.js. La usan
+ * scripts/sync-objetivos.js, scripts/fetch-data.js, scripts/sync-artes.js y scripts/sync-reportes.js
+ * (Artes y Reportes siguen compartidas por enlace).
  */
+
+const FD = require('../js/fuentes-drive.js');
 
 const SHEET_MIME = 'application/vnd.google-apps.spreadsheet';
 const USER_AGENT = 'Mozilla/5.0 (compatible; RoyalBabyDashboard/1.0)';
@@ -80,6 +84,14 @@ async function listWithPublicView(folderId) {
 }
 
 async function listFolder(folderId) {
+  if (FD.lecturaPrivada()) {
+    try {
+      const files = await FD.listarPrivado(folderId);
+      if (files.length) return files;
+    } catch (err) {
+      console.warn(`  ! ${err.message}; pruebo las otras vías`);
+    }
+  }
   const key = apiKey();
   if (key) {
     try {
@@ -90,7 +102,7 @@ async function listFolder(folderId) {
     }
   }
   const files = await listWithPublicView(folderId);
-  if (!files.length) throw new Error('la carpeta no devolvió archivos (¿dejó de estar compartida por enlace?)');
+  if (!files.length) throw new Error('la carpeta no devolvió archivos (si es privada, falta el lector de Drive)');
   return files;
 }
 

@@ -374,12 +374,15 @@ a { text-decoration: none; color: inherit; }
   white-space: nowrap;
   letter-spacing: 0.02em;
 }
-.pill.blue   { background: var(--brand-soft);  color: var(--brand-text);  border: 1px solid rgba(37,99,235,.15); }
-.pill.green  { background: var(--green-soft);  color: var(--green-text);  border: 1px solid rgba(5,150,105,.15); }
-.pill.amber  { background: var(--amber-soft);  color: var(--amber-text);  border: 1px solid rgba(217,119,6,.15); }
-.pill.red    { background: var(--red-soft);    color: var(--red-text);    border: 1px solid rgba(185,28,28,.15); }
-.pill.purple { background: var(--purple-soft); color: var(--purple-text); border: 1px solid rgba(124,58,237,.15); }
-.pill.gray   { background: #F1F5F9;            color: #475569;            border: 1px solid #E2E8F0; }
+/* Sin relleno de color: la pildora queda en blanco con un borde fino y el color se queda solo en el
+   texto, que es lo que dice si vamos bien o mal. Con cuatro o cinco en una fila, los rellenos
+   convertian el encabezado en un semaforo. */
+.pill.blue   { background: #fff; color: var(--brand-text);  border: 1px solid rgba(37,99,235,.22); }
+.pill.green  { background: #fff; color: var(--green-text);  border: 1px solid rgba(5,150,105,.22); }
+.pill.amber  { background: #fff; color: var(--amber-text);  border: 1px solid rgba(217,119,6,.22); }
+.pill.red    { background: #fff; color: var(--red-text);    border: 1px solid rgba(185,28,28,.22); }
+.pill.purple { background: #fff; color: var(--purple-text); border: 1px solid rgba(124,58,237,.22); }
+.pill.gray   { background: #fff; color: #475569;            border: 1px solid #E2E8F0; }
 
 /* ── INSIGHTS ── */
 .insight {

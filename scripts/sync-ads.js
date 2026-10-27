@@ -960,7 +960,7 @@ function consolidate(month) {
   if (dailyBasis === 'estimado') notes.push('No hay cifras diarias reales este mes: la serie diaria es el total del mes repartido entre los días.');
   if (g && g.purchases === null) notes.push('Google Ads no informó compras este mes: las compras y el costo por compra son solo de Meta.');
   if (month.google?.totalsFromDetail) {
-    notes.push('Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día, que no incluye los términos con pocas impresiones: el gasto real pudo ser algo mayor.');
+    notes.push(`Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día. Ahí solo aparecen las campañas con términos de búsqueda (${month.google.campaigns.map(c => c.campaign).join(', ') || 'ninguna'}): si la cuenta tiene Performance Max o Display, ese gasto no está contado.`);
   }
 
   return {
@@ -1224,15 +1224,17 @@ function googleBlock(entry, warnings, detailEntry) {
   };
 }
 
-// El mes que solo tiene informe por día: los totales salen de ahí. Google no detalla en ese informe
-// los términos con pocas impresiones, así que la suma queda algo por debajo del gasto real; por eso
-// el bloque se marca con totalsFromDetail y el tablero lo dice en pantalla. En cuanto aparezca el
-// informe de campaña del mes, manda ese y esta rama deja de usarse.
+// El mes que solo tiene informe por día: los totales salen de ahí. Falta gasto, y por dos motivos
+// de distinto tamaño: Google no detalla los términos con pocas impresiones, y —esto pesa mucho más—
+// una campaña sin términos de búsqueda **no aparece en absoluto** en ese informe. En Royal Baby,
+// Performance Max no sale: octubre de 2026 daba S/ 926 cuando la cuenta llevaba S/ 1,179, un 21 %
+// menos. Por eso el bloque se marca con totalsFromDetail y el tablero lo dice en pantalla. En
+// cuanto aparezca el informe de campaña del mes, manda ese y esta rama deja de usarse.
 function googleBlockFromDetail(detailEntry, warnings) {
   const { file, month, detail } = detailEntry;
   const label = `Google Ads ${monthLabel(month)}`;
   for (const warning of detail.warnings) warnings.push(`${label}: ${warning}`);
-  warnings.push(`${label}: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real.`);
+  warnings.push(`${label}: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto.`);
 
   const totals = {
     cost: detail.totals.cost,
@@ -1419,7 +1421,7 @@ async function main() {
   const soloDetalle = months.filter(month => month.google?.totalsFromDetail);
   const pending = [
     ...(soloDetalle.length
-      ? [`Google Ads: ${soloDetalle.map(month => month.label).join(', ')} ${soloDetalle.length === 1 ? 'va' : 'van'} con el informe por día porque no hay informe de campaña. Las cifras sirven, pero el gasto puede quedar algo por debajo: subir el informe de campaña de ${soloDetalle.length === 1 ? 'ese mes' : 'esos meses'} a la carpeta lo deja exacto.`]
+      ? [`Google Ads: ${soloDetalle.map(month => month.label).join(', ')} ${soloDetalle.length === 1 ? 'va' : 'van'} con el informe por día porque no hay informe de campaña. Ese informe solo trae las campañas con términos de búsqueda, así que a las campañas de Performance Max o Display les falta todo su gasto: subir el informe de campaña de ${soloDetalle.length === 1 ? 'ese mes' : 'esos meses'} a la carpeta es lo que deja la cifra completa.`]
       : []),
     ...(segmented.length
       ? [`Google Ads: exportar de nuevo el informe de campaña sin segmentar por «${segmented[0].google.segmentation}», con Campaña, Costo, Impr., CTR, Clics, Prom. CPC, Conversiones, Costo/conv., Conversiones por compras y Valor de conv. por campaña, y reemplazar las hojas de ${segmented.map(month => month.label).join(', ')}.`]

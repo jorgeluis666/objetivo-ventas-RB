@@ -4,7 +4,7 @@
     "name": "06 Artes",
     "url": "https://drive.google.com/drive/folders/1ab1a50IRolSq5qydzycRsGctbG8J9gmP"
   },
-  "sincronizado": "2026-10-26T18:13:24.198Z",
+  "sincronizado": "2026-10-27T00:49:37.460Z",
   "avisos": [],
   "months": {
     "2026-10": {
@@ -50,6 +50,18 @@
           "kind": "video"
         },
         {
+          "file": "Cuando eliges un baton.mp4",
+          "campana": "Royal Baby Reconocimiento - Octubre",
+          "driveId": "1Ku7GxMcEOVmnCJwlOAp-usrBG92PFcZT",
+          "kind": "video"
+        },
+        {
+          "file": "HOY EMPEZÓ LA PREVENTA.mp4",
+          "campana": "Royal Baby Reconocimiento - Octubre",
+          "driveId": "10Dg-ox80H8dX563A62TILXTRTrGsoy0i",
+          "kind": "video"
+        },
+        {
           "file": "La línea Benedetta está creada para esos momentos.mp4",
           "campana": "Rotal Baby WhatsApp - Octubre",
           "driveId": "1MzyQmtLE0XUs5HahErnaz5UquT1FUWaj",
@@ -72,6 +84,12 @@
             "Niños con tartán rojo, jerséis de punto con motivos nórdicos y vestido rojo sobre escenografía navideña, con frases caligráficas («Para fotografiar», «Para recordar») que venden el momento y no el precio.",
             "Sin descuento ni precio en pantalla: usa recursos de temporada (marco de estampilla, copos de nieve) y cierra con el logo de Royal Baby en azul marino."
           ]
+        },
+        {
+          "file": "No lo necesitabas.mp4",
+          "campana": "Royal Baby Reconocimiento - Octubre",
+          "driveId": "11L_T3DpsUhC03OQWYpUQ3YmA7LGy_3dR",
+          "kind": "video"
         },
         {
           "file": "Outlet - nuevo - enero.mp4",
@@ -98,9 +116,15 @@
           "kind": "video"
         },
         {
-          "file": "Piezas españolas para comenzar una historia que vale la pena guardar.mp4",
+          "file": "Piezas españolas para comenzar una historia que vale la pena guarda.mp4",
           "campana": "Rotal Baby WhatsApp - Octubre",
           "driveId": "1G5ROVeKc0t-hN3EXOul2gEK7XAc7RXk3",
+          "kind": "video"
+        },
+        {
+          "file": "Piezas españolas para comenzar una historia.mp4",
+          "campana": "Royal Baby Reconocimiento - Octubre",
+          "driveId": "1OzAETsPkiDKqpfxfg5dMq622usqL68Hz",
           "kind": "video"
         },
         {
@@ -116,7 +140,13 @@
           ]
         },
         {
-          "file": "Un momento especial como el bautizo de tu peque,Un momento especial como el bautizo de tu peque (carrusel)",
+          "file": "SaveClip.App_AQPL2VDVbW0Esde792B3yZ9qmaQzEJcqNbigNVHHEzuBUDRqgk58qH4PLwJMxKRF_I6AkTEr2ewmxBhDsAXU5ZCf3eO_sDCfQmC75s8.mp4",
+          "campana": "Rotal Baby WhatsApp - Octubre",
+          "driveId": "1OK8k2j519NIZfjUsDi73z1A3SBY5DEO5",
+          "kind": "video"
+        },
+        {
+          "file": "Un momento especial como el bautizo de tu peque (Carrusel)",
           "campana": "Rotal Baby WhatsApp - Octubre",
           "driveId": "1RcLxJjRm_1RtnryfwSIc3lJeTOb0BDYp",
           "kind": "carrusel",
@@ -147,6 +177,12 @@
             "1LZmaFrprXvbc8OSeNB5rpwco2bR-5yER"
           ],
           "ordenIncierto": true
+        },
+        {
+          "file": "Video nuevo tienda octubre - Daniela.mp4",
+          "campana": "Royal Baby Reconocimiento - Octubre",
+          "driveId": "1FdxIyFKLqCWBUysH6RNv-TVYpVLd8dKl",
+          "kind": "video"
         }
       ]
     }

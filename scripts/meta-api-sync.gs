@@ -1,31 +1,41 @@
 /**
- * meta-api-sync.gs — alimenta la carpeta «Meta Files» de Drive desde la API de Meta.
+ * meta-api-sync.gs — alimenta desde la API de Meta la carpeta de pauta de una marca en Drive.
  *
  * Hasta hoy la hoja mensual de Meta la descargaba una persona del Administrador de anuncios y la
  * subía a mano. Este script hace lo mismo solo: pide las cifras a la API, arma la hoja con **las
- * mismas columnas que el export** y la deja en la carpeta, de modo que scripts/sync-ads.js la lee
- * sin enterarse de que cambió el origen. Es el puente mientras Nexus no haga también Meta; cuando
- * lo haga, se apagan los disparadores y ya.
+ * mismas columnas que el export** y la deja en la carpeta, de modo que el barrido de cada tablero
+ * la lee sin enterarse de que cambió el origen. Es el puente mientras Nexus no haga también Meta;
+ * cuando lo haga, se apagan los disparadores y ya.
+ *
+ * Sirve a las tres marcas que leen una hoja mensual de Meta desde Drive —Royal Baby, Amador y
+ * Terminal Pesquero—, con un proyecto de Apps Script por marca y el mismo código en los tres. Lo
+ * que cambia va en las propiedades del script, no en el código. El archivo vive en este
+ * repositorio aunque sirva a las tres porque ya estaba acá; los otros dos lo apuntan desde su
+ * README.
  *
  * Corre en los servidores de Google con disparadores propios, así que no depende de que nadie tenga
  * un equipo encendido. Pensado para las 6:00, 13:00 y 18:00 de Lima, media hora antes de que el
  * barrido del tablero lea la carpeta.
  *
  * ── Puesta en marcha (una vez) ───────────────────────────────────────────────
- * 1. script.google.com → Nuevo proyecto → «Royal Baby · Meta a Drive». Pega este archivo.
+ * 1. script.google.com → Nuevo proyecto → «<Marca> · Meta a Drive». Pega este archivo.
  * 2. Configuración del proyecto → Propiedades del script:
+ *      PERFIL          royal-baby, amador o terminal-pesquero. Decide el nombre del archivo, las
+ *                      columnas y si se pide el desglose por edad y sexo. Ver PERFILES más abajo.
  *      META_TOKEN      Token de acceso con permiso ads_read. Usa el de un usuario del sistema
  *                      (Business Manager → Usuarios del sistema → Generar token): no caduca a los
- *                      60 días como el de una persona.
- *      META_ACCOUNT_ID Id de la cuenta publicitaria, sin «act_». El de Royal Baby está en las notas
+ *                      60 días como el de una persona. El mismo token sirve para las tres marcas
+ *                      si el usuario del sistema tiene asignadas las tres cuentas.
+ *      META_ACCOUNT_ID Id de la cuenta publicitaria, sin «act_». Los ids están en las notas
  *                      privadas de LR Suite, no acá: este repositorio es público.
- *      META_FOLDER_ID  Id de la carpeta «Meta Files» de Drive, la misma que lee el barrido.
+ *      META_FOLDER_ID  Id de la carpeta de pauta de Meta de esa marca, la misma que lee su barrido.
  * 3. Ejecuta `sincronizarMeta` a mano una vez: autoriza los permisos y revisa el registro.
  * 4. Ejecuta `instalarDisparadores` una vez. Para cambiar los horarios, edita HORAS y vuelve a
  *    ejecutarla: borra los suyos antes de crear los nuevos, así que no se duplican.
  *
  * ── Lo que escribe y lo que no ───────────────────────────────────────────────
- * Una fila por día, edad, sexo y anuncio, igual que el export. «Resultados» y «Tipo de resultado»
+ * Una fila por día y anuncio —y además por edad y sexo en los perfiles que lo piden, que es como
+ * viene el export de esa marca. «Resultados» y «Tipo de resultado»
  * no existen como tales en la API: los deduce del objetivo de optimización de cada conjunto, que es
  * de donde sale el resultado que cuenta Meta. Si un conjunto usa un objetivo que no está en
  * RESULTADO_POR_OBJETIVO, esas dos columnas van vacías y el registro lo avisa con el nombre del
@@ -41,19 +51,71 @@ const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
 // Los primeros días del mes Meta todavía ajusta el mes anterior: se reescribe hasta el día 5.
 const DIAS_REESCRIBIR_ANTERIOR = 5;
 
-// Encabezados del export, en su orden. sync-ads.js los busca por nombre, no por posición, pero
-// mantener el orden hace que la hoja se lea igual que las que subía el equipo.
+// Cada marca lee su hoja con un barrido distinto y espera columnas distintas. No se trata de poner
+// todas por si acaso: Terminal Pesquero y Amador suman edad y sexo en su propio barrido, así que
+// pedirle a Meta ese desglose multiplicaría las filas sin añadir nada. El perfil se elige con la
+// propiedad PERFIL y decide el nombre del archivo, las columnas y si se pide el desglose.
+//
 // La moneda del gasto no se escribe a mano: se lee de la cuenta y se mete en el encabezado, que es
 // de donde la saca el barrido. Si algún día la cuenta deja de estar en soles, el tablero lo avisa
 // solo en vez de contar dólares como si fueran soles.
-const COLUMNAS = [
-  'Día', 'Edad', 'Sexo', 'Nombre del anuncio', 'Objetivo', 'Monto gastado (MONEDA)', 'Impresiones',
-  'Alcance', 'Clics en el enlace', 'CTR (todos)', 'Interacciones',
-  'Visitas a la página de destino del sitio web', 'Artículos agregados al carrito',
-  'Pagos iniciados', 'Compras', 'Valor de conversión de compras',
-  'Conversaciones con mensajes iniciadas', 'Tipo de resultado', 'Resultados',
-  'Nombre de la campaña', 'Nombre del conjunto de anuncios', 'Enlace de vista previa'
-];
+const PERFILES = {
+  'royal-baby': {
+    marca: 'Royal Baby',
+    desglose: true,
+    columnas: ['Día', 'Edad', 'Sexo', 'Nombre del anuncio', 'Objetivo', 'Monto gastado (MONEDA)',
+      'Impresiones', 'Alcance', 'Clics en el enlace', 'CTR (todos)', 'Interacciones',
+      'Visitas a la página de destino del sitio web', 'Artículos agregados al carrito',
+      'Pagos iniciados', 'Compras', 'Valor de conversión de compras',
+      'Conversaciones con mensajes iniciadas', 'Tipo de resultado', 'Resultados',
+      'Nombre de la campaña', 'Nombre del conjunto de anuncios', 'Enlace de vista previa']
+  },
+  // scripts/meta-drive-sync.gs de Objetivos-Amador: RAW_COLUMNS, sin edad ni sexo.
+  'amador': {
+    marca: 'Amador',
+    desglose: false,
+    columnas: ['Día', 'Nombre del anuncio', 'Objetivo', 'Monto gastado (MONEDA)', 'Impresiones',
+      'Alcance', 'Clics en el enlace', 'Compras', 'Conversaciones con mensajes iniciadas',
+      'Tipo de resultado', 'Resultados', 'Nombre de la campaña',
+      'Nombre del conjunto de anuncios', 'Enlace de vista previa']
+  },
+  // scripts/google-sheets-sync.gs de Objetivos-Terminal-Pesquero: el mismo juego, más corto.
+  'terminal-pesquero': {
+    marca: 'Terminal Pesquero',
+    desglose: false,
+    columnas: ['Día', 'Nombre del anuncio', 'Nombre de la campaña', 'Nombre del conjunto de anuncios',
+      'Tipo de resultado', 'Resultados', 'Monto gastado (MONEDA)', 'Impresiones', 'Alcance',
+      'Clics en el enlace', 'Enlace de vista previa']
+  }
+};
+
+// De dónde sale el valor de cada columna. Añadir una columna a un perfil es añadirla acá si no está.
+const VALORES = {
+  'Día': function (f) { return f.date_start; },
+  'Edad': function (f) { return f.age || ''; },
+  'Sexo': function (f) { return f.gender || ''; },
+  'Nombre del anuncio': function (f) { return f.ad_name || ''; },
+  'Objetivo': function (f) { return f.objective || ''; },
+  'Monto gastado (MONEDA)': function (f) { return Number(f.spend) || 0; },
+  'Impresiones': function (f) { return Number(f.impressions) || 0; },
+  'Alcance': function (f) { return Number(f.reach) || 0; },
+  'Clics en el enlace': function (f) { return Number(f.inline_link_clicks) || 0; },
+  // Va en porcentaje, igual que en el export: el barrido lo multiplica por las impresiones para
+  // reconstruir los clics de todo tipo, que es con lo que calcula el CTR.
+  'CTR (todos)': function (f) { return Number(f.ctr) || 0; },
+  'Interacciones': function (f) { return accion_(f.actions, 'post_engagement'); },
+  'Visitas a la página de destino del sitio web': function (f) { return accion_(f.actions, 'landing_page_view'); },
+  'Artículos agregados al carrito': function (f) { return accion_(f.actions, 'omni_add_to_cart'); },
+  'Pagos iniciados': function (f) { return accion_(f.actions, 'omni_initiated_checkout'); },
+  'Compras': function (f) { return accion_(f.actions, 'omni_purchase'); },
+  'Valor de conversión de compras': function (f) { return accion_(f.action_values, 'omni_purchase'); },
+  'Conversaciones con mensajes iniciadas': function (f) { return accion_(f.actions, 'onsite_conversion.messaging_conversation_started_7d'); },
+  'Tipo de resultado': function (f, ctx) { return ctx.meta ? ctx.meta.etiqueta : ''; },
+  'Resultados': function (f, ctx) { return ctx.resultados; },
+  'Nombre de la campaña': function (f) { return f.campaign_name || ''; },
+  'Nombre del conjunto de anuncios': function (f) { return f.adset_name || ''; },
+  'Enlace de vista previa': function (f, ctx) { return ctx.enlaces[f.ad_id] || ''; }
+};
 
 // De qué acción sale el «resultado» según para qué está optimizando el conjunto. Es la misma
 // correspondencia que usa el Administrador de anuncios para su columna «Resultados».
@@ -75,8 +137,17 @@ const RESULTADO_POR_OBJETIVO = {
   VISIT_INSTAGRAM_PROFILE: { accion: 'profile_visit', etiqueta: 'Visitas al perfil de Instagram' }
 };
 
-function columnas_(moneda) {
-  return COLUMNAS.map(function (nombre) { return nombre.replace('(MONEDA)', '(' + moneda + ')'); });
+function perfil_() {
+  const clave = propiedad_('PERFIL');
+  const perfil = PERFILES[clave];
+  if (!perfil) {
+    throw new Error('PERFIL «' + clave + '» no existe. Usa uno de: ' + Object.keys(PERFILES).join(', ') + '.');
+  }
+  return perfil;
+}
+
+function columnas_(perfil, moneda) {
+  return perfil.columnas.map(function (nombre) { return nombre.replace('(MONEDA)', '(' + moneda + ')'); });
 }
 
 function propiedad_(nombre) {
@@ -87,19 +158,22 @@ function propiedad_(nombre) {
 
 // ── Lo que se ejecuta ────────────────────────────────────────────────────────
 function sincronizarMeta() {
+  const perfil = perfil_();
   const hoy = new Date();
   const dia = Number(Utilities.formatDate(hoy, ZONA, 'd'));
   const meses = [mesDe_(hoy, 0)];
   if (dia <= DIAS_REESCRIBIR_ANTERIOR) meses.push(mesDe_(hoy, -1));
+  Logger.log('Perfil «%s»: %s columnas, desglose por edad y sexo %s.',
+    perfil.marca, perfil.columnas.length, perfil.desglose ? 'sí' : 'no');
 
   meses.forEach(function (mes) {
     try {
-      const datos = filasDelMes_(mes);
+      const datos = filasDelMes_(mes, perfil);
       if (!datos.filas.length) {
         Logger.log('%s: la API no devolvió filas; la hoja se deja como estaba.', mes.nombre);
         return;
       }
-      escribirHoja_(mes, datos);
+      escribirHoja_(mes, datos, perfil);
       Logger.log('%s: %s filas escritas en %s.', mes.nombre, datos.filas.length, datos.moneda);
     } catch (error) {
       // Un mes que falla no se lleva por delante al otro, y la hoja anterior sigue en su sitio:
@@ -181,7 +255,7 @@ const accion_ = function (lista, tipo) {
   return total;
 };
 
-function filasDelMes_(mes) {
+function filasDelMes_(mes, perfil) {
   const token = propiedad_('META_TOKEN');
   const cuenta = propiedad_('META_ACCOUNT_ID');
   const moneda = monedaDeCuenta_(cuenta, token);
@@ -194,7 +268,8 @@ function filasDelMes_(mes) {
     'impressions', 'reach', 'inline_link_clicks', 'ctr', 'actions', 'action_values'
   ].join(',');
   const url = META_API + '/act_' + cuenta + '/insights'
-    + '?level=ad&time_increment=1&breakdowns=age,gender&limit=500'
+    + '?level=ad&time_increment=1&limit=500'
+    + (perfil.desglose ? '&breakdowns=age,gender' : '')
     + '&time_range=' + encodeURIComponent(JSON.stringify({ since: mes.desde, until: mes.hasta }))
     + '&fields=' + campos
     + '&access_token=' + encodeURIComponent(token);
@@ -203,33 +278,16 @@ function filasDelMes_(mes) {
     const objetivo = objetivos[fila.adset_id];
     const meta = RESULTADO_POR_OBJETIVO[objetivo] || null;
     if (!meta && objetivo) sinMapear[objetivo] = true;
-    const resultados = meta && meta.accion ? accion_(fila.actions, meta.accion) : '';
-    return [
-      fila.date_start,
-      fila.age || '',
-      fila.gender || '',
-      fila.ad_name || '',
-      fila.objective || '',
-      Number(fila.spend) || 0,
-      Number(fila.impressions) || 0,
-      Number(fila.reach) || 0,
-      Number(fila.inline_link_clicks) || 0,
-      // «CTR (todos)» va en porcentaje, igual que en el export: el barrido lo multiplica por las
-      // impresiones para reconstruir los clics de todo tipo, que es con lo que calcula el CTR.
-      Number(fila.ctr) || 0,
-      accion_(fila.actions, 'post_engagement'),
-      accion_(fila.actions, 'landing_page_view'),
-      accion_(fila.actions, 'omni_add_to_cart'),
-      accion_(fila.actions, 'omni_initiated_checkout'),
-      accion_(fila.actions, 'omni_purchase'),
-      accion_(fila.action_values, 'omni_purchase'),
-      accion_(fila.actions, 'onsite_conversion.messaging_conversation_started_7d'),
-      meta ? meta.etiqueta : '',
-      resultados === '' ? '' : resultados,
-      fila.campaign_name || '',
-      fila.adset_name || '',
-      enlaces[fila.ad_id] || ''
-    ];
+    const ctx = {
+      meta: meta,
+      enlaces: enlaces,
+      resultados: meta && meta.accion ? accion_(fila.actions, meta.accion) : ''
+    };
+    return perfil.columnas.map(function (nombre) {
+      const valor = VALORES[nombre];
+      if (!valor) throw new Error('La columna «' + nombre + '» no tiene de dónde salir. Añádela a VALORES.');
+      return valor(fila, ctx);
+    });
   });
 
   const pendientes = Object.keys(sinMapear);
@@ -243,11 +301,11 @@ function filasDelMes_(mes) {
 // ── La hoja ──────────────────────────────────────────────────────────────────
 // Se reutiliza el archivo del mes si ya existe, en vez de crear uno nuevo: el barrido avisa cuando
 // encuentra dos del mismo mes, y además así no se pierde el historial de versiones de Drive.
-function escribirHoja_(mes, datos) {
+function escribirHoja_(mes, datos, perfil) {
   const filas = datos.filas;
-  const encabezado = columnas_(datos.moneda);
+  const encabezado = columnas_(perfil, datos.moneda);
   const carpeta = DriveApp.getFolderById(propiedad_('META_FOLDER_ID'));
-  const libro = libroDelMes_(carpeta, mes);
+  const libro = libroDelMes_(carpeta, mes, perfil.marca);
   // El barrido no lee la hoja: la exporta a CSV. En una hoja en español el CSV sale con la coma
   // como separador decimal, «1,34» se parte en dos columnas y el informe entero queda corrido.
   // Las hojas nuevas nacen con el idioma de la cuenta (es_ES), así que hay que forzarlo.
@@ -267,8 +325,8 @@ function escribirHoja_(mes, datos) {
 // Devuelve la hoja del mes, reaprovechando la que ya esté en la carpeta. Si la que hay se llama
 // distinto, se le cambia el nombre en vez de crear otra: dos archivos del mismo mes hacen que el
 // barrido lea uno y avise del otro. Pasa de verdad — la de octubre está subida como «Octube 2026».
-function libroDelMes_(carpeta, mes) {
-  const nombre = 'Royal Baby - ' + mes.nombre;
+function libroDelMes_(carpeta, mes, marca) {
+  const nombre = marca + ' - ' + mes.nombre;
   const existentes = carpeta.getFilesByName(nombre);
   if (existentes.hasNext()) return SpreadsheetApp.openById(existentes.next().getId());
 

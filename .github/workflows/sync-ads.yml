@@ -11,10 +11,13 @@ name: Sincronizar inversión publicitaria
 # Al final lista la carpeta de reportes con scripts/sync-reportes.js y commitea
 # data/reportes-2026.json: es el índice del módulo Archivo de Reportes.
 #
-# Corre todos los días a las 10:30 de Lima, lanzado por el Apps Script scripts/disparar-actualizacion.gs
-# (el cron de las 07:00 queda de respaldo), y a mano (Run workflow). No hay botón en
-# el tablero: dispararlo desde el navegador exigiría un token de GitHub y el tablero
-# lo abren clientes.
+# Corre tres veces al día —6:30, 13:30 y 18:30 de Lima— lanzado por el Apps Script
+# scripts/disparar-actualizacion.gs, más la corrida de las 10:30 que arrastra a los otros
+# workflows (el cron de las 07:00 queda de respaldo), y a mano (Run workflow). Esos horarios
+# van media hora después de cada carga: Nexus escribe los archivos de Google Ads en Drive a
+# las 6:00, 13:00 y 18:00, y scripts/meta-api-sync.gs escribe los de Meta a esas mismas horas.
+# No hay botón en el tablero: dispararlo desde el navegador exigiría un token de GitHub y el
+# tablero lo abren clientes.
 #
 # Las carpetas de Meta Ads y Google Ads son privadas: sync-ads.js las lee por el Apps
 # Script de Royal Baby (secrets RB_DRIVE_SCRIPT_URL y RB_DRIVE_READ_KEY). Artes y Reportes

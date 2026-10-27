@@ -6,6 +6,11 @@
 // a las 10:30 de Lima (+-15 min), que corra los workflows de datos; un workflow_dispatch arranca en
 // segundos. Al terminar cada uno, deploy.yml publica el tablero. Los cron de GitHub quedan de respaldo.
 //
+// La inversion publicitaria va aparte, tres veces al dia: Nexus escribe los archivos de Google Ads
+// en Drive a las 6:00, 13:00 y 18:00, y scripts/meta-api-sync.gs escribe los de Meta a esas mismas
+// horas, asi que sync-ads.yml se lanza a las y media, cuando las dos carpetas ya estan completas.
+// Solo ese workflow: ventas y objetivos siguen una vez al dia, para no repetir sus alertas.
+//
 // Ademas, cada 15 minutos revisa la carpeta de Drive de ventas 2026: si alguien edito la hoja y ya
 // lleva QUIETO_MIN minutos sin cambios, lanza solo la lectura de ventas. Esa lectura dispara la alerta
 // de ventas actualizadas (alertas-semanales.yml), que sale solo si cambiaron las cifras.
@@ -29,6 +34,12 @@ const WORKFLOWS = [
   'sync-ads.yml',        // Sincronizar inversion publicitaria
 ];
 
+// Inversion publicitaria sola, media hora despues de cada carga de Nexus y de Meta.
+const ADS_HOURS = [6, 13, 18];
+const ADS_MINUTE = 30;
+const HANDLER_ADS = 'actualizarAnuncios';
+const WORKFLOW_ADS = 'sync-ads.yml';
+
 // Carpeta "Ventas Royal Baby - 2026" (la misma que lee scripts/fetch-data.js).
 const CARPETA_VENTAS = '1JJdjIzDu2CrhcBI9gBUTUuPAXnKYUQal';
 const HANDLER_VENTAS = 'revisarVentas';
@@ -42,6 +53,12 @@ function actualizarTablero() {
   const edicion = ultimaEdicionVentas();
   lanzar(WORKFLOWS);
   guardarLeidoHasta(edicion);
+}
+
+// Lo llaman los activadores de las 6:30, 13:30 y 18:30. El de las 10:30 ya lanza sync-ads.yml junto
+// con los demas, asi que a esa hora no hace falta repetirlo.
+function actualizarAnuncios() {
+  lanzar([WORKFLOW_ADS]);
 }
 
 // Lo llama el activador de cada 15 minutos.
@@ -95,21 +112,30 @@ function lanzar(workflows) {
   if (fallidos.length) throw new Error(fallidos.join('\n'));
 }
 
-// Ejecutar UNA vez a mano. Deja el activador diario a las 10:30 de Lima (+-15 min) y la revision de
-// la carpeta de ventas cada 15 minutos. Las ediciones de antes de instalar no disparan nada.
+// Ejecutar UNA vez a mano. Deja el activador diario, los tres de inversion publicitaria y la
+// revision de la carpeta de ventas cada 15 minutos. Las ediciones de antes de instalar no disparan
+// nada. Borra los suyos antes de crearlos, asi que se puede volver a ejecutar al cambiar un horario.
 function instalarActivador() {
   ScriptApp.getProjectTriggers()
-    .filter(t => [HANDLER, HANDLER_VENTAS].includes(t.getHandlerFunction()))
+    .filter(t => [HANDLER, HANDLER_ADS, HANDLER_VENTAS].includes(t.getHandlerFunction()))
     .forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger(HANDLER)
     .timeBased().everyDays(1).atHour(RUN_HOUR).nearMinute(RUN_MINUTE)
     .inTimezone(TIMEZONE)
     .create();
+  ADS_HOURS.forEach(hora => {
+    ScriptApp.newTrigger(HANDLER_ADS)
+      .timeBased().everyDays(1).atHour(hora).nearMinute(ADS_MINUTE)
+      .inTimezone(TIMEZONE)
+      .create();
+  });
   ScriptApp.newTrigger(HANDLER_VENTAS)
     .timeBased().everyMinutes(REVISAR_CADA_MIN)
     .create();
   guardarLeidoHasta(ultimaEdicionVentas());
-  console.log(`Activador instalado: todos los dias a las ${RUN_HOUR}:${RUN_MINUTE} (${TIMEZONE}), +-15 min`);
+  const horariosAds = ADS_HOURS.map(h => `${h}:${ADS_MINUTE}`).join(', ');
+  console.log(`Activador diario: a las ${RUN_HOUR}:${RUN_MINUTE} (${TIMEZONE}), +-15 min`);
+  console.log(`Inversion publicitaria: a las ${horariosAds} (${TIMEZONE}), +-15 min`);
   console.log(`Revision de la carpeta de ventas: cada ${REVISAR_CADA_MIN} minutos`);
 }
 

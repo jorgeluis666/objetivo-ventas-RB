@@ -50,6 +50,8 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
     sync-objetivos.js     Objetivos: carpeta de Drive → data/objetivos-2026.json
     drive-publico.js      Encuentra la hoja de una carpeta de Drive (privada, por el Apps Script)
     sync-ads.js           Lee las carpetas de Drive de Google Ads y Meta → data/ads-2026.json
+    meta-api-sync.gs      Apps Script: pide las cifras a la API de Meta y escribe la hoja mensual
+                          en la carpeta Meta Files, a las 6:00, 13:00 y 18:00 de Lima
     sync-reportes.js      Lista la carpeta Reportes de Drive → data/reportes-2026.json
     build.js              Arma dist/ (HTML con todo incrustado, cifrado con la clave)
     alertas.js            Correo de alertas: lunes 6:00 p. m. y cuando cambian las ventas
@@ -114,7 +116,8 @@ GitHub corre los cron con 5 a 9 horas de atraso (el de las 06:00 sale entre las 
 - Si GitHub rechaza la orden, el activador falla y Google avisa por correo.
 - La venta del día anterior aparece solo si ya está cargada en la hoja de Drive a esa hora.
 - Además, cada 15 minutos revisa la carpeta de ventas 2026 en Drive: si la hoja se editó después de la última lectura y lleva 10 minutos sin cambios, lanza solo `update-data.yml`, y con eso sale la alerta de ventas actualizadas. El botón **Sincronizar** del tablero no la dispara: lee la hoja solo en ese navegador.
-- Al cambiar el script: pegarlo, guardar y ejecutar `instalarActivador` una vez (deja los dos activadores y pide el permiso de Drive).
+- La inversión publicitaria va además por su cuenta tres veces al día: el mismo proyecto lanza solo `sync-ads.yml` a las **6:30, 13:30 y 18:30 de Lima**, media hora después de cada carga de datos (Nexus escribe Google Ads en Drive a las 6:00, 13:00 y 18:00, y `scripts/meta-api-sync.gs` escribe Meta a esas mismas horas). Ventas y objetivos siguen una vez al día, para no repetir sus alertas.
+- Al cambiar el script: pegarlo, guardar y ejecutar `instalarActivador` una vez (deja los cinco activadores —el diario, los tres de anuncios y el de ventas— y pide el permiso de Drive).
 
 ### Botones Sincronizar
 
@@ -134,7 +137,7 @@ node scripts/sync-ads.js --check   # informa sin escribir
 Lee dos carpetas compartidas por enlace, una por plataforma:
 
 - **Google Ads** ([carpeta](https://drive.google.com/drive/folders/1TT5KTVZuGlFc7OqvGAz9nuRVyJFvwJpd)): informe de campaña del mes (`Royal Baby GA - <Mes> 2026`) y, opcional, el informe de anuncios por día y palabra clave del mismo mes (`Royal Baby - <Mes> 2026`). El script los distingue por el contenido, no por el nombre (octubre tiene los nombres cruzados: `Royal Baby - Octubrel 2026` es el de campaña).
-- **Meta Ads** ([carpeta](https://drive.google.com/drive/folders/1kjz_QSgFpkd9semvyjrlLQi3ETH8-DPm)): `Royal Baby - <Mes> 2026`, export del Administrador de anuncios con desglose diario, por edad, sexo y anuncio. El gasto puede venir como «Importe gastado» o «Monto gastado» (nombre de Meta desde octubre de 2026).
+- **Meta Ads** ([carpeta](https://drive.google.com/drive/folders/1kjz_QSgFpkd9semvyjrlLQi3ETH8-DPm)): `Royal Baby - <Mes> 2026`, con desglose diario, por edad, sexo y anuncio. Ya no se sube a mano: la escribe `scripts/meta-api-sync.gs` tres veces al día pidiendo las cifras a la API de Meta, con las mismas columnas que tenía el export del Administrador de anuncios, así que un export subido a mano se sigue leyendo igual. El gasto puede venir como «Importe gastado» o «Monto gastado» (nombre de Meta desde octubre de 2026).
 
 Los archivos son hojas de cálculo de Google: se descargan exportándolas a CSV (solo la primera pestaña). Un CSV subido sin convertir también se lee. Las dos carpetas son privadas: se listan y se descargan por el Apps Script de [Carpetas privadas](#carpetas-privadas).
 
@@ -279,9 +282,10 @@ Las carpetas Ventas, Objetivos, Google Files y Meta Files no se comparten por en
 4. Secret `RB_PAGE_PASSWORD`: clave de acceso al tablero (16 caracteres o más).
 5. Lector de las carpetas privadas: publicar `scripts/disparar-actualizacion.gs` como aplicación web y guardar los secrets `RB_DRIVE_SCRIPT_URL` y `RB_DRIVE_READ_KEY` (ver [Carpetas privadas](#carpetas-privadas)).
 6. Secrets `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` y `SMTP_PASS` para el correo de alertas: la cuenta alertas@limaretail.com del hosting, que también es el remitente. Sin ellos se usa `RESEND_API_KEY` si existe. Secrets `RB_ALERTAS_URL` y `RB_ALERTAS_TOKEN` para la lista de correos que se edita en el tablero (ver [Alerta de ventas](#alerta-de-ventas)). Opcional: variable `DASHBOARD_URL` si el enlace del correo debe ser otro que el de `data/alertas-config.json`.
-7. DNS de `limaretail.com`: registro CNAME `royalbaby` → `jorgeluis666.github.io`.
-8. `Settings → Pages`: Source **GitHub Actions**, Custom domain `royalbaby.limaretail.com` y **Enforce HTTPS**.
-9. Pushear a `main`: el deploy corre solo.
+7. Alimentador de Meta: proyecto de Apps Script aparte con `scripts/meta-api-sync.gs`, propiedades `META_TOKEN` (usuario del sistema, permiso `ads_read`, sin caducidad), `META_ACCOUNT_ID` y `META_FOLDER_ID`, y `instalarDisparadores` ejecutado una vez. Los ids y el paso a paso están en las notas privadas de LR Suite, no en este repositorio.
+8. DNS de `limaretail.com`: registro CNAME `royalbaby` → `jorgeluis666.github.io`.
+9. `Settings → Pages`: Source **GitHub Actions**, Custom domain `royalbaby.limaretail.com` y **Enforce HTTPS**.
+10. Pushear a `main`: el deploy corre solo.
 
 ## Alerta de ventas
 

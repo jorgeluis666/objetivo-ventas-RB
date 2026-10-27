@@ -940,8 +940,15 @@ function consolidate(month) {
   const clicks = (g?.clicks || 0) + (m?.linkClicks || 0);
   const purchases = round((g?.purchases || 0) + (m?.purchases || 0));
   const purchaseValue = round((g?.conversionValue || 0) + (m?.purchaseValue || 0));
+  // Meta siempre trae el día; Google solo cuando el mes va con el informe por día. Si las dos
+  // plataformas con datos traen día, la serie es real; si ninguna, estimada; si una sí y otra no,
+  // mixta. Antes se daba por hecho que Google nunca traía día y el mes salía «estimado» aunque lo
+  // trajera.
   const metaDaily = month.meta?.granularity === 'diaria';
-  const dailyBasis = !g ? (metaDaily ? 'real' : 'estimado') : !m || !metaDaily ? 'estimado' : 'mixto';
+  const googleDaily = month.google?.granularity === 'diaria';
+  const conDia = [g && googleDaily, m && metaDaily].filter(Boolean).length;
+  const conDatos = platforms.length;
+  const dailyBasis = conDia === 0 ? 'estimado' : conDia === conDatos ? 'real' : 'mixto';
 
   const notes = [];
   if (platforms.length === 1) notes.push(`Solo hay datos de ${FOLDERS[platforms[0]].label} para este mes.`);
@@ -952,6 +959,9 @@ function consolidate(month) {
   if (dailyBasis === 'mixto') notes.push('La serie diaria mezcla Meta (cifras diarias reales) con Google Ads (total del mes repartido entre los días, estimado).');
   if (dailyBasis === 'estimado') notes.push('No hay cifras diarias reales este mes: la serie diaria es el total del mes repartido entre los días.');
   if (g && g.purchases === null) notes.push('Google Ads no informó compras este mes: las compras y el costo por compra son solo de Meta.');
+  if (month.google?.totalsFromDetail) {
+    notes.push('Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día, que no incluye los términos con pocas impresiones: el gasto real pudo ser algo mayor.');
+  }
 
   return {
     platforms,
@@ -1152,9 +1162,10 @@ async function readPlatform(platform, failures, log) {
       log.push(`${folder.label}: hay dos informes por día de ${monthLabel(entry.month)}; uso «${current.file.name}» e ignoro «${entry.file.name}»`);
       continue;
     }
+    // Sin informe de campaña el mes no se queda vacío: los totales salen de este archivo y el
+    // tablero avisa de que pueden quedar algo por debajo (ver googleBlockFromDetail).
     if (!byMonth.has(entry.month)) {
-      log.push(`${folder.label}: «${entry.file.name}» es el informe por día de ${monthLabel(entry.month)}, pero falta el informe de campaña de ese mes; no se usa`);
-      continue;
+      log.push(`${folder.label}: «${entry.file.name}» es el informe por día de ${monthLabel(entry.month)} y no hay informe de campaña; los totales salen de este archivo`);
     }
     detailByMonth.set(entry.month, entry);
   }
@@ -1213,6 +1224,79 @@ function googleBlock(entry, warnings, detailEntry) {
       table: detailEntry.detail.table,
     } : null,
   };
+}
+
+// El mes que solo tiene informe por día: los totales salen de ahí. Google no detalla en ese informe
+// los términos con pocas impresiones, así que la suma queda algo por debajo del gasto real; por eso
+// el bloque se marca con totalsFromDetail y el tablero lo dice en pantalla. En cuanto aparezca el
+// informe de campaña del mes, manda ese y esta rama deja de usarse.
+function googleBlockFromDetail(detailEntry, warnings) {
+  const { file, month, detail } = detailEntry;
+  const label = `Google Ads ${monthLabel(month)}`;
+  for (const warning of detail.warnings) warnings.push(`${label}: ${warning}`);
+  warnings.push(`${label}: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real.`);
+
+  const totals = {
+    cost: detail.totals.cost,
+    impressions: detail.fields.impressions ? detail.totals.impressions : null,
+    clicks: detail.totals.clicks,
+    conversions: detail.totals.conversions,
+    purchases: detail.fields.purchases ? detail.totals.purchases : null,
+    conversionValue: detail.totals.conversionValue,
+  };
+
+  return {
+    source: { name: file.name, id: file.id, mimeType: file.mimeType, modifiedTime: file.modifiedTime },
+    monthFrom: detailEntry.monthFrom || 'contenido',
+    granularity: 'diaria',
+    coverage: detail.coverage,
+    segmentation: null,
+    campaignsComplete: false,
+    totalsSource: 'informe por día',
+    totalsFromDetail: true,
+    totals,
+    conversionsByCategory: null,
+    byType: [],
+    campaigns: campaignsFromDetail(detail),
+    checks: [],
+    repairs: [],
+    detail: {
+      source: { name: file.name, id: file.id, mimeType: file.mimeType, modifiedTime: file.modifiedTime },
+      coverage: detail.coverage,
+      fields: detail.fields,
+      totals: detail.totals,
+      table: detail.table,
+    },
+  };
+}
+
+// Una fila por campaña, sumando las del informe por día. Mismas claves que las del informe de
+// campaña para que la tabla del tablero no tenga que distinguir de dónde vienen.
+function campaignsFromDetail(detail) {
+  const { columns, campaigns: nombres, rows } = detail.table;
+  const idx = Object.fromEntries(columns.map((name, i) => [name, i]));
+  const porCampana = new Map();
+  for (const row of rows) {
+    const nombre = nombres[row[idx.campaign]] || '(sin campaña)';
+    const actual = porCampana.get(nombre) || { campaign: nombre, cost: 0, impressions: 0, clicks: 0, conversions: 0, purchases: 0, conversionValue: 0 };
+    actual.cost += row[idx.cost] || 0;
+    actual.impressions += row[idx.impressions] || 0;
+    actual.clicks += row[idx.clicks] || 0;
+    actual.conversions += row[idx.conversions] || 0;
+    actual.purchases += row[idx.purchases] || 0;
+    actual.conversionValue += row[idx.conversionValue] || 0;
+    porCampana.set(nombre, actual);
+  }
+  return [...porCampana.values()]
+    .map(item => ({
+      ...item,
+      cost: round(item.cost),
+      conversions: round(item.conversions),
+      purchases: detail.fields.purchases ? round(item.purchases) : null,
+      conversionValue: round(item.conversionValue),
+      impressions: detail.fields.impressions ? item.impressions : null,
+    }))
+    .sort((left, right) => right.cost - left.cost);
 }
 
 function metaBlock(entry, warnings) {
@@ -1322,6 +1406,7 @@ async function main() {
       return kept[platform].get(id);
     };
     if (google.byMonth.has(id)) month.google = googleBlock(google.byMonth.get(id), warnings, google.detailByMonth.get(id));
+    else if (google.detailByMonth.has(id)) month.google = googleBlockFromDetail(google.detailByMonth.get(id), warnings);
     else if (kept.google.has(id)) month.google = keep('google');
     if (meta.byMonth.has(id)) month.meta = metaBlock(meta.byMonth.get(id), warnings);
     else if (kept.meta.has(id)) month.meta = keep('meta');
@@ -1331,7 +1416,13 @@ async function main() {
   });
 
   const segmented = months.filter(month => month.google?.segmentation);
+  // Los meses que van con el informe por día quedan como pendiente: funcionan, pero sus cifras son
+  // las que son hasta que se suba el informe de campaña.
+  const soloDetalle = months.filter(month => month.google?.totalsFromDetail);
   const pending = [
+    ...(soloDetalle.length
+      ? [`Google Ads: ${soloDetalle.map(month => month.label).join(', ')} ${soloDetalle.length === 1 ? 'va' : 'van'} con el informe por día porque no hay informe de campaña. Las cifras sirven, pero el gasto puede quedar algo por debajo: subir el informe de campaña de ${soloDetalle.length === 1 ? 'ese mes' : 'esos meses'} a la carpeta lo deja exacto.`]
+      : []),
     ...(segmented.length
       ? [`Google Ads: exportar de nuevo el informe de campaña sin segmentar por «${segmented[0].google.segmentation}», con Campaña, Costo, Impr., CTR, Clics, Prom. CPC, Conversiones, Costo/conv., Conversiones por compras y Valor de conv. por campaña, y reemplazar las hojas de ${segmented.map(month => month.label).join(', ')}.`]
       : []),
@@ -1384,4 +1475,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { parseCsv, parseCount, parseGoogleReport, parseMetaReport, monthFromName, periodFromText, consolidate };
+module.exports = { parseCsv, parseCount, parseGoogleReport, parseMetaReport, parseGoogleDetail, googleBlockFromDetail, campaignsFromDetail, monthFromName, periodFromText, consolidate };

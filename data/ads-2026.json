@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-27T00:49:36.273Z",
+  "generatedAt": "2026-10-27T00:56:21.817Z",
   "currency": "PEN",
   "rules": [
     "Google Ads llega mensual: sin serie diaria real. Meta Ads llega por día y la serie diaria es real.",
@@ -52,15 +52,6 @@
     "Google Ads: Enero 2026, Febrero 2026, Marzo 2026, Abril 2026, Mayo 2026, Junio 2026, Julio 2026, Agosto 2026, Octubre 2026 van con el informe por día porque no hay informe de campaña. Las cifras sirven, pero el gasto puede quedar algo por debajo: subir el informe de campaña de esos meses a la carpeta lo deja exacto."
   ],
   "warnings": [
-    "Google Ads: «Royal Baby - Octubre 2026» es el informe por día de Octubre 2026 y no hay informe de campaña; los totales salen de este archivo",
-    "Google Ads: «Royal Baby - Agosto 2026» es el informe por día de Agosto 2026 y no hay informe de campaña; los totales salen de este archivo",
-    "Google Ads: «Royal Baby - Julio 2026» es el informe por día de Julio 2026 y no hay informe de campaña; los totales salen de este archivo",
-    "Google Ads: «Royal Baby - Junio 2026» es el informe por día de Junio 2026 y no hay informe de campaña; los totales salen de este archivo",
-    "Google Ads: «Royal Baby - Mayo 2026» es el informe por día de Mayo 2026 y no hay informe de campaña; los totales salen de este archivo",
-    "Google Ads: «Royal Baby - Abril 2026» es el informe por día de Abril 2026 y no hay informe de campaña; los totales salen de este archivo",
-    "Google Ads: «Royal Baby - Marzo 2026» es el informe por día de Marzo 2026 y no hay informe de campaña; los totales salen de este archivo",
-    "Google Ads: «Royal Baby - Febrero 2026» es el informe por día de Febrero 2026 y no hay informe de campaña; los totales salen de este archivo",
-    "Google Ads: «Royal Baby - Enero 2026» es el informe por día de Enero 2026 y no hay informe de campaña; los totales salen de este archivo",
     "Google Ads Enero 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real.",
     "Google Ads Febrero 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real.",
     "Google Ads Marzo 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real.",

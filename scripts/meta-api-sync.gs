@@ -247,15 +247,11 @@ function escribirHoja_(mes, datos) {
   const filas = datos.filas;
   const encabezado = columnas_(datos.moneda);
   const carpeta = DriveApp.getFolderById(propiedad_('META_FOLDER_ID'));
-  const nombre = 'Royal Baby - ' + mes.nombre;
-  const existentes = carpeta.getFilesByName(nombre);
-  let libro;
-  if (existentes.hasNext()) {
-    libro = SpreadsheetApp.openById(existentes.next().getId());
-  } else {
-    libro = SpreadsheetApp.create(nombre);
-    DriveApp.getFileById(libro.getId()).moveTo(carpeta);
-  }
+  const libro = libroDelMes_(carpeta, mes);
+  // El barrido no lee la hoja: la exporta a CSV. En una hoja en español el CSV sale con la coma
+  // como separador decimal, «1,34» se parte en dos columnas y el informe entero queda corrido.
+  // Las hojas nuevas nacen con el idioma de la cuenta (es_ES), así que hay que forzarlo.
+  if (libro.getSpreadsheetLocale() !== 'en_US') libro.setSpreadsheetLocale('en_US');
   const hoja = libro.getSheets()[0];
   hoja.clear();
   hoja.getRange(1, 1, 1, encabezado.length).setValues([encabezado]);
@@ -266,6 +262,52 @@ function escribirHoja_(mes, datos) {
   // De una sola vez: escribir fila por fila en una hoja de miles de filas se pasa del tiempo límite.
   hoja.getRange(2, 1, filas.length, encabezado.length).setValues(filas);
   hoja.setFrozenRows(1);
+}
+
+// Devuelve la hoja del mes, reaprovechando la que ya esté en la carpeta. Si la que hay se llama
+// distinto, se le cambia el nombre en vez de crear otra: dos archivos del mismo mes hacen que el
+// barrido lea uno y avise del otro. Pasa de verdad — la de octubre está subida como «Octube 2026».
+function libroDelMes_(carpeta, mes) {
+  const nombre = 'Royal Baby - ' + mes.nombre;
+  const existentes = carpeta.getFilesByName(nombre);
+  if (existentes.hasNext()) return SpreadsheetApp.openById(existentes.next().getId());
+
+  const anterior = buscarDelMes_(carpeta, mes);
+  if (anterior) {
+    Logger.log('%s: se reaprovecha «%s» y se renombra a «%s».', mes.nombre, anterior.getName(), nombre);
+    anterior.setName(nombre);
+    return SpreadsheetApp.openById(anterior.getId());
+  }
+
+  const libro = SpreadsheetApp.create(nombre);
+  DriveApp.getFileById(libro.getId()).moveTo(carpeta);
+  return libro;
+}
+
+// Una hoja de la carpeta que sea de este mes aunque esté mal escrita: basta con que su nombre lleve
+// el año y empiece el mes igual. Con tres letras valen «Octube» y «Octubrel», y setiembre —como se
+// escribe acá— se reconoce igual que septiembre.
+const PREFIJOS_MES = [
+  ['ene'], ['feb'], ['mar'], ['abr'], ['may'], ['jun'],
+  ['jul'], ['ago'], ['sep', 'set'], ['oct'], ['nov'], ['dic']
+];
+
+function buscarDelMes_(carpeta, mes) {
+  const prefijos = PREFIJOS_MES[mes.mes];
+  const archivos = carpeta.getFilesByType(MimeType.GOOGLE_SHEETS);
+  while (archivos.hasNext()) {
+    const archivo = archivos.next();
+    const nombre = sinTildes_(archivo.getName());
+    if (nombre.indexOf(String(mes.año)) < 0) continue;
+    for (var i = 0; i < prefijos.length; i++) {
+      if (nombre.indexOf(prefijos[i]) >= 0) return archivo;
+    }
+  }
+  return null;
+}
+
+function sinTildes_(texto) {
+  return String(texto || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
 // ── Disparadores ─────────────────────────────────────────────────────────────

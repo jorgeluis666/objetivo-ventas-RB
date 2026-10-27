@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-27T00:56:21.817Z",
+  "generatedAt": "2026-10-27T04:47:47.616Z",
   "currency": "PEN",
   "rules": [
     "Google Ads llega mensual: sin serie diaria real. Meta Ads llega por día y la serie diaria es real.",
@@ -19,6 +19,8 @@
       "folderUrl": "https://drive.google.com/drive/folders/1TT5KTVZuGlFc7OqvGAz9nuRVyJFvwJpd",
       "discovery": "apps script",
       "files": [
+        { "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "name": "Royal Baby GA - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-27T04:43:41.106Z" },
+        { "id": "14hfRraHyl3WHlqoEwVvnGjQAK_IRGITW_lpiUqplkzw", "name": "Royal Baby GA - Septiembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-27T04:43:20.496Z" },
         { "id": "1VH381U5vefmLiloy07NVzBx29BuzSxbA_vc_m0afrYY", "name": "Royal Baby - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-26T22:06:33.349Z" },
         { "id": "1pNGQFycVHdysHcniamA_xtS6T_R_uCkQBrvE7q5u3-E", "name": "Royal Baby - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-14T13:38:06.385Z" },
         { "id": "1gYDwpcr7uk076D8JkE-0irYww6cSNHtRCDrXxEyaDbI", "name": "Royal Baby - Julio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-14T13:36:53.830Z" },
@@ -49,18 +51,21 @@
     }
   },
   "pending": [
-    "Google Ads: Enero 2026, Febrero 2026, Marzo 2026, Abril 2026, Mayo 2026, Junio 2026, Julio 2026, Agosto 2026, Octubre 2026 van con el informe por día porque no hay informe de campaña. Las cifras sirven, pero el gasto puede quedar algo por debajo: subir el informe de campaña de esos meses a la carpeta lo deja exacto."
+    "Google Ads: Enero 2026, Febrero 2026, Marzo 2026, Abril 2026, Mayo 2026, Junio 2026, Julio 2026, Agosto 2026 van con el informe por día porque no hay informe de campaña. Ese informe solo trae las campañas con términos de búsqueda, así que a las campañas de Performance Max o Display les falta todo su gasto: subir el informe de campaña de esos meses a la carpeta es lo que deja la cifra completa."
   ],
   "warnings": [
-    "Google Ads Enero 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real.",
-    "Google Ads Febrero 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real.",
-    "Google Ads Marzo 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real.",
-    "Google Ads Abril 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real.",
-    "Google Ads Mayo 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real.",
-    "Google Ads Junio 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real.",
-    "Google Ads Julio 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real.",
-    "Google Ads Agosto 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real.",
-    "Google Ads Octubre 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real."
+    "Google Ads Enero 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto.",
+    "Google Ads Febrero 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto.",
+    "Google Ads Marzo 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto.",
+    "Google Ads Abril 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto.",
+    "Google Ads Mayo 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto.",
+    "Google Ads Junio 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto.",
+    "Google Ads Julio 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto.",
+    "Google Ads Agosto 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto.",
+    "Google Ads Septiembre 2026: falta la columna «Conversiones por compras»: sin KPI de compras de Google Ads este mes.",
+    "Google Ads Septiembre 2026: falta la columna «Valor de conv.»: sin ROAS de Google Ads este mes.",
+    "Google Ads Octubre 2026: falta la columna «Conversiones por compras»: sin KPI de compras de Google Ads este mes.",
+    "Google Ads Octubre 2026: falta la columna «Valor de conv.»: sin ROAS de Google Ads este mes."
   ],
   "months": [
     {
@@ -764,11 +769,11 @@
           "Clics = clics de Google Ads + clics en el enlace de Meta.",
           "Compras y valor: cada plataforma usa su propia atribución; una misma venta puede estar contada en las dos.",
           "Google Ads no informó compras este mes: las compras y el costo por compra son solo de Meta.",
-          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día, que no incluye los términos con pocas impresiones: el gasto real pudo ser algo mayor."
+          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día. Ahí solo aparecen las campañas con términos de búsqueda (Search | LR): si la cuenta tiene Performance Max o Display, ese gasto no está contado."
         ]
       },
       "warnings": [
-        "Google Ads Enero 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real."
+        "Google Ads Enero 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto."
       ]
     },
     {
@@ -1483,11 +1488,11 @@
           "Clics = clics de Google Ads + clics en el enlace de Meta.",
           "Compras y valor: cada plataforma usa su propia atribución; una misma venta puede estar contada en las dos.",
           "Google Ads no informó compras este mes: las compras y el costo por compra son solo de Meta.",
-          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día, que no incluye los términos con pocas impresiones: el gasto real pudo ser algo mayor."
+          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día. Ahí solo aparecen las campañas con términos de búsqueda (Search | LR): si la cuenta tiene Performance Max o Display, ese gasto no está contado."
         ]
       },
       "warnings": [
-        "Google Ads Febrero 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real."
+        "Google Ads Febrero 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto."
       ]
     },
     {
@@ -2218,11 +2223,11 @@
           "Clics = clics de Google Ads + clics en el enlace de Meta.",
           "Compras y valor: cada plataforma usa su propia atribución; una misma venta puede estar contada en las dos.",
           "Google Ads no informó compras este mes: las compras y el costo por compra son solo de Meta.",
-          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día, que no incluye los términos con pocas impresiones: el gasto real pudo ser algo mayor."
+          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día. Ahí solo aparecen las campañas con términos de búsqueda (Search | LR): si la cuenta tiene Performance Max o Display, ese gasto no está contado."
         ]
       },
       "warnings": [
-        "Google Ads Marzo 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real."
+        "Google Ads Marzo 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto."
       ]
     },
     {
@@ -2862,11 +2867,11 @@
           "Clics = clics de Google Ads + clics en el enlace de Meta.",
           "Compras y valor: cada plataforma usa su propia atribución; una misma venta puede estar contada en las dos.",
           "Google Ads no informó compras este mes: las compras y el costo por compra son solo de Meta.",
-          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día, que no incluye los términos con pocas impresiones: el gasto real pudo ser algo mayor."
+          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día. Ahí solo aparecen las campañas con términos de búsqueda (Search | LR): si la cuenta tiene Performance Max o Display, ese gasto no está contado."
         ]
       },
       "warnings": [
-        "Google Ads Abril 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real."
+        "Google Ads Abril 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto."
       ]
     },
     {
@@ -3716,11 +3721,11 @@
           "Clics = clics de Google Ads + clics en el enlace de Meta.",
           "Compras y valor: cada plataforma usa su propia atribución; una misma venta puede estar contada en las dos.",
           "Google Ads no informó compras este mes: las compras y el costo por compra son solo de Meta.",
-          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día, que no incluye los términos con pocas impresiones: el gasto real pudo ser algo mayor."
+          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día. Ahí solo aparecen las campañas con términos de búsqueda (Search | LR): si la cuenta tiene Performance Max o Display, ese gasto no está contado."
         ]
       },
       "warnings": [
-        "Google Ads Mayo 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real."
+        "Google Ads Mayo 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto."
       ]
     },
     {
@@ -4653,11 +4658,11 @@
           "Clics = clics de Google Ads + clics en el enlace de Meta.",
           "Compras y valor: cada plataforma usa su propia atribución; una misma venta puede estar contada en las dos.",
           "Google Ads no informó compras este mes: las compras y el costo por compra son solo de Meta.",
-          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día, que no incluye los términos con pocas impresiones: el gasto real pudo ser algo mayor."
+          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día. Ahí solo aparecen las campañas con términos de búsqueda (Search | LR): si la cuenta tiene Performance Max o Display, ese gasto no está contado."
         ]
       },
       "warnings": [
-        "Google Ads Junio 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real."
+        "Google Ads Junio 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto."
       ]
     },
     {
@@ -5777,11 +5782,11 @@
           "Clics = clics de Google Ads + clics en el enlace de Meta.",
           "Compras y valor: cada plataforma usa su propia atribución; una misma venta puede estar contada en las dos.",
           "Google Ads no informó compras este mes: las compras y el costo por compra son solo de Meta.",
-          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día, que no incluye los términos con pocas impresiones: el gasto real pudo ser algo mayor."
+          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día. Ahí solo aparecen las campañas con términos de búsqueda (Search | LR): si la cuenta tiene Performance Max o Display, ese gasto no está contado."
         ]
       },
       "warnings": [
-        "Google Ads Julio 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real."
+        "Google Ads Julio 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto."
       ]
     },
     {
@@ -6947,16 +6952,38 @@
           "Clics = clics de Google Ads + clics en el enlace de Meta.",
           "Compras y valor: cada plataforma usa su propia atribución; una misma venta puede estar contada en las dos.",
           "Google Ads no informó compras este mes: las compras y el costo por compra son solo de Meta.",
-          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día, que no incluye los términos con pocas impresiones: el gasto real pudo ser algo mayor."
+          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día. Ahí solo aparecen las campañas con términos de búsqueda (Search | LR): si la cuenta tiene Performance Max o Display, ese gasto no está contado."
         ]
       },
       "warnings": [
-        "Google Ads Agosto 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real."
+        "Google Ads Agosto 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto."
       ]
     },
     {
       "id": "2026-09",
       "label": "Septiembre 2026",
+      "google": {
+        "source": { "name": "Royal Baby GA - Septiembre 2026", "id": "14hfRraHyl3WHlqoEwVvnGjQAK_IRGITW_lpiUqplkzw", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-27T04:43:20.496Z" },
+        "monthFrom": "contenido",
+        "granularity": "mensual",
+        "coverage": { "start": "2026-09-01", "end": "2026-09-30", "days": null, "daysInMonth": 30, "complete": true },
+        "segmentation": null,
+        "campaignsComplete": true,
+        "totalsSource": "suma de los totales por tipo de campaña",
+        "totals": { "cost": 1494.87, "impressions": 27324, "clicks": 1841, "conversions": 23, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.067377, "cpc": 0.81, "costPerConversion": 64.99, "costPerPurchase": null, "roas": null },
+        "conversionsByCategory": null,
+        "byType": [
+          { "type": "Búsqueda", "cost": 1380.89, "impressions": 14855, "clicks": 1444, "conversions": 17.5, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.097206, "cpc": 0.96, "costPerConversion": 78.91, "costPerPurchase": null, "roas": 0, "fromCampaigns": true },
+          { "type": "Máximo rendimiento", "cost": 113.99, "impressions": 12469, "clicks": 397, "conversions": 5.5, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.031839, "cpc": 0.29, "costPerConversion": 20.73, "costPerPurchase": null, "roas": 0, "fromCampaigns": true }
+        ],
+        "campaigns": [
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": null, "complete": true, "cost": 1380.89, "impressions": 14855, "clicks": 1444, "conversions": 17.5, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.097206, "cpc": 0.96, "costPerConversion": 78.91, "costPerPurchase": null, "roas": null, "conversionsByCategory": null },
+          { "campaign": "Pmax B | Objetivo | LR", "status": "Habilitada", "type": "Máximo rendimiento", "dailyBudget": null, "complete": true, "cost": 113.99, "impressions": 12469, "clicks": 397, "conversions": 5.5, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.031839, "cpc": 0.29, "costPerConversion": 20.73, "costPerPurchase": null, "roas": null, "conversionsByCategory": null }
+        ],
+        "checks": [],
+        "repairs": [],
+        "detail": null
+      },
       "meta": {
         "source": { "name": "Royal Baby - Septiembre 2026", "id": "1_iTA-Gaj1YTI8JjL2_JgwlyzYLf5obuMR4Pm9BZMlSI", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-05T17:16:07.944Z" },
         "monthFrom": "contenido",
@@ -7628,41 +7655,51 @@
       },
       "consolidated": {
         "platforms": [
+          "google",
           "meta"
         ],
-        "spend": 2075.34,
-        "impressions": 267179,
-        "clicks": 4164,
+        "spend": 3570.21,
+        "impressions": 294503,
+        "clicks": 6005,
         "purchases": 19,
         "purchaseValue": 7494.4,
-        "cpm": 7.77,
-        "costPerPurchase": 109.23,
-        "roas": 3.61,
-        "spendShare": null,
-        "dailyBasis": "real",
+        "cpm": 12.12,
+        "costPerPurchase": 187.91,
+        "roas": 2.1,
+        "spendShare": { "google": 0.4187, "meta": 0.5813 },
+        "dailyBasis": "mixto",
         "notes": [
-          "Solo hay datos de Meta Ads para este mes."
+          "Clics = clics de Google Ads + clics en el enlace de Meta.",
+          "Compras y valor: cada plataforma usa su propia atribución; una misma venta puede estar contada en las dos.",
+          "La serie diaria mezcla Meta (cifras diarias reales) con Google Ads (total del mes repartido entre los días, estimado).",
+          "Google Ads no informó compras este mes: las compras y el costo por compra son solo de Meta."
         ]
       },
-      "warnings": []
+      "warnings": [
+        "Google Ads Septiembre 2026: falta la columna «Conversiones por compras»: sin KPI de compras de Google Ads este mes.",
+        "Google Ads Septiembre 2026: falta la columna «Valor de conv.»: sin ROAS de Google Ads este mes."
+      ]
     },
     {
       "id": "2026-10",
       "label": "Octubre 2026",
       "google": {
-        "source": { "name": "Royal Baby - Octubre 2026", "id": "1VH381U5vefmLiloy07NVzBx29BuzSxbA_vc_m0afrYY", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-26T22:06:33.349Z" },
+        "source": { "name": "Royal Baby GA - Octubre 2026", "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-27T04:43:41.106Z" },
         "monthFrom": "contenido",
-        "granularity": "diaria",
-        "coverage": { "start": "2026-10-02", "end": "2026-10-25", "days": 24, "daysInMonth": 31, "complete": false },
+        "granularity": "mensual",
+        "coverage": { "start": "2026-10-01", "end": "2026-10-26", "days": null, "daysInMonth": 31, "complete": false },
         "segmentation": null,
-        "campaignsComplete": false,
-        "totalsSource": "informe por día",
-        "totalsFromDetail": true,
-        "totals": { "cost": 926.32, "impressions": null, "clicks": 867, "conversions": 2, "purchases": null, "conversionValue": 338.9 },
+        "campaignsComplete": true,
+        "totalsSource": "suma de los totales por tipo de campaña",
+        "totals": { "cost": 1227.94, "impressions": 34381, "clicks": 1275, "conversions": 5, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.037084, "cpc": 0.96, "costPerConversion": 245.59, "costPerPurchase": null, "roas": null },
         "conversionsByCategory": null,
-        "byType": [],
+        "byType": [
+          { "type": "Búsqueda", "cost": 946.21, "impressions": 9155, "clicks": 896, "conversions": 2, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.09787, "cpc": 1.06, "costPerConversion": 473.11, "costPerPurchase": null, "roas": 0, "fromCampaigns": true },
+          { "type": "Máximo rendimiento", "cost": 281.73, "impressions": 25226, "clicks": 379, "conversions": 3, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.015024, "cpc": 0.74, "costPerConversion": 93.91, "costPerPurchase": null, "roas": 0, "fromCampaigns": true }
+        ],
         "campaigns": [
-          { "campaign": "Search | LR", "cost": 926.32, "impressions": null, "clicks": 867, "conversions": 2, "purchases": null, "conversionValue": 338.9 }
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": null, "complete": true, "cost": 946.21, "impressions": 9155, "clicks": 896, "conversions": 2, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.09787, "cpc": 1.06, "costPerConversion": 473.11, "costPerPurchase": null, "roas": null, "conversionsByCategory": null },
+          { "campaign": "Pmax B | Objetivo | LR", "status": "Habilitada", "type": "Máximo rendimiento", "dailyBudget": null, "complete": true, "cost": 281.73, "impressions": 25226, "clicks": 379, "conversions": 3, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.015024, "cpc": 0.74, "costPerConversion": 93.91, "costPerPurchase": null, "roas": null, "conversionsByCategory": null }
         ],
         "checks": [],
         "repairs": [],
@@ -8692,25 +8729,26 @@
           "google",
           "meta"
         ],
-        "spend": 3629.37,
-        "impressions": 431822,
-        "clicks": 6386,
+        "spend": 3930.99,
+        "impressions": 466203,
+        "clicks": 6794,
         "purchases": 13,
-        "purchaseValue": 12943.22,
-        "cpm": 8.4,
-        "costPerPurchase": 279.18,
-        "roas": 3.57,
-        "spendShare": { "google": 0.2552, "meta": 0.7448 },
-        "dailyBasis": "real",
+        "purchaseValue": 12604.32,
+        "cpm": 8.43,
+        "costPerPurchase": 302.38,
+        "roas": 3.21,
+        "spendShare": { "google": 0.3124, "meta": 0.6876 },
+        "dailyBasis": "mixto",
         "notes": [
           "Clics = clics de Google Ads + clics en el enlace de Meta.",
           "Compras y valor: cada plataforma usa su propia atribución; una misma venta puede estar contada en las dos.",
-          "Google Ads no informó compras este mes: las compras y el costo por compra son solo de Meta.",
-          "Google Ads: este mes no tiene informe de campaña, así que sus cifras salen del informe por día, que no incluye los términos con pocas impresiones: el gasto real pudo ser algo mayor."
+          "La serie diaria mezcla Meta (cifras diarias reales) con Google Ads (total del mes repartido entre los días, estimado).",
+          "Google Ads no informó compras este mes: las compras y el costo por compra son solo de Meta."
         ]
       },
       "warnings": [
-        "Google Ads Octubre 2026: no hay informe de campaña; los totales salen del informe por día, que no incluye los términos con pocas impresiones y puede quedar algo por debajo del gasto real."
+        "Google Ads Octubre 2026: falta la columna «Conversiones por compras»: sin KPI de compras de Google Ads este mes.",
+        "Google Ads Octubre 2026: falta la columna «Valor de conv.»: sin ROAS de Google Ads este mes."
       ]
     }
   ]

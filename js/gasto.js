@@ -2816,6 +2816,18 @@
       lastDay: Math.min(meta.lastDay || p.dias, goo.lastDay || p.dias),
     };
     totalX.cubiertos = totalX.lastDay - totalX.firstDay + 1;
+    // Sin informe de campaña, la cifra de Google no es el gasto del mes: es el de las campañas que
+    // salen en el informe por día. Performance Max y Shopping no aparecen ahí —no tienen anuncios ni
+    // términos de búsqueda—, así que el aviso va en la propia tarjeta y no solo en la caja de abajo:
+    // el número grande se lee solo y sin la nota parece el gasto completo.
+    const notaGoogle = g => {
+      if (!g) return '';
+      if (g.campaignsComplete === false) {
+        const n = (g.campaigns || []).length;
+        return `<b style="color:var(--amber-text)">solo ${n === 1 ? 'la campaña' : `las ${n} campañas`} del informe por día</b>`;
+      }
+      return g.estimated ? 'estimado: Google llega por mes calendario' : '';
+    };
     host.hidden = false;
     host.innerHTML = `
       <div class="gp-period-head">
@@ -2824,7 +2836,7 @@
       </div>
       <div class="kpi-strip gp-kpis" role="group" aria-label="Presupuesto del mes">
         ${pill('Meta Ads', meta, PRESUPUESTO.meta)}
-        ${pill('Google Ads', goo, PRESUPUESTO.google, g?.estimated ? 'estimado: Google llega por mes calendario' : '')}
+        ${pill('Google Ads', goo, PRESUPUESTO.google, notaGoogle(g))}
         ${pill('Total', totalX, total)}
       </div>`;
   }

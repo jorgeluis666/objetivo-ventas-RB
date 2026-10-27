@@ -1,12 +1,12 @@
 {
-  "generated": "2026-10-27T01:00:29",
+  "generated": "2026-10-27T10:32:49",
   "fuente2026": {
     "carpeta": "1JJdjIzDu2CrhcBI9gBUTUuPAXnKYUQal",
     "archivo": {
       "id": "10gU7SBOlo5-dWgPryagbZzOmce0971ZpSKFDiDLq1I0",
       "nombre": "Ventas Royal Baby - 2026"
     },
-    "ultimoDia": "2026-10-22"
+    "ultimoDia": "2026-10-26"
   },
   "ciclo": {
     "cierre": 26,
@@ -147,12 +147,12 @@
       "Tienda": 48663.85
     },
     "Octubre": {
-      "WhatsApp": 3291.1,
+      "WhatsApp": 3553.1,
       "Instagram": 1000.6,
       "Facebook": 0,
       "Showroom": 3665.2,
-      "Web": 9904.4,
-      "Tienda": 41798.6
+      "Web": 12864.5,
+      "Tienda": 55405.5
     },
     "Noviembre": {
       "WhatsApp": 0,
@@ -783,25 +783,25 @@
         "w": 5,
         "desde": "2026-10-19",
         "hasta": "2026-10-25",
-        "TOTAL": 15414.4,
+        "TOTAL": 29296.1,
         "WHATSAPP": 429,
         "INSTAGRAM": 0,
         "FACEBOOK": 0,
         "SHOWROOM": 135.6,
-        "WEB": 4781.1,
-        "TIENDA": 10068.7
+        "WEB": 7042.4,
+        "TIENDA": 21689.1
       },
       {
         "w": 6,
         "desde": "2026-10-26",
         "hasta": "2026-10-26",
-        "TOTAL": 0,
-        "WHATSAPP": 0,
+        "TOTAL": 2947.3,
+        "WHATSAPP": 262,
         "INSTAGRAM": 0,
         "FACEBOOK": 0,
         "SHOWROOM": 0,
-        "WEB": 0,
-        "TIENDA": 0
+        "WEB": 698.8,
+        "TIENDA": 1986.5
       }
     ],
     "Noviembre": [
@@ -942,12 +942,12 @@
       "TIENDA": 186
     },
     "Octubre": {
-      "WHATSAPP": 9,
+      "WHATSAPP": 10,
       "INSTAGRAM": 2,
       "FACEBOOK": 0,
       "SHOWROOM": 10,
-      "WEB": 25,
-      "TIENDA": 132
+      "WEB": 33,
+      "TIENDA": 162
     },
     "Noviembre": {
       "WHATSAPP": 0,
@@ -2738,7 +2738,7 @@
         0,
         0,
         0,
-        0
+        262
       ],
       "Instagram": [
         0,
@@ -2863,10 +2863,10 @@
         2920,
         901.3,
         683.7,
-        0,
-        0,
-        0,
-        0
+        778.7,
+        663.8,
+        818.8,
+        698.8
       ],
       "Tienda": [
         260.4,
@@ -2895,10 +2895,10 @@
         2831.6,
         5648.5,
         696,
-        0,
-        0,
-        0,
-        0
+        2201,
+        5883.5,
+        3535.9,
+        1986.5
       ]
     },
     "Noviembre": {

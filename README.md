@@ -198,6 +198,18 @@ Módulo del grupo Reportes (`js/projections.js`, vista `view-proj`). No tiene da
 - **Objetivos 2026**: los objetivos de la marca (`data/objetivos-2026.json`) y su histórico de ventas por ciclo de venta (`data/ventas-2026.json`). Cuando se pulsa **Sincronizar** en Objetivos, Proyecciones se vuelve a dibujar con lo nuevo.
 - **Gasto publicitario**: la inversión y los resultados de Meta Ads y Google Ads (`data/ads-2026.json`, la misma carga que usa ese módulo con `Gasto.load()`).
 
+### Acciones sugeridas
+
+Al pie de la vista (`js/acciones.js`): la lista de lo que toca hacer en **Meta Ads** este mes, con casilla para marcar. Google Ads va por Nexus, así que aquí no aparece.
+
+El Ciclo Mensual de Análisis y Optimización dice en qué semana vamos —calibración, desgaste del arte, formato, escalar y repetir— y las cifras reales dicen qué hacer; cada acción lleva el número exacto, el porqué y la ruta del Administrador de anuncios donde se toca.
+
+- **Las semanas van por mes de calendario**, no por el ciclo de venta que cierra el 26. Es a propósito: la descarga de Meta viene por mes natural (septiembre es del 1 al 30), y contar las semanas sobre el ciclo pondría la etiqueta de una semana encima de las cifras de otra.
+- Cada campaña se compara consigo misma contra el mismo tramo de días del mes anterior, y con su propio resultado (compras o conversaciones): nunca contra otra campaña que mide algo distinto.
+- El formato de cada pieza sale de `data/artes-2026.json`, así que la acción de mover inversión entre video e imagen solo aparece donde hay piezas sincronizadas.
+- El hito de la semana pone sus acciones primero, pero no se esconde ninguna: una pieza que gasta sin resultados no puede esperar a la semana que le toque.
+- El id de cada acción es estable (tipo + campaña o anuncio, nunca la cifra), así que lo marcado sigue marcado aunque los números cambien. El estado es por mes y **vive solo en el navegador** (`rb_acciones_v1`): lo que marca una persona no lo ven las demás, y la tarjeta lo dice.
+
 Cómo calcula:
 
 - **Por ciclo de venta** (del 27 del mes anterior al 26), como Objetivos. Los informes de pauta van por mes calendario, así que la inversión de cada ciclo se arma día por día: Meta llega por día y campaña (exacto); Google, con un total por mes que se reparte entre los días que cubre (estimado, y la vista lo dice). La pestaña Plan por campaña usa la misma regla para sus ROAS por mes.

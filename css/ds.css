@@ -551,3 +551,131 @@ td.red   { color: var(--red);   font-weight: 600; }
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
   .topbar { padding: 12px 18px; }
 }
+
+/* ===== Acciones sugeridas ===== */
+/* Tarjetas blancas con borde fino, sin barras de color: el tono de cada accion va solo en la
+   casilla, que es lo unico que hay que distinguir de un vistazo. */
+.acciones-panel {
+  margin-top: 24px;
+}
+
+.acciones-estado {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.acciones-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.accion {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: #fff;
+  cursor: pointer;
+}
+
+.accion:hover {
+  border-color: var(--brand);
+}
+
+.accion input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  margin: 1px 0 0;
+  accent-color: var(--brand);
+  cursor: pointer;
+}
+
+.accion.red input[type="checkbox"] {
+  accent-color: var(--red);
+}
+
+.accion.amber input[type="checkbox"] {
+  accent-color: #d97706;
+}
+
+.accion.green input[type="checkbox"] {
+  accent-color: var(--green);
+}
+
+.accion-cuerpo {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.accion-titulo {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.accion-porque {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* La ruta del Administrador de anuncios: se lee como lo que es, un camino de menus. */
+.accion-donde {
+  margin-top: 2px;
+  color: #526987;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* De que hito del ciclo sale la accion, para que no parezca una ocurrencia suelta. */
+.accion-hito {
+  flex: none;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Hecha: se queda en la lista, apagada, para que se vea lo que ya se movio este mes. */
+.accion.hecha {
+  background: #f8fafc;
+}
+
+.accion.hecha .accion-titulo {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.accion.hecha .accion-porque,
+.accion.hecha .accion-donde {
+  opacity: .65;
+}
+
+.acciones-vacio {
+  padding: 22px;
+  border: 1px dashed var(--border);
+  border-radius: var(--r);
+  color: var(--muted);
+  font-size: 11px;
+  text-align: center;
+}
+
+.acciones-nota {
+  margin: 12px 0 0;
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.5;
+}

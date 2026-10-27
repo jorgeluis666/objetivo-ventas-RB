@@ -93,6 +93,8 @@
     }
 
     if (id === 'view-proj') {
+      // Las acciones sugeridas viven al pie de esta vista y usan los mismos datos de Gasto.
+      window.Acciones?.init();
       if (state.live && state.projDirty) {
         renderProjections();
       } else if (!state.live) {

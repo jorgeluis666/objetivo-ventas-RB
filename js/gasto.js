@@ -191,8 +191,13 @@
     const host = document.getElementById(hostId);
     host.innerHTML = [
       ...pending.map(w => `<div class="insight warn"><b>Pendiente:</b> ${esc(w)}</div>`),
-      own.length || folder.length ? `<div class="insight warn"><b>Avisos de ${esc(m.label)}</b>
-        <ul class="gp-alert-list">${[...own, ...folder].map(w => `<li>${esc(w)}</li>`).join('')}</ul></div>` : '',
+      own.length ? `<div class="insight warn"><b>Avisos de ${esc(m.label)}</b>
+        <ul class="gp-alert-list">${own.map(w => `<li>${esc(w)}</li>`).join('')}</ul></div>` : '',
+      // Los avisos de la carpeta no son del mes que se está viendo —hablan de archivos sueltos, de
+      // duplicados, de nombres que no cuadran— y mezclarlos con los del mes hacía leer como de
+      // octubre cosas de enero.
+      folder.length ? `<div class="insight warn"><b>Avisos de la carpeta de ${esc(label)}</b>
+        <ul class="gp-alert-list">${folder.map(w => `<li>${esc(w)}</li>`).join('')}</ul></div>` : '',
     ].join('');
     host.hidden = !host.innerHTML;
   }

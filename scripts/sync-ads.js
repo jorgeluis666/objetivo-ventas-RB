@@ -1162,11 +1162,9 @@ async function readPlatform(platform, failures, log) {
       log.push(`${folder.label}: hay dos informes por día de ${monthLabel(entry.month)}; uso «${current.file.name}» e ignoro «${entry.file.name}»`);
       continue;
     }
-    // Sin informe de campaña el mes no se queda vacío: los totales salen de este archivo y el
-    // tablero avisa de que pueden quedar algo por debajo (ver googleBlockFromDetail).
-    if (!byMonth.has(entry.month)) {
-      log.push(`${folder.label}: «${entry.file.name}» es el informe por día de ${monthLabel(entry.month)} y no hay informe de campaña; los totales salen de este archivo`);
-    }
+    // Sin informe de campaña el mes no se queda vacío: los totales salen de este archivo. No se
+    // anota nada aquí a propósito: googleBlockFromDetail ya pone el aviso en el mes que toca y el
+    // pendiente lista los meses. Repetirlo por archivo llenaba el tablero de la misma frase.
     detailByMonth.set(entry.month, entry);
   }
   return {

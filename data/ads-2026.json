@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-27T18:28:05.395Z",
+  "generatedAt": "2026-10-27T23:31:34.845Z",
   "currency": "PEN",
   "rules": [
     "Google Ads llega mensual: sin serie diaria real. Meta Ads llega por día y la serie diaria es real.",
@@ -19,8 +19,8 @@
       "folderUrl": "https://drive.google.com/drive/folders/1TT5KTVZuGlFc7OqvGAz9nuRVyJFvwJpd",
       "discovery": "apps script",
       "files": [
-        { "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "name": "Royal Baby GA - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-27T18:00:43.865Z" },
-        { "id": "14hfRraHyl3WHlqoEwVvnGjQAK_IRGITW_lpiUqplkzw", "name": "Royal Baby GA - Septiembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-27T18:00:32.577Z" },
+        { "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "name": "Royal Baby GA - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-27T23:00:38.811Z" },
+        { "id": "14hfRraHyl3WHlqoEwVvnGjQAK_IRGITW_lpiUqplkzw", "name": "Royal Baby GA - Septiembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-27T23:00:27.587Z" },
         { "id": "1VH381U5vefmLiloy07NVzBx29BuzSxbA_vc_m0afrYY", "name": "Royal Baby - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-26T22:06:33.349Z" },
         { "id": "1pNGQFycVHdysHcniamA_xtS6T_R_uCkQBrvE7q5u3-E", "name": "Royal Baby - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-14T13:38:06.385Z" },
         { "id": "1gYDwpcr7uk076D8JkE-0irYww6cSNHtRCDrXxEyaDbI", "name": "Royal Baby - Julio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-14T13:36:53.830Z" },
@@ -6963,7 +6963,7 @@
       "id": "2026-09",
       "label": "Septiembre 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Septiembre 2026", "id": "14hfRraHyl3WHlqoEwVvnGjQAK_IRGITW_lpiUqplkzw", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-27T18:00:32.577Z" },
+        "source": { "name": "Royal Baby GA - Septiembre 2026", "id": "14hfRraHyl3WHlqoEwVvnGjQAK_IRGITW_lpiUqplkzw", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-27T23:00:27.587Z" },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-09-01", "end": "2026-09-30", "days": null, "daysInMonth": 30, "complete": true },
@@ -7684,22 +7684,22 @@
       "id": "2026-10",
       "label": "Octubre 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Octubre 2026", "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-27T18:00:43.865Z" },
+        "source": { "name": "Royal Baby GA - Octubre 2026", "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-27T23:00:38.811Z" },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-10-01", "end": "2026-10-27", "days": null, "daysInMonth": 31, "complete": false },
         "segmentation": null,
         "campaignsComplete": true,
         "totalsSource": "suma de los totales por tipo de campaña",
-        "totals": { "cost": 1244.67, "impressions": 35850, "clicks": 1310, "conversions": 5, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.036541, "cpc": 0.95, "costPerConversion": 248.93, "costPerPurchase": null, "roas": null },
+        "totals": { "cost": 1263.83, "impressions": 37240, "clicks": 1341, "conversions": 5, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.03601, "cpc": 0.94, "costPerConversion": 252.77, "costPerPurchase": null, "roas": null },
         "conversionsByCategory": null,
         "byType": [
-          { "type": "Búsqueda", "cost": 953.09, "impressions": 9264, "clicks": 911, "conversions": 2, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.098338, "cpc": 1.05, "costPerConversion": 476.55, "costPerPurchase": null, "roas": 0, "fromCampaigns": true },
-          { "type": "Máximo rendimiento", "cost": 291.58, "impressions": 26586, "clicks": 399, "conversions": 3, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.015008, "cpc": 0.73, "costPerConversion": 97.19, "costPerPurchase": null, "roas": 0, "fromCampaigns": true }
+          { "type": "Búsqueda", "cost": 957.71, "impressions": 9310, "clicks": 918, "conversions": 2, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.098604, "cpc": 1.04, "costPerConversion": 478.86, "costPerPurchase": null, "roas": 0, "fromCampaigns": true },
+          { "type": "Máximo rendimiento", "cost": 306.12, "impressions": 27930, "clicks": 423, "conversions": 3, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.015145, "cpc": 0.72, "costPerConversion": 102.04, "costPerPurchase": null, "roas": 0, "fromCampaigns": true }
         ],
         "campaigns": [
-          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": null, "complete": true, "cost": 953.09, "impressions": 9264, "clicks": 911, "conversions": 2, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.098338, "cpc": 1.05, "costPerConversion": 476.55, "costPerPurchase": null, "roas": null, "conversionsByCategory": null },
-          { "campaign": "Pmax B | Objetivo | LR", "status": "Habilitada", "type": "Máximo rendimiento", "dailyBudget": null, "complete": true, "cost": 291.58, "impressions": 26586, "clicks": 399, "conversions": 3, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.015008, "cpc": 0.73, "costPerConversion": 97.19, "costPerPurchase": null, "roas": null, "conversionsByCategory": null }
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": null, "complete": true, "cost": 957.71, "impressions": 9310, "clicks": 918, "conversions": 2, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.098604, "cpc": 1.04, "costPerConversion": 478.86, "costPerPurchase": null, "roas": null, "conversionsByCategory": null },
+          { "campaign": "Pmax B | Objetivo | LR", "status": "Habilitada", "type": "Máximo rendimiento", "dailyBudget": null, "complete": true, "cost": 306.12, "impressions": 27930, "clicks": 423, "conversions": 3, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.015145, "cpc": 0.72, "costPerConversion": 102.04, "costPerPurchase": null, "roas": null, "conversionsByCategory": null }
         ],
         "checks": [],
         "repairs": [],
@@ -8788,15 +8788,15 @@
           "google",
           "meta"
         ],
-        "spend": 4190.33,
-        "impressions": 504565,
-        "clicks": 7138,
+        "spend": 4209.49,
+        "impressions": 505955,
+        "clicks": 7169,
         "purchases": 14,
         "purchaseValue": 12983.32,
-        "cpm": 8.3,
-        "costPerPurchase": 299.31,
-        "roas": 3.1,
-        "spendShare": { "google": 0.297, "meta": 0.703 },
+        "cpm": 8.32,
+        "costPerPurchase": 300.68,
+        "roas": 3.08,
+        "spendShare": { "google": 0.3002, "meta": 0.6998 },
         "dailyBasis": "mixto",
         "notes": [
           "Clics = clics de Google Ads + clics en el enlace de Meta.",

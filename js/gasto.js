@@ -2773,12 +2773,19 @@
     const [year, month] = key.split('-').map(Number);
     const p = Ciclo.periodo(year, month - 1);
     // Invertido en el ciclo y, si el informe aún no llega al cierre, al mismo ritmo hasta el 26
-    const plat = (spend, lastDay) => ({
-      spend, lastDay,
-      proj: lastDay && lastDay < p.dias ? spend / lastDay * p.dias : spend,
-    });
-    const meta = plat(m?.hasData ? summarize(m.rows).spend : 0, m?.lastDay || 0);
-    const goo = plat(g?.hasData ? g.totals.cost || 0 : 0, g?.lastDay || 0);
+    // El ritmo se saca sobre los dias que cubre el informe, no sobre los que van de ciclo. La pauta
+    // llega por mes de calendario y el ciclo arranca el 27: en octubre el informe empieza el dia 6
+    // del ciclo, asi que dividir entre 29 repartia el gasto entre cinco dias de los que no hay dato
+    // y la proyeccion salia por debajo de lo que ya se llevaba gastado por dia.
+    const plat = (spend, firstDay, lastDay) => {
+      const cubiertos = firstDay && lastDay ? lastDay - firstDay + 1 : 0;
+      return {
+        spend, firstDay, lastDay, cubiertos,
+        proj: cubiertos && cubiertos < p.dias ? spend / cubiertos * p.dias : spend,
+      };
+    };
+    const meta = plat(m?.hasData ? summarize(m.rows).spend : 0, m?.firstDay || 0, m?.lastDay || 0);
+    const goo = plat(g?.hasData ? g.totals.cost || 0 : 0, g?.firstDay || 0, g?.lastDay || 0);
     const total = PRESUPUESTO.meta + PRESUPUESTO.google;
     // Lo que queda; si ya se pasó, cuánto
     const queda = (spend, budget) => (spend <= budget ? `queda ${money(budget - spend)}` : `<b style="color:var(--red-text)">${money(spend - budget)} por encima</b>`);
@@ -2787,16 +2794,28 @@
       const r = budget ? value / budget : 0;
       return `<div class="kpi-bar" title="${pct(r * 100, 0)} del presupuesto"><i class="${r > 1 ? 'red' : r >= 0.9 ? 'amber' : 'green'}" style="width:${Math.min(r * 100, 100).toFixed(1)}%"></i></div>`;
     };
-    const alDia = x => (x.lastDay ? fechaCorta(Ciclo.fechaDe(year, month - 1, x.lastDay)) : null);
+    const fechaDia = d => fechaCorta(Ciclo.fechaDe(year, month - 1, d));
+    // Si el informe no arranca con el ciclo, se dice el tramo entero: «del 2 al 25 oct». Decir solo
+    // «al 25 oct» daba a entender que lo invertido cubria tambien los dias de septiembre del ciclo.
+    const tramo = x => (x.firstDay > 1 ? `del ${fechaDia(x.firstDay)} al ${fechaDia(x.lastDay)}` : `al ${fechaDia(x.lastDay)}`);
     const pill = (label, x, budget, nota) => `
       <div class="kpi-pill">
         <span>${label}</span>
         <strong>${money(x.spend)} <small class="muted">de ${money(budget)}</small></strong>
         ${bar(x.spend, budget)}
-        <small>${!x.lastDay ? 'Sin informe del ciclo' : `${queda(x.spend, budget)} · ${x.lastDay < p.dias && !cerrado
-          ? `al ${alDia(x)} · al ritmo cierra en ${money(x.proj)}` : 'ciclo completo'}`}${nota ? ` · ${nota}` : ''}</small>
+        <small>${!x.lastDay ? 'Sin informe del ciclo' : `${queda(x.spend, budget)} · ${x.cubiertos < p.dias && !cerrado
+          ? `${tramo(x)} · al ritmo cierra en ${money(x.proj)}` : 'ciclo completo'}`}${nota ? ` · ${nota}` : ''}</small>
       </div>`;
-    const totalX = { spend: meta.spend + goo.spend, proj: meta.proj + goo.proj, lastDay: Math.min(meta.lastDay || p.dias, goo.lastDay || p.dias) };
+    const totalX = {
+      spend: meta.spend + goo.spend,
+      proj: meta.proj + goo.proj,
+      // El total no lleva tramo: cada plataforma puede empezar en un dia distinto (en octubre Meta
+      // trae el 27-30 de septiembre y Google no, porque falta su archivo de septiembre). Se dice
+      // hasta cuando llega, que es lo unico cierto de las dos, y la proyeccion suma las de cada una.
+      firstDay: 1,
+      lastDay: Math.min(meta.lastDay || p.dias, goo.lastDay || p.dias),
+    };
+    totalX.cubiertos = totalX.lastDay - totalX.firstDay + 1;
     host.hidden = false;
     host.innerHTML = `
       <div class="gp-period-head">

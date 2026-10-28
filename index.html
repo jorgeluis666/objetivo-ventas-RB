@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="css/ds.css">
 <link rel="stylesheet" href="css/dashboard-minimal.css">
+<link rel="stylesheet" href="css/reporte.css">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js" integrity="sha512-ZwR1/gSZM3ai6vCdI+LVF1zSq/5HznD3ZSTk7kajkaj4D292NLuduDCO1c/NT8Id+jE58KYLKT7hXnbtryGmMg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js" integrity="sha512-JPcRR8yFa8mmCsfrw4TNte1ZvF1e3+1SdGMslZvmrzDYxS69J7J49vkFL8u6u8PlPJK+H3voElBtUCzaXj+6ig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -878,7 +879,7 @@
           </button>
           <button class="gp-tab" type="button" role="tab" data-view="view-week">
             <span class="gp-tab-ic">S</span>
-            <span><span class="gp-tab-name">Generación de Reporte</span><span class="gp-tab-src">Semana de lunes a domingo</span></span>
+            <span><span class="gp-tab-name">Generación de Reporte</span><span class="gp-tab-src">Mensual y semanal</span></span>
           </button>
         </div>
         <div class="panel">
@@ -906,7 +907,7 @@
       <section class="view" id="view-week">
         <div class="section-title">Generación de Reporte</div>
         <div class="section-desc">
-          El reporte de la semana que acaba de pasar, de lunes a domingo, frente a la semana anterior y con el orden de los reportes de la carpeta: Meta Ads por grupo de campañas y conjunto, Google Ads y conclusiones. Se arma con las mismas descargas de Drive que <strong>Gasto publicitario</strong>: solo hay que revisar las conclusiones y descargarlo en PDF.
+          El <strong>mensual</strong> sigue el modelo de Lima Retail: el mes del ciclo de venta con el ROAS real por canal, ventas web, WhatsApp, distribución de la inversión, Google Ads y conclusiones. El <strong>semanal</strong> compara la semana de lunes a domingo con la anterior. Los dos se arman con las mismas descargas de Drive que <strong>Gasto publicitario</strong>: solo hay que revisar los textos y descargarlo en PDF.
         </div>
         <div class="gp-tabs arch-tabs" role="tablist" aria-label="Secciones de Archivo de Reportes">
           <button class="gp-tab" type="button" role="tab" data-view="view-arch">
@@ -915,15 +916,24 @@
           </button>
           <button class="gp-tab" type="button" role="tab" data-view="view-week">
             <span class="gp-tab-ic">S</span>
-            <span><span class="gp-tab-name">Generación de Reporte</span><span class="gp-tab-src">Semana de lunes a domingo</span></span>
+            <span><span class="gp-tab-name">Generación de Reporte</span><span class="gp-tab-src">Mensual y semanal</span></span>
           </button>
         </div>
         <div class="panel week-toolbar">
-          <label class="gp-tool-select"><span class="sr-only">Semana del reporte</span><select id="week-select"><option value="">Cargando semanas…</option></select></label>
-          <span class="week-model" id="week-model"></span>
-          <button class="btn primary" type="button" id="week-print" title="Abre el diálogo de impresión para guardar el reporte como PDF">Descargar PDF</button>
+          <div class="rpt-kind" role="tablist" aria-label="Tipo de reporte">
+            <button type="button" role="tab" data-rpt-kind="mensual">Mensual</button>
+            <button type="button" role="tab" data-rpt-kind="semanal">Semanal</button>
+          </div>
+          <label class="gp-tool-select" data-rpt-only="mensual"><span class="sr-only">Mes del reporte</span><select id="rpt-select"><option value="">Cargando meses…</option></select></label>
+          <span class="week-model" id="rpt-note" data-rpt-only="mensual"></span>
+          <button class="gp-tool-btn" type="button" id="rpt-reset" data-rpt-only="mensual" title="Vuelve a los textos que propone el tablero con los números del mes">Restablecer textos</button>
+          <button class="btn primary" type="button" id="rpt-print" data-rpt-only="mensual" title="Abre el diálogo de impresión para guardar el reporte como PDF (una hoja 16:9 por lámina)">Descargar PDF</button>
+          <label class="gp-tool-select" data-rpt-only="semanal" hidden><span class="sr-only">Semana del reporte</span><select id="week-select"><option value="">Cargando semanas…</option></select></label>
+          <span class="week-model" id="week-model" data-rpt-only="semanal" hidden></span>
+          <button class="btn primary" type="button" id="week-print" data-rpt-only="semanal" hidden title="Abre el diálogo de impresión para guardar el reporte como PDF">Descargar PDF</button>
         </div>
-        <div id="week-report"><div class="panel"><div class="gp-table-empty">Cargando la semana…</div></div></div>
+        <div id="rpt-report" data-rpt-only="mensual"><div class="panel"><div class="gp-table-empty">Cargando el mes…</div></div></div>
+        <div id="week-report" data-rpt-only="semanal" hidden><div class="panel"><div class="gp-table-empty">Cargando la semana…</div></div></div>
       </section>
 
       <div class="modal-overlay arch-preview" id="arch-preview" hidden>
@@ -962,6 +972,7 @@
 <script src="js/gasto.js"></script>
 <script src="js/reportes.js"></script>
 <script src="js/reporte-semanal.js"></script>
+<script src="js/reporte-mensual.js"></script>
 <script src="js/main.js"></script>
 
 </body>

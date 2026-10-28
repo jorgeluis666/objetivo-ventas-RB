@@ -31,7 +31,7 @@
     'view-rep':    'Meta Ads y Google Ads',
     'view-ads':    'Meta Ads y Google Ads por anuncio',
     'view-arch':   'Documentos en Drive',
-    'view-week':   'Generación de Reporte · semana de lunes a domingo',
+    'view-week':   'Generación de Reporte · mensual y semanal',
   };
 
   // Secciones que van dentro de otro módulo, con su pestaña: el menú marca el módulo.
@@ -50,7 +50,7 @@
     'view-rep':    [],  // Gasto.init() re-anima los charts de la pestaña activa
     'view-ads':    [],
     'view-arch':   [],
-    'view-week':   [],  // ReporteSemanal.init() dibuja su gráfico ya visible
+    'view-week':   [],  // ReporteMensual.init() dibuja sus láminas (o el semanal) ya visible
   };
 
   const state = {
@@ -109,9 +109,9 @@
     if (id === 'view-rep') window.Gasto?.init();
     // Anuncios usa los mismos datos de Meta Ads y Google Ads (js/gasto.js)
     if (id === 'view-ads') window.Gasto?.initAds();
-    // Archivo de Reportes: la lista de la carpeta y el reporte de la semana (este lee los datos de Gasto.load())
+    // Archivo de Reportes: la lista de la carpeta y la generación de reporte, mensual o semanal (leen los datos de Gasto.load())
     if (id === 'view-arch') window.Reportes?.init();
-    if (id === 'view-week') window.ReporteSemanal?.init();
+    if (id === 'view-week') window.ReporteMensual?.init();
 
     // Render perezoso de productos para no bloquear primera pantalla
     if (id === 'view-prod' && !state.renderedProducts) {

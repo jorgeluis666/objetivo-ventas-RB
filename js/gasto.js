@@ -322,12 +322,12 @@
         adset: t.adsets[r[at.adset]] || '',
         ad: ad.name || '(sin nombre)',
         link: ad.link || null,
-        resultType: r[at.type] == null ? '' : t.types[r[at.type]],
+        resultType: m.meta.captureProvider === 'Nexus' ? 'No disponible' : (r[at.type] == null ? '' : t.types[r[at.type]]),
         spend: r[at.spend] || 0,
         impressions: r[at.impressions] || 0,
-        reach: r[at.reach] || 0,
+        reach: m.meta.captureProvider === 'Nexus' ? null : (r[at.reach] || 0),
         clicks: r[at.linkClicks] || 0,
-        results: r[at.results] || 0,
+        results: m.meta.captureProvider === 'Nexus' ? null : (r[at.results] || 0),
         purchases: r[at.purchases] || 0,
         purchaseValue: r[at.purchaseValue] || 0,
         conversations: r[at.conversations] || 0,
@@ -388,6 +388,7 @@
   function summarize(rows) {
     const t = Object.fromEntries(SUM_FIELDS.map(f => [f, 0]));
     rows.forEach(r => { SUM_FIELDS.forEach(f => { t[f] += r[f]; }); });
+    for (const f of SUM_FIELDS) if (rows.some(r => r[f] == null)) t[f] = null;
     return {
       ...t,
       // El alcance es la suma de las filas del export (día × edad × sexo × anuncio), como en los reportes.

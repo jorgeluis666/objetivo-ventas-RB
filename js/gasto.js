@@ -1344,6 +1344,10 @@
     renderMetaTabs(period);
     renderAlerts('gp-meta-alerts', 'meta', { label: period.annual ? String(period.year) : period.month.label }, period.annual ? [] : period.month.parts.map(p => p.raw));
     renderPeriod(period);
+    const captures=(state.data?.months||[]).map(m=>m.meta?.capturedAt).filter(Boolean).sort();
+    let stamp=document.getElementById('nexus-meta-capture');
+    if(!stamp){stamp=document.createElement('p');stamp.id='nexus-meta-capture';stamp.className='muted';body.prepend(stamp);}
+    stamp.textContent=captures.length?'Meta · Captura Nexus: '+new Date(captures.at(-1)).toLocaleString('es-PE',{timeZone:'America/Lima'})+' · Lima · Extracción 06:00, 13:00 y 18:00; publicación después del barrido. Día actual parcial.':'';
     renderKpis(period);
     renderDistribution(period);
     renderCampaigns(period, groups);

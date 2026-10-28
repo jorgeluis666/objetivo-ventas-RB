@@ -607,6 +607,7 @@ const META_COLUMNS = {
   'alcance': 'reach',
   'clics en el enlace': 'linkClicks',
   'ctr (todos)': 'ctrAll',
+  'clics (todos)': 'allClicks',
   'interacciones': 'interactions',
   'compras': 'purchases',
   'valor de conversion de compras': 'purchaseValue',
@@ -661,7 +662,7 @@ function addMetrics(target, source, fields) {
 
 // El enlace de vista previa lleva el ID del anuncio (feed_demo_ad=…): dos anuncios pueden llamarse igual.
 function adKey(row) {
-  const id = (row.adLink.match(/[?&]feed_demo_ad=(\d+)/) || [])[1];
+  const id = (row.adLink.match(/[?&](?:feed_demo_ad|selected_ad_ids)=(\d+)/) || [])[1];
   return id || row.adLink || `${row.campaign}|${row.adset}|${row.ad}`;
 }
 
@@ -736,6 +737,7 @@ function metaRatios(m) {
 
 function parseMetaReport(text) {
   const rows = parseCsv(text);
+  if(rows[0]?.[0]==='NEXUS_META_V1')return require('./nexus-meta.js')(rows,parseMetaReport);
   const headerIndex = rows.slice(0, 10).findIndex(row => row.map(normalize).includes('nombre de la campana'));
   if (headerIndex < 0) throw new Error('no encuentro el encabezado del export de Meta (Nombre de la campaña…)');
   const header = rows[headerIndex];
@@ -790,7 +792,7 @@ function parseMetaReport(text) {
         reach: parseNumber(cell(row, 'reach')) || 0,
         linkClicks: parseNumber(cell(row, 'linkClicks')) || 0,
         // Meta no exporta los clics (todos); salen exactos de CTR (todos) × impresiones.
-        allClicks: ctrAll === null ? 0 : Math.round(ctrAll * impressions / 100),
+        allClicks: col.allClicks !== undefined ? parseNumber(cell(row,'allClicks')) || 0 : (ctrAll === null ? 0 : Math.round(ctrAll * impressions / 100)),
         interactions: parseNumber(cell(row, 'interactions')) || 0,
         purchases: parseNumber(cell(row, 'purchases')) || 0,
         purchaseValue: parseNumber(cell(row, 'purchaseValue')) || 0,
@@ -1303,6 +1305,8 @@ function metaBlock(entry, warnings) {
   const { report, file, month } = entry;
   for (const warning of report.warnings) warnings.push(`Meta Ads ${monthLabel(month)}: ${warning}`);
   return {
+    capturedAt: report.capturedAt || null,
+    captureProvider: report.capturedAt ? 'Nexus' : null,
     source: { name: file.name, id: file.id, mimeType: file.mimeType, modifiedTime: file.modifiedTime },
     monthFrom: entry.monthFrom,
     granularity: report.granularity,

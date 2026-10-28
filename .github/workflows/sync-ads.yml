@@ -11,11 +11,9 @@ name: Sincronizar inversión publicitaria
 # Al final lista la carpeta de reportes con scripts/sync-reportes.js y commitea
 # data/reportes-2026.json: es el índice del módulo Archivo de Reportes.
 #
-# Corre tres veces al día —6:30, 13:30 y 18:30 de Lima— lanzado por el Apps Script
-# scripts/disparar-actualizacion.gs, más la corrida de las 10:30 que arrastra a los otros
-# workflows (el cron de las 07:00 queda de respaldo), y a mano (Run workflow). Esos horarios
-# van media hora después de cada carga: Nexus escribe los archivos de Google Ads en Drive a
-# las 6:00, 13:00 y 18:00, y scripts/meta-api-sync.gs escribe los de Meta a esas mismas horas.
+# Lee Drive a las 06:30, 13:30 y 18:30 Lima por cron de GitHub, además del
+# disparador existente de Apps Script. Nexus publica Google y Meta a las 06, 13 y 18.
+# GitHub puede demorar el inicio; la captura conserva su propia hora de origen.
 # No hay botón en el tablero: dispararlo desde el navegador exigiría un token de GitHub y el
 # tablero lo abren clientes.
 #
@@ -32,8 +30,8 @@ name: Sincronizar inversión publicitaria
 
 on:
   schedule:
-    # 07:00 Lima = 12:00 UTC
-    - cron: '0 12 * * *'
+    # 06:30, 13:30, 18:30 Lima = 11:30, 18:30, 23:30 UTC
+    - cron: '30 11,18,23 * * *'
   workflow_dispatch: {}
 
 permissions:
@@ -58,6 +56,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Validar contrato Nexus Meta
+        run: node scripts/test-nexus-meta.js
 
       - name: Leer las carpetas de Meta Ads y Google Ads
         env:

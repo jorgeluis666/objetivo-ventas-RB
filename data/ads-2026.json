@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-31T11:24:44.562Z",
+  "generatedAt": "2026-10-31T15:34:02.762Z",
   "currency": "PEN",
   "rules": [
     "Google Ads llega mensual: sin serie diaria real. Meta Ads llega por día y la serie diaria es real.",
@@ -52,7 +52,7 @@
   },
   "pending": [
     "Google Ads: Enero 2026, Febrero 2026, Marzo 2026, Abril 2026, Mayo 2026, Junio 2026, Julio 2026, Agosto 2026 van con el informe por día porque no hay informe de campaña. Ese informe solo trae las campañas con términos de búsqueda, así que a las campañas de Performance Max o Display les falta todo su gasto: subir el informe de campaña de esos meses a la carpeta es lo que deja la cifra completa.",
-    "Meta Ads: «Royal Baby - Abril 2026» no se pudo leer (no se pudo descargar: HTTP 401); Abril 2026 queda con los datos de la sincronización anterior."
+    "Google Ads: «Royal Baby - Abril 2026» no se pudo leer (no se pudo descargar: HTTP 401); Abril 2026 queda con los datos de la sincronización anterior."
   ],
   "warnings": [
     "Google Ads Enero 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto.",

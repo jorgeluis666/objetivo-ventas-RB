@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-01T18:30:06.294Z",
+  "generatedAt": "2026-11-01T23:31:31.840Z",
   "currency": "PEN",
   "rules": [
     "Google Ads llega mensual: sin serie diaria real. Meta Ads llega por día y la serie diaria es real.",
@@ -19,8 +19,8 @@
       "folderUrl": "https://drive.google.com/drive/folders/1TT5KTVZuGlFc7OqvGAz9nuRVyJFvwJpd",
       "discovery": "apps script",
       "files": [
-        { "id": "1l7RSkz0peNUQSQrToHZDkb5AkJaYIc0c5bueefDugys", "name": "Royal Baby GA - Noviembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T18:00:54.217Z" },
-        { "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "name": "Royal Baby GA - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T18:00:42.991Z" },
+        { "id": "1l7RSkz0peNUQSQrToHZDkb5AkJaYIc0c5bueefDugys", "name": "Royal Baby GA - Noviembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T23:00:57.571Z" },
+        { "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "name": "Royal Baby GA - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T23:00:43.246Z" },
         { "id": "14hfRraHyl3WHlqoEwVvnGjQAK_IRGITW_lpiUqplkzw", "name": "Royal Baby GA - Septiembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-31T23:00:31.029Z" },
         { "id": "1VH381U5vefmLiloy07NVzBx29BuzSxbA_vc_m0afrYY", "name": "Royal Baby - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-26T22:06:33.349Z" },
         { "id": "1pNGQFycVHdysHcniamA_xtS6T_R_uCkQBrvE7q5u3-E", "name": "Royal Baby - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-14T13:38:06.385Z" },
@@ -38,8 +38,8 @@
       "folderUrl": "https://drive.google.com/drive/folders/1kjz_QSgFpkd9semvyjrlLQi3ETH8-DPm",
       "discovery": "apps script",
       "files": [
-        { "id": "1nn3phwslw1GTlpjBHFa-zI_dQEUCbsEnZ2NwQWtMOQk", "name": "Royal Baby - Noviembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T18:00:27.172Z" },
-        { "id": "1KlbLoCR--a_oMVPBv2meKtBLzvqOSvYUFS5mjbCHrys", "name": "Royal Baby - Octube 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T18:00:21.545Z" },
+        { "id": "1nn3phwslw1GTlpjBHFa-zI_dQEUCbsEnZ2NwQWtMOQk", "name": "Royal Baby - Noviembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T23:00:25.960Z" },
+        { "id": "1KlbLoCR--a_oMVPBv2meKtBLzvqOSvYUFS5mjbCHrys", "name": "Royal Baby - Octube 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T23:00:20.201Z" },
         { "id": "1_iTA-Gaj1YTI8JjL2_JgwlyzYLf5obuMR4Pm9BZMlSI", "name": "Royal Baby - Septiembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T01:37:10.271Z" },
         { "id": "1hRh2Xh8l1Cd2GMDX7m46S21w_0nnYKXWH0JbHOCbsec", "name": "Royal Baby - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T04:00:41.081Z" },
         { "id": "150oEt3NUe97HJl1eexW-WhXEftoIvL5gY72KSUosNQM", "name": "Royal Baby - Julio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:59:21.745Z" },
@@ -53,8 +53,7 @@
     }
   },
   "pending": [
-    "Google Ads: Enero 2026, Febrero 2026, Marzo 2026, Abril 2026, Mayo 2026, Junio 2026, Julio 2026, Agosto 2026 van con el informe por día porque no hay informe de campaña. Ese informe solo trae las campañas con términos de búsqueda, así que a las campañas de Performance Max o Display les falta todo su gasto: subir el informe de campaña de esos meses a la carpeta es lo que deja la cifra completa.",
-    "Google Ads: «Royal Baby GA - Noviembre 2026» no se pudo leer (el informe no trae campañas ni filas de totales); Noviembre 2026 queda sin datos."
+    "Google Ads: Enero 2026, Febrero 2026, Marzo 2026, Abril 2026, Mayo 2026, Junio 2026, Julio 2026, Agosto 2026 van con el informe por día porque no hay informe de campaña. Ese informe solo trae las campañas con términos de búsqueda, así que a las campañas de Performance Max o Display les falta todo su gasto: subir el informe de campaña de esos meses a la carpeta es lo que deja la cifra completa."
   ],
   "warnings": [
     "Google Ads Enero 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto.",
@@ -71,6 +70,8 @@
     "Google Ads Octubre 2026: falta la columna «Conversiones por compras»: sin KPI de compras de Google Ads este mes.",
     "Google Ads Octubre 2026: falta la columna «Valor de conv.»: sin ROAS de Google Ads este mes.",
     "Meta Ads Octubre 2026: Fuente Nexus: misma captura que el tablero interno. Sin desglose de edad/sexo ni alcance único; no se suman los niveles.",
+    "Google Ads Noviembre 2026: falta la columna «Conversiones por compras»: sin KPI de compras de Google Ads este mes.",
+    "Google Ads Noviembre 2026: falta la columna «Valor de conv.»: sin ROAS de Google Ads este mes.",
     "Meta Ads Noviembre 2026: Fuente Nexus: misma captura que el tablero interno. Sin desglose de edad/sexo ni alcance único; no se suman los niveles."
   ],
   "months": [
@@ -7686,7 +7687,7 @@
       "id": "2026-10",
       "label": "Octubre 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Octubre 2026", "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T18:00:42.991Z" },
+        "source": { "name": "Royal Baby GA - Octubre 2026", "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T23:00:43.246Z" },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-10-01", "end": "2026-10-31", "days": null, "daysInMonth": 31, "complete": true },
@@ -8005,27 +8006,27 @@
         }
       },
       "meta": {
-        "capturedAt": "2026-11-01T13:00:01-05:00",
+        "capturedAt": "2026-11-01T18:00:01-05:00",
         "captureProvider": "Nexus",
-        "source": { "name": "Royal Baby - Octube 2026", "id": "1KlbLoCR--a_oMVPBv2meKtBLzvqOSvYUFS5mjbCHrys", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T18:00:21.545Z" },
+        "source": { "name": "Royal Baby - Octube 2026", "id": "1KlbLoCR--a_oMVPBv2meKtBLzvqOSvYUFS5mjbCHrys", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T23:00:20.201Z" },
         "monthFrom": "contenido",
         "granularity": "diaria",
         "coverage": { "start": "2026-10-01", "end": "2026-10-31", "days": 31, "daysInMonth": 31, "complete": true },
         "currency": "PEN",
         "rows": 92,
-        "totals": { "spend": 3472.12, "impressions": 546646, "linkClicks": 6811, "allClicks": 17698, "interactions": null, "purchases": 16, "purchaseValue": 14173.3, "conversations": 1396, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.032376, "linkCtr": 0.01246, "cpm": 6.35, "cpc": 0.51, "costPerPurchase": 217.01, "roas": 4.08 },
+        "totals": { "spend": 3472.15, "impressions": 546660, "linkClicks": 6811, "allClicks": 17698, "interactions": null, "purchases": 16, "purchaseValue": 14173.3, "conversations": 1396, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.032375, "linkCtr": 0.012459, "cpm": 6.35, "cpc": 0.51, "costPerPurchase": 217.01, "roas": 4.08 },
         "resultsByType": {},
         "campaigns": [
-          { "campaign": "Ventas E-Commerce | 2026 | LR | Inv. Total | Ver01", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 1989.9, "impressions": 254873, "linkClicks": 4230, "allClicks": 6824, "interactions": null, "purchases": 10, "purchaseValue": 7737.95, "conversations": 61, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.026774, "linkCtr": 0.016597, "cpm": 7.81, "cpc": 0.47, "costPerPurchase": 198.99, "roas": 3.89 },
+          { "campaign": "Ventas E-Commerce | 2026 | LR | Inv. Total | Ver01", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 1989.9, "impressions": 254874, "linkClicks": 4230, "allClicks": 6824, "interactions": null, "purchases": 10, "purchaseValue": 7737.95, "conversations": 61, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.026774, "linkCtr": 0.016596, "cpm": 7.81, "cpc": 0.47, "costPerPurchase": 198.99, "roas": 3.89 },
           { "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 1151.58, "impressions": 130603, "linkClicks": 2538, "allClicks": 6884, "interactions": null, "purchases": 6, "purchaseValue": 6435.35, "conversations": 1330, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.052709, "linkCtr": 0.019433, "cpm": 8.82, "cpc": 0.45, "costPerPurchase": 191.93, "roas": 5.59 },
-          { "campaign": "Reconocimiento | LR", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 287.98, "impressions": 150760, "linkClicks": 38, "allClicks": 3070, "interactions": null, "purchases": 0, "purchaseValue": 0, "conversations": 5, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.020363, "linkCtr": 0.000252, "cpm": 1.91, "cpc": 7.58, "costPerPurchase": null, "roas": 0 },
+          { "campaign": "Reconocimiento | LR", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 288.01, "impressions": 150773, "linkClicks": 38, "allClicks": 3070, "interactions": null, "purchases": 0, "purchaseValue": 0, "conversations": 5, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.020362, "linkCtr": 0.000252, "cpm": 1.91, "cpc": 7.58, "costPerPurchase": null, "roas": 0 },
           { "campaign": "Campaña Interacción 2026 | LR", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 42.66, "impressions": 10410, "linkClicks": 5, "allClicks": 920, "interactions": null, "purchases": 0, "purchaseValue": 0, "conversations": 0, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.088377, "linkCtr": 0.00048, "cpm": 4.1, "cpc": 8.53, "costPerPurchase": null, "roas": 0 }
         ],
         "audience": { "age": null, "gender": null },
         "ads": {
           "count": 50,
           "top": [
-            { "ad": "40% OFF Daniela", "campaign": "Ventas E-Commerce | 2026 | LR | Inv. Total | Ver01", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120251730137140380", "spend": 382.96, "impressions": 37315, "linkClicks": 738, "purchases": 3, "purchaseValue": 3194.93, "conversations": 6, "roas": 8.34 },
+            { "ad": "40% OFF Daniela", "campaign": "Ventas E-Commerce | 2026 | LR | Inv. Total | Ver01", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120251730137140380", "spend": 382.96, "impressions": 37316, "linkClicks": 738, "purchases": 3, "purchaseValue": 3194.93, "conversations": 6, "roas": 8.34 },
             { "ad": "No estábamos preparadas para esto", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120249137705720380", "spend": 113.01, "impressions": 27042, "linkClicks": 392, "purchases": 2, "purchaseValue": 2891, "conversations": 251, "roas": 25.58 },
             { "ad": "Outlet septiembre", "campaign": "Ventas E-Commerce | 2026 | LR | Inv. Total | Ver01", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120251966231890380", "spend": 326.03, "impressions": 39260, "linkClicks": 796, "purchases": 2, "purchaseValue": 1228.5, "conversations": 17, "roas": 3.77 },
             { "ad": "Preventa", "campaign": "Ventas E-Commerce | 2026 | LR | Inv. Total | Ver01", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120252356490540380", "spend": 359.32, "impressions": 68003, "linkClicks": 598, "purchases": 2, "purchaseValue": 1623.43, "conversations": 5, "roas": 4.52 },
@@ -8127,9 +8128,9 @@
           { "day": "2026-10-30", "campaign": "Reconocimiento | LR", "spend": 5.96, "impressions": 3495, "linkClicks": 0, "allClicks": 77, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 0, "results": 0 },
           { "day": "2026-10-30", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "spend": 10.21, "impressions": 1090, "linkClicks": 37, "allClicks": 88, "interactions": 0, "purchases": 1, "purchaseValue": 467.97, "conversations": 19, "results": 0 },
           { "day": "2026-10-30", "campaign": "Ventas E-Commerce | 2026 | LR | Inv. Total | Ver01", "spend": 31.86, "impressions": 2788, "linkClicks": 58, "allClicks": 85, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 1, "results": 0 },
-          { "day": "2026-10-31", "campaign": "Reconocimiento | LR", "spend": 8.1, "impressions": 5142, "linkClicks": 0, "allClicks": 99, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 0, "results": 0 },
+          { "day": "2026-10-31", "campaign": "Reconocimiento | LR", "spend": 8.13, "impressions": 5155, "linkClicks": 0, "allClicks": 99, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 0, "results": 0 },
           { "day": "2026-10-31", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "spend": 16.09, "impressions": 1795, "linkClicks": 56, "allClicks": 127, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 26, "results": 0 },
-          { "day": "2026-10-31", "campaign": "Ventas E-Commerce | 2026 | LR | Inv. Total | Ver01", "spend": 55.43, "impressions": 4616, "linkClicks": 79, "allClicks": 141, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 0, "results": 0 }
+          { "day": "2026-10-31", "campaign": "Ventas E-Commerce | 2026 | LR | Inv. Total | Ver01", "spend": 55.43, "impressions": 4617, "linkClicks": 79, "allClicks": 141, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 0, "results": 0 }
         ],
         "table": {
           "columns": [
@@ -8816,8 +8817,8 @@
             [30,1,1,36,null,2.31,257,null,2,0,0,0,0],
             [31,3,6,29,null,0.02,7,null,0,0,0,0,0],
             [31,3,8,38,null,0.17,117,null,0,0,0,0,0],
-            [31,3,8,39,null,3.87,2432,null,0,0,0,0,0],
-            [31,3,6,40,null,3.97,2479,null,0,0,0,0,0],
+            [31,3,8,39,null,3.87,2437,null,0,0,0,0,0],
+            [31,3,6,40,null,4,2487,null,0,0,0,0,0],
             [31,3,6,41,null,0.07,107,null,0,0,0,0,0],
             [31,2,4,10,null,2.22,189,null,7,0,0,4,0],
             [31,2,4,12,null,0.8,112,null,6,0,0,3,0],
@@ -8832,7 +8833,7 @@
             [31,2,5,48,null,0.21,23,null,0,0,0,0,0],
             [31,1,1,2,null,0.48,27,null,1,0,0,0,0],
             [31,1,1,3,null,0.03,6,null,0,0,0,0,0],
-            [31,1,3,26,null,39.58,3126,null,63,0,0,0,0],
+            [31,1,3,26,null,39.58,3127,null,63,0,0,0,0],
             [31,1,3,27,null,0.46,49,null,0,0,0,0,0],
             [31,1,1,35,null,0.4,43,null,0,0,0,0,0],
             [31,1,1,19,null,9.81,1023,null,15,0,0,0,0],
@@ -8846,8 +8847,8 @@
           "google",
           "meta"
         ],
-        "spend": 4975.37,
-        "impressions": 599589,
+        "spend": 4975.4,
+        "impressions": 599603,
         "clicks": 8486,
         "purchases": 16,
         "purchaseValue": 14173.3,
@@ -8872,34 +8873,56 @@
     {
       "id": "2026-11",
       "label": "Noviembre 2026",
+      "google": {
+        "source": { "name": "Royal Baby GA - Noviembre 2026", "id": "1l7RSkz0peNUQSQrToHZDkb5AkJaYIc0c5bueefDugys", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T23:00:57.571Z" },
+        "monthFrom": "contenido",
+        "granularity": "mensual",
+        "coverage": { "start": "2026-11-01", "end": "2026-11-01", "days": null, "daysInMonth": 30, "complete": false },
+        "segmentation": null,
+        "campaignsComplete": true,
+        "totalsSource": "suma de los totales por tipo de campaña",
+        "totals": { "cost": 16.47, "impressions": 1230, "clicks": 24, "conversions": 0, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.019512, "cpc": 0.69, "costPerConversion": null, "costPerPurchase": null, "roas": null },
+        "conversionsByCategory": null,
+        "byType": [
+          { "type": "Búsqueda", "cost": 3.84, "impressions": 12, "clicks": 3, "conversions": 0, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.25, "cpc": 1.28, "costPerConversion": null, "costPerPurchase": null, "roas": 0, "fromCampaigns": true },
+          { "type": "Máximo rendimiento", "cost": 12.63, "impressions": 1218, "clicks": 21, "conversions": 0, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.017241, "cpc": 0.6, "costPerConversion": null, "costPerPurchase": null, "roas": 0, "fromCampaigns": true }
+        ],
+        "campaigns": [
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": null, "complete": true, "cost": 3.84, "impressions": 12, "clicks": 3, "conversions": 0, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.25, "cpc": 1.28, "costPerConversion": null, "costPerPurchase": null, "roas": null, "conversionsByCategory": null },
+          { "campaign": "Pmax B | Objetivo | LR", "status": "Habilitada", "type": "Máximo rendimiento", "dailyBudget": null, "complete": true, "cost": 12.63, "impressions": 1218, "clicks": 21, "conversions": 0, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.017241, "cpc": 0.6, "costPerConversion": null, "costPerPurchase": null, "roas": null, "conversionsByCategory": null }
+        ],
+        "checks": [],
+        "repairs": [],
+        "detail": null
+      },
       "meta": {
-        "capturedAt": "2026-11-01T13:00:01-05:00",
+        "capturedAt": "2026-11-01T18:00:01-05:00",
         "captureProvider": "Nexus",
-        "source": { "name": "Royal Baby - Noviembre 2026", "id": "1nn3phwslw1GTlpjBHFa-zI_dQEUCbsEnZ2NwQWtMOQk", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T18:00:27.172Z" },
+        "source": { "name": "Royal Baby - Noviembre 2026", "id": "1nn3phwslw1GTlpjBHFa-zI_dQEUCbsEnZ2NwQWtMOQk", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T23:00:25.960Z" },
         "monthFrom": "contenido",
         "granularity": "diaria",
         "coverage": { "start": "2026-11-01", "end": "2026-11-01", "days": 1, "daysInMonth": 30, "complete": false },
         "currency": "PEN",
         "rows": 3,
-        "totals": { "spend": 29.48, "impressions": 5513, "linkClicks": 61, "allClicks": 194, "interactions": null, "purchases": 0, "purchaseValue": 0, "conversations": 9, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.03519, "linkCtr": 0.011065, "cpm": 5.35, "cpc": 0.48, "costPerPurchase": null, "roas": 0 },
+        "totals": { "spend": 44.82, "impressions": 8858, "linkClicks": 103, "allClicks": 308, "interactions": null, "purchases": 0, "purchaseValue": 0, "conversations": 17, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.034771, "linkCtr": 0.011628, "cpm": 5.06, "cpc": 0.44, "costPerPurchase": null, "roas": 0 },
         "resultsByType": {},
         "campaigns": [
-          { "campaign": "Ventas E-Commerce | 2026 | LR | Inv. Total | Ver01", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 18.08, "impressions": 1920, "linkClicks": 40, "allClicks": 63, "interactions": null, "purchases": 0, "purchaseValue": 0, "conversations": 0, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.032813, "linkCtr": 0.020833, "cpm": 9.42, "cpc": 0.45, "costPerPurchase": null, "roas": 0 },
-          { "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 7.74, "impressions": 1104, "linkClicks": 21, "allClicks": 66, "interactions": null, "purchases": 0, "purchaseValue": 0, "conversations": 9, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.059783, "linkCtr": 0.019022, "cpm": 7.01, "cpc": 0.37, "costPerPurchase": null, "roas": 0 },
-          { "campaign": "Reconocimiento | LR", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 3.66, "impressions": 2489, "linkClicks": 0, "allClicks": 65, "interactions": null, "purchases": 0, "purchaseValue": 0, "conversations": 0, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.026115, "linkCtr": 0, "cpm": 1.47, "cpc": null, "costPerPurchase": null, "roas": 0 }
+          { "campaign": "Ventas E-Commerce | 2026 | LR | Inv. Total | Ver01", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 26.74, "impressions": 3026, "linkClicks": 65, "allClicks": 99, "interactions": null, "purchases": 0, "purchaseValue": 0, "conversations": 0, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.032716, "linkCtr": 0.021481, "cpm": 8.84, "cpc": 0.41, "costPerPurchase": null, "roas": 0 },
+          { "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 12.76, "impressions": 2091, "linkClicks": 38, "allClicks": 118, "interactions": null, "purchases": 0, "purchaseValue": 0, "conversations": 17, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.056432, "linkCtr": 0.018173, "cpm": 6.1, "cpc": 0.34, "costPerPurchase": null, "roas": 0 },
+          { "campaign": "Reconocimiento | LR", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 5.32, "impressions": 3741, "linkClicks": 0, "allClicks": 91, "interactions": null, "purchases": 0, "purchaseValue": 0, "conversations": 0, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.024325, "linkCtr": 0, "cpm": 1.42, "cpc": null, "costPerPurchase": null, "roas": 0 }
         ],
         "audience": { "age": null, "gender": null },
         "ads": {
           "count": 19,
           "top": [
-            { "ad": "Dorian Gray - Video septiembre - Copia", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120252483436220380", "spend": 5.99, "impressions": 888, "linkClicks": 18, "purchases": 0, "purchaseValue": 0, "conversations": 7, "roas": 0 },
-            { "ad": "Benedetta mensajes - Daniela", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120225938349550380", "spend": 1.66, "impressions": 200, "linkClicks": 3, "purchases": 0, "purchaseValue": 0, "conversations": 2, "roas": 0 }
+            { "ad": "Dorian Gray - Video septiembre - Copia", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120252483436220380", "spend": 9.92, "impressions": 1644, "linkClicks": 29, "purchases": 0, "purchaseValue": 0, "conversations": 13, "roas": 0 },
+            { "ad": "Benedetta mensajes - Daniela", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120225938349550380", "spend": 2.72, "impressions": 428, "linkClicks": 8, "purchases": 0, "purchaseValue": 0, "conversations": 4, "roas": 0 }
           ]
         },
         "daily": [
-          { "day": "2026-11-01", "campaign": "Reconocimiento | LR", "spend": 3.66, "impressions": 2489, "linkClicks": 0, "allClicks": 65, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 0, "results": 0 },
-          { "day": "2026-11-01", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "spend": 7.74, "impressions": 1104, "linkClicks": 21, "allClicks": 66, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 9, "results": 0 },
-          { "day": "2026-11-01", "campaign": "Ventas E-Commerce | 2026 | LR | Inv. Total | Ver01", "spend": 18.08, "impressions": 1920, "linkClicks": 40, "allClicks": 63, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 0, "results": 0 }
+          { "day": "2026-11-01", "campaign": "Reconocimiento | LR", "spend": 5.32, "impressions": 3741, "linkClicks": 0, "allClicks": 91, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 0, "results": 0 },
+          { "day": "2026-11-01", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "spend": 12.76, "impressions": 2091, "linkClicks": 38, "allClicks": 118, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 17, "results": 0 },
+          { "day": "2026-11-01", "campaign": "Ventas E-Commerce | 2026 | LR | Inv. Total | Ver01", "spend": 26.74, "impressions": 3026, "linkClicks": 65, "allClicks": 99, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 0, "results": 0 }
         ],
         "table": {
           "columns": [
@@ -8954,46 +8977,52 @@
           "types": [],
           "rows": [
             [1,0,0,0,null,0,7,null,0,0,0,0,0],
-            [1,0,0,1,null,0.02,8,null,0,0,0,0,0],
-            [1,0,1,2,null,0.04,42,null,0,0,0,0,0],
-            [1,0,1,3,null,1.85,1200,null,0,0,0,0,0],
-            [1,0,0,4,null,1.78,1211,null,0,0,0,0,0],
-            [1,0,0,5,null,0,28,null,0,0,0,0,0],
-            [1,1,2,6,null,1.66,200,null,3,0,0,2,0],
-            [1,1,2,7,null,0.07,11,null,0,0,0,0,0],
+            [1,0,0,1,null,0.02,15,null,0,0,0,0,0],
+            [1,0,1,2,null,0.21,107,null,0,0,0,0,0],
+            [1,0,1,3,null,2.56,1730,null,0,0,0,0,0],
+            [1,0,0,4,null,2.53,1848,null,0,0,0,0,0],
+            [1,0,0,5,null,0,34,null,0,0,0,0,0],
+            [1,1,2,6,null,2.72,428,null,8,0,0,4,0],
+            [1,1,2,7,null,0.08,13,null,0,0,0,0,0],
             [1,1,2,8,null,0.01,1,null,0,0,0,0,0],
             [1,1,3,9,null,0,2,null,0,0,0,0,0],
             [1,1,3,10,null,0.02,2,null,0,0,0,0,0],
-            [1,1,3,11,null,5.99,888,null,18,0,0,7,0],
+            [1,1,3,11,null,9.92,1644,null,29,0,0,13,0],
             [1,1,3,12,null,0.01,1,null,0,0,0,0,0],
             [1,2,4,13,null,0.02,1,null,0,0,0,0,0],
             [1,2,4,14,null,0,1,null,0,0,0,0,0],
-            [1,2,5,15,null,12.3,1280,null,27,0,0,0,0],
+            [1,2,5,15,null,18.84,2085,null,46,0,0,0,0],
             [1,2,5,16,null,0.26,36,null,0,0,0,0,0],
-            [1,2,4,17,null,4.23,456,null,11,0,0,0,0],
-            [1,2,5,18,null,1.27,146,null,2,0,0,0,0]
+            [1,2,4,17,null,5.5,673,null,16,0,0,0,0],
+            [1,2,5,18,null,2.12,230,null,3,0,0,0,0]
           ]
         }
       },
       "consolidated": {
         "platforms": [
+          "google",
           "meta"
         ],
-        "spend": 29.48,
-        "impressions": 5513,
-        "clicks": 61,
+        "spend": 61.29,
+        "impressions": 10088,
+        "clicks": 127,
         "purchases": 0,
         "purchaseValue": 0,
-        "cpm": 5.35,
+        "cpm": 6.08,
         "costPerPurchase": null,
         "roas": 0,
-        "spendShare": null,
-        "dailyBasis": "real",
+        "spendShare": { "google": 0.2687, "meta": 0.7313 },
+        "dailyBasis": "mixto",
         "notes": [
-          "Solo hay datos de Meta Ads para este mes."
+          "Clics = clics de Google Ads + clics en el enlace de Meta.",
+          "Compras y valor: cada plataforma usa su propia atribución; una misma venta puede estar contada en las dos.",
+          "La serie diaria mezcla Meta (cifras diarias reales) con Google Ads (total del mes repartido entre los días, estimado).",
+          "Google Ads no informó compras este mes: las compras y el costo por compra son solo de Meta."
         ]
       },
       "warnings": [
+        "Google Ads Noviembre 2026: falta la columna «Conversiones por compras»: sin KPI de compras de Google Ads este mes.",
+        "Google Ads Noviembre 2026: falta la columna «Valor de conv.»: sin ROAS de Google Ads este mes.",
         "Meta Ads Noviembre 2026: Fuente Nexus: misma captura que el tablero interno. Sin desglose de edad/sexo ni alcance único; no se suman los niveles."
       ]
     }

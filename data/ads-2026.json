@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-03T18:30:33.725Z",
+  "generatedAt": "2026-11-03T23:32:40.783Z",
   "currency": "PEN",
   "rules": [
     "Google Ads llega mensual: sin serie diaria real. Meta Ads llega por día y la serie diaria es real.",
@@ -19,8 +19,8 @@
       "folderUrl": "https://drive.google.com/drive/folders/1TT5KTVZuGlFc7OqvGAz9nuRVyJFvwJpd",
       "discovery": "apps script",
       "files": [
-        { "id": "1l7RSkz0peNUQSQrToHZDkb5AkJaYIc0c5bueefDugys", "name": "Royal Baby GA - Noviembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-03T18:01:06.918Z" },
-        { "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "name": "Royal Baby GA - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-03T18:00:55.733Z" },
+        { "id": "1l7RSkz0peNUQSQrToHZDkb5AkJaYIc0c5bueefDugys", "name": "Royal Baby GA - Noviembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-03T23:00:59.206Z" },
+        { "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "name": "Royal Baby GA - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-03T23:00:48.015Z" },
         { "id": "14hfRraHyl3WHlqoEwVvnGjQAK_IRGITW_lpiUqplkzw", "name": "Royal Baby GA - Septiembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-31T23:00:31.029Z" },
         { "id": "1VH381U5vefmLiloy07NVzBx29BuzSxbA_vc_m0afrYY", "name": "Royal Baby - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-26T22:06:33.349Z" },
         { "id": "1pNGQFycVHdysHcniamA_xtS6T_R_uCkQBrvE7q5u3-E", "name": "Royal Baby - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-14T13:38:06.385Z" },
@@ -38,8 +38,8 @@
       "folderUrl": "https://drive.google.com/drive/folders/1kjz_QSgFpkd9semvyjrlLQi3ETH8-DPm",
       "discovery": "apps script",
       "files": [
-        { "id": "1nn3phwslw1GTlpjBHFa-zI_dQEUCbsEnZ2NwQWtMOQk", "name": "Royal Baby - Noviembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-03T18:00:34.039Z" },
-        { "id": "1KlbLoCR--a_oMVPBv2meKtBLzvqOSvYUFS5mjbCHrys", "name": "Royal Baby - Octube 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-03T18:00:27.733Z" },
+        { "id": "1nn3phwslw1GTlpjBHFa-zI_dQEUCbsEnZ2NwQWtMOQk", "name": "Royal Baby - Noviembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-03T23:00:29.624Z" },
+        { "id": "1KlbLoCR--a_oMVPBv2meKtBLzvqOSvYUFS5mjbCHrys", "name": "Royal Baby - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-03T23:00:23.928Z" },
         { "id": "1_iTA-Gaj1YTI8JjL2_JgwlyzYLf5obuMR4Pm9BZMlSI", "name": "Royal Baby - Septiembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T01:37:10.271Z" },
         { "id": "1hRh2Xh8l1Cd2GMDX7m46S21w_0nnYKXWH0JbHOCbsec", "name": "Royal Baby - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T04:00:41.081Z" },
         { "id": "150oEt3NUe97HJl1eexW-WhXEftoIvL5gY72KSUosNQM", "name": "Royal Baby - Julio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:59:21.745Z" },
@@ -53,7 +53,9 @@
     }
   },
   "pending": [
-    "Google Ads: Enero 2026, Febrero 2026, Marzo 2026, Abril 2026, Mayo 2026, Junio 2026, Julio 2026, Agosto 2026 van con el informe por día porque no hay informe de campaña. Ese informe solo trae las campañas con términos de búsqueda, así que a las campañas de Performance Max o Display les falta todo su gasto: subir el informe de campaña de esos meses a la carpeta es lo que deja la cifra completa."
+    "Google Ads: Enero 2026, Febrero 2026, Marzo 2026, Abril 2026, Mayo 2026, Junio 2026, Julio 2026, Agosto 2026 van con el informe por día porque no hay informe de campaña. Ese informe solo trae las campañas con términos de búsqueda, así que a las campañas de Performance Max o Display les falta todo su gasto: subir el informe de campaña de esos meses a la carpeta es lo que deja la cifra completa.",
+    "Meta Ads: «Royal Baby - Noviembre 2026» no se pudo leer (Columnas Nexus incompatibles); Noviembre 2026 queda con los datos de la sincronización anterior.",
+    "Meta Ads: «Royal Baby - Octubre 2026» no se pudo leer (Columnas Nexus incompatibles); Octubre 2026 queda con los datos de la sincronización anterior."
   ],
   "warnings": [
     "Google Ads Enero 2026: no hay informe de campaña. Los totales salen del informe por día, donde solo aparecen las campañas con términos de búsqueda: una de Performance Max o de Display no sale, así que puede faltar una campaña entera, no solo un poco de gasto.",
@@ -7687,7 +7689,7 @@
       "id": "2026-10",
       "label": "Octubre 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Octubre 2026", "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-03T18:00:55.733Z" },
+        "source": { "name": "Royal Baby GA - Octubre 2026", "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-03T23:00:48.015Z" },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-10-01", "end": "2026-10-31", "days": null, "daysInMonth": 31, "complete": true },
@@ -8874,22 +8876,22 @@
       "id": "2026-11",
       "label": "Noviembre 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Noviembre 2026", "id": "1l7RSkz0peNUQSQrToHZDkb5AkJaYIc0c5bueefDugys", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-03T18:01:06.918Z" },
+        "source": { "name": "Royal Baby GA - Noviembre 2026", "id": "1l7RSkz0peNUQSQrToHZDkb5AkJaYIc0c5bueefDugys", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-03T23:00:59.206Z" },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-11-01", "end": "2026-11-03", "days": null, "daysInMonth": 30, "complete": false },
         "segmentation": null,
         "campaignsComplete": true,
         "totalsSource": "suma de los totales por tipo de campaña",
-        "totals": { "cost": 130.83, "impressions": 6742, "clicks": 153, "conversions": 0, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.022694, "cpc": 0.86, "costPerConversion": null, "costPerPurchase": null, "roas": null },
+        "totals": { "cost": 150.82, "impressions": 7602, "clicks": 180, "conversions": 0, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.023678, "cpc": 0.84, "costPerConversion": null, "costPerPurchase": null, "roas": null },
         "conversionsByCategory": null,
         "byType": [
-          { "type": "Búsqueda", "cost": 47.03, "impressions": 527, "clicks": 49, "conversions": 0, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.092979, "cpc": 0.96, "costPerConversion": null, "costPerPurchase": null, "roas": 0, "fromCampaigns": true },
-          { "type": "Máximo rendimiento", "cost": 83.8, "impressions": 6215, "clicks": 104, "conversions": 0, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.016734, "cpc": 0.81, "costPerConversion": null, "costPerPurchase": null, "roas": 0, "fromCampaigns": true }
+          { "type": "Búsqueda", "cost": 53.66, "impressions": 595, "clicks": 57, "conversions": 0, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.095798, "cpc": 0.94, "costPerConversion": null, "costPerPurchase": null, "roas": 0, "fromCampaigns": true },
+          { "type": "Máximo rendimiento", "cost": 97.17, "impressions": 7007, "clicks": 123, "conversions": 0, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.017554, "cpc": 0.79, "costPerConversion": null, "costPerPurchase": null, "roas": 0, "fromCampaigns": true }
         ],
         "campaigns": [
-          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": null, "complete": true, "cost": 47.03, "impressions": 527, "clicks": 49, "conversions": 0, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.092979, "cpc": 0.96, "costPerConversion": null, "costPerPurchase": null, "roas": null, "conversionsByCategory": null },
-          { "campaign": "Pmax B | Objetivo | LR", "status": "Habilitada", "type": "Máximo rendimiento", "dailyBudget": null, "complete": true, "cost": 83.8, "impressions": 6215, "clicks": 104, "conversions": 0, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.016734, "cpc": 0.81, "costPerConversion": null, "costPerPurchase": null, "roas": null, "conversionsByCategory": null }
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": null, "complete": true, "cost": 53.66, "impressions": 595, "clicks": 57, "conversions": 0, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.095798, "cpc": 0.94, "costPerConversion": null, "costPerPurchase": null, "roas": null, "conversionsByCategory": null },
+          { "campaign": "Pmax B | Objetivo | LR", "status": "Habilitada", "type": "Máximo rendimiento", "dailyBudget": null, "complete": true, "cost": 97.17, "impressions": 7007, "clicks": 123, "conversions": 0, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.017554, "cpc": 0.79, "costPerConversion": null, "costPerPurchase": null, "roas": null, "conversionsByCategory": null }
         ],
         "checks": [],
         "repairs": [],
@@ -9058,15 +9060,15 @@
           "google",
           "meta"
         ],
-        "spend": 294.44,
-        "impressions": 35607,
-        "clicks": 453,
+        "spend": 314.43,
+        "impressions": 36467,
+        "clicks": 480,
         "purchases": 0,
         "purchaseValue": 0,
-        "cpm": 8.27,
+        "cpm": 8.62,
         "costPerPurchase": null,
         "roas": 0,
-        "spendShare": { "google": 0.4443, "meta": 0.5557 },
+        "spendShare": { "google": 0.4797, "meta": 0.5203 },
         "dailyBasis": "mixto",
         "notes": [
           "Clics = clics de Google Ads + clics en el enlace de Meta.",

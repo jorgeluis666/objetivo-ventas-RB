@@ -82,13 +82,35 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/ads-2026.json data/artes-2026.json data/reportes-2026.json
+          ARCHIVOS="data/ads-2026.json data/artes-2026.json data/reportes-2026.json"
+          git add $ARCHIVOS
           if git diff --cached --quiet; then
             echo "Sin cambios en los datos de anuncios, artes ni reportes"
             exit 0
           fi
           TODAY=$(TZ='America/Lima' date +'%Y-%m-%d')
-          git commit -m "data: anuncios y artes ${TODAY}"
-          # Por si otro workflow de datos commiteó mientras tanto
-          git pull --rebase origin main
-          git push
+          # Estos JSON se regeneran enteros en cada corrida, no se editan a mano. Si otra corrida
+          # empujó mientras esta leía Drive, mezclarlos línea a línea con «git pull --rebase» da
+          # conflicto y la corrida muere en rojo: son dos fotos completas de lo mismo, y vale la del
+          # que acaba de leer. Pasa de verdad — el 3/11/2026, con el cron y un workflow_dispatch
+          # lanzados con treinta segundos de diferencia. Por eso se guardan aparte, se parte de
+          # origin/main y se vuelven a poner encima.
+          mkdir -p "$RUNNER_TEMP/datos"
+          cp $ARCHIVOS "$RUNNER_TEMP/datos/"
+          for intento in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            cp "$RUNNER_TEMP"/datos/*.json data/
+            git add $ARCHIVOS
+            if git diff --cached --quiet; then
+              echo "Otra corrida ya dejó estos mismos datos"
+              exit 0
+            fi
+            git commit -m "data: anuncios y artes ${TODAY}"
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Otra corrida empujó primero; reintento ${intento}"
+          done
+          echo "No se pudo empujar después de tres intentos" >&2
+          exit 1

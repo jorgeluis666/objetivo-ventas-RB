@@ -57,13 +57,33 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/objetivos-2026.json
+          ARCHIVOS="data/objetivos-2026.json"
+          git add $ARCHIVOS
           if git diff --cached --quiet; then
             echo "Sin cambios en data/objetivos-2026.json"
             exit 0
           fi
           TODAY=$(TZ='America/Lima' date +'%Y-%m-%d')
-          git commit -m "data: objetivos ${TODAY}"
-          # Por si otro workflow de datos commiteó mientras tanto
-          git pull --rebase origin main
-          git push
+          # Este JSON se regenera entero en cada corrida, no se edita a mano. Si otra corrida empujó
+          # mientras esta leía, mezclarlo línea a línea con «git pull --rebase» da conflicto: son dos
+          # fotos completas de lo mismo, y vale la del que acaba de leer. Por eso se guarda aparte,
+          # se parte de origin/main y se vuelve a poner encima.
+          mkdir -p "$RUNNER_TEMP/datos"
+          cp $ARCHIVOS "$RUNNER_TEMP/datos/"
+          for intento in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            cp "$RUNNER_TEMP"/datos/*.json data/
+            git add $ARCHIVOS
+            if git diff --cached --quiet; then
+              echo "Otra corrida ya dejó estos mismos datos"
+              exit 0
+            fi
+            git commit -m "data: objetivos ${TODAY}"
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Otra corrida empujó primero; reintento ${intento}"
+          done
+          echo "No se pudo empujar después de tres intentos" >&2
+          exit 1

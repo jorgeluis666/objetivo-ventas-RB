@@ -310,7 +310,7 @@ function escribirHoja_(mes, datos, perfil) {
   // como separador decimal, «1,34» se parte en dos columnas y el informe entero queda corrido.
   // Las hojas nuevas nacen con el idioma de la cuenta (es_ES), así que hay que forzarlo.
   if (libro.getSpreadsheetLocale() !== 'en_US') libro.setSpreadsheetLocale('en_US');
-  const hoja = libro.getSheets()[0];
+  const hoja = hojaDeLaDescarga_(libro);
   hoja.clear();
   hoja.getRange(1, 1, 1, encabezado.length).setValues([encabezado]);
   // El formato va ANTES de escribir: la fecha se queda como texto ISO, que es como la trae el
@@ -320,6 +320,23 @@ function escribirHoja_(mes, datos, perfil) {
   // De una sola vez: escribir fila por fila en una hoja de miles de filas se pasa del tiempo límite.
   hoja.getRange(2, 1, filas.length, encabezado.length).setValues(filas);
   hoja.setFrozenRows(1);
+}
+
+// La pestaña de la descarga, por nombre y nunca por posición. Desde que Nexus escribe «Nexus Meta»
+// en el mismo libro, la primera puede no ser la suya: con getSheets()[0] el clear() de arriba se
+// llevaba por delante los datos de Nexus. El barrido busca las dos pestañas por nombre o por sus
+// cabeceras, así que el orden no le importa a nadie más; este era el único lado posicional.
+const HOJA_DESCARGA = 'Raw Data Report';
+
+function hojaDeLaDescarga_(libro) {
+  const porNombre = libro.getSheetByName(HOJA_DESCARGA);
+  if (porNombre) return porNombre;
+  // Un libro recién creado trae una sola pestaña vacía con el nombre que le pone Google, y los de
+  // antes de Nexus traen solo la descarga. En los dos casos se reaprovecha esa, en vez de dejar una
+  // pestaña suelta al lado.
+  const hojas = libro.getSheets();
+  if (hojas.length === 1) return hojas[0].setName(HOJA_DESCARGA);
+  return libro.insertSheet(HOJA_DESCARGA);
 }
 
 // Devuelve la hoja del mes, reaprovechando la que ya esté en la carpeta. Si la que hay se llama

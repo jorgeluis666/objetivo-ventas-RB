@@ -11,9 +11,9 @@ name: Sincronizar inversión publicitaria
 # Al final lista la carpeta de reportes con scripts/sync-reportes.js y commitea
 # data/reportes-2026.json: es el índice del módulo Archivo de Reportes.
 #
-# Lee Drive a las 06:30, 13:30 y 18:30 Lima por cron de GitHub, además del
-# disparador existente de Apps Script. Nexus publica Google y Meta a las 06, 13 y 18.
-# GitHub puede demorar el inicio; la captura conserva su propia hora de origen.
+# Lee Drive cuando lo dispara el Apps Script, cuatro veces al día y al mismo segundo
+# (11:23, 15:32, 18:29 y 23:30 UTC). Nexus publica Google y Meta a las 06, 13 y 18 de Lima.
+# La captura conserva su propia hora de origen.
 # No hay botón en el tablero: dispararlo desde el navegador exigiría un token de GitHub y el
 # tablero lo abren clientes.
 #
@@ -29,9 +29,12 @@ name: Sincronizar inversión publicitaria
 # solo sigue a corridas en verde).
 
 on:
-  schedule:
-    # 06:30, 13:30, 18:30 Lima = 11:30, 18:30, 23:30 UTC
-    - cron: '30 11,18,23 * * *'
+  # Sin cron de GitHub, desde el 3/11/2026. Estaba declarado a las 11:30, 18:30 y 23:30 UTC y en los
+  # cinco días anteriores no entró ni una vez a su hora: el de las 23:30 llegaba entre las 2 y las 4
+  # de la madrugada, el de las 11:30 sobre las 16:00 o 17:00, y varios días se saltaba una franja.
+  # El Apps Script, en cambio, dispara a los mismos segundos todos los días. Dos programadores para
+  # el mismo trabajo además chocaban: el 3/11 entraron con treinta segundos de diferencia y la
+  # segunda corrida murió al rebasar. Si el Apps Script se cae, se lanza a mano desde Actions.
   workflow_dispatch: {}
 
 permissions:

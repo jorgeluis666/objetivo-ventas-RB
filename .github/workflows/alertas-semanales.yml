@@ -27,6 +27,12 @@ on:
 permissions:
   contents: write   # necesario para commitear alertas-envios.json
 
+# Dos alertas a la vez leerían el mismo registro de envíos y la segunda pisaría la huella de la
+# primera. En fila, cada una arranca con el registro que dejó la anterior.
+concurrency:
+  group: alerta-ventas
+  cancel-in-progress: false
+
 jobs:
   alerta:
     # Si viene por workflow_run, solo correr si el upstream fue exitoso.
@@ -80,11 +86,34 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/alertas-envios.json
+          REGISTRO="data/alertas-envios.json"
+          git add $REGISTRO
           if git diff --cached --quiet; then
             echo "Sin cambios en alertas-envios.json (semana ya registrada)"
-          else
-            WEEK=$(TZ='America/Lima' date +'%Y-W%V')
-            git commit -m "chore: alerta de ventas ${WEEK} enviada"
-            git push
+            exit 0
           fi
+          WEEK=$(TZ='America/Lima' date +'%Y-W%V')
+          # El 4/11/2026 el correo salió y este push murió con «! [rejected] main -> main»: la
+          # corrida de ventas empujó primero. Y si la huella no queda guardada, la lectura siguiente
+          # vuelve a ver las cifras «cambiadas» y manda el correo otra vez. Mismo remedio que en los
+          # workflows de datos: el registro lo escribe alertas.js entero, así que no se mezcla línea
+          # a línea; se guarda aparte, se parte de origin/main y se vuelve a poner encima.
+          mkdir -p "$RUNNER_TEMP/registro"
+          cp $REGISTRO "$RUNNER_TEMP/registro/"
+          for intento in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            cp "$RUNNER_TEMP"/registro/*.json data/
+            git add $REGISTRO
+            if git diff --cached --quiet; then
+              echo "Otra corrida ya registró este envío"
+              exit 0
+            fi
+            git commit -m "chore: alerta de ventas ${WEEK} enviada"
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Otra corrida empujó primero; reintento ${intento}"
+          done
+          echo "No se pudo registrar el envío después de tres intentos" >&2
+          exit 1

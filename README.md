@@ -51,7 +51,8 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
     drive-publico.js      Encuentra la hoja de una carpeta de Drive (privada, por el Apps Script)
     sync-ads.js           Lee las carpetas de Drive de Google Ads y Meta → data/ads-2026.json
     meta-api-sync.gs      Apps Script: pide las cifras a la API de Meta y escribe la hoja mensual
-                          en la carpeta Meta Files, a las 6:00, 13:00 y 18:00 de Lima
+                          en la carpeta Meta Files, a las 6:00, 13:00 y 18:00 de Lima (también
+                          Amador, Terminal Pesquero y Excambiare, cada una con su perfil)
     sync-reportes.js      Lista la carpeta Reportes de Drive → data/reportes-2026.json
     build.js              Arma dist/ (HTML con todo incrustado, cifrado con la clave)
     alertas.js            Correo de alertas: lunes 6:00 p. m. y cuando cambian las ventas
@@ -282,7 +283,7 @@ Las carpetas Ventas, Objetivos, Google Files y Meta Files no se comparten por en
 4. Secret `RB_PAGE_PASSWORD`: clave de acceso al tablero (16 caracteres o más).
 5. Lector de las carpetas privadas: publicar `scripts/disparar-actualizacion.gs` como aplicación web y guardar los secrets `RB_DRIVE_SCRIPT_URL` y `RB_DRIVE_READ_KEY` (ver [Carpetas privadas](#carpetas-privadas)).
 6. Secrets `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` y `SMTP_PASS` para el correo de alertas: la cuenta alertas@limaretail.com del hosting, que también es el remitente. Sin ellos se usa `RESEND_API_KEY` si existe. Secrets `RB_ALERTAS_URL` y `RB_ALERTAS_TOKEN` para la lista de correos que se edita en el tablero (ver [Alerta de ventas](#alerta-de-ventas)). Opcional: variable `DASHBOARD_URL` si el enlace del correo debe ser otro que el de `data/alertas-config.json`.
-7. Alimentador de Meta: proyecto de Apps Script aparte con `scripts/meta-api-sync.gs`, propiedades `META_TOKEN` (usuario del sistema, permiso `ads_read`, sin caducidad), `META_ACCOUNT_ID` y `META_FOLDER_ID`, y `instalarDisparadores` ejecutado una vez. Los ids y el paso a paso están en las notas privadas de LR Suite, no en este repositorio.
+7. Alimentador de Meta: proyecto de Apps Script aparte con `scripts/meta-api-sync.gs`, propiedades `META_TOKEN` (usuario del sistema, permiso `ads_read`, sin caducidad), `META_ACCOUNT_ID` y `META_FOLDER_ID`, y `instalarDisparadores` ejecutado una vez. Los ids y el paso a paso están en las notas privadas de LR Suite, no en este repositorio. El mismo archivo sirve a Amador, Terminal Pesquero y las tres marcas de Inversiones Excambiare (perfiles `mex-cream`, `gold-fusion` y `sol-y-tierra`, un proyecto por marca). Los perfiles de Excambiare toman «Resultados» del campo `results` de la API, no pisan una descarga subida a mano y traen `llenarMesesFaltantes`, `sincronizarMes`, `reemplazarMes` y `verAcciones`; el detalle está en la cabecera del script.
 8. DNS de `limaretail.com`: registro CNAME `royalbaby` → `jorgeluis666.github.io`.
 9. `Settings → Pages`: Source **GitHub Actions**, Custom domain `royalbaby.limaretail.com` y **Enforce HTTPS**.
 10. Pushear a `main`: el deploy corre solo.

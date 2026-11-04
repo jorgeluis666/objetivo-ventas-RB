@@ -5,7 +5,14 @@ module.exports = function parseNexus(rows, parseLegacy) {
   if (magic !== 'NEXUS_META_V1' || account !== '247978639820195' || currency !== 'PEN'
       || !/^20\d\d-\d\d$/.test(month) || !String(through).startsWith(month) || !Number.isFinite(Date.parse(capturedAt))) throw Error('Captura Nexus incompatible');
   const header=['level','day','id','name','campaign','adset','spend','impressions','clicks','inline_link_clicks','leads','purchases','messages','purchase_value'];
-  if (rows[1].join('|') !== header.join('|')) throw Error('Columnas Nexus incompatibles');
+  // Nexus publica estas 14 columnas, y cinco más cuando el destino lleva `extended_fields`:
+  // reach, objective, optimization_goal, result_type y results (MetaSheetsSync::DETAILS). Pedir las
+  // 14 exactas dejó el tablero con los datos del 3/11 mientras Nexus seguía escribiendo. Las de más
+  // se ignoran —el alcance diario no se suma y el resto no lo pinta ninguna vista—, así que una
+  // columna nueva al final no vuelve a cortar la lectura. Lo que sigue sin admitirse es que las 14
+  // primeras cambien de nombre o de orden: todo lo que sigue las lee por posición.
+  const columnas=rows[1].map(c=>String(c??''));
+  if (columnas.slice(0,header.length).join('|') !== header.join('|')) throw Error('Columnas Nexus incompatibles');
   const levels={campaign:[],adset:[],ad:[]}, seen=new Set();
   for(const cells of rows.slice(2)) {
     if(!cells.some(Boolean))continue;

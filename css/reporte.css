@@ -1,7 +1,9 @@
 /* ============================================================
    reporte.css — Generación de Reporte · modelo mensual de Lima Retail (js/reporte-mensual.js).
    Cada .rpt-page es una lámina 16:9 de 1280×720 px, como el PDF «Modelo Reporte Royal Baby»:
-   encabezado sobre el fondo, métricas, paneles blancos de borde fino y pie con la marca.
+   encabezado sobre el fondo, métricas, paneles blancos de borde fino y pie con la marca. El modelo
+   no lleva gráficos: las láminas son métricas, tabla y recuadro «Clave», y las de anuncios son las
+   tres piezas con el arte a lámina completa.
    En pantalla las láminas se escalan al ancho del módulo (--rpt-s); al imprimir van a 1:1,
    una por hoja de 1280×720 (@page rpt), y así sale el PDF.
    ============================================================ */
@@ -35,8 +37,6 @@
   --ok-soft: #f0fdf4;
   --ok-line: #bbf7d0;
   --ok-ink: #166534;
-  --chart-grid: #dbe2ea;
-  --chart-label: #7a8797;
   --rpt-s: 1;
   color: var(--ink);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -107,33 +107,11 @@
 .rpt-text strong { color: var(--ink); font-weight: 600; }
 .rpt-panel-foot { border-top: 1px solid var(--line-soft); padding: 9px 16px; color: var(--subtle); font-size: 11px; line-height: 1.5; }
 
-/* Gráficos */
-.rpt-chart-panel { padding: 12px 16px 8px; }
-.rpt-chart-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-.rpt-chart-head strong { display: block; font-size: 13px; font-weight: 600; }
-.rpt-legend { display: flex; gap: 12px; color: var(--subtle); font-size: 11px; white-space: nowrap; }
-.rpt-dot { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 3px; vertical-align: -1px; background: var(--blue); }
-.rpt-dot.band { border: 1px solid var(--blue-line); background: var(--blue-soft); }
-.rpt-chart { display: block; width: 100%; overflow: visible; }
-.rpt-chart text { font-family: inherit; }
-.rpt-chart .c-grid { stroke: var(--chart-grid); stroke-dasharray: 4 7; }
-.rpt-chart .c-base { stroke: var(--line-strong); }
-.rpt-chart .c-tick { fill: var(--chart-label); font-size: 10.5px; font-variant-numeric: tabular-nums; }
-.rpt-chart .c-label { fill: var(--chart-label); font-size: 11px; }
-.rpt-chart .c-label.on { fill: var(--blue-700); font-weight: 600; }
-.rpt-chart .c-band { fill: var(--blue-soft); }
-.rpt-chart .c-bar { fill: var(--blue); }
-.rpt-chart .c-line { fill: none; stroke: var(--blue); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-.rpt-chart .c-point { fill: #fff; stroke: var(--blue); stroke-width: 1.6; }
-.rpt-chart .c-point.on { fill: var(--blue-700); stroke: #fff; stroke-width: 1.5; }
-.rpt-chart .c-value { fill: var(--muted); font-size: 10.5px; font-variant-numeric: tabular-nums; }
-.rpt-chart .c-value.on { fill: var(--blue-700); font-size: 11.5px; font-weight: 600; }
-.rpt-chart .c-center { fill: var(--ink); font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.rpt-chart .c-center-sub { fill: var(--subtle); font-size: 10.5px; }
-
 /* Tablas */
 .rpt table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: auto; }
-.rpt th, .rpt td { border-bottom: 1px solid var(--line-soft); padding: 7px 12px; text-align: left; vertical-align: middle; }
+/* 6px: la tabla de la lámina 03 lleva nueve filas (canales, subtotal, Google y total) y con 7 no
+   entraba en los 720 px de la hoja. */
+.rpt th, .rpt td { border-bottom: 1px solid var(--line-soft); padding: 6px 12px; text-align: left; vertical-align: middle; }
 .rpt th { background: var(--soft); color: var(--subtle); font-size: 10px; font-weight: 500; text-transform: uppercase; white-space: nowrap; }
 .rpt tbody tr:last-child td { border-bottom: 0; }
 .rpt td strong { font-weight: 600; }
@@ -143,6 +121,9 @@
 .rpt tr.is-on td { background: var(--blue-soft); }
 .rpt tr.rpt-total td { border-bottom: 0; background: var(--navy); color: #fff; font-weight: 600; }
 .rpt tr.rpt-total td + td { border-left: 1px solid rgba(255, 255, 255, .14); }
+/* Cabecera de bloque y subtotal: el modelo separa Meta de Google dentro de la misma tabla. */
+.rpt tr.rpt-section td { background: var(--soft); color: var(--subtle); font-size: 10px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; padding: 5px 12px; }
+.rpt tr.rpt-subtotal td { background: var(--surface-subtle); font-weight: 600; }
 .rpt-swatch { display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 3px; vertical-align: -1px; }
 
 /* Badges */
@@ -162,33 +143,21 @@
 
 .rpt-notice { border: 1px solid var(--amber-line); border-radius: 8px; background: var(--amber-soft); color: var(--amber-deep); padding: 9px 14px; font-size: 12px; line-height: 1.5; }
 
-/* Mejores anuncios */
-.rpt-ads { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 12px; }
-.rpt-ad { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; }
+/* Mejores anuncios: en el modelo son las tres piezas a lámina completa, con el arte grande. */
+.rpt-ads { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; min-height: 0; }
+.rpt-ad { display: flex; flex-direction: column; min-height: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; }
 .rpt-ad.is-on { border-color: var(--blue-line); background: var(--blue-soft); }
-.rpt-ad-thumb { position: relative; height: 60px; background: var(--surface-subtle); overflow: hidden; }
+.rpt-ad-thumb { position: relative; flex: 1 1 auto; min-height: 110px; background: var(--surface-subtle); overflow: hidden; }
 .rpt-ad-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.rpt-ad-thumb .rpt-ad-none { display: grid; height: 100%; place-items: center; color: var(--faint); font-size: 10.5px; }
-.rpt-ad-kind { position: absolute; top: 6px; left: 6px; border-radius: 5px; background: rgba(15, 23, 42, .78); color: #fff; padding: 2px 6px; font-size: 10px; font-weight: 500; }
-.rpt-ad-body { display: flex; flex-direction: column; gap: 1px; padding: 8px 9px 9px; font-size: 11px; }
-.rpt-ad-name { font-size: 11.5px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.rpt-ad-set { color: var(--subtle); font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
-.rpt-ad-row { display: flex; justify-content: space-between; gap: 6px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.rpt-ad-thumb .rpt-ad-none { display: grid; height: 100%; place-items: center; color: var(--faint); font-size: 12px; }
+.rpt-ad-kind { position: absolute; top: 8px; left: 8px; border-radius: 5px; background: rgba(15, 23, 42, .78); color: #fff; padding: 3px 8px; font-size: 10.5px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; }
+.rpt-ad-body { display: flex; flex: none; flex-direction: column; gap: 2px; padding: 12px 14px 13px; font-size: 12.5px; }
+.rpt-ad-name { font-size: 14px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.rpt-ad-set { color: var(--subtle); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 7px; }
+.rpt-ad-row { display: flex; justify-content: space-between; gap: 8px; color: var(--subtle); font-variant-numeric: tabular-nums; }
 .rpt-ad-row b { color: var(--ink); font-weight: 600; }
-.rpt-ad-link { margin-top: 5px; color: var(--blue-700); font-weight: 500; text-decoration: none; }
+.rpt-ad-link { margin-top: 8px; color: var(--blue-700); font-weight: 500; text-decoration: none; }
 .rpt-ad-link:hover { text-decoration: underline; }
-
-/* Anuncio de búsqueda */
-.rpt-serp { display: grid; gap: 8px; padding: 12px 14px; }
-.rpt-serp-ad { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
-.rpt-serp-url { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11.5px; min-width: 0; }
-.rpt-serp-url span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rpt-serp-tag { border: 1px solid var(--line-strong); border-radius: 4px; padding: 0 5px; color: var(--ink); font-size: 10px; font-weight: 600; }
-.rpt-serp-title { margin-top: 3px; color: var(--blue-700); font-size: 13px; font-weight: 600; }
-.rpt-serp-meta { margin-top: 2px; color: var(--subtle); font-size: 11px; font-variant-numeric: tabular-nums; }
-
-/* Donut de distribución */
-.rpt-dist { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 18px; align-items: center; padding: 14px 16px; }
 
 /* Portada, contenido y cierre */
 .rpt-brand { display: flex; align-items: center; gap: 10px; }
@@ -215,19 +184,16 @@
 .rpt-toc-card em { display: block; margin-top: 10px; color: var(--blue); font-size: 10.5px; font-style: normal; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; }
 
 .rpt-insights { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+/* Las tres tarjetas se quedan en su alto y van centradas en la banda que les deja la lámina. */
+.rpt-insights.rpt-fill { align-content: center; align-items: start; }
 .rpt-insight { display: flex; flex-direction: column; gap: 12px; padding: 20px 22px; }
 .rpt-insight-top { display: flex; justify-content: space-between; align-items: center; }
 .rpt-insight-top span:last-child { color: var(--faint); font-size: 12px; font-weight: 600; }
 .rpt-insight h2 { margin: 6px 0 0; font-size: 17px; line-height: 1.3; font-weight: 600; }
 .rpt-insight p { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.6; }
-.rpt-steps { display: grid; gap: 8px; padding: 12px 14px; }
-.rpt-step { position: relative; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; align-items: start; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
-.rpt-step:first-child { border-color: var(--blue-line); background: var(--blue-soft); }
-.rpt-step strong { display: block; font-size: 12.5px; font-weight: 600; }
-.rpt-step p { margin: 2px 0 0; color: var(--muted); font-size: 11.5px; line-height: 1.5; }
-.rpt-step-del { position: absolute; top: 6px; right: 8px; border: 0; background: none; color: var(--faint); font-size: 16px; line-height: 1; cursor: pointer; }
-.rpt-step-del:hover { color: var(--rose-ink); }
-.rpt-step-add { justify-self: start; border: 1px dashed var(--line-strong); border-radius: 8px; background: #fff; color: var(--blue-700); padding: 6px 12px; font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; }
+/* La línea con la que cierra la lámina de conclusiones en el modelo. */
+.rpt-close { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.rpt-close strong { color: var(--ink); font-weight: 600; }
 
 .rpt-closing .rpt-main { align-items: center; justify-content: center; background: #fff; }
 .rpt-closing-card { display: grid; justify-items: center; gap: 8px; text-align: center; }
@@ -235,9 +201,6 @@
 .rpt-closing-card strong { margin-top: 8px; font-size: 26px; font-weight: 600; }
 .rpt-closing-card span { color: var(--subtle); font-size: 12px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; }
 .rpt-closing-card small { color: var(--subtle); font-size: 12px; }
-
-.rpt-icon-box { display: grid; width: 30px; height: 30px; place-items: center; border: 1px solid var(--blue-line); border-radius: 6px; background: #fff; color: var(--blue); }
-.rpt-icon-box .rpt-ic { width: 15px; height: 15px; }
 
 .rpt-ic { width: 18px; height: 18px; flex: none; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -267,5 +230,5 @@
   #rpt-report .rpt-frame:last-child { break-after: auto; }
   #rpt-report .rpt-page { transform: none; }
   .rpt [contenteditable="true"] { box-shadow: none !important; background: none !important; }
-  .rpt-step-del, .rpt-step-add, .rpt-screen-only { display: none !important; }
+  .rpt-screen-only { display: none !important; }
 }

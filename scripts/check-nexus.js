@@ -25,6 +25,10 @@
  * Uso:
  *   node scripts/check-nexus.js              envía de verdad (necesita GITHUB_TOKEN y SMTP/Resend)
  *   node scripts/check-nexus.js --dry-run    solo imprime el diagnóstico
+ *   node scripts/check-nexus.js --probar     manda un correo de prueba aunque esté todo bien
+ *
+ * El de prueba existe porque el camino del envío, si no, solo se estrena el día de una caída, que
+ * es el peor momento para descubrir que no sale.
  */
 
 const fs = require('fs');
@@ -192,8 +196,19 @@ async function principal() {
     return;
   }
 
-  const avisado = await yaAvisado();
   const para = destinatariosTecnicos();
+
+  if (process.argv.includes('--probar') || process.env.PROBAR_ENVIO === 'true') {
+    const detalle = await enviar({
+      para,
+      asunto: '🔔 Royal Baby · prueba del aviso de datos',
+      html: correoVuelta(informe),
+    });
+    console.log(`\nCorreo de prueba enviado a ${para.join(', ')} por ${detalle}.`);
+    return;
+  }
+
+  const avisado = await yaAvisado();
 
   if (informe.ok) {
     if (!avisado) return;

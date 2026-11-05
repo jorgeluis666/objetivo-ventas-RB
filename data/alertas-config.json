@@ -5,5 +5,8 @@
   "from_email": "alertas@limaretail.com",
   "destinatarios": [
     { "email": "jorgeluis@limaretail.com", "nombre": "Jorge Luis" }
+  ],
+  "destinatarios_tecnicos": [
+    { "email": "jorgeluis@limaretail.com", "nombre": "Jorge Luis" }
   ]
 }

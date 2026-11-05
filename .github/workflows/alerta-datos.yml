@@ -1,0 +1,75 @@
+name: Aviso de datos atrasados
+
+# Avisa por correo cuando la inversión publicitaria deja de llegar al tablero.
+#
+# El 4/11/2026 los cron del hosting no corrieron en todo el día. La sincronización de GitHub salió
+# en verde las cuatro veces —copió bien el dato que había— y el tablero se quedó con la captura del
+# 3/11 a las 18:00. Nadie se enteró hasta el día siguiente. Esto lo mira: scripts/check-nexus.js
+# compara la antigüedad de la captura con las franjas en que Nexus publica (06, 13 y 18 de Lima).
+#
+# Corre detrás de la sincronización, que es cuando el dato acaba de cambiar. El cron diario es la
+# red de abajo: si el Apps Script que dispara la sincronización también se cae, nadie llamaría a
+# este workflow y la caída volvería a pasar inadvertida. Aquí un retraso de GitHub no importa.
+#
+# Una corrida en rojo significa «el dato está atrasado», y es a propósito: el script mira ese rojo
+# en la corrida anterior para no repetir el correo mientras la caída siga. Verde es que todo llega.
+on:
+  workflow_run:
+    workflows: ["Sincronizar inversión publicitaria"]
+    types: [completed]
+    branches: [main]
+
+  # 14:00 de Lima (19:00 UTC).
+  schedule:
+    - cron: '0 19 * * *'
+
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Simulación (solo imprime el diagnóstico, no envía correo)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  actions: read   # para mirar cómo terminó la corrida anterior y no repetir el correo
+
+# Dos corridas a la vez verían las dos que la anterior estaba en verde y mandarían dos correos.
+concurrency:
+  group: alerta-datos
+  cancel-in-progress: false
+
+jobs:
+  revisar:
+    # Si la sincronización falló, el dato no cambió: su propio rojo ya es el aviso.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Revisar la frescura del dato
+        run: node scripts/check-nexus.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Correos del equipo. Si el secret no está, sale de data/alertas-config.json.
+          RB_ALERTAS_TECNICAS: ${{ secrets.RB_ALERTAS_TECNICAS }}
+          # Correo del hosting (alertas@limaretail.com). Si faltan, se usa Resend.
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && 'true' || 'false' }}

@@ -390,6 +390,8 @@
     const mesTxt = per.mes.toLowerCase();
     const onlineTxt = obj.online.filter(r => r.done != null).map(r => `${r.label} ${pct0(r.done)}`).join(', ');
     const cumplen = obj.online.filter(r => r.done != null && r.done >= 100).length;
+    // Un mes a medio correr no «cerró» nada: el reporte se emite también durante el mes.
+    const cerrado = per.complete;
 
     const t = {};
     // 03 · Resumen y ROAS real por canal
@@ -402,26 +404,29 @@
     ].filter(Boolean).join(' ');
 
     // 04 · Avance del objetivo
-    t['p4-lead'] = 'Cómo cerró el mes frente a la meta del cliente, por canal.';
+    t['p4-lead'] = `${cerrado ? 'Cómo cerró el mes' : 'Cómo va el mes'} frente a la meta del cliente, por canal.`;
+    const comoVan = cumplen === obj.online.length ? `Los ${obj.online.length === 3 ? 'tres' : num(obj.online.length)} canales online ${cerrado ? 'cumplieron o superaron su objetivo' : 'van por encima de su objetivo'}`
+      : cumplen === 0 ? `Ningún canal online ${cerrado ? 'cumplió' : 'llega a'} su objetivo`
+        : `${cumplen} de ${obj.online.length} canales online ${cerrado ? 'cumplieron' : 'llegan a'} su objetivo`;
     t['p4-key'] = obj.total.done == null
       ? `No hay meta cargada para ${mesTxt} en los objetivos del cliente.`
       : [
-        onlineTxt
-          ? `${cumplen === obj.online.length ? 'Los tres canales online cumplieron o superaron su objetivo' : `${cumplen} de ${obj.online.length} canales online cumplieron su objetivo`} (online ${pct0(obj.sub.done)}): ${onlineTxt}.`
-          : '',
-        obj.tienda.done != null && obj.tienda.done < 100
-          ? `La pauta funcionó; la brecha vs. el total (${pct0(obj.total.done)}) vino de la tienda física (${pct0(obj.tienda.done)}).`
-          : `El total cerró en ${pct0(obj.total.done)}.`,
+        onlineTxt ? `${comoVan} (online ${pct0(obj.sub.done)}): ${onlineTxt}.` : '',
+        obj.tienda.done != null && obj.tienda.done < 100 && obj.sub.done > obj.tienda.done
+          ? `La pauta funcionó; la brecha vs. el total (${pct0(obj.total.done)}) ${cerrado ? 'vino' : 'viene'} de la tienda física (${pct0(obj.tienda.done)}).`
+          : `El total ${cerrado ? 'cerró' : 'va'} en ${pct0(obj.total.done)}${obj.tienda.done != null ? `, con la tienda física en ${pct0(obj.tienda.done)}` : ''}.`,
       ].filter(Boolean).join(' ');
 
     // 05 · Mejores anuncios · Ventas web
     t['p5-lead'] = 'Qué piezas trajeron las compras y a qué costo, sobre el público de remarketing.';
-    t['p5-key'] = eco.ads.length ? [
-      `Las compras salen del remarketing a CPC ${money2(ratio(eco.spend, eco.clicks))}.`,
-      ecoMejor ? `«${esc(ecoMejor.name)}» deja el mejor ROAS (${roasX(ecoRoas(ecoMejor))}) con ${money(ecoMejor.spend)} de inversión.` : '',
-      ecoVolumen && ecoVolumen !== ecoMejor ? `«${esc(ecoVolumen.name)}» trae más volumen (${plural(ecoVolumen.purchases, 'compra', 'compras')}) pero a menor retorno.` : '',
-      !eco.purchases ? `Meta no atribuyó compras a la campaña; la venta web real del periodo fue ${money(eco.web.sale)}.` : '',
-    ].filter(Boolean).join(' ') : 'La campaña de ventas web no tuvo entrega en el periodo.';
+    t['p5-key'] = !eco.ads.length ? 'La campaña de ventas web no tuvo entrega en el periodo.'
+      : !eco.purchases
+        ? `Meta todavía no atribuye compras a la campaña (${money(eco.spend)} de inversión, ${num(eco.clicks)} clics a ${money2(ratio(eco.spend, eco.clicks))}); la venta web real del periodo fue ${money(eco.web.sale)}.`
+        : [
+          `Las compras salen del remarketing a CPC ${money2(ratio(eco.spend, eco.clicks))}.`,
+          ecoMejor ? `«${esc(ecoMejor.name)}» deja el mejor ROAS (${roasX(ecoRoas(ecoMejor))}) con ${money(ecoMejor.spend)} de inversión.` : '',
+          ecoVolumen && ecoVolumen !== ecoMejor ? `«${esc(ecoVolumen.name)}» trae más volumen (${plural(ecoVolumen.purchases, 'compra', 'compras')}) pero a menor retorno.` : '',
+        ].filter(Boolean).join(' ');
 
     // 06 · Mejores anuncios · WhatsApp
     t['p6-lead'] = 'Qué piezas traen las conversaciones y a qué costo, por conjunto.';
@@ -460,11 +465,11 @@
     ].filter(Boolean).join(' ') : 'El informe de Google por palabra clave no tiene clics en este periodo.';
 
     // 09 · Conclusiones y próximos pasos
-    t['p9-lead'] = `Cómo nos fue en ${mesTxt} y qué se hará en las próximas semanas.`;
+    t['p9-lead'] = `${cerrado ? `Cómo nos fue en ${mesTxt}` : `Cómo va ${mesTxt}`} y qué se hará en las próximas semanas.`;
     const suben = (escalables.length ? escalables : conInv).filter(c => c.key !== 'web');
     t['c1-t'] = suben.length >= 2 ? `Escalar ${suben[0].short} y ${suben[1].short}` : suben.length ? `Escalar ${suben[0].short}` : 'Retorno por canal';
     t['c1-p'] = suben.length
-      ? `${suben.length >= 2 ? `Son los más rentables (${suben.slice(0, 2).map(c => roasX(c.roas)).join(' y ')})` : `Es el más rentable (${roasX(suben[0].roas)})`}: se escalan con línea propia.${eco.web.roas != null ? ` La web (${roasX(eco.web.roas)}) es el motor de volumen.` : ''}`
+      ? `${suben.length >= 2 ? `Son los más rentables (${suben.slice(0, 2).map(c => roasX(c.roas)).join(' y ')}): se escalan` : `Es el más rentable (${roasX(suben[0].roas)}): se escala`} con línea propia.${eco.web.roas != null ? ` La web (${roasX(eco.web.roas)}) es el motor de volumen.` : ''}`
       : 'Sin inversión asignada a los canales de venta en el periodo.';
     t['c2-t'] = 'Google a Mensajes + rastreo';
     t['c2-p'] = google.clicks > 0
@@ -473,7 +478,7 @@
     t['c3-t'] = 'Video de producto para tienda';
     t['c3-p'] = `Piezas con locución narrada que muestren los productos y lleven tráfico a ${R.lider ? R.lider.short : 'la tienda física'}, la de mayor venta. Variedad de versiones para ver cuál funciona más.`;
     t['p9-close'] = obj.sub.done != null && onlineTxt
-      ? `En ${mesTxt} los canales online ${obj.sub.done >= 100 ? 'superaron su objetivo' : 'cerraron'} (${pct0(obj.sub.done)}): ${onlineTxt}${obj.tienda.done != null ? `; la tienda física quedó en ${pct0(obj.tienda.done)}` : ''}.`
+      ? `En ${mesTxt} los canales online ${cerrado ? 'cerraron en' : 'van en'} ${pct0(obj.sub.done)}: ${onlineTxt}${obj.tienda.done != null ? `; la tienda física ${cerrado ? 'quedó en' : 'va en'} ${pct0(obj.tienda.done)}` : ''}.`
       : `En ${mesTxt} la venta real fue ${money(R.ventaReal)} con ${money(R.totalSpend)} de inversión (ROAS ${roasX(ratio(R.ventaReal, R.totalSpend))}).`;
     return t;
   }
@@ -589,7 +594,7 @@
     // 02 · Contenido del reporte
     const toc = [
       ['pie', 'Resumen y ROAS por canal', 'Inversión, venta real y retorno de cada canal.', 3],
-      ['flag', 'Avance del objetivo', `Cómo cerró ${per.mes.toLowerCase()} frente a la meta.`, 4],
+      ['flag', 'Avance del objetivo', `Cómo ${per.complete ? 'cerró' : 'va'} ${per.mes.toLowerCase()} frente a la meta.`, 4],
       ['video', 'Mejores anuncios · Meta', 'Piezas por objetivo: ventas, WhatsApp, reconocimiento, interacción.', 5],
       ['search', 'Google Ads · búsqueda', 'Clics, términos y captura de demanda.', 8],
       ['bulb', 'Conclusiones', 'Qué funcionó y próximos pasos.', 9],
@@ -669,7 +674,7 @@
         <div class="rpt-main">
           ${head(`Avance del objetivo de ${per.mes.toLowerCase()}`, 'p4-lead', T['p4-lead'], cierre)}
           <div class="rpt-metrics">
-            ${metric(`Objetivo ${per.mes.toLowerCase()}`, obj.total.target != null ? money(obj.total.target) : '—', obj.prorrateada ? `Meta del cliente · ${plural(diasCar, 'día cargado', 'días cargados')}` : 'Meta del cliente')}
+            ${metric(`Objetivo ${per.mes.toLowerCase()}`, obj.total.target != null ? money(obj.total.target) : '—', obj.prorrateada ? `Meta del cliente · proporcional a ${plural(diasCar, 'día', 'días')}` : 'Meta del cliente')}
             ${metric('Venta real', money(R.ventaReal), 'Cierre por canal')}
             ${metric('Cumplimiento total', obj.total.done != null ? pct0(obj.total.done) : '—', 'Venta ÷ objetivo', difBadge(obj.total.done))}
             ${metric('Online', obj.sub.done != null ? pct0(obj.sub.done) : '—', 'Web + WhatsApp + Outlet', difBadge(obj.sub.done))}
@@ -696,7 +701,7 @@
       <section class="rpt-page">
         <div class="rpt-main">
           ${head('Mejores anuncios · Ventas web', 'p5-lead', T['p5-lead'], cierre)}
-          ${adCards(R.eco.ads, 'Compras', { label: 'ROAS', value: a => roasX(ratio(a.value, a.spend)) })}
+          ${adCards(R.eco.ads, 'Compras', { label: 'ROAS', value: a => (a.value > 0 ? roasX(ratio(a.value, a.spend)) : '—') })}
           ${keyBox('p5-key', T['p5-key'])}
           <footer class="rpt-foot"><span>Fuente: Meta Ads · campaña Ventas E-Commerce · ${esc(range)}</span></footer>
         </div>
@@ -768,7 +773,9 @@
         <div class="rpt-main">
           ${head('Google Ads · búsqueda', 'p8-lead', T['p8-lead'], mesAnio)}
           <div class="rpt-metrics cols-5">
-            ${metric('Inversión', money(G.cost), 'Campaña Search · informe por término')}
+            ${G.cost > 0
+              ? metric('Inversión', money(G.cost), 'Campaña Search · informe por término')
+              : metric('Inversión', money(R.googleSpend), 'Campaña Search · sin informe por término')}
             ${metric('Clics', num(G.clicks), 'Tráfico a la web')}
             ${metric('CPC prom.', money2(gCpc), 'Todos los términos')}
             ${metric('Conversiones', num(G.conversions), G.value > 0 ? `Valor atrib. ${money(G.value)}` : 'Conversiones de Google')}

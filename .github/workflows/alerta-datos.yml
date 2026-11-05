@@ -29,6 +29,10 @@ on:
         description: 'Simulación (solo imprime el diagnóstico, no envía correo)'
         type: boolean
         default: true
+      probar_envio:
+        description: 'Mandar un correo de prueba aunque el dato esté al día (requiere desmarcar la simulación)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -73,3 +77,4 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && 'true' || 'false' }}
+          PROBAR_ENVIO: ${{ github.event_name == 'workflow_dispatch' && inputs.probar_envio && 'true' || 'false' }}

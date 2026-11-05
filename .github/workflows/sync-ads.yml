@@ -12,7 +12,8 @@ name: Sincronizar inversión publicitaria
 # data/reportes-2026.json: es el índice del módulo Archivo de Reportes.
 #
 # Lee Drive cuando lo dispara el Apps Script, cuatro veces al día y al mismo segundo
-# (11:23, 15:32, 18:29 y 23:30 UTC). Nexus publica Google y Meta a las 06, 13 y 18 de Lima.
+# (11:23, 15:32, 18:29 y 23:30 UTC), más una corrida de respaldo a las 05:26 UTC por si el Apps
+# Script se cae. Nexus publica Google y Meta a las 06, 13 y 18 de Lima.
 # La captura conserva su propia hora de origen.
 # No hay botón en el tablero: dispararlo desde el navegador exigiría un token de GitHub y el
 # tablero lo abren clientes.
@@ -34,8 +35,18 @@ on:
   # de la madrugada, el de las 11:30 sobre las 16:00 o 17:00, y varios días se saltaba una franja.
   # El Apps Script, en cambio, dispara a los mismos segundos todos los días. Dos programadores para
   # el mismo trabajo además chocaban: el 3/11 entraron con treinta segundos de diferencia y la
-  # segunda corrida murió al rebasar. Si el Apps Script se cae, se lanza a mano desde Actions.
+  # segunda corrida murió al rebasar.
   workflow_dispatch: {}
+
+  # Una sola corrida de respaldo al día, por si el Apps Script deja de disparar: entonces nadie
+  # leería Drive y el tablero se congelaría sin que el archivo lo delate, porque su fecha es la del
+  # sync y no la de la captura. A las 00:26 de Lima, en mitad del hueco más grande entre los cuatro
+  # disparos del Apps Script (23:30 y 11:23 UTC): aunque GitHub la lance con dos horas de retraso,
+  # que es lo normal, sigue sin pisar a ninguno. Y si llegara a coincidir, el grupo de concurrencia
+  # la pone en fila en vez de matarla. Casi siempre no escribe nada: a esa hora ya se leyó la
+  # captura de las 18:00, así que no commitea y no encadena un despliegue.
+  schedule:
+    - cron: '26 5 * * *'
 
 permissions:
   contents: write

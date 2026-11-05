@@ -63,6 +63,9 @@
     const t = parseStamp(generated);
     return !!t && Date.now() - t.getTime() > STALE_MS;
   };
+  // Las ventas se leen una vez al día, así que 36 h sin cambiar es la señal. La inversión llega tres
+  // veces al día desde Nexus y su vista decide con otra regla (js/franjas.js): la pasa en `vieja`.
+  const vieja = detalle => (typeof detalle.vieja === 'boolean' ? detalle.vieja : isStale(detalle.generated));
 
   // ── Formatters ──
   function formatRelative(iso) {
@@ -82,13 +85,15 @@
   function renderIndicator() {
     const el = document.getElementById('sync-indicator');
     if (!el) return;
-    const { generated } = currentDetail();
+    const d = currentDetail();
+    const { generated } = d;
     const classes = ['topbar-pill', 'sync'];
-    classes.push(state.loading ? 'loading' : !generated || isStale(generated) ? 'warn' : 'ok');
+    classes.push(state.loading ? 'loading' : !generated || vieja(d) ? 'warn' : 'ok');
     el.className = classes.join(' ');
+    const verbo = d.verbo || 'Sincronizado';
     const label = state.loading
       ? 'Recargando…'
-      : generated ? `Sincronizado · ${formatRelative(generated)}` : 'Aún no sincronizado';
+      : generated ? `${verbo} · ${formatRelative(generated)}` : 'Aún no sincronizado';
     el.innerHTML = '<span class="sync-dot"></span><span></span><svg class="status-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
     el.children[1].textContent = label;
     renderCard();
@@ -106,13 +111,13 @@
     if (!card) return;
     const d = currentDetail();
     const t = parseStamp(d.generated);
-    const note = d.note || (t && isStale(d.generated)
+    const note = (vieja(d) && d.notaVieja) || d.note || (t && isStale(d.generated)
       ? `Los datos no cambian desde ${formatRelative(d.generated)}.` : '');
     card.innerHTML = `
       <div class="data-status-head">Sincronización de los datos</div>
       ${(d.rows || []).map(row).join('')}
-      ${row({ label: 'Datos actualizados', value: t ? formatStamp(t) : 'sin registro' })}
-      ${row({ label: 'Próximo automático', value: `${formatStamp(nextSync())} · cada día a las ${SYNC_HOUR}:${String(SYNC_MINUTE).padStart(2, '0')}` })}
+      ${row({ label: d.etiquetaFecha || 'Datos actualizados', value: t ? formatStamp(t) : 'sin registro' })}
+      ${row({ label: 'Próximo automático', value: d.proximo || `${formatStamp(nextSync())} · cada día a las ${SYNC_HOUR}:${String(SYNC_MINUTE).padStart(2, '0')}` })}
       ${(d.sources || []).length ? `<div class="data-status-head data-status-sub">Fuentes en Google Drive</div>${d.sources.map(row).join('')}` : ''}
       ${note ? `<p class="data-status-note">${esc(note)}</p>` : ''}`;
   }

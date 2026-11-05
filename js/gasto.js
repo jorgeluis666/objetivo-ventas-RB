@@ -144,6 +144,14 @@
 
   // ── Desplegable de sincronización (barra superior) y estados comunes ──
   // Hasta qué día llega cada plataforma y la carpeta de Drive de cada una.
+  //
+  // La píldora mide la CAPTURA de Nexus, no la hora en que el sync de GitHub escribió el archivo.
+  // El 4/11/2026 el sync corrió cuatro veces y copió bien lo que había —una captura del 3/11—, así
+  // que midiendo el sync la píldora se veía verde con el dato de dos días antes. Y el aviso va en
+  // las cuatro vistas que leen esta inversión, no solo en Gasto publicitario: quien mira Anuncios o
+  // genera un reporte está leyendo las mismas cifras.
+  const VISTAS_INVERSION = ['view-rep', 'view-ads', 'view-meta', 'view-arch', 'view-week'];
+
   function syncDetail(data) {
     if (!global.Sheets) return;
     const months = data?.months || [];
@@ -160,7 +168,26 @@
         href: safeUrl(data?.sources?.[p]?.folderUrl) || cfg.folder,
       };
     });
-    global.Sheets.setDetail('view-rep', { generated: data?.generatedAt || null, rows, sources });
+
+    // La captura más nueva de Nexus entre los meses cargados.
+    const capturas = months.map(m => Date.parse(m.meta?.capturedAt || '')).filter(t => Number.isFinite(t));
+    const captura = capturas.length ? new Date(Math.max(...capturas)).toISOString() : null;
+    const vieja = !!global.Franjas && global.Franjas.atrasada(captura, Date.now());
+
+    const detalle = {
+      generated: captura || data?.generatedAt || null,
+      verbo: captura ? 'Capturado' : 'Sincronizado',
+      etiquetaFecha: captura ? 'Última captura de Nexus' : 'Datos actualizados',
+      proximo: 'Nexus captura a las 6, 13 y 18 de Lima',
+      vieja,
+      notaVieja: 'La inversión que se ve es la de la última captura buena: Nexus se saltó su última franja. '
+        + 'Las ventas y los objetivos no están afectados.',
+      rows: captura
+        ? [...rows, { label: 'Archivo del tablero', value: `escrito ${global.Sheets.formatRelative(data?.generatedAt)}` }]
+        : rows,
+      sources,
+    };
+    VISTAS_INVERSION.forEach(v => global.Sheets.setDetail(v, detalle));
   }
 
   function emptyState(body, p) {

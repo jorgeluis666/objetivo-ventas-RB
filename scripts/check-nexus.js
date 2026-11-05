@@ -39,36 +39,12 @@ const RAIZ = path.join(__dirname, '..');
 const ADS = path.join(RAIZ, 'data', 'ads-2026.json');
 const WORKFLOW = 'alerta-datos.yml';
 
-// Las tres franjas en que Nexus captura y publica (hora de Lima).
-const HORAS_NEXUS = [6, 13, 18];
-// Margen antes de dar por perdida una franja: la captura y la subida a Drive tardan un minuto,
-// pero el sync de GitHub puede leer la hoja hasta media hora después.
-const MARGEN_MIN = 30;
+// La regla de las franjas vive en js/franjas.js, que también usa el tablero para pintar en ámbar su
+// indicador de sincronización: así la pantalla y este correo nunca dicen cosas distintas.
+const { HORAS, MARGEN_MIN, ultimaFranjaDebida, fechaLima, horaLima } = require('../js/franjas.js');
 
-// Lima es UTC-5 todo el año, sin horario de verano.
 const LIMA = -5 * 3600000;
-const partesLima = ms => {
-  const d = new Date(ms + LIMA);
-  return { a: d.getUTCFullYear(), m: d.getUTCMonth(), d: d.getUTCDate() };
-};
-const desdeLima = (a, m, d, h) => Date.UTC(a, m, d, h) - LIMA;
-const fechaLima = ms => new Date(ms + LIMA).toISOString().slice(0, 10);
-const horaLima = ms => new Date(ms + LIMA).toISOString().slice(0, 16).replace('T', ' ');
 const horas = ms => ms / 3600000;
-
-/** La última franja de Nexus que ya debería haber publicado, con su margen. */
-function ultimaFranjaDebida(ahora) {
-  const limite = ahora - MARGEN_MIN * 60000;
-  const p = partesLima(limite);
-  let debida = null;
-  for (const dia of [-1, 0]) {
-    for (const h of HORAS_NEXUS) {
-      const t = desdeLima(p.a, p.m, p.d + dia, h);
-      if (t <= limite) debida = t;
-    }
-  }
-  return debida;
-}
 
 function leerAds() {
   if (!fs.existsSync(ADS)) throw new Error('No existe data/ads-2026.json.');
@@ -243,4 +219,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { revisar, ultimaFranjaDebida, HORAS_NEXUS, MARGEN_MIN };
+module.exports = { revisar, ultimaFranjaDebida, HORAS, MARGEN_MIN };

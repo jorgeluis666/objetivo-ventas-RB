@@ -6,8 +6,10 @@
    campaña; y conclusiones.
    No trae datos nuevos: usa data/ads-2026.json (Gasto.load()), las mismas filas por día,
    campaña, conjunto y anuncio de Gasto publicitario, sumadas por semana.
-   Cada lunes la semana que acaba de cerrar pasa a ser la primera de la lista. Las conclusiones
-   las escribe el equipo y quedan guardadas por semana en este navegador.
+   Cada lunes la semana que acaba de cerrar pasa a ser la primera de la lista. Van numeradas dentro
+   del mes del ciclo de venta (Semana 1, Semana 2…), como las pide el cliente y como ya las numera
+   Objetivos: manda el domingo en que la semana cierra. Las conclusiones las escribe el equipo y
+   quedan guardadas por semana en este navegador.
    Expone window.ReporteSemanal = { init }.
    ============================================================ */
 
@@ -60,6 +62,23 @@
     return `${start} – ${dayLabel(sunday)}${year ? ' ' + sunday.slice(0, 4) : ''}`;
   }
   const fileLabel = monday => `${+monday.slice(8, 10)}${MESES[+monday.slice(5, 7) - 1]}-${+shift(monday, 6).slice(8, 10)}${MESES[+shift(monday, 6).slice(5, 7) - 1]}${shift(monday, 6).slice(0, 4)}`;
+
+  // ── Numeración de la semana (Semana 1, Semana 2…) ──
+  // El cliente las pide numeradas dentro del mes (lámina «Correcciones plataforma Royal Baby»), y el
+  // mes es el del ciclo de venta, como en Objetivos. Manda el domingo, que es el día en que la semana
+  // cierra: una semana que empieza antes del cierre del mes anterior ya cuenta como la 1 del nuevo.
+  function semanaDelCiclo(monday) {
+    const C = global.Ciclo;
+    const sunday = shift(monday, 6);
+    const m = C?.mesDe?.(sunday);
+    if (!m || m.dia < 1) return null;
+    const s = C.semanas(m.year, m.mi).find(w => sunday >= w.inicio && sunday <= w.fin);
+    return s ? { n: s.w, mes: m.mes, year: m.year, cruza: C.mesDe(monday).mes !== m.mes } : null;
+  }
+  const semanaLabel = monday => {
+    const s = semanaDelCiclo(monday);
+    return s ? `Semana ${s.n} de ${s.mes}` : 'Semana';
+  };
 
   // ── Filas de Meta y de Google por día ──
   function metaRows() {
@@ -349,7 +368,7 @@
     }
     if (!list.includes(selected)) selected = list[0];
     if (select) {
-      select.innerHTML = list.map((m, i) => `<option value="${m}"${m === selected ? ' selected' : ''}>${esc(rangeLabel(m))}${i === 0 ? ' · semana que acaba de pasar' : ''}</option>`).join('');
+      select.innerHTML = list.map((m, i) => `<option value="${m}"${m === selected ? ' selected' : ''}>${esc(semanaLabel(m))} · ${esc(rangeLabel(m))}${i === 0 ? ' · semana que acaba de pasar' : ''}</option>`).join('');
     }
     const model = await global.Reportes?.latestWeekly();
     const modelHost = document.getElementById('week-model');
@@ -373,11 +392,12 @@
           <div>
             <div class="week-cover-brand">Lima Retail · Data Driven Marketing</div>
             <div class="week-cover-title">Reporte de Publicidad · Royal Baby</div>
-            <div class="week-cover-period">${esc(rangeLabel(r.monday))} frente a ${esc(rangeLabel(r.prevMonday, false))} · Meta Ads y Google Ads</div>
+            <div class="week-cover-period">${esc(semanaLabel(r.monday))} · ${esc(rangeLabel(r.monday))} frente a ${esc(rangeLabel(r.prevMonday, false))} · Meta Ads y Google Ads${semanaDelCiclo(r.monday)?.cruza ? ' · la semana cruza el cierre del mes' : ''}</div>
           </div>
           <div class="week-cover-meta">
             <span>${selected === list[0] ? 'Semana que acaba de pasar' : 'Semana cerrada'}</span>
-            <b>${esc(rangeLabel(r.monday))}</b>
+            <b>${esc(semanaLabel(r.monday))}</b>
+            <small>${esc(rangeLabel(r.monday))}</small>
           </div>
         </div>
         ${r.missing.length ? `<div class="insight warn">La descarga de Meta llega hasta el ${esc(dayLabel(r.metaEnd))}: ${esc(r.missing.map(dayLabel).join(', '))} todavía no están, así que los totales pueden subir.</div>` : ''}
@@ -407,7 +427,8 @@
   function printReport() {
     if (!selected) return;
     const title = document.title;
-    document.title = `Reporte_Royal-Baby_${fileLabel(selected)}`;
+    const s = semanaDelCiclo(selected);
+    document.title = `Reporte_Royal-Baby_${s ? `Semana-${s.n}-${s.mes}_` : ''}${fileLabel(selected)}`;
     const restore = () => { document.title = title; global.removeEventListener('afterprint', restore); };
     global.addEventListener('afterprint', restore);
     global.print();

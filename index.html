@@ -879,7 +879,7 @@
           </button>
           <button class="gp-tab" type="button" role="tab" data-view="view-week">
             <span class="gp-tab-ic">S</span>
-            <span><span class="gp-tab-name">Generación de Reporte</span><span class="gp-tab-src">Mensual y semanal</span></span>
+            <span><span class="gp-tab-name">Generación de Reporte</span><span class="gp-tab-src">Mensual, acumulado y semanal</span></span>
           </button>
         </div>
         <div class="panel">
@@ -907,7 +907,7 @@
       <section class="view" id="view-week">
         <div class="section-title">Generación de Reporte</div>
         <div class="section-desc">
-          El <strong>mensual</strong> sigue las diez láminas del modelo de Lima Retail: el mes del ciclo de venta con el ROAS real por canal, el avance del objetivo, los mejores anuncios de cada objetivo (ventas web, WhatsApp, reconocimiento e interacción), Google Ads y conclusiones. El <strong>semanal</strong> compara la semana de lunes a domingo con la anterior. Los dos se arman con las mismas descargas de Drive que <strong>Gasto publicitario</strong>: solo hay que revisar los textos y descargarlo en PDF.
+          El <strong>mensual</strong> sigue las diez láminas del modelo de Lima Retail: el mes del ciclo de venta con el ROAS real por canal, el avance del objetivo, los mejores anuncios de cada objetivo (ventas web, WhatsApp, reconocimiento e interacción), Google Ads y conclusiones. El <strong>acumulado</strong> son esas mismas láminas del día 1 del ciclo a cada domingo, el avance del mes mientras corre. El <strong>semanal</strong> compara la semana de lunes a domingo con la anterior, numerada dentro del mes. Los tres se arman con las mismas descargas de Drive que <strong>Gasto publicitario</strong>: solo hay que revisar los textos y descargarlo en PDF.
         </div>
         <div class="gp-tabs arch-tabs" role="tablist" aria-label="Secciones de Archivo de Reportes">
           <button class="gp-tab" type="button" role="tab" data-view="view-arch">
@@ -916,23 +916,25 @@
           </button>
           <button class="gp-tab" type="button" role="tab" data-view="view-week">
             <span class="gp-tab-ic">S</span>
-            <span><span class="gp-tab-name">Generación de Reporte</span><span class="gp-tab-src">Mensual y semanal</span></span>
+            <span><span class="gp-tab-name">Generación de Reporte</span><span class="gp-tab-src">Mensual, acumulado y semanal</span></span>
           </button>
         </div>
         <div class="panel week-toolbar">
           <div class="rpt-kind" role="tablist" aria-label="Tipo de reporte">
             <button type="button" role="tab" data-rpt-kind="mensual">Mensual</button>
+            <button type="button" role="tab" data-rpt-kind="acumulado">Acumulado del mes</button>
             <button type="button" role="tab" data-rpt-kind="semanal">Semanal</button>
           </div>
           <label class="gp-tool-select" data-rpt-only="mensual"><span class="sr-only">Mes del reporte</span><select id="rpt-select"><option value="">Cargando meses…</option></select></label>
-          <span class="week-model" id="rpt-note" data-rpt-only="mensual"></span>
-          <button class="gp-tool-btn" type="button" id="rpt-reset" data-rpt-only="mensual" title="Vuelve a los textos que propone el tablero con los números del mes">Restablecer textos</button>
-          <button class="btn primary" type="button" id="rpt-print" data-rpt-only="mensual" title="Abre el diálogo de impresión para guardar el reporte como PDF (una hoja 16:9 por lámina)">Descargar PDF</button>
+          <label class="gp-tool-select" data-rpt-only="acumulado" hidden><span class="sr-only">Corte del acumulado</span><select id="acc-select"><option value="">Cargando cortes…</option></select></label>
+          <span class="week-model" id="rpt-note" data-rpt-only="mensual,acumulado"></span>
+          <button class="gp-tool-btn" type="button" id="rpt-reset" data-rpt-only="mensual,acumulado" title="Vuelve a los textos que propone el tablero con los números del mes">Restablecer textos</button>
+          <button class="btn primary" type="button" id="rpt-print" data-rpt-only="mensual,acumulado" title="Abre el diálogo de impresión para guardar el reporte como PDF (una hoja 16:9 por lámina)">Descargar PDF</button>
           <label class="gp-tool-select" data-rpt-only="semanal" hidden><span class="sr-only">Semana del reporte</span><select id="week-select"><option value="">Cargando semanas…</option></select></label>
           <span class="week-model" id="week-model" data-rpt-only="semanal" hidden></span>
           <button class="btn primary" type="button" id="week-print" data-rpt-only="semanal" hidden title="Abre el diálogo de impresión para guardar el reporte como PDF">Descargar PDF</button>
         </div>
-        <div id="rpt-report" data-rpt-only="mensual"><div class="panel"><div class="gp-table-empty">Cargando el mes…</div></div></div>
+        <div id="rpt-report" data-rpt-only="mensual,acumulado"><div class="panel"><div class="gp-table-empty">Cargando el mes…</div></div></div>
         <div id="week-report" data-rpt-only="semanal" hidden><div class="panel"><div class="gp-table-empty">Cargando la semana…</div></div></div>
       </section>
 

@@ -11,9 +11,14 @@
    ciclo (data/ventas-2026.json), los objetivos del cliente (data/objetivos-2026.json) y los artes de
    los anuncios (data/artes-2026.json). El periodo corta en el último día que traen a la vez Meta y
    las ventas, para que el ROAS compare los mismos días.
+   Las mismas láminas sirven de «Acumulado del mes»: del día 1 del ciclo a cada domingo, que es como
+   el cliente sigue el avance mientras el mes corre (lámina «Correcciones plataforma Royal Baby»).
+   Solo cambia el corte del periodo —y con él la meta prorrateada—, así que el acumulado comparte
+   los textos guardados del mes.
    Los textos (lead, destacado, análisis, conclusiones y próximos pasos) salen propuestos con los
    números y se editan sobre la misma lámina; quedan guardados por mes en este navegador.
-   También decide qué reporte se ve en la pestaña: este o el semanal (js/reporte-semanal.js).
+   También decide qué reporte se ve en la pestaña: este, el acumulado o el semanal
+   (js/reporte-semanal.js).
    Expone window.ReporteMensual = { init }.
    ============================================================ */
 
@@ -22,6 +27,7 @@
   // editado con la versión anterior no se reaprovecha.
   const NOTES_KEY = 'rb-rpt-notes-v2';
   const KIND_KEY = 'rb-rpt-kind';
+  const CORTES_EN_LISTA = 12;
   const CLIENTE = 'Royal Baby';
   const LOGO = 'assets/logo-lr.png';
   const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -61,7 +67,8 @@
   const icon = name => `<svg class="rpt-ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ICONS.bars}</svg>`;
 
   let ads = null, ventas = null, artes = null, objetivos = null;
-  let selected = '';
+  // Lo elegido en cada formato: el mes del mensual y la fecha de corte del acumulado.
+  const selected = { mensual: '', acumulado: '' };
   let kind = '';
   let wired = false;
   let resizer = null;
@@ -179,6 +186,22 @@
       out.push({ key: `${year}-${pad(mi + 1)}`, year, mi, mes: p.mes, inicio: p.inicio, fin: p.fin, end, complete: end === p.fin });
     }
     return out.reverse();
+  }
+
+  // Cortes del acumulado del mes: del día 1 del ciclo a cada domingo, como los pide el cliente
+  // («del día 1 al primer domingo, luego del día 1 al siguiente domingo»). Solo entran los domingos
+  // que ya tienen Meta y ventas cargadas, para no publicar un acumulado a medio llenar.
+  function cortes() {
+    const C = global.Ciclo;
+    const tope = minIso(metaEnd(), salesEnd(), yesterday());
+    const out = [];
+    periods().forEach(p => {
+      C.semanas(p.year, p.mi).forEach(s => {
+        if (C.diaSemana(s.fin) !== 0 || !tope || s.fin > tope) return;
+        out.push({ ...p, end: s.fin, complete: false, corte: s.fin, semana: s.w, dia: C.entre(p.inicio, s.fin) + 1 });
+      });
+    });
+    return out.sort((a, b) => (a.corte < b.corte ? 1 : -1)).slice(0, CORTES_EN_LISTA);
   }
 
   // ── Sumas ──
@@ -572,7 +595,9 @@
     const mesAnio = `${per.mes} ${per.year}`;
     const mesTxt = mesAnio.toLowerCase();
     const range = rango(per.inicio, per.end);
-    const cierre = `Cierre ${rango(per.inicio, per.end, false)}`;
+    const cierre = per.corte
+      ? `Acumulado al ${corta(per.end)}`
+      : `Cierre ${rango(per.inicio, per.end, false)}`;
     const emitido = global.Ciclo.hoyLima();
     const emitidoMes = global.Ciclo.mesDe(emitido);
 
@@ -846,26 +871,34 @@
     if (!host) return;
     await load();
     metaCache = googleCache = null;
-    const list = periods();
-    const select = document.getElementById('rpt-select');
+    const acc = kind === 'acumulado';
+    const list = acc ? cortes() : periods();
+    const valorDe = p => (acc ? p.corte : p.key);
+    const select = document.getElementById(acc ? 'acc-select' : 'rpt-select');
     if (!list.length) {
-      if (select) select.innerHTML = '<option value="">Sin meses con datos</option>';
-      host.innerHTML = '<div class="panel"><div class="gp-table-empty">Todavía no hay un mes del ciclo con entregas en Meta Ads y ventas cargadas.</div></div>';
+      if (select) select.innerHTML = `<option value="">${acc ? 'Sin domingos cerrados' : 'Sin meses con datos'}</option>`;
+      host.innerHTML = `<div class="panel"><div class="gp-table-empty">${acc
+        ? 'Todavía no hay un domingo del ciclo con Meta Ads y ventas cargadas hasta ese día.'
+        : 'Todavía no hay un mes del ciclo con entregas en Meta Ads y ventas cargadas.'}</div></div>`;
       return;
     }
-    if (!list.some(p => p.key === selected)) selected = list[0].key;
+    if (!list.some(p => valorDe(p) === selected[kind])) selected[kind] = valorDe(list[0]);
     if (select) {
-      select.innerHTML = list.map(p => `<option value="${p.key}"${p.key === selected ? ' selected' : ''}>${esc(`${p.mes} ${p.year}`)} · ${esc(rango(p.inicio, p.end))}${p.complete ? '' : ` · datos al ${esc(corta(p.end))}`}</option>`).join('');
+      select.innerHTML = list.map(p => `<option value="${esc(valorDe(p))}"${valorDe(p) === selected[kind] ? ' selected' : ''}>${esc(`${p.mes} ${p.year}`)} · ${esc(rango(p.inicio, p.end))}${acc
+        ? ` · día ${p.dia} de ${global.Ciclo.entre(p.inicio, p.fin) + 1}`
+        : p.complete ? '' : ` · datos al ${esc(corta(p.end))}`}</option>`).join('');
     }
-    const per = list.find(p => p.key === selected);
+    const per = list.find(p => valorDe(p) === selected[kind]);
     const R = build(per);
     const T = texts0(R);
     current = { R, T };
     const note = document.getElementById('rpt-note');
     if (note) {
-      note.textContent = per.complete
-        ? `Ciclo ${rango(per.inicio, per.fin)} completo. Los textos se editan sobre la lámina y quedan guardados en este navegador.`
-        : `Ciclo ${rango(per.inicio, per.fin)}: Meta llega al ${corta(metaEnd())} y las ventas al ${corta(salesEnd() || per.end)}, así que el reporte corta el ${corta(per.end)}. Los textos se editan sobre la lámina.`;
+      note.textContent = per.corte
+        ? `Acumulado del ciclo ${rango(per.inicio, per.fin)} hasta el domingo ${corta(per.end)} (día ${per.dia} de ${global.Ciclo.entre(per.inicio, per.fin) + 1}, semana ${per.semana} del mes). La meta se prorratea por esos días.`
+        : per.complete
+          ? `Ciclo ${rango(per.inicio, per.fin)} completo. Los textos se editan sobre la lámina y quedan guardados en este navegador.`
+          : `Ciclo ${rango(per.inicio, per.fin)}: Meta llega al ${corta(metaEnd())} y las ventas al ${corta(salesEnd() || per.end)}, así que el reporte corta el ${corta(per.end)}. Los textos se editan sobre la lámina.`;
     }
     host.innerHTML = `<div class="rpt">${pages(R, T)}</div>`;
     fit();
@@ -896,22 +929,24 @@
   function printReport() {
     if (!current) return;
     const title = document.title;
-    document.title = `Reporte_Royal-Baby_${current.R.per.mes}-${current.R.per.year}`;
+    const per = current.R.per;
+    document.title = `Reporte_Royal-Baby_${per.mes}-${per.year}${per.corte ? `_acumulado-al-${per.corte}` : ''}`;
     const restore = () => { document.title = title; global.removeEventListener('afterprint', restore); };
     global.addEventListener('afterprint', restore);
     global.print();
     setTimeout(restore, 2000);
   }
 
-  // ── Mensual o semanal ──
+  // ── Mensual, acumulado del mes o semanal ──
   function setKind(k) {
-    kind = k === 'semanal' ? 'semanal' : 'mensual';
+    kind = k === 'semanal' || k === 'acumulado' ? k : 'mensual';
     try { localStorage.setItem(KIND_KEY, kind); } catch (e) { /* sin storage vuelve al mensual */ }
     document.querySelectorAll('[data-rpt-kind]').forEach(b => {
       b.classList.toggle('active', b.dataset.rptKind === kind);
       b.setAttribute('aria-selected', String(b.dataset.rptKind === kind));
     });
-    document.querySelectorAll('[data-rpt-only]').forEach(el => { el.hidden = el.dataset.rptOnly !== kind; });
+    // El mensual y el acumulado comparten láminas y botones: data-rpt-only lleva los dos.
+    document.querySelectorAll('[data-rpt-only]').forEach(el => { el.hidden = !el.dataset.rptOnly.split(',').includes(kind); });
     if (kind === 'semanal') global.ReporteSemanal?.init();
     else render();
   }
@@ -923,7 +958,8 @@
       try { saved = localStorage.getItem(KIND_KEY) || 'mensual'; } catch (e) { /* mensual */ }
       kind = saved;
       document.querySelectorAll('[data-rpt-kind]').forEach(b => b.addEventListener('click', () => setKind(b.dataset.rptKind)));
-      document.getElementById('rpt-select')?.addEventListener('change', e => { selected = e.target.value; render(); });
+      document.getElementById('rpt-select')?.addEventListener('change', e => { selected.mensual = e.target.value; render(); });
+      document.getElementById('acc-select')?.addEventListener('change', e => { selected.acumulado = e.target.value; render(); });
       document.getElementById('rpt-print')?.addEventListener('click', printReport);
       document.getElementById('rpt-reset')?.addEventListener('click', resetTexts);
       const host = document.getElementById('rpt-report');

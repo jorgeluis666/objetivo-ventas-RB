@@ -31,7 +31,7 @@
     'view-rep':    'Meta Ads y Google Ads',
     'view-ads':    'Meta Ads y Google Ads por anuncio',
     'view-arch':   'Documentos en Drive',
-    'view-week':   'Generación de Reporte · mensual y semanal',
+    'view-week':   'Generación de Reporte · mensual, acumulado y semanal',
   };
 
   // Secciones que van dentro de otro módulo, con su pestaña: el menú marca el módulo.

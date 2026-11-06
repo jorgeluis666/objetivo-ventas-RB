@@ -3488,6 +3488,7 @@ a.gp-tool-btn { line-height: 32px; text-decoration: none; }
 .week-cover-period { margin-top: 6px; font-size: 13px; color: var(--text-2); }
 .week-cover-meta { display: grid; justify-items: end; gap: 2px; font-size: 11px; color: var(--muted); text-align: right; }
 .week-cover-meta b { font-size: 18px; color: var(--text); }
+.week-cover-meta small { font-size: 11px; color: var(--muted); }
 .week-h2 { margin: 8px 0 0; font-size: 15px; font-weight: 800; color: var(--text); }
 .week-kpis { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); margin-bottom: 0; }
 .week-group-dot { display: inline-block; width: 9px; height: 9px; margin-right: 8px; border-radius: 3px; background: var(--gp-c, var(--brand)); vertical-align: 1px; }

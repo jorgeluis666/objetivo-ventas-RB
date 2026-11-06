@@ -5,8 +5,8 @@
                          ventas por ciclo de venta (data/ventas-2026.json).
      Gasto publicitario  inversión y resultados de Meta Ads y Google Ads (data/ads-2026.json).
    Mide la venta digital (Web + Redes y WhatsApp, los canales que mueve la pauta) contra la
-   suma de sus objetivos por el ciclo de venta de la marca (js/ciclo.js: cada mes va del 27 del
-   anterior al 26). Los informes de pauta llegan por mes calendario: la inversión del ciclo se
+   suma de sus objetivos por el ciclo de venta de la marca (js/ciclo.js: cada mes va del 26 del
+   anterior al 25). Los informes de pauta llegan por mes calendario: la inversión del ciclo se
    arma día por día (Meta llega por día; Google, con su total del mes repartido entre los días).
    Los días que quedan del mes se proyectan con el ritmo de una base que elige quien mira:
    la última semana, las 2 últimas semanas o el mes anterior completo.
@@ -705,7 +705,7 @@
     }
     const dos = datasets.length > 1;
     const fmtY2 = v => (extra.isCount ? num(v) : money(v));
-    // Un punto por día del ciclo: el eje lleva el día del mes de cada fecha (27, 28, … 1, 2, …)
+    // Un punto por día del ciclo: el eje lleva el día del mes de cada fecha (26, 27, … 1, 2, …)
     const fechas = s.daily.map((_, i) => addDays(periodo(_mes).inicio, i));
     global.Charts.mount(`chart-src-${s.key}`, {
       type: 'bar',

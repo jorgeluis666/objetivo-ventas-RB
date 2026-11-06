@@ -277,7 +277,7 @@
     }
   }
 
-  // Meses 2026 cerrados por el ciclo de venta (no el actual). El 23 oct → Ene-Sep; el 27 oct → Ene-Oct.
+  // Meses 2026 cerrados por el ciclo de venta (no el actual). El 23 oct → Ene-Sep; el 26 oct → Ene-Oct.
   function closedMonths2026() {
     const hoy = window.Ciclo.mesDe(window.Ciclo.hoyLima());
     if (hoy.year < 2026) return [];
@@ -482,7 +482,8 @@
       weekly2025: state.weekly2025,
       d2025Ref: ds.d2025,
       plan: state.plan,
-      ventasInfo: { generated: liveData.generated, fuente: liveData.fuente2026 || null },
+      // `cierre` es el del ciclo con el que se armó el JSON: si no es el de hoy, sus días están corridos.
+      ventasInfo: { generated: liveData.generated, fuente: liveData.fuente2026 || null, cierre: liveData.ciclo?.cierre ?? null },
       onSyncVentas: syncVentas,
       onPlanChange: planChanged,
     });

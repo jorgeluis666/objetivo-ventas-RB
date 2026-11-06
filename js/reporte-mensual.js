@@ -1,6 +1,6 @@
 /* ============================================================
    reporte-mensual.js — Archivo de Reportes · Generación de Reporte (modelo mensual).
-   El reporte del mes del ciclo de venta (27 → 26) con las diez láminas del PDF «Modelo Reporte Royal
+   El reporte del mes del ciclo de venta (26 → 25) con las diez láminas del PDF «Modelo Reporte Royal
    Baby» de Lima Retail, en este orden: portada, contenido, resumen y ROAS real por canal, avance del
    objetivo, mejores anuncios de ventas web, mejores anuncios de WhatsApp, mejores anuncios de
    reconocimiento e interacción, Google Ads búsqueda, conclusiones y cierre. El modelo no lleva

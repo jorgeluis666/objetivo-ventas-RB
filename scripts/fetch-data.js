@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * Genera data/ventas-2026.json con totales mensuales, datos semanales, ventas por día y transacciones
- * por canal, agrupados por el ciclo de venta de la marca (js/ciclo.js: cada mes va del 27 del anterior
- * al 26). 2025 se agrupa igual, día por día, para comparar mes contra mes.
+ * por canal, agrupados por el ciclo de venta de la marca (js/ciclo.js: cada mes va del 26 del anterior
+ * al 25). 2025 se agrupa igual, día por día, para comparar mes contra mes.
  *
  * Fuentes:
  *   2026 → la hoja de la carpeta de Drive "Ventas Royal Baby - 2026" (privada: la entrega el Apps

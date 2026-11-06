@@ -14,7 +14,9 @@
    - Ventas: carpeta "Ventas Royal Baby - 2026". Una pestaña por mes
      con pares de filas CANTIDAD / MONTO por día y la fecha en FECHA.
      Las ventas se agrupan por el ciclo de venta (js/ciclo.js: cada mes
-     va del 27 del anterior al 26), según la fecha de cada día.
+     va del 26 del anterior al 25), según la fecha de cada día. Las
+     pestañas van del 27 al 26, así que el primer día de cada ciclo
+     sale de la pestaña del mes anterior: manda la fecha, no la pestaña.
 
    Las carpetas son privadas: los archivos se descargan como .xlsx por
    el Apps Script de Royal Baby (scripts/disparar-actualizacion.gs),
@@ -544,7 +546,7 @@
         d2026:        leido.totals,
         weeklyData:   leido.weekly,
         transactions: leido.transactions,
-        daily2026:    leido.daily,     // { Octubre: { Web: [día 1 del ciclo (27 sep), …] } }
+        daily2026:    leido.daily,     // { Octubre: { Web: [día 1 del ciclo (26 sep), …] } }
       };
     }
     return {

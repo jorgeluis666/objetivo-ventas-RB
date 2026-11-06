@@ -25,7 +25,7 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
     ds.css                Design system (tokens + componentes)
     dashboard-minimal.css Estilos del dashboard
   js/
-    ciclo.js              Ciclo de venta de la marca (cada mes va del 27 del anterior al 26), navegador y scripts
+    ciclo.js              Ciclo de venta de la marca (cada mes va del 26 del anterior al 25), navegador y scripts
     data-static.js        Datos 2025 y productos web
     data-live.js          Datos 2026: incrustados en el sitio publicado, data/ventas-2026.json en local
     charts.js             Instancias de Chart.js
@@ -320,17 +320,17 @@ Arriba van las dos fuentes de Drive (objetivos y ventas), cada una con su fecha 
 
 El total de cada mes suma toda la venta registrada.
 
-### Ciclo de venta (27 → 26)
+### Ciclo de venta (26 → 25)
 
-Desde el 23 de octubre de 2026 todo el tablero va por el **ciclo de venta** de la marca: cada mes cierra el 26 y el 27 empieza el siguiente (Octubre = del 27 sep al 26 oct). Diciembre también cierra el 26: del 27 al 31 de diciembre es Enero del año siguiente. 2026 es el primer año con ciclo: su Enero arranca el 1 de enero (así viene la hoja) y 2025, que se compara contra él, se arma igual, sin su 27–31 dic. La regla vive en un solo lugar, `js/ciclo.js`, que usan el navegador y los scripts.
+Desde el 6 de noviembre de 2026 todo el tablero va por el **ciclo de venta** que pide el cliente (lámina «Correcciones plataforma Royal Baby»): cada mes cierra el 25 y el 26 empieza el siguiente (Octubre = del 26 sep al 25 oct). Diciembre también cierra el 25: del 26 al 31 de diciembre es Enero del año siguiente. 2026 es el primer año con ciclo: su Enero arranca el 1 de enero (así viene la hoja) y 2025, que se compara contra él, se arma igual, sin su 26–31 dic. La regla vive en un solo lugar, `js/ciclo.js`, que usan el navegador y los scripts.
 
-- **Hoja de ventas**: un script de la marca ya arma cada pestaña de la hoja de Drive con su ciclo (la pestaña OCTUBRE va del 27/09 al 26/10). `js/fuentes-drive.js` lee la fecha de la columna FECHA de cada día y agrupa por ciclo; si una fecha no cae en el mes de su pestaña (ni en su ciclo ni en el mes calendario) o aparece en dos pestañas, la lectura falla en vez de mover o duplicar ventas. Las filas de más sin fecha y vacías se ignoran.
+- **Hoja de ventas**: las pestañas de la hoja de Drive van un día más tarde que el ciclo (la pestaña OCTUBRE va del 27/09 al 26/10), así que el día 1 de cada ciclo sale de la pestaña del mes anterior y el último día de cada pestaña ya pertenece al ciclo siguiente. No hace falta tocar la hoja: `js/fuentes-drive.js` lee la fecha de la columna FECHA de cada día y agrupa por ciclo, no por pestaña. Lo que sí falla, en vez de mover o duplicar ventas, es una fecha que no cae ni en el ciclo ni en el mes calendario de su pestaña, o la misma fecha en dos pestañas. Las filas de más sin fecha y vacías se ignoran.
 - **2025** se agrupa igual, día por día desde su hoja (que va por mes calendario), para que la comparación sea ciclo contra ciclo. El total del año no cambia. `--solo-2026` exige un 2025 ya agrupado por ciclo (campo `ciclo2025`); sin la cuenta de servicio, `node scripts/fetch-data.js --csv-2025=data/csv-backups` lo arma desde los CSV de respaldo.
-- **`data/ventas-2026.json`**: `d2026`, `weeklyData`, `transactions` y `daily2026` (ventas por día del ciclo: el índice 0 es el 27 del mes anterior) van por ciclo; `ciclo` y `ciclo2025` traen el inicio, el fin y los días de cada mes. Las semanas llevan sus fechas (`desde`, `hasta`).
-- **Objetivos**: días del mes, día en curso, lo esperado al corte, la regla del avance (27 sep … 26 oct) y el detalle semanal (lunes a domingo, recortadas al ciclo; la meta de cada semana es proporcional a sus días).
-- **YoY, Distribución, Proyecciones, correo de alertas y revisión semanal** usan los mismos meses. Un mes está cerrado cuando pasa su día 26.
+- **`data/ventas-2026.json`**: `d2026`, `weeklyData`, `transactions` y `daily2026` (ventas por día del ciclo: el índice 0 es el 26 del mes anterior) van por ciclo; `ciclo` y `ciclo2025` traen el inicio, el fin y los días de cada mes. Las semanas llevan sus fechas (`desde`, `hasta`). Al cambiar el cierre hay que regenerar el archivo (workflow «Actualizar datos de ventas» o el botón Sincronizar de la zona de ventas): el que ya estaba guardado tiene sus días corridos un lugar y `ciclo.cierre` dice con qué cierre se armó.
+- **Objetivos**: días del mes, día en curso, lo esperado al corte, la regla del avance (26 sep … 25 oct) y el detalle semanal (lunes a domingo, recortadas al ciclo; la meta de cada semana es proporcional a sus días).
+- **YoY, Distribución, Proyecciones, correo de alertas y revisión semanal** usan los mismos meses. Un mes está cerrado cuando pasa su día 25.
 - **Gasto publicitario y Anuncios** también van por ciclo (el mes comercial). Los informes llegan por mes calendario: las filas de Meta (por día) se reagrupan por fecha; Google, con un total por mes, entra en cada ciclo con la parte de sus días (estimado, y la vista lo dice), mientras su informe por día y palabra clave se reagrupa por fecha. El embudo y el público de Meta llegan con un total por export: visitas, carrito y pagos se reparten según la inversión de cada export en el ciclo. Arriba de las pestañas va el **presupuesto del mes** (desde el ciclo de octubre de 2026): S/. 2,880 Meta Ads (incluye S/. 1,000 para oportunidades) y S/. 1,500 Google Ads, S/. 4,380 en total, con lo invertido, lo que queda y el cierre al ritmo de cada plataforma (`PRESUPUESTO` en `js/gasto.js`). Lo invertido llega hasta el último día de los informes de Drive.
-- **Plan por campaña**: un pico respeta el cierre del 26. Los días de Black Days (24–28 nov) que caen en el ciclo de diciembre cuentan ahí como su tipo de campaña, no como pico; ese tramo se analiza aparte.
+- **Plan por campaña**: un pico respeta el cierre del 25. Los días de Black Days (24–28 nov) que caen en el ciclo de diciembre cuentan ahí como su tipo de campaña, no como pico; ese tramo se analiza aparte.
 - **Correo de alertas**: el ritmo, la proyección, lo esperado y los días que quedan se miden hasta el último día con ventas cargadas, y el aviso de canales atrasados dice esa fecha y el ciclo.
 
-Antes: hasta el 6 de octubre de 2026 usó el ciclo comercial 26–25 (hito de rollback `hito-pre-cierre-25-20260722`) y del 6 al 23 de octubre, mes calendario.
+Antes: hasta el 6 de octubre de 2026 usó el ciclo comercial 26–25 (hito de rollback `hito-pre-cierre-25-20260722`), del 6 al 23 de octubre mes calendario, y del 23 de octubre al 6 de noviembre el ciclo 27–26 de las pestañas de la hoja.

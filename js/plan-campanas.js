@@ -6,7 +6,7 @@
                          ventas por ciclo de venta, con la curva semanal 2025 (data/ventas-2026.json).
      Gasto publicitario  inversión y resultados por campaña de Meta Ads y Google Ads
                          (data/ads-2026.json).
-   Todo va por el ciclo de venta de la marca (js/ciclo.js: cada mes va del 27 del anterior al 26).
+   Todo va por el ciclo de venta de la marca (js/ciclo.js: cada mes va del 26 del anterior al 25).
    Los informes de pauta llegan por mes calendario: la inversión de cada ciclo se arma con los días
    de los dos informes que toca (Meta por día y campaña; Google, su total del mes repartido por día).
    Por campaña: inversión plana × ROAS real = facturación; cada pico suma su inversión × el
@@ -217,8 +217,8 @@
   }
 
   // Línea del plan de una campaña de Meta en el ciclo m: la del pico del mes si su nombre coincide;
-  // si no, por su tipo de resultado, como las fuentes de Proyecciones. Se respeta el cierre del 26:
-  // los días de un pico que caen en el ciclo siguiente (Black Days, 27–28 nov) cuentan ahí como su
+  // si no, por su tipo de resultado, como las fuentes de Proyecciones. Se respeta el cierre del 25:
+  // los días de un pico que caen en el ciclo siguiente (Black Days, 26–28 nov) cuentan ahí como su
   // tipo de campaña, no como el pico de ese mes; ese tramo se analiza aparte.
   function lineaMeta(c, m) {
     if (ESTRATEGIA.picos.some(p => p.mes === m && p.campaña?.test(c.campaign || ''))) return 'pico';
@@ -449,7 +449,7 @@
   }
 
   // Cuánto vendió en 2025 la ventana de un pico frente al resto de su ciclo (venta por día). La
-  // ventana puede cruzar el cierre del 26: se buscan sus semanas en todo el año.
+  // ventana puede cruzar el cierre del 25: se buscan sus semanas en todo el año.
   function evidenciaPico(p) {
     const ciclo = curva2025(p.mes);
     if (!ciclo) return null;
@@ -509,7 +509,7 @@
       : `<b>Plano</b> · sin pico${sig ? `: se preparan los artes de ${esc(sig.nombre)} (${ventana(sig)})` : ''}`;
     const v = real.ventas;
     const dia = !v ? 'aún no empieza' : v.hasta === lastIso(p.mes) ? 'mes cerrado' : `día ${v.dias} de ${daysIn(p.mes)}`;
-    // El pico cuyo tramo cruza el cierre del 26: sus últimos días caen en el ciclo siguiente
+    // El pico cuyo tramo cruza el cierre del 25: sus últimos días caen en el ciclo siguiente
     const cruza = p.pico && ventanaIso(p.pico).hasta > lastIso(p.mes)
       ? ` · la ventana cruza el cierre del ${fecha(lastIso(p.mes))}: del ${fecha(Ciclo.sumarDias(lastIso(p.mes), 1))} al ${fecha(ventanaIso(p.pico).hasta)} cae en el ciclo de ${months[monthIdx(p.mes) + 1]?.toLowerCase() || 'enero'} y se analiza aparte` : '';
     // Un solo elemento: dentro del flex de .rep-period-meta, el texto corta como texto corrido

@@ -1,13 +1,19 @@
 /* ============================================================
-   ciclo.js — ciclo de venta de Royal Baby: cada mes cierra el 26.
+   ciclo.js — ciclo de venta de Royal Baby: cada mes cierra el 25.
 
-   El mes M va del 27 del mes anterior al 26 de M: Octubre es del
-   27 sep al 26 oct. Diciembre también cierra el 26: del 27 al 31 de
+   El mes M va del 26 del mes anterior al 25 de M: Octubre es del
+   26 sep al 25 oct. Diciembre también cierra el 25: del 26 al 31 de
    diciembre es Enero del año siguiente. 2026 es el primer año con
    ciclo: su Enero arranca el 1 de enero (así viene la hoja) y 2025,
-   que se compara contra él, se arma igual; su 27–31 dic no entra en
-   ningún mes. La hoja de ventas de Drive ya viene armada así (la
-   pestaña OCTUBRE empieza el 27/09).
+   que se compara contra él, se arma igual; su 26–31 dic no entra en
+   ningún mes.
+
+   El periodo lo pidió el cliente así (Correcciones plataforma Royal
+   Baby, 6/11/2026). Las pestañas de la hoja de ventas de Drive están
+   armadas un día más tarde (OCTUBRE empieza el 27/09 y termina el
+   26/10), así que el primer día de cada mes del ciclo vive en la
+   pestaña del mes anterior: no importa, porque las ventas se agrupan
+   por la fecha de cada fila (js/fuentes-drive.js), no por pestaña.
 
    Todas las fechas son ISO (YYYY-MM-DD) y se calculan en UTC para
    no depender de la zona del navegador. «Hoy» es hoy en Lima.
@@ -19,8 +25,8 @@
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.Ciclo = api;
 })(typeof self !== 'undefined' ? self : this, function () {
-  const CIERRE = 26;
-  // Primer año con ciclo: hasta este año, Enero arranca el 1 de enero (sin el 27–31 dic anterior).
+  const CIERRE = 25;
+  // Primer año con ciclo: hasta este año, Enero arranca el 1 de enero (sin el 26–31 dic anterior).
   const PRIMER_ANIO = 2026;
   const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
     'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -42,8 +48,8 @@
   }
   const periodoDe = (year, mes) => periodo(year, MESES.indexOf(mes));
 
-  // Mes del ciclo al que pertenece una fecha, con el día dentro del periodo (1 = el 27 del mes
-  // anterior). Del 27 al 31 de diciembre es Enero del año siguiente; hasta el primer año con ciclo
+  // Mes del ciclo al que pertenece una fecha, con el día dentro del periodo (1 = el 26 del mes
+  // anterior). Del 26 al 31 de diciembre es Enero del año siguiente; hasta el primer año con ciclo
   // esos días no entran en ningún mes y `dia` sale ≤ 0.
   function mesDe(fecha) {
     const y = +fecha.slice(0, 4), mi = +fecha.slice(5, 7) - 1, d = +fecha.slice(8, 10);
@@ -82,7 +88,7 @@
     return out;
   }
 
-  // «27 sep», y el rango del periodo «27 sep – 26 oct».
+  // «26 sep», y el rango del periodo «26 sep – 25 oct».
   const corta = fecha => `${+fecha.slice(8, 10)} ${ABR[+fecha.slice(5, 7) - 1]}`;
   const rango = (desde, hasta) => desde === hasta ? corta(desde)
     : desde.slice(5, 7) === hasta.slice(5, 7) ? `${+desde.slice(8, 10)}–${corta(hasta)}` : `${corta(desde)} – ${corta(hasta)}`;

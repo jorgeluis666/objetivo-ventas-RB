@@ -165,9 +165,9 @@
 
   // La semana del ciclo va por **mes de calendario**, no por el ciclo de venta de Royal Baby.
   // Parece al revés de lo que haría el resto del tablero, y es a propósito: la descarga de Meta
-  // viene por mes natural (septiembre es del 1 al 30, no del 27 ago al 26 sep), así que contar las
+  // viene por mes natural (septiembre es del 1 al 30, no del 26 ago al 25 sep), así que contar las
   // semanas sobre el ciclo pondría la etiqueta de una semana encima de las cifras de otra. El ciclo
-  // del 26 manda en ventas; aquí mandan los días que trae el dato.
+  // del 25 manda en ventas; aquí mandan los días que trae el dato.
   function hitoDe(period) {
     const [year, mes] = period.id.split('-').map(Number);
     const hoy = global.Ciclo ? global.Ciclo.hoyLima() : new Date().toISOString().slice(0, 10);
@@ -381,7 +381,7 @@
     const contar = () => lista.filter(item => marcada(period.id, item.id)).length;
     if (estado) estado.textContent = lista.length ? `${contar()} de ${lista.length} hechas` : '';
     if (nota) {
-      nota.textContent = 'Las semanas van por mes de calendario, que es como viene la descarga de Meta; el cierre del 26 manda en ventas, no acá. Lo marcado se guarda solo en este navegador: otra persona no lo ve. Google Ads va por Nexus; acá solo Meta.';
+      nota.textContent = 'Las semanas van por mes de calendario, que es como viene la descarga de Meta; el cierre del 25 manda en ventas, no acá. Lo marcado se guarda solo en este navegador: otra persona no lo ve. Google Ads va por Nexus; acá solo Meta.';
     }
 
     if (!lista.length) {

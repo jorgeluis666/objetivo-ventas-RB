@@ -4,8 +4,8 @@
         metas por canal y una pestaña por mes con ritmo y detalle semanal.
      2. Ventas 2026, histórico de la marca: ventas por canal y mes y la
         evolución semanal 2025 vs 2026.
-   Todo va por el ciclo de venta de la marca (js/ciclo.js: cada mes va del 27 del mes anterior
-   al 26), como su hoja de ventas. Cada zona tiene un botón
+   Todo va por el ciclo de venta de la marca (js/ciclo.js: cada mes va del 26 del mes anterior
+   al 25), como lo pide el cliente. Cada zona tiene un botón
    Sincronizar que relee su hoja de Drive en el navegador (fuentes-drive.js).
    Expone window.Objectives.render({ d2026, weeklyData, transactions, plan, … }).
    ============================================================ */
@@ -66,7 +66,7 @@
   // Estado interno
   const state = {
     plan: null,            // data/objetivos-2026.json: objetivos de la marca (Drive)
-    d2026: null,           // ventas 2026 por ciclo de venta (del 27 al 26)
+    d2026: null,           // ventas 2026 por ciclo de venta (del 26 al 25)
     ventasInfo: null,      // { generated, fuente } de las ventas mostradas
     vista: 'avance',       // vista del cuadro del mes: 'avance' (vs meta) o 'ventas' (vs 2025)
     weeklyData: null,
@@ -113,7 +113,7 @@
   const YEAR = 2026;
 
   // Índice del mes del ciclo que estamos viviendo hoy dentro de months[] (0=Enero, 11=Diciembre):
-  // desde el 27, el mes siguiente. -2 si todo el año es futuro, 12 si todo es pasado.
+  // desde el 26, el mes siguiente. -2 si todo el año es futuro, 12 si todo es pasado.
   // Lee la fecha en cada invocación para que funcione si la página queda abierta de un día para otro.
   function currentMonthIdx() {
     const hoy = Ciclo.mesDe(Ciclo.hoyLima());
@@ -122,17 +122,17 @@
     return hoy.mi;
   }
   const periodoMes = m => Ciclo.periodo(YEAR, months.indexOf(m));
-  // Días del ciclo del mes (Octubre: del 27 sep al 26 oct, 30 días).
+  // Días del ciclo del mes (Octubre: del 26 sep al 25 oct, 30 días).
   function objectiveDays(m) {
     return periodoMes(m).dias;
   }
   // Fecha del día d del ciclo del mes; d ≤ 0 cae en el ciclo anterior.
   const fechaDia = (m, d) => Ciclo.fechaDe(YEAR, months.indexOf(m), d);
-  // Día de hoy dentro del ciclo en curso (1 = el 27 del mes anterior).
+  // Día de hoy dentro del ciclo en curso (1 = el 26 del mes anterior).
   function currentCycleDay() {
     return Ciclo.mesDe(Ciclo.hoyLima()).dia;
   }
-  // La regla del avance va del primer al último día del ciclo, con fechas: «27 sep» … «26 oct».
+  // La regla del avance va del primer al último día del ciclo, con fechas: «26 sep» … «25 oct».
   function visualRulerStart(m) {
     return Ciclo.corta(periodoMes(m).inicio);
   }
@@ -347,7 +347,7 @@
   }
 
   // ── Detalle semanal por canal (expandible desde la fila de la tabla) ──
-  // wk.w es el número de semana DENTRO del ciclo del mes (1 = la que empieza el 27 del mes anterior)
+  // wk.w es el número de semana DENTRO del ciclo del mes (1 = la que empieza el 26 del mes anterior)
   const MONTH_ABR = Object.fromEntries(months.map((m, i) => [m, Ciclo.ABR[i]]));
 
   // Semanas del ciclo como las arma el pipeline (fuentes-drive.js agruparPorCiclo): de lunes a
@@ -1087,7 +1087,12 @@
     const info = state.ventasInfo || {};
     if (ventasFuente) {
       const ultimo = info.fuente?.ultimoDia ? ` · último día con ventas: ${fechaCorta(info.fuente.ultimoDia)}` : '';
-      ventasFuente.innerHTML = fuenteHTML(info.fuente, info.generated, ultimo, 'Ventas');
+      // Las ventas por día vienen indexadas por día del ciclo: si el JSON se armó con otro cierre,
+      // cada día cae un lugar más adelante. Se dice en vez de pintar cifras corridas sin avisar.
+      const desfase = info.cierre != null && info.cierre !== Ciclo.CIERRE
+        ? ` · <span class="pill red">ventas armadas con el cierre del ${info.cierre}</span> hay que volver a sincronizarlas para el cierre del ${Ciclo.CIERRE}`
+        : '';
+      ventasFuente.innerHTML = fuenteHTML(info.fuente, info.generated, ultimo + desfase, 'Ventas');
     }
 
     // Sin objetivos el cuadro sigue mostrando las ventas, sin vista de avance.
@@ -1489,7 +1494,7 @@
         <div class="panel-head">
           <div>
             <div class="panel-title">Ventas por canal y mes</div>
-            <div class="panel-sub">2026 por ciclo de venta (del 27 al 26), como lo registra la marca</div>
+            <div class="panel-sub">2026 por ciclo de venta (del 26 al 25), como lo registra la marca</div>
           </div>
           ${vistaToggle(false, 'Las metas se ven en cada mes')}
         </div>

@@ -70,12 +70,12 @@
   const safeUrl = url => (/^https:\/\//i.test(String(url || '')) ? String(url) : null);
   const normalize = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase().replace(/\s+/g, ' ');
   const pad = n => String(n).padStart(2, '0');
-  // Ciclo de venta (js/ciclo.js): cada mes va del 27 del anterior al 26. Los informes llegan por mes calendario
+  // Ciclo de venta (js/ciclo.js): cada mes va del 26 del anterior al 25. Los informes llegan por mes calendario
   // y aquí se reagrupan por ciclo; la clave de un mes (YYYY-MM) es la de su ciclo y d, el día dentro de él.
   const Ciclo = global.Ciclo;
   const cicloKey = c => `${c.year}-${pad(c.mi + 1)}`;
   const fechaCiclo = (m, d) => Ciclo.fechaDe(m.year, m.month - 1, d);
-  // Eje de los gráficos por día: el día del mes de cada fecha del ciclo (27, 28, … 1, 2, …)
+  // Eje de los gráficos por día: el día del mes de cada fecha del ciclo (26, 27, … 1, 2, …)
   const etiquetasCiclo = m => Array.from({ length: m.daysInMonth }, (_, i) => String(+fechaCiclo(m, i + 1).slice(8)));
   const minIso = (a, b) => (a < b ? a : b);
   const maxIso = (a, b) => (a > b ? a : b);
@@ -407,7 +407,7 @@
     const date = new Date(m.year, m.month - 2, 1);
     return monthByKey(`${date.getFullYear()}-${pad(date.getMonth() + 1)}`);
   }
-  // Tramo de días del ciclo con sus fechas: «27 sep – 13 oct».
+  // Tramo de días del ciclo con sus fechas: «26 sep – 13 oct».
   const rangeLabel = (m, from, to) => Ciclo.rango(fechaCiclo(m, from), fechaCiclo(m, to));
   const rowsBetween = (m, from, to) => m.rows.filter(r => r.d >= from && r.d <= to);
 
@@ -2804,9 +2804,9 @@
     const g = gMonthByKey(key);
     const [year, month] = key.split('-').map(Number);
     const p = Ciclo.periodo(year, month - 1);
-    // Invertido en el ciclo y, si el informe aún no llega al cierre, al mismo ritmo hasta el 26
+    // Invertido en el ciclo y, si el informe aún no llega al cierre, al mismo ritmo hasta el 25
     // El ritmo se saca sobre los dias que cubre el informe, no sobre los que van de ciclo. La pauta
-    // llega por mes de calendario y el ciclo arranca el 27: en octubre el informe empieza el dia 6
+    // llega por mes de calendario y el ciclo arranca el 26: en octubre el informe empieza el dia 6
     // del ciclo, asi que dividir entre 29 repartia el gasto entre cinco dias de los que no hay dato
     // y la proyeccion salia por debajo de lo que ya se llevaba gastado por dia.
     const plat = (spend, firstDay, lastDay) => {
@@ -2842,7 +2842,7 @@
       spend: meta.spend + goo.spend,
       proj: meta.proj + goo.proj,
       // El total no lleva tramo: cada plataforma puede empezar en un dia distinto (en octubre Meta
-      // trae el 27-30 de septiembre y Google no, porque falta su archivo de septiembre). Se dice
+      // trae el 26-30 de septiembre y Google no, porque falta su archivo de septiembre). Se dice
       // hasta cuando llega, que es lo unico cierto de las dos, y la proyeccion suma las de cada una.
       firstDay: 1,
       lastDay: Math.min(meta.lastDay || p.dias, goo.lastDay || p.dias),

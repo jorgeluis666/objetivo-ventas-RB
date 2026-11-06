@@ -84,7 +84,7 @@ function checkAnyActivity(j, findings) {
 // Compara los dos últimos meses CERRADOS — si un canal pasó de tener
 // ventas significativas a cero, es señal de que algo se rompió.
 function checkChannelDropoff(j, findings) {
-  // Mes en curso por el ciclo de venta (cada mes va del 27 del anterior al 26)
+  // Mes en curso por el ciclo de venta (cada mes va del 26 del anterior al 25)
   const hoy = Ciclo.mesDe(Ciclo.hoyLima());
   const currentMonthIdx = hoy.year === 2026 ? hoy.mi : 12;
   // Mes cerrado más reciente y el anterior

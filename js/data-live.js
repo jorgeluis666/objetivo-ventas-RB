@@ -1,7 +1,7 @@
 /* ============================================================
    Datos vivos — data/ventas-2026.json generado por el pipeline
    scripts/fetch-data.js (GitHub Actions / local), por ciclo de venta
-   (js/ciclo.js: cada mes va del 27 del anterior al 26).
+   (js/ciclo.js: cada mes va del 26 del anterior al 25).
    En el sitio publicado no hay carpeta data/: scripts/build.js
    incrusta el JSON en window.RB_VENTAS_DATA, dentro del HTML cifrado.
    En local (npm run dev) se lee el archivo.
@@ -52,6 +52,7 @@
         weeklyData:        json.weeklyData,
         transactions:      json.transactions,
         daily2026:               json.daily2026               || null,  // ventas por día del ciclo (Proyecciones)
+        ciclo:                   json.ciclo                   || null,  // cierre y periodos con los que se agrupó
         // Nuevos (2025 live completo)
         weekly2025:        json.weekly2025       || {},
         d2025_live:        json.d2025_live       || {},

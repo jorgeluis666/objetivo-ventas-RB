@@ -55,6 +55,7 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
                           en la carpeta Meta Files, a las 6:00, 13:00 y 18:00 de Lima (también
                           Amador, Terminal Pesquero y Excambiare, cada una con su perfil)
     sync-reportes.js      Lista la carpeta Reportes de Drive → data/reportes-2026.json
+    reportes-auto.js      Imprime el semanal, el acumulado y el mensual en PDF y los deja en esa carpeta
     build.js              Arma dist/ (HTML con todo incrustado, cifrado con la clave)
     alertas.js            Correo de alertas: lunes 6:00 p. m. y cuando cambian las ventas
     apps-script/alertas-destinatarios.gs  Web App con los correos de las alertas (ruedita de Notificaciones)
@@ -67,6 +68,7 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
     sync-ads.yml          Sync diario de las carpetas de Meta Ads, Google Ads, artes y reportes (07:00 Lima) + workflow_dispatch
     deploy.yml            Build cifrado + deploy a GitHub Pages
     alertas-semanales.yml Correo de alertas: lunes 6:00 p. m. Lima y después de cada lectura de ventas que cambió las cifras
+    reportes-automaticos.yml  Reportes en PDF a la carpeta Reportes: lunes (semanal y acumulado) y día 1 del ciclo (mensual)
     weekly-check.yml      Revisión semanal del pipeline
 ```
 
@@ -163,8 +165,17 @@ Si un archivo falla, el workflow queda en rojo, el JSON anterior se conserva y n
 
 Módulo del menú con dos pestañas (vistas `view-arch` y `view-week`; el menú marca Archivo de Reportes en las dos).
 
-- **Documentos en Drive** (`js/reportes.js`): los reportes de la carpeta [Reportes](https://drive.google.com/drive/folders/1TxuNI5ig8xnakT0JhH56iv-M3zyKWeR6), con búsqueda, filtro por tipo y, por documento, vista previa dentro del tablero, enlace a Drive y PDF. La lista la escribe `scripts/sync-reportes.js` en `data/reportes-2026.json` dentro del workflow `sync-ads.yml` (publicada, va incrustada como `window.RB_REPORTES_DATA`). El tipo (Semanal, Mensual, Anual, Ejecutivo, Estrategia) sale del nombre del archivo: un reporte nuevo aparece solo.
+- **Documentos en Drive** (`js/reportes.js`): los reportes de la carpeta [Reportes](https://drive.google.com/drive/folders/1TxuNI5ig8xnakT0JhH56iv-M3zyKWeR6), con búsqueda, filtro por tipo y, por documento, vista previa dentro del tablero, enlace a Drive y PDF. La lista la escribe `scripts/sync-reportes.js` en `data/reportes-2026.json` dentro del workflow `sync-ads.yml` (publicada, va incrustada como `window.RB_REPORTES_DATA`). El tipo (Semanal, Acumulado, Mensual, Anual, Ejecutivo, Estrategia) sale del nombre del archivo: un reporte nuevo aparece solo.
 - **Generación de Reporte**: tres formatos, los que pide el cliente en la lámina «Correcciones plataforma Royal Baby». **Mensual** (`js/reporte-mensual.js`): el mes del ciclo con las diez láminas del modelo de Lima Retail. **Acumulado del mes** (el mismo módulo): esas láminas del día 1 del ciclo a cada domingo —el primer domingo, el siguiente, y así hasta el cierre—, con la meta prorrateada por los días del corte; la lista trae los últimos doce domingos que ya tienen Meta y ventas cargadas. **Semanal** (`js/reporte-semanal.js`): la semana cerrada de lunes a domingo frente a la anterior, numerada dentro del mes del ciclo (Semana 1, Semana 2…, por el domingo en que cierra, como las numera Objetivos; si cruza el cierre, la portada lo dice), en el orden de los reportes semanales de la carpeta (el último va enlazado como modelo). Meta Ads por grupo de campañas (E-commerce, Mensajes WhatsApp, Reconocimiento, Interacción) con sus conjuntos, la variación de resultados, el costo por resultado, el ROAS en E-commerce y el mejor anuncio; Google Ads por campaña con el informe por día (`google.detail`), avisando los días que no cubre; y tres conclusiones editables, las dos primeras propuestas con los números y guardadas por semana en el navegador (`rb-week-notes-v1`). Usa los mismos datos que Gasto publicitario (`Gasto.load()`); **Descargar PDF** imprime solo el documento (`@media print`).
+
+### Generación automática (`scripts/reportes-auto.js`)
+
+Los tres reportes se dejan solos en la carpeta Reportes de Drive, en PDF. No hay un documento aparte: el script abre `index.html` en un Chrome sin pantalla con el enlace directo del reporte (`?rpt=semanal&semana=2026-10-26`, `?rpt=acumulado&corte=2026-11-01`, `?rpt=mensual&periodo=2026-10`), espera a que el tablero marque `window.RB_REPORTE_LISTO` con ese mismo periodo y guarda la impresión, con las reglas `@media print` del botón **Descargar PDF**: el semanal en A4 y el mensual y el acumulado en diez láminas de 1280×720. Esos enlaces también sirven para compartir un reporte abierto en el formato y el periodo exactos.
+
+- **Cuándo**: el workflow `reportes-automaticos.yml` corre detrás de «Actualizar datos de ventas» (con el dato del día ya en el repositorio) y decide por la fecha de Lima: **lunes**, el semanal de la semana que cerró ayer y el acumulado del mes a ese domingo; **día 1 del ciclo** (el 26), el mensual del mes que cerró ayer, y ese día el acumulado no se repite porque el mensual es el mismo corte. El cron del lunes queda de respaldo y **Run workflow** rehace uno a mano (`formato`, `fecha`, `forzar`).
+- **Nombres** (de ahí sale el tipo en el archivo): `Reporte Royal Baby | Semana 1 de Noviembre: 26 oct – 1 nov vs 19–25 oct`, `Reporte Royal Baby | Acumulado de Noviembre al 1 nov`, `Reporte Royal Baby | Reporte Octubre`. Un reporte que ya está en la carpeta no se vuelve a subir, así que repetir la corrida no duplica nada. Al terminar relee la carpeta y actualiza `data/reportes-2026.json`, y el deploy sigue a esa corrida.
+- **Permisos**: escribir en Drive va por el Apps Script (`scripts/disparar-actualizacion.gs`, acción `subir`) con **ESCRITURA_CLAVE**, una propiedad del script distinta de `LECTURA_CLAVE` —esa viaja dentro del tablero publicado, así que no puede dar permiso de escritura—. En el repositorio es el secret `RB_DRIVE_WRITE_KEY`, con el mismo valor. Solo acepta PDF y solo esa carpeta. Al cambiar el `.gs`: pegarlo en el proyecto, Implementar → Gestionar implementaciones → Nueva versión.
+- **A mano**: `npm run reportes -- --dry` dice qué subiría hoy; `--salida=tmp` guarda los PDF sin tocar Drive; `--fecha=2026-11-02` simula un día; `--formato=mensual` arma solo ese. Necesita Chrome (lo busca en las rutas de siempre o en `CHROME_PATH`) y `puppeteer-core`, que solo lo maneja; el navegador no se descarga.
 
 ## Gasto publicitario
 

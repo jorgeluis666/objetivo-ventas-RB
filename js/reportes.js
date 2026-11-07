@@ -3,7 +3,8 @@
    La lista de la carpeta Reportes de Drive (data/reportes-2026.json, que escribe
    scripts/sync-reportes.js cada día; al publicar va incrustado como RB_REPORTES_DATA).
    El tipo de reporte y su periodo salen del nombre del archivo: un reporte nuevo en la
-   carpeta aparece solo, sin tocar este archivo.
+   carpeta aparece solo, sin tocar este archivo. Los que deja scripts/reportes-auto.js
+   (semanal, acumulado y mensual, en PDF) entran por la misma puerta.
    Expone window.Reportes = { init, load, latestWeekly }.
    ============================================================ */
 
@@ -34,6 +35,8 @@
   // «Reporte Royal Baby | Reporte 02 - 08 vs 09 - 15 Febrero» → semanal, «02 - 08 vs 09 - 15 Febrero».
   function tipoDe(name) {
     const n = norm(name);
+    // El avance del mes que deja scripts/reportes-auto.js cada lunes: del día 1 del ciclo a ese domingo.
+    if (/acumulado/.test(n)) return 'Acumulado';
     if (/\bvs\b/.test(n)) return 'Semanal';
     if (/estrategia/.test(n)) return 'Estrategia';
     if (/ejecutivo/.test(n)) return 'Ejecutivo';
@@ -94,7 +97,7 @@
     const all = files();
     const typeSel = document.getElementById('arch-type');
     if (typeSel && typeSel.options.length <= 1) {
-      const tipos = ['Semanal', 'Mensual', 'Anual', 'Ejecutivo', 'Estrategia'].filter(t => all.some(f => f.tipo === t));
+      const tipos = ['Semanal', 'Acumulado', 'Mensual', 'Anual', 'Ejecutivo', 'Estrategia'].filter(t => all.some(f => f.tipo === t));
       typeSel.insertAdjacentHTML('beforeend', tipos.map(t => `<option value="${t}">${t}</option>`).join(''));
     }
     const q = norm(state.query);

@@ -66,6 +66,15 @@
   };
   const icon = name => `<svg class="rpt-ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ICONS.bars}</svg>`;
 
+  // Enlace directo a un reporte: ?rpt=mensual|acumulado|semanal, con &periodo=2026-10 (el mes del
+  // mensual), &corte=2026-11-01 (el domingo del acumulado) o &semana=2026-10-26 (el lunes del
+  // semanal). Sirve para compartir un reporte y lo usa scripts/reportes-auto.js, que imprime el PDF
+  // con Chrome sin pantalla: abre el enlace y espera a que el tablero marque RB_REPORTE_LISTO.
+  function enlace() {
+    const q = new URLSearchParams(global.location.search);
+    return { rpt: q.get('rpt'), periodo: q.get('periodo'), corte: q.get('corte') };
+  }
+
   let ads = null, ventas = null, artes = null, objetivos = null;
   // Lo elegido en cada formato: el mes del mensual y la fecha de corte del acumulado.
   const selected = { mensual: '', acumulado: '' };
@@ -902,6 +911,11 @@
     }
     host.innerHTML = `<div class="rpt">${pages(R, T)}</div>`;
     fit();
+    // Lo que acaba de quedar pintado, para quien imprima el PDF desde fuera (scripts/reportes-auto.js).
+    global.RB_REPORTE_LISTO = {
+      tipo: kind, mes: per.mes, year: per.year, periodo: per.key,
+      corte: per.corte || null, inicio: per.inicio, fin: per.end, laminas: 10,
+    };
   }
 
   // ── Edición ──
@@ -956,7 +970,10 @@
       wired = true;
       let saved = 'mensual';
       try { saved = localStorage.getItem(KIND_KEY) || 'mensual'; } catch (e) { /* mensual */ }
-      kind = saved;
+      const link = enlace();
+      kind = link.rpt || saved;
+      if (link.periodo) selected.mensual = link.periodo;
+      if (link.corte) selected.acumulado = link.corte;
       document.querySelectorAll('[data-rpt-kind]').forEach(b => b.addEventListener('click', () => setKind(b.dataset.rptKind)));
       document.getElementById('rpt-select')?.addEventListener('change', e => { selected.mensual = e.target.value; render(); });
       document.getElementById('acc-select')?.addEventListener('change', e => { selected.acumulado = e.target.value; render(); });

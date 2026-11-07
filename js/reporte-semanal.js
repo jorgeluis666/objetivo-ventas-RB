@@ -33,6 +33,12 @@
   ];
   const OTHER = { key: 'otras', label: 'Otras campañas', color: '#64748B', result: 'Resultados', one: 'resultado', many: 'resultados', kpi: 'Otros resultados', field: 'results' };
 
+  // El lunes que pide un enlace directo (?rpt=semanal&semana=2026-10-26). Ver js/reporte-mensual.js.
+  const semanaDelEnlace = () => {
+    const q = new URLSearchParams(global.location.search);
+    return q.get('rpt') === 'semanal' ? q.get('semana') : null;
+  };
+
   let data = null;
   let selected = '';
   let chart = null;
@@ -366,6 +372,8 @@
       host.innerHTML = '<div class="panel"><div class="gp-table-empty">Todavía no hay una semana cerrada de lunes a domingo con entregas en Meta Ads.</div></div>';
       return;
     }
+    const pedida = semanaDelEnlace();
+    if (pedida && list.includes(pedida) && !selected) selected = pedida;
     if (!list.includes(selected)) selected = list[0];
     if (select) {
       select.innerHTML = list.map((m, i) => `<option value="${m}"${m === selected ? ' selected' : ''}>${esc(semanaLabel(m))} · ${esc(rangeLabel(m))}${i === 0 ? ' · semana que acaba de pasar' : ''}</option>`).join('');
@@ -421,6 +429,12 @@
       </div>`;
     renderChart(r);
     host.querySelectorAll('[data-week-note]').forEach(f => f.addEventListener('input', () => saveNote(r.monday, f.dataset.weekNote, f.value)));
+    // Lo que acaba de quedar pintado, para quien imprima el PDF desde fuera (scripts/reportes-auto.js).
+    const s = semanaDelCiclo(r.monday);
+    global.RB_REPORTE_LISTO = {
+      tipo: 'semanal', lunes: r.monday, domingo: shift(r.monday, 6),
+      semana: s ? s.n : null, mes: s ? s.mes : null, anterior: r.prevMonday,
+    };
   }
 
   // El nombre del PDF lo pone el navegador con el título del documento: se cambia solo mientras imprime.

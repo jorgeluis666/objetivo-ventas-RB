@@ -558,8 +558,11 @@
 
     wireNav();
     wireSidebarToggle();
-    // Un módulo oculto en el menú tampoco se abre por enlace (#view-…)
-    const hashView = window.location.hash.slice(1);
+    // Un módulo oculto en el menú tampoco se abre por enlace (#view-…). ?rpt=… abre la generación
+    // de reporte directamente: así se comparte un reporte y así lo imprime scripts/reportes-auto.js.
+    const hashView = new URLSearchParams(window.location.search).get('rpt')
+      ? 'view-week'
+      : window.location.hash.slice(1);
     const hashBtn  = hashView && document.querySelector(`.s-item[data-view="${VIEW_PARENT[hashView] || hashView}"]`);
     showView(hashBtn && !hashBtn.hidden ? hashView : 'view-obj');
 

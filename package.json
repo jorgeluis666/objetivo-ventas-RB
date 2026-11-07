@@ -8,6 +8,7 @@
     "fetch": "node scripts/fetch-data.js",
     "sync:ads": "node scripts/sync-ads.js",
     "sync:objetivos": "node scripts/sync-objetivos.js",
+    "reportes": "node scripts/reportes-auto.js",
     "build": "node scripts/build.js"
   },
   "engines": {
@@ -19,6 +20,7 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "live-server": "^1.2.2"
+    "live-server": "^1.2.2",
+    "puppeteer-core": "^25.16.0"
   }
 }

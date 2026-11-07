@@ -158,6 +158,16 @@ const FORMATOS = { xlsx: 'xlsx', csv: 'csv' };
 
 function doPost(event) {
   const params = (event && event.parameter) || {};
+  // Subir un reporte va con su propia clave (ver "Escritura de Drive" mas abajo): la de lectura viaja
+  // dentro del tablero publicado y no puede servir para escribir en Drive.
+  if (params.action === 'subir') {
+    try {
+      return respuesta_(subirReporte_(params));
+    } catch (error) {
+      console.error('escritura', error);
+      return respuesta_({ ok: false, error: 'No se pudo guardar en Drive.' });
+    }
+  }
   const clave = PropertiesService.getScriptProperties().getProperty('LECTURA_CLAVE');
   if (!clave || String(params.clave || '') !== clave) return respuesta_({ ok: false, error: 'Clave no valida.' });
   try {
@@ -205,6 +215,33 @@ function descargarArchivo_(id, formato) {
     bytes = file.getBlob().getBytes();
   }
   return { ok: true, name: file.getName(), mimeType: file.getMimeType(), base64: Utilities.base64Encode(bytes) };
+}
+
+// ── Escritura de Drive (reportes automaticos) ────────────────────────────────────────────────────
+// scripts/reportes-auto.js imprime en PDF el semanal, el acumulado y el mensual del tablero y los
+// deja aca, en la carpeta Reportes, que es la que lista el modulo Archivo de Reportes:
+//   action=subir&nombre=<titulo>&mimeType=application/pdf&base64=<pdf>&carpeta=<id de Reportes>
+// Va con ESCRITURA_CLAVE, una propiedad del script distinta de LECTURA_CLAVE (esa viaja dentro del
+// tablero publicado, asi que no puede dar permiso de escritura). En el repositorio es el secret
+// RB_DRIVE_WRITE_KEY, con el mismo valor. Solo acepta PDF y solo en esa carpeta; si ya hay un archivo
+// con ese nombre, devuelve el que ya esta en vez de duplicar el reporte.
+const CARPETA_REPORTES = '1TxuNI5ig8xnakT0JhH56iv-M3zyKWeR6';
+
+function subirReporte_(params) {
+  const clave = PropertiesService.getScriptProperties().getProperty('ESCRITURA_CLAVE');
+  if (!clave || String(params.clave || '') !== clave) return { ok: false, error: 'Clave no valida.' };
+  if (String(params.carpeta || '') !== CARPETA_REPORTES) return { ok: false, error: 'Carpeta no permitida.' };
+  if (String(params.mimeType || '') !== 'application/pdf') return { ok: false, error: 'Formato no valido.' };
+  const nombre = String(params.nombre || '').trim();
+  if (!nombre || nombre.length > 200) return { ok: false, error: 'Nombre no valido.' };
+  const carpeta = DriveApp.getFolderById(CARPETA_REPORTES);
+  const iguales = carpeta.getFilesByName(nombre);
+  if (iguales.hasNext()) return { ok: true, id: iguales.next().getId(), repetido: true };
+  const bytes = Utilities.base64Decode(String(params.base64 || ''));
+  if (!bytes.length) return { ok: false, error: 'Archivo vacio.' };
+  const file = carpeta.createFile(Utilities.newBlob(bytes, 'application/pdf', nombre + '.pdf'));
+  file.setName(nombre);
+  return { ok: true, id: file.getId(), repetido: false };
 }
 
 function respuesta_(body) {

@@ -1,0 +1,122 @@
+name: Reportes automáticos
+
+# Deja en la carpeta Reportes de Drive los reportes que arma el tablero, en PDF (scripts/reportes-auto.js):
+#   lunes           → el semanal de la semana que cerró ayer y el acumulado del mes a ese domingo
+#   día 1 del ciclo → el mensual del mes que cerró ayer
+# Corre detrás de «Actualizar datos de ventas», que es cuando el dato del día ya está en el repositorio:
+# un reporte impreso antes saldría con las cifras de ayer. El cron del lunes queda de respaldo por si
+# esa lectura no corre, y Run workflow permite rehacer uno a mano (formato y fecha).
+#
+# Un reporte que ya está en la carpeta no se vuelve a subir, así que repetir la corrida no duplica nada.
+# Al terminar, relee la carpeta y deja data/reportes-2026.json al día para que el nuevo reporte aparezca
+# en el módulo Archivo de Reportes; el deploy sigue a esta corrida.
+
+on:
+  workflow_run:
+    workflows: ["Actualizar datos de ventas"]
+    types: [completed]
+    branches: [main]
+  schedule:
+    # Lunes 11:00 de Lima (los cron de GitHub llegan tarde; es solo la red de abajo).
+    - cron: '0 16 * * 1'
+  workflow_dispatch:
+    inputs:
+      formato:
+        description: 'Formato (semanal, acumulado, mensual; vacío = lo que toque hoy)'
+        required: false
+        default: ''
+      fecha:
+        description: 'Día que se simula, YYYY-MM-DD (vacío = hoy en Lima)'
+        required: false
+        default: ''
+      forzar:
+        description: 'Subirlo aunque ya esté en la carpeta'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: reportes-automaticos
+  cancel-in-progress: false
+
+jobs:
+  reportes:
+    # Tras la lectura de ventas, solo si salió bien: con el dato a medio escribir el reporte saldría mal.
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Buscar Chrome
+        run: |
+          CHROME=$(command -v google-chrome || command -v chromium-browser || command -v chromium || true)
+          if [ -z "$CHROME" ]; then
+            sudo apt-get update && sudo apt-get install -y chromium-browser
+            CHROME=$(command -v chromium-browser || command -v chromium)
+          fi
+          echo "CHROME_PATH=$CHROME" >> "$GITHUB_ENV"
+          "$CHROME" --version
+
+      - name: Imprimir los reportes y dejarlos en Drive
+        env:
+          # La carpeta Reportes se lee por enlace; para escribir en ella va la clave de escritura del
+          # Apps Script (ESCRITURA_CLAVE), que no es la de lectura: esa viaja dentro del tablero.
+          RB_DRIVE_SCRIPT_URL: ${{ secrets.RB_DRIVE_SCRIPT_URL }}
+          RB_DRIVE_WRITE_KEY: ${{ secrets.RB_DRIVE_WRITE_KEY }}
+          RB_DRIVE_API_KEY: ${{ secrets.RB_DRIVE_API_KEY }}
+        run: |
+          ARGS=""
+          [ -n "${{ inputs.formato }}" ] && ARGS="$ARGS --formato=${{ inputs.formato }}"
+          [ -n "${{ inputs.fecha }}" ] && ARGS="$ARGS --fecha=${{ inputs.fecha }}"
+          [ "${{ inputs.forzar }}" = "true" ] && ARGS="$ARGS --forzar"
+          node scripts/reportes-auto.js $ARGS
+
+      - name: Releer la carpeta de reportes
+        env:
+          RB_DRIVE_API_KEY: ${{ secrets.RB_DRIVE_API_KEY }}
+        run: node scripts/sync-reportes.js
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/reportes-2026.json
+          if git diff --cached --quiet; then
+            echo "La carpeta de reportes no cambió"
+            exit 0
+          fi
+          TODAY=$(TZ='America/Lima' date +'%Y-%m-%d')
+          # El JSON es una foto completa de la carpeta: si otra corrida empujó mientras esta leía,
+          # vale la del que acaba de leer (mismo criterio que sync-ads.yml).
+          mkdir -p "$RUNNER_TEMP/datos"
+          cp data/reportes-2026.json "$RUNNER_TEMP/datos/"
+          for intento in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            cp "$RUNNER_TEMP/datos/reportes-2026.json" data/
+            git add data/reportes-2026.json
+            if git diff --cached --quiet; then
+              echo "Otra corrida ya dejó esta misma lista"
+              exit 0
+            fi
+            git commit -m "data: reportes ${TODAY}"
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "El push falló (intento $intento); vuelvo a partir de origin/main"
+          done
+          echo "No se pudo empujar la lista de reportes"
+          exit 1

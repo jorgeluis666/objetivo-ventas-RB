@@ -34,6 +34,11 @@ on:
         type: boolean
         required: false
         default: false
+      prueba:
+        description: 'Prueba: imprime los PDF y los deja como artefacto, sin tocar Drive'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -82,14 +87,26 @@ jobs:
           [ -n "${{ inputs.formato }}" ] && ARGS="$ARGS --formato=${{ inputs.formato }}"
           [ -n "${{ inputs.fecha }}" ] && ARGS="$ARGS --fecha=${{ inputs.fecha }}"
           [ "${{ inputs.forzar }}" = "true" ] && ARGS="$ARGS --forzar"
+          [ "${{ inputs.prueba }}" = "true" ] && ARGS="$ARGS --salida=$RUNNER_TEMP/reportes"
           node scripts/reportes-auto.js $ARGS
 
+      # Con «Prueba» los PDF se bajan desde la corrida y Drive no se toca.
+      - name: Guardar los PDF de la prueba
+        if: ${{ inputs.prueba == true }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: reportes-pdf
+          path: ${{ runner.temp }}/reportes/*.pdf
+          if-no-files-found: ignore
+
       - name: Releer la carpeta de reportes
+        if: ${{ inputs.prueba != true }}
         env:
           RB_DRIVE_API_KEY: ${{ secrets.RB_DRIVE_API_KEY }}
         run: node scripts/sync-reportes.js
 
       - name: Commit and push if changed
+        if: ${{ inputs.prueba != true }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

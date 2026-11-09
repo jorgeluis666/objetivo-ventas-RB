@@ -1,12 +1,12 @@
 {
-  "generated": "2026-11-09T10:32:46",
+  "generated": "2026-11-09T16:16:28",
   "fuente2026": {
     "carpeta": "1JJdjIzDu2CrhcBI9gBUTUuPAXnKYUQal",
     "archivo": {
       "id": "10gU7SBOlo5-dWgPryagbZzOmce0971ZpSKFDiDLq1I0",
       "nombre": "Ventas Royal Baby - 2026"
     },
-    "ultimoDia": "2026-11-04"
+    "ultimoDia": "2026-11-08"
   },
   "ciclo": {
     "cierre": 25,
@@ -155,12 +155,12 @@
       "Tienda": 54333.3
     },
     "Noviembre": {
-      "WhatsApp": 2160.9,
-      "Instagram": 354,
+      "WhatsApp": 3197.3,
+      "Instagram": 448.8,
       "Facebook": 0,
-      "Showroom": 518.5,
-      "Web": 2448,
-      "Tienda": 30212
+      "Showroom": 1083.6,
+      "Web": 4857.8,
+      "Tienda": 42723
     },
     "Diciembre": {
       "WhatsApp": 0,
@@ -821,13 +821,13 @@
         "w": 2,
         "desde": "2026-11-02",
         "hasta": "2026-11-08",
-        "TOTAL": 9763.9,
-        "WHATSAPP": 1178.8,
-        "INSTAGRAM": 354,
+        "TOTAL": 26381,
+        "WHATSAPP": 2215.2,
+        "INSTAGRAM": 448.8,
         "FACEBOOK": 0,
-        "SHOWROOM": 518.5,
-        "WEB": 90.6,
-        "TIENDA": 7622
+        "SHOWROOM": 1083.6,
+        "WEB": 2500.4,
+        "TIENDA": 20133
       },
       {
         "w": 3,
@@ -1011,12 +1011,12 @@
       "TIENDA": 160
     },
     "Noviembre": {
-      "WHATSAPP": 5,
-      "INSTAGRAM": 1,
+      "WHATSAPP": 8,
+      "INSTAGRAM": 2,
       "FACEBOOK": 0,
-      "SHOWROOM": 1,
-      "WEB": 9,
-      "TIENDA": 55
+      "SHOWROOM": 3,
+      "WEB": 13,
+      "TIENDA": 89
     },
     "Diciembre": {
       "WHATSAPP": 0,
@@ -2970,7 +2970,7 @@
         429,
         0,
         0,
-        0,
+        1036.4,
         0,
         0,
         0,
@@ -3000,7 +3000,7 @@
         0,
         354,
         0,
-        0,
+        94.8,
         0,
         0,
         0,
@@ -3066,8 +3066,8 @@
         0,
         0,
         518.5,
-        0,
-        0,
+        154.5,
+        410.6,
         0,
         0,
         0,
@@ -3099,9 +3099,9 @@
         0,
         0,
         90.6,
+        1787.6,
         0,
-        0,
-        0,
+        622.2,
         0,
         0,
         0,
@@ -3132,11 +3132,11 @@
         1036,
         4048.6,
         3573.4,
-        0,
-        0,
-        0,
-        0,
-        0,
+        2073.9,
+        3014.6,
+        3122.5,
+        2687,
+        1613,
         0,
         0,
         0,

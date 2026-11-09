@@ -164,8 +164,10 @@ function doPost(event) {
     try {
       return respuesta_(subirReporte_(params));
     } catch (error) {
+      // Con el detalle: esta rama solo responde a quien trae la clave de escritura, y sin el motivo
+      // la corrida de GitHub se queda sin saber si es permiso, carpeta o tamano.
       console.error('escritura', error);
-      return respuesta_({ ok: false, error: 'No se pudo guardar en Drive.' });
+      return respuesta_({ ok: false, error: 'No se pudo guardar en Drive: ' + (error && error.message ? error.message : error) });
     }
   }
   const clave = PropertiesService.getScriptProperties().getProperty('LECTURA_CLAVE');

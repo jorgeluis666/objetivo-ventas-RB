@@ -181,7 +181,9 @@ async function subir(nombre, pdf) {
     signal: AbortSignal.timeout(180000),
     body: new URLSearchParams({
       action: 'subir', clave, carpeta: CARPETA_REPORTES, nombre,
-      mimeType: 'application/pdf', base64: pdf.toString('base64'),
+      // page.pdf() devuelve un Uint8Array, no un Buffer: su toString('base64') daría la lista de
+      // bytes separados por comas y el Apps Script respondería «Could not decode string».
+      mimeType: 'application/pdf', base64: Buffer.from(pdf).toString('base64'),
     }),
   });
   if (!res.ok) throw new Error(`el Apps Script respondió HTTP ${res.status}`);

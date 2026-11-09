@@ -74,6 +74,8 @@
     const q = new URLSearchParams(global.location.search);
     return { rpt: q.get('rpt'), periodo: q.get('periodo'), corte: q.get('corte') };
   }
+  // El envío de agencia usa mes calendario; la vista comercial conserva su ciclo 26–25.
+  const calendarReport = new URLSearchParams(global.location.search).get('calendario') === '1';
 
   let ads = null, ventas = null, artes = null, objetivos = null;
   // Lo elegido en cada formato: el mes del mensual y la fecha de corte del acumulado.
@@ -95,7 +97,7 @@
   const pct = (a, b) => (b ? (a / b) * 100 : 0);
   const pct1 = n => `${dec1(n)}%`;
   const pct0 = n => `${Math.round(n)}%`;
-  const ratio = (a, b) => (b ? a / b : null);
+  const ratio = (a, b) => (fin(a) && b ? a / b : null);
   const safeUrl = url => (/^https:\/\//i.test(String(url || '')) ? String(url) : null);
   const pad = n => String(n).padStart(2, '0');
   const plural = (n, one, many) => `${num(n)} ${Math.round(n) === 1 ? one : many}`;
@@ -183,13 +185,16 @@
   // Meses del ciclo con entregas en Meta, del más reciente al más antiguo.
   function periods() {
     const C = global.Ciclo;
-    const year = +C.hoyLima().slice(0, 4);
+    const currentYear = +C.hoyLima().slice(0, 4);
     const rows = metaRows();
+    const years = calendarReport ? [...new Set(rows.map(r => +r.day.slice(0, 4)))].sort() : [currentYear];
     const out = [];
-    for (let mi = 0; mi < 12; mi += 1) {
-      const p = C.periodo(year, mi);
+    for (const year of years) for (let mi = 0; mi < 12; mi += 1) {
+      const p = calendarReport
+        ? { mes: C.MESES[mi], inicio: `${year}-${pad(mi + 1)}-01`, fin: new Date(Date.UTC(year, mi + 1, 0)).toISOString().slice(0, 10) }
+        : C.periodo(year, mi);
       if (p.inicio > yesterday()) break;
-      const end = minIso(p.fin, metaEnd(), salesEnd(), yesterday());
+      const end = calendarReport ? minIso(p.fin, metaEnd(), yesterday()) : minIso(p.fin, metaEnd(), salesEnd(), yesterday());
       if (!end || end < p.inicio) continue;
       if (!rows.some(r => r.day >= p.inicio && r.day <= end && r.spend > 0)) continue;
       out.push({ key: `${year}-${pad(mi + 1)}`, year, mi, mes: p.mes, inicio: p.inicio, fin: p.fin, end, complete: end === p.fin });
@@ -202,9 +207,19 @@
   // que ya tienen Meta y ventas cargadas, para no publicar un acumulado a medio llenar.
   function cortes() {
     const C = global.Ciclo;
-    const tope = minIso(metaEnd(), salesEnd(), yesterday());
+    const tope = calendarReport ? minIso(metaEnd(), yesterday()) : minIso(metaEnd(), salesEnd(), yesterday());
     const out = [];
     periods().forEach(p => {
+      if (calendarReport) {
+        let week = 0;
+        for (let day = p.inicio; day <= p.end; day = C.sumarDias(day, 1)) {
+          if (C.diaSemana(day) === 0 && day <= tope) {
+            week += 1;
+            out.push({ ...p, end: day, complete: day === p.fin, corte: day, semana: week, dia: C.entre(p.inicio, day) + 1 });
+          }
+        }
+        return;
+      }
       C.semanas(p.year, p.mi).forEach(s => {
         if (C.diaSemana(s.fin) !== 0 || !tope || s.fin > tope) return;
         out.push({ ...p, end: s.fin, complete: false, corte: s.fin, semana: s.w, dia: C.entre(p.inicio, s.fin) + 1 });
@@ -230,6 +245,15 @@
   }
   // Venta real del ciclo por columna de la hoja de ventas, hasta el corte del periodo.
   function salesOf(per) {
+    if (calendarReport) {
+      const out = {}, C = global.Ciclo;
+      for (let day = per.inicio; day <= per.end; day = C.sumarDias(day, 1)) {
+        const cycle = C.mesDe(day), offset = C.entre(cycle.inicio, day);
+        const cols = ventas?.daily2026?.[cycle.mes] || {};
+        Object.keys(cols).forEach(col => { out[col] = (out[col] || 0) + (Number(cols[col]?.[offset]) || 0); });
+      }
+      return out;
+    }
     const cols = ventas?.daily2026?.[per.mes] || {};
     const days = global.Ciclo.entre(per.inicio, per.end) + 1;
     const out = {};
@@ -297,17 +321,18 @@
     const gDet = googleRows().filter(inP);
     const gCamps = googleCampaigns(per);
     const sales = salesOf(per);
+    const salesPending = calendarReport && (!salesEnd() || salesEnd() < per.end);
     const metaSpend = sum(meta).spend;
     const googleSpend = gCamps.reduce((a, c) => a + c.cost, 0);
     const totalSpend = metaSpend + googleSpend;
 
     const canales = CANALES.map(c => {
       const spend = sum(meta.filter(c.owns)).spend;
-      const sale = sales[c.col] || 0;
-      return { ...c, spend, sale, roas: spend > 0 ? sale / spend : null };
+      const sale = salesPending ? null : sales[c.col] || 0;
+      return { ...c, spend, sale, roas: !salesPending && spend > 0 ? sale / spend : null };
     });
-    const ventaReal = canales.reduce((a, c) => a + c.sale, 0);
-    const lider = [...canales].sort((a, b) => b.sale - a.sale)[0];
+    const ventaReal = salesPending ? null : canales.reduce((a, c) => a + c.sale, 0);
+    const lider = salesPending ? null : [...canales].sort((a, b) => b.sale - a.sale)[0];
     const fuera = (sales.Instagram || 0) + (sales.Facebook || 0);
 
     // 04 · Objetivo del cliente por canal. En un mes a medio cerrar la meta se prorratea por los días
@@ -317,13 +342,21 @@
     const objRow = (key, label, sub) => {
       const canal = canales.find(x => x.key === key);
       const bruta = metas[META_COL[key]];
-      const target = fin(bruta) ? bruta * fMeta : null;
-      return { label, sub, target, sale: canal.sale, done: target > 0 ? pct(canal.sale, target) : null };
+      let target = fin(bruta) ? bruta * fMeta : null;
+      if (calendarReport) {
+        target = 0;
+        for (let day = per.inicio; day <= per.end; day = C.sumarDias(day, 1)) {
+          const cycle = C.mesDe(day), goal = objetivos?.metas?.[cycle.mes]?.[META_COL[key]];
+          if (!fin(goal)) { target = null; break; }
+          target += goal / cycle.dias;
+        }
+      }
+      return { label, sub, target, sale: canal.sale, done: !salesPending && target > 0 ? pct(canal.sale, target) : null };
     };
     const suma = (label, sub, list) => {
       const target = list.every(r => r.target == null) ? null : list.reduce((a, r) => a + (r.target || 0), 0);
-      const sale = list.reduce((a, r) => a + r.sale, 0);
-      return { label, sub, target, sale, done: target > 0 ? pct(sale, target) : null };
+      const sale = salesPending ? null : list.reduce((a, r) => a + r.sale, 0);
+      return { label, sub, target, sale, done: !salesPending && target > 0 ? pct(sale, target) : null };
     };
     const online = [objRow('web', 'Web'), objRow('whatsapp', 'WhatsApp'), objRow('showroom', 'Outlet')];
     const tienda = objRow('tienda', 'Tienda física', 'Venta presencial');
@@ -382,7 +415,8 @@
     const gDays = [...new Set(gDet.map(r => r.day))].sort();
 
     return {
-      per, meta, metaSpend, googleSpend, totalSpend, canales, ventaReal, lider, fuera, obj, marca,
+      per, meta, metaSpend, googleSpend, totalSpend, canales, ventaReal, lider, fuera, obj, marca, salesPending,
+      salesNotice: salesPending ? `Ventas pendientes: la fuente llega al ${salesEnd() ? corta(salesEnd()) : 'día sin confirmar'}. Faltan ventas hasta el ${corta(per.end)}; ROAS real y cumplimiento no calculados.` : '',
       eco: { ...eco, web, ads: bestAds(ecoRows, 'purchases', per) },
       wa: { ...wa, sets: waSets, ads: bestAds(waRows, 'conversations', per),
         canal: canales.find(c => c.key === 'whatsapp'), showroom: canales.find(c => c.key === 'showroom') },
@@ -605,7 +639,7 @@
     const mesTxt = mesAnio.toLowerCase();
     const range = rango(per.inicio, per.end);
     const cierre = per.corte
-      ? `Acumulado al ${corta(per.end)}`
+      ? `${calendarReport ? 'Acumulado ' + rango(per.inicio, per.end) : 'Acumulado al ' + corta(per.end)}`
       : `Cierre ${rango(per.inicio, per.end, false)}`;
     const emitido = global.Ciclo.hoyLima();
     const emitidoMes = global.Ciclo.mesDe(emitido);
@@ -665,7 +699,7 @@
           <div class="rpt-metrics">
             ${metric('Inversión total', money(R.totalSpend), `Meta ${money(R.metaSpend)} · Google ${money(R.googleSpend)}`)}
             ${metric('Venta real', money(R.ventaReal), 'Cierre por canal del cliente')}
-            ${metric('ROAS real total', roasX(roasTotal), roasTotal != null ? `S/ ${dec1(roasTotal)} por cada S/ 1 invertido` : 'Sin inversión', roasBadge(roasTotal))}
+            ${metric('ROAS real total', roasX(roasTotal), R.salesPending ? 'Ventas pendientes' : roasTotal != null ? `S/ ${dec1(roasTotal)} por cada S/ 1 invertido` : 'Sin inversión', roasBadge(roasTotal))}
             ${metric('Canal líder', esc(R.lider?.label || '—'), R.lider && R.ventaReal > 0 ? `${pct0(pct(R.lider.sale, R.ventaReal))} de la venta del mes` : '')}
           </div>
           <div class="rpt-panel">
@@ -810,15 +844,15 @@
             ${G.cost > 0
               ? metric('Inversión', money(G.cost), 'Campaña Search · informe por término')
               : metric('Inversión', money(R.googleSpend), 'Campaña Search · sin informe por término')}
-            ${metric('Clics', num(G.clicks), 'Tráfico a la web')}
+            ${metric('Clics', G.from ? num(G.clicks) : '—', G.from ? 'Tráfico a la web' : 'Informe por término pendiente')}
             ${metric('CPC prom.', money2(gCpc), 'Todos los términos')}
-            ${metric('Conversiones', num(G.conversions), G.value > 0 ? `Valor atrib. ${money(G.value)}` : 'Conversiones de Google')}
+            ${metric('Conversiones', G.from ? num(G.conversions) : '—', G.value > 0 ? `Valor atrib. ${money(G.value)}` : 'Conversiones de Google')}
             ${metric('ROAS directo', G.roas != null ? roasX(G.roas) : '—', 'Asiste vía remarketing')}
           </div>
           <div class="rpt-panel">
             <table>
               <thead><tr><th>Término</th><th class="r">Clics</th><th class="r">CPC</th><th>Rol</th><th>Nota</th></tr></thead>
-              <tbody>${kwTable || '<tr><td colspan="5">El informe de Google por palabra clave no trae clics en este periodo.</td></tr>'}</tbody>
+              <tbody>${kwTable || '<tr><td colspan="5">No está disponible el informe de Google por palabra clave del periodo.</td></tr>'}</tbody>
             </table>
           </div>
           ${keyBox('p8-key', T['p8-key'])}
@@ -855,7 +889,7 @@
     // Pie: marca, cliente, mes y número de página en las láminas interiores, como el modelo.
     return list.map((html, i) => (i === 0 || i === list.length - 1 ? html : html.replace('</span></footer>',
       `</span><span class="rpt-foot-brand"><img src="${LOGO}" alt=""><strong>Lima Retail</strong>${CLIENTE} · Reporte de ${esc(mesAnio)} · ${pad(i + 1)} / ${pad(list.length)}</span></footer>`)))
-      .map(html => `<div class="rpt-frame">${html}</div>`).join('');
+      .map((html, i) => `<div class="rpt-frame" style="position:relative">${html}${R.salesPending && i < list.length - 1 ? `<div style="position:absolute;top:8px;left:48px;right:48px;padding:5px 8px;border:1px solid #fbbf24;background:#fffbeb;color:#92400e;font-size:11px;line-height:1.3">${esc(R.salesNotice)}</div>` : ''}</div>`).join('');
   }
 
   // ── Pintado ──
@@ -864,6 +898,19 @@
     const T = texts(R);
     const saved = readNotes()[R.per.key] || {};
     Object.keys(saved).forEach(k => { if (typeof saved[k] === 'string') T[k] = saved[k]; });
+    if (!R.google.from) {
+      T['p8-key'] = T['p8-an'] = 'El detalle por palabra clave está pendiente; no se interpreta su ausencia como cero clics o conversiones.';
+      T['c2-p'] = 'Completar el informe de Google por palabra clave antes de evaluar el rendimiento de los términos.';
+    }
+    if (R.salesPending) {
+      T['p3-lead'] = 'Inversión publicitaria del periodo. Venta real y ROAS pendientes de completar la hoja de ventas.';
+      T['p3-key'] = T['p4-key'] = T['p9-close'] = esc(R.salesNotice);
+      T['p4-lead'] = 'Objetivos del cliente; el cumplimiento se calculará cuando estén completas las ventas del periodo.';
+      T['c1-t'] = 'Completar las ventas pendientes';
+      T['c1-p'] = 'No se concluye sobre rentabilidad ni cumplimiento hasta contar con las ventas de todos los días del reporte.';
+      T['c3-p'] = 'Evaluar piezas de producto para la tienda; la venta por canal sigue pendiente de completar.';
+      if (!R.eco.purchases) T['p5-key'] = `Meta todavía no atribuye compras a esta campaña en el periodo. ${esc(R.salesNotice)}`;
+    }
     return T;
   }
 

@@ -1,0 +1,51 @@
+name: PDF original para Nexus
+on:
+  schedule:
+    - cron: '45 4 * * 1'
+    - cron: '45 4 1 * *'
+    - cron: '35 11 * * 1'
+    - cron: '35 11 1 * *'
+  workflow_dispatch:
+    inputs:
+      fecha:
+        description: 'Fecha de envío YYYY-MM-DD (vacío: hoy en Lima)'
+        required: false
+        default: ''
+      cargar:
+        description: 'Preparar en Nexus para el horario configurado (no envía correo ahora)'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: native-report-pdf
+  cancel-in-progress: false
+jobs:
+  pdf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 200
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Instalar exportador
+        run: npm install --no-save --no-package-lock --no-audit --no-fund puppeteer-core@25.16.0
+      - name: Generar el PDF del tablero
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+          REPORT_DATE: ${{ inputs.fecha }}
+          NATIVE_REPORT_TOKEN: ${{ (github.event_name == 'schedule' || inputs.cargar) && secrets.NATIVE_REPORT_TOKEN || '' }}
+          NATIVE_SCHEDULED: ${{ github.event_name == 'schedule' && '1' || '0' }}
+          TP_DATA_ENDPOINT: ${{ secrets.TP_DATA_ENDPOINT }}
+          DATA_ENDPOINT: ${{ secrets.DATA_ENDPOINT }}
+        run: node scripts/export-native-report.cjs
+      - name: Guardar PDF de verificación
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-original
+          path: native-report-output/*.encrypted.json
+          retention-days: 3
+          if-no-files-found: error

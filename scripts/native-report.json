@@ -1,0 +1,10 @@
+{
+  "kind": "royal",
+  "data": "Gasto",
+  "module": "ReporteMensual",
+  "brand": "royal-baby",
+  "periodSource": "data/ads-2026.json",
+  "snapshotFiles": [
+    "data/ads-2026.json"
+  ]
+}

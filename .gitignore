@@ -6,3 +6,6 @@ credentials/
 *.local
 .DS_Store
 .claude/
+
+# Private generated PDF attachments
+native-report-output/

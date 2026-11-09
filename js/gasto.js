@@ -178,7 +178,7 @@
       generated: captura || data?.generatedAt || null,
       verbo: captura ? 'Capturado' : 'Sincronizado',
       etiquetaFecha: captura ? 'Última captura de Nexus' : 'Datos actualizados',
-      proximo: 'Nexus captura a las 6, 13 y 18 de Lima',
+      proximo: 'Barrido de Drive: 06:30, 13:30 y 18:30 Lima (aprox.). Nexus: 06:00, 13:00 y 18:00. Publicación al terminar',
       vieja,
       notaVieja: 'La inversión que se ve es la de la última captura buena: Nexus se saltó su última franja. '
         + 'Las ventas y los objetivos no están afectados.',
@@ -1375,7 +1375,7 @@
     const captures=(state.data?.months||[]).map(m=>m.meta?.capturedAt).filter(Boolean).sort();
     let stamp=document.getElementById('nexus-meta-capture');
     if(!stamp){stamp=document.createElement('p');stamp.id='nexus-meta-capture';stamp.className='muted';body.prepend(stamp);}
-    stamp.textContent=captures.length?'Meta · Captura Nexus: '+new Date(captures.at(-1)).toLocaleString('es-PE',{timeZone:'America/Lima'})+' · Lima · Extracción 06:00, 13:00 y 18:00; publicación después del barrido. Día actual parcial.':'';
+    stamp.textContent=captures.length?'Meta · Captura Nexus: '+new Date(captures.at(-1)).toLocaleString('es-PE',{timeZone:'America/Lima'})+' · Lima · Nexus: 06:00, 13:00 y 18:00. Barrido de Drive: 06:30, 13:30 y 18:30 (aprox.). Publicación al terminar. Día actual parcial.':'';
     renderKpis(period);
     renderDistribution(period);
     renderCampaigns(period, groups);

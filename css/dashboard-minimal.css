@@ -3524,7 +3524,8 @@ a.gp-tool-btn { line-height: 32px; text-decoration: none; }
 
 /* El PDF del reporte semanal: solo el documento, sin menú, barra superior ni el resto de los módulos. */
 @media print {
-  @page { size: A4 portrait; margin: 12mm 10mm; }
+  /* Horizontal, como el mensual: la lamina de 1280x720 (16:9) de los reportes de la agencia. */
+  @page { size: 1280px 720px; margin: 12mm 10mm; }
   html, body, .main, .content { background: #fff !important; }
   .sidebar, .topbar, .site-footer, .s-wa, .arch-tabs, .week-toolbar, .notif-zone,
   .view:not(#view-week), #view-week > .section-title, #view-week > .section-desc { display: none !important; }

@@ -33,6 +33,10 @@ function parse(rows,at=null) {
     if(!out[month])out[month]={through,at,campaigns:[]};
     if(out[month].through!==through)throw new Error('Mixed visibility periods');
     const item={campaign:row[campaign]};keys.forEach((k,i)=>item[k]=ratio(row[offset+1+i]));
+    if(header[offset+7]==='Nexus conjuntos · JSON v1') {
+      const groups=JSON.parse(row[offset+7]||'[]');if(!Array.isArray(groups))throw new Error('Invalid visibility groups');
+      const seen=new Set();item.groups=groups.map(g=>{if(!g||typeof g.name!=='string'||!/^\d+$/.test(g.id)||seen.has(g.id))throw new Error('Invalid group identity');seen.add(g.id);const clean={id:g.id,name:g.name};for(const key of keys){if(g[key]!==null&&(typeof g[key]!=='number'||!Number.isFinite(g[key])||g[key]<0||g[key]>1))throw new Error('Invalid group ratio');clean[key]=g[key];}return clean;});
+    }
     const old=out[month].campaigns.find(r=>r.campaign===item.campaign);
     if(old && JSON.stringify(old)!==JSON.stringify(item))throw new Error('Conflicting campaign visibility');
     if(!old)out[month].campaigns.push(item);

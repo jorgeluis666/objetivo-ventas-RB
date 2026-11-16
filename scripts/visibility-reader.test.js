@@ -12,3 +12,11 @@ assert.equal(result['2026-11'].campaigns[0].top_rate,0);
 assert.throws(()=>parse([headers,row,[...row.slice(0,7),'10%']]));
 assert.deepEqual(parse([['Campaña','Coste'],['A','10']]),{});
 console.log('Visibility parsing: missing, zero, bounds, locale, identity and conflicting ratios OK');
+
+const group={id:'10',name:'Same group',top_rate:0,absolute_top_rate:null,top_share:.0999,absolute_top_share:null,lost_top_budget:null,lost_top_rank:.9001};
+const gh=[...headers,'Nexus conjuntos · JSON v1'];const gr=[...row,JSON.stringify([group])];
+assert.deepEqual(parse([gh,gr,gr])['2026-11'].campaigns[0].groups,[group]);
+assert.throws(()=>parse([gh,[...row,JSON.stringify([group,group])]]));
+assert.throws(()=>parse([gh,[...row,JSON.stringify([{...group,top_rate:2}])]]));
+const second=[...gr];second[0]='Other';second[8]=JSON.stringify([{...group,id:'11',top_rate:.3}]);
+assert.equal(parse([gh,gr,second])['2026-11'].campaigns[1].groups[0].top_rate,.3);

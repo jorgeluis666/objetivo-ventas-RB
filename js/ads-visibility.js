@@ -40,9 +40,11 @@
     if(base)base.after(panel);else host.append(panel);
     const campaignLabel=document.createElement('label');campaignLabel.textContent='Campaña ';
     const campaignSelect=document.createElement('select');campaignSelect.setAttribute('aria-label','Campaña de competitividad');campaignLabel.append(campaignSelect);panel.prepend(campaignLabel);
-    const cards=document.createElement('div');cards.className='competitiveness-cards';cards.setAttribute('role','group');cards.setAttribute('aria-label','Indicadores de competitividad');campaignLabel.after(cards);
-    function renderCards(){cards.replaceChildren();const row=current.find(r=>(r.id||r.campaign)===campaignSelect.value);for(const [key,label] of fields){const card=document.createElement('div');card.className='kpi-pill';const name=document.createElement('span');name.textContent=label;const value=document.createElement('strong');value.textContent=fmt(key,row?.[key]);card.append(name,value);cards.append(card);}}
-    campaignSelect.addEventListener('change',renderCards);
+    const groupLabel=document.createElement('label');groupLabel.textContent='Conjunto ';const groupSelect=document.createElement('select');groupSelect.setAttribute('aria-label','Conjunto de competitividad');groupLabel.append(groupSelect);campaignLabel.after(groupLabel);
+    const cards=document.createElement('div');cards.className='competitiveness-cards';cards.setAttribute('role','group');cards.setAttribute('aria-label','Indicadores de competitividad');groupLabel.after(cards);
+    function renderCards(){cards.replaceChildren();const campaign=current.find(r=>(r.id||r.campaign)===campaignSelect.value);const row=groupSelect.value?campaign?.groups?.find(g=>g.id===groupSelect.value):campaign;for(const [key,label] of fields){const card=document.createElement('div');card.className='kpi-pill';const name=document.createElement('span');name.textContent=label;const value=document.createElement('strong');value.textContent=fmt(key,row?.[key]);card.append(name,value);cards.append(card);}}
+    function renderGroups(){groupSelect.replaceChildren();const all=document.createElement('option');all.value='';all.textContent='Toda la campaña';groupSelect.append(all);const row=current.find(r=>(r.id||r.campaign)===campaignSelect.value);for(const g of row?.groups||[]){const option=document.createElement('option');option.value=g.id;option.textContent=g.name;groupSelect.append(option);}renderCards();}
+    campaignSelect.addEventListener('change',renderGroups);groupSelect.addEventListener('change',renderCards);
     const months = data?.visibilityByMonth || {};
     for (const month of Object.keys(months).sort().reverse()) { const option=document.createElement('option'); option.value=month; option.textContent=month; select.append(option); }
     let current=[];
@@ -55,7 +57,7 @@
       const matches=current.filter(r=>r.campaign===name);const campaign=matches.length===1?matches[0]:null;
       if(!group)return campaign;
       const groupName=(block.querySelector('.gasto-camp-title')?.firstChild?.textContent||'').replace(/^Conjunto\s*/,'').trim();
-      return campaign?.groups?.find(g=>g.name===groupName)||null;
+      const groups=campaign?.groups?.filter(g=>g.name===groupName)||[];return groups.length===1?groups[0]:null;
     }
     function paintBlock(block) {
       const cards=block.querySelector(':scope > .competitiveness-block-cards');if(!cards)return;
@@ -85,7 +87,7 @@
       for(const row of current){const option=document.createElement('option');option.value=row.id||row.campaign;option.textContent=row.campaign;campaignSelect.append(option);}
       if(current.some(r=>(r.id||r.campaign)===previous))campaignSelect.value=previous;
       else {const available=current.find(r=>fields.some(([k])=>r[k]!==null&&r[k]!==undefined));if(available)campaignSelect.value=available.id||available.campaign;}
-      renderCards();
+      renderGroups();
       decorateBlocks();
       for(const block of scope?.querySelectorAll('.gasto-camp-block,.gp-camp-block')||[])if(block.querySelector(':scope > .competitiveness-block-cards'))paintBlock(block);
       status.textContent=block?.through ? `Periodo: ${select.value}-01 al ${block.through}. Lectura: ${block.at ? new Date(block.at).toLocaleString('es-PE') : 'Sin datos'}.` : 'Sin datos para este periodo.';

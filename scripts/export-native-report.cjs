@@ -35,7 +35,10 @@ async function main(){
  if(config.endpoint){
   const endpoint=process.env[config.endpoint];if(!endpoint||!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(endpoint))throw Error('Missing authorized data endpoint');
   const response=await fetch(endpoint+'?action=data',{signal:AbortSignal.timeout(120000)});if(!response.ok)throw Error('Source HTTP '+response.status);
-  const data=await response.json();if(data.ok===false||!Array.isArray(data.months))throw Error('Invalid source snapshot');
+  const sourceBody=await response.text();
+  let data=null;try{data=JSON.parse(sourceBody);}catch{}
+  if(!data)throw Error('Invalid source snapshot: no es JSON ['+(response.headers.get('content-type')||'sin tipo')+'] '+sourceBody.slice(0,300).replace(/\s+/g,' '));
+  if(data.ok===false||!Array.isArray(data.months))throw Error('Invalid source snapshot');
   fs.writeFileSync(path.join(root,config.snapshot),JSON.stringify(data));
  }
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
@@ -84,8 +87,14 @@ async function main(){
    fs.writeFileSync(path.join(output,name+'.encrypted.json'),JSON.stringify({version:1,key:wrapped.toString('base64'),iv:iv.toString('base64'),tag:cipher.getAuthTag().toString('base64'),data:encrypted.toString('base64')}));
    console.log(JSON.stringify(manifest));
    if(process.env.NATIVE_REPORT_TOKEN){
-    const response=await fetch('https://nexus.limaretail.com/report-delivery/native-pdf',{method:'POST',headers:{'Content-Type':'application/json','X-Report-Token':process.env.NATIVE_REPORT_TOKEN},body:JSON.stringify({...manifest,pdf:pdf.toString('base64')}),signal:AbortSignal.timeout(120000)});
-    const result=await response.json();if(!response.ok||!['ready','already-prepared'].includes(result.status))throw Error('Nexus did not accept original PDF: '+response.status);
+    const payload=JSON.stringify({...manifest,pdf:pdf.toString('base64')});
+    console.log('NEXUS_UPLOAD_BYTES',payload.length);
+    const response=await fetch('https://nexus.limaretail.com/report-delivery/native-pdf',{method:'POST',headers:{'Content-Type':'application/json','X-Report-Token':process.env.NATIVE_REPORT_TOKEN},body:payload,signal:AbortSignal.timeout(120000)});
+    // Nunca parsear antes de mirar el estado: una pagina HTML de un proxy o de una pantalla de
+    // bloqueo llegaba al log como "Unexpected token '<'", que no dice quien contesto.
+    const body=await response.text();
+    let result=null;try{result=JSON.parse(body);}catch{}
+    if(!response.ok||!result||!['ready','already-prepared'].includes(result.status))throw Error('Nexus did not accept original PDF: HTTP '+response.status+' ['+(response.headers.get('content-type')||'sin tipo')+'] '+body.slice(0,300).replace(/\s+/g,' '));
     console.log('NEXUS_NATIVE_PDF_READY',name);
    }
    await page.close();

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-16T23:04:15.192Z",
+  "generatedAt": "2026-11-16T23:32:13.750Z",
   "currency": "PEN",
   "rules": [
     "Google Ads llega mensual: sin serie diaria real. Meta Ads llega por día y la serie diaria es real.",
@@ -19,8 +19,8 @@
       "folderUrl": "https://drive.google.com/drive/folders/1TT5KTVZuGlFc7OqvGAz9nuRVyJFvwJpd",
       "discovery": "apps script",
       "files": [
-        { "id": "1l7RSkz0peNUQSQrToHZDkb5AkJaYIc0c5bueefDugys", "name": "Royal Baby GA - Noviembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-16T22:50:15.701Z" },
-        { "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "name": "Royal Baby GA - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-16T22:49:44.241Z" },
+        { "id": "1l7RSkz0peNUQSQrToHZDkb5AkJaYIc0c5bueefDugys", "name": "Royal Baby GA - Noviembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-16T23:17:50.141Z" },
+        { "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "name": "Royal Baby GA - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-16T23:17:05.315Z" },
         { "id": "14hfRraHyl3WHlqoEwVvnGjQAK_IRGITW_lpiUqplkzw", "name": "Royal Baby GA - Septiembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-31T23:00:31.029Z" },
         { "id": "1VH381U5vefmLiloy07NVzBx29BuzSxbA_vc_m0afrYY", "name": "Royal Baby - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-26T22:06:33.349Z" },
         { "id": "1pNGQFycVHdysHcniamA_xtS6T_R_uCkQBrvE7q5u3-E", "name": "Royal Baby - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-14T13:38:06.385Z" },
@@ -7689,7 +7689,7 @@
       "id": "2026-10",
       "label": "Octubre 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Octubre 2026", "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-16T22:49:44.241Z" },
+        "source": { "name": "Royal Baby GA - Octubre 2026", "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-16T23:17:05.315Z" },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-10-01", "end": "2026-10-31", "days": null, "daysInMonth": 31, "complete": true },
@@ -8876,21 +8876,21 @@
       "id": "2026-11",
       "label": "Noviembre 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Noviembre 2026", "id": "1l7RSkz0peNUQSQrToHZDkb5AkJaYIc0c5bueefDugys", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-16T22:50:15.701Z" },
+        "source": { "name": "Royal Baby GA - Noviembre 2026", "id": "1l7RSkz0peNUQSQrToHZDkb5AkJaYIc0c5bueefDugys", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-16T23:17:50.141Z" },
         "monthFrom": "contenido",
         "granularity": "mensual",
         "coverage": { "start": "2026-11-01", "end": "2026-11-16", "days": null, "daysInMonth": 30, "complete": false },
         "segmentation": null,
         "campaignsComplete": true,
         "totalsSource": "suma de los totales por tipo de campaña",
-        "totals": { "cost": 729.27, "impressions": 39369, "clicks": 1164, "conversions": 18.73, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.029566, "cpc": 0.63, "costPerConversion": 38.94, "costPerPurchase": null, "roas": null },
+        "totals": { "cost": 729.27, "impressions": 39371, "clicks": 1164, "conversions": 18.73, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.029565, "cpc": 0.63, "costPerConversion": 38.94, "costPerPurchase": null, "roas": null },
         "conversionsByCategory": null,
         "byType": [
-          { "type": "Búsqueda", "cost": 334.03, "impressions": 3861, "clicks": 470, "conversions": 17.5, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.12173, "cpc": 0.71, "costPerConversion": 19.09, "costPerPurchase": null, "roas": 0, "fromCampaigns": true },
+          { "type": "Búsqueda", "cost": 334.03, "impressions": 3863, "clicks": 470, "conversions": 17.5, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.121667, "cpc": 0.71, "costPerConversion": 19.09, "costPerPurchase": null, "roas": 0, "fromCampaigns": true },
           { "type": "Máximo rendimiento", "cost": 395.24, "impressions": 35508, "clicks": 694, "conversions": 1.23, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.019545, "cpc": 0.57, "costPerConversion": 321.33, "costPerPurchase": null, "roas": 0, "fromCampaigns": true }
         ],
         "campaigns": [
-          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": null, "complete": true, "cost": 334.03, "impressions": 3861, "clicks": 470, "conversions": 17.5, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.12173, "cpc": 0.71, "costPerConversion": 19.09, "costPerPurchase": null, "roas": null, "conversionsByCategory": null },
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": null, "complete": true, "cost": 334.03, "impressions": 3863, "clicks": 470, "conversions": 17.5, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.121667, "cpc": 0.71, "costPerConversion": 19.09, "costPerPurchase": null, "roas": null, "conversionsByCategory": null },
           { "campaign": "Pmax B | Objetivo | LR", "status": "En pausa", "type": "Máximo rendimiento", "dailyBudget": null, "complete": true, "cost": 395.24, "impressions": 35508, "clicks": 694, "conversions": 1.23, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.019545, "cpc": 0.57, "costPerConversion": 321.33, "costPerPurchase": null, "roas": null, "conversionsByCategory": null }
         ],
         "checks": [],
@@ -9180,7 +9180,7 @@
           "meta"
         ],
         "spend": 1267.47,
-        "impressions": 128410,
+        "impressions": 128412,
         "clicks": 2202,
         "purchases": 0,
         "purchaseValue": 0,
@@ -9206,18 +9206,74 @@
   "visibilityByMonth": {
     "2026-11": {
       "through": "2026-11-16",
-      "at": "2026-11-16T22:50:15.701Z",
+      "at": "2026-11-16T23:17:50.141Z",
       "campaigns": [
-        { "campaign": "Search | LR", "top_rate": 0.6286, "absolute_top_rate": 0.332, "top_share": 0.1373, "absolute_top_share": 0.0999, "lost_top_budget": 0.3273, "lost_top_rank": 0.5354 },
-        { "campaign": "Pmax B | Objetivo | LR", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null }
+        {
+          "campaign": "Search | LR",
+          "top_rate": 0.6288,
+          "absolute_top_rate": 0.3321,
+          "top_share": 0.1373,
+          "absolute_top_share": 0.0999,
+          "lost_top_budget": 0.3273,
+          "lost_top_rank": 0.5354,
+          "groups": [
+            { "id": "155385398856", "name": "Términos Generales", "top_rate": 0.6042345276872965, "absolute_top_rate": 0.28542345276872966, "top_share": 0.12869179600886918, "absolute_top_share": 0.0999, "lost_top_budget": 0.32940133037694014, "lost_top_rank": 0.5419068736141907 },
+            { "id": "155729664875", "name": "Ropa Para Bebés", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null },
+            { "id": "158682062127", "name": "Ropa para Bautizos", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null },
+            { "id": "198807601888", "name": "Martin Aranda 2x1", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null },
+            { "id": "200032327635", "name": "Términos Marca", "top_rate": 0.7230538922155688, "absolute_top_rate": 0.48502994011976047, "top_share": 0.16611418047882137, "absolute_top_share": 0.11123388581952118, "lost_top_budget": 0.32044198895027626, "lost_top_rank": 0.5134438305709024 },
+            { "id": "203627833122", "name": "Regalo Recién Nacido", "top_rate": 1, "absolute_top_rate": 0, "top_share": 0.0999, "absolute_top_share": 0.0999, "lost_top_budget": 0, "lost_top_rank": 0.9001 },
+            { "id": "205149017907", "name": "Outlet", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null },
+            { "id": "205688502401", "name": "Bautizo", "top_rate": 0.5857142857142857, "absolute_top_rate": 0.5142857142857142, "top_share": 0.2702702702702703, "absolute_top_share": 0.24324324324324326, "lost_top_budget": 0.31756756756756754, "lost_top_rank": 0.41216216216216217 },
+            { "id": "207232440652", "name": "Navidad", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null }
+          ]
+        },
+        {
+          "campaign": "Pmax B | Objetivo | LR",
+          "top_rate": null,
+          "absolute_top_rate": null,
+          "top_share": null,
+          "absolute_top_share": null,
+          "lost_top_budget": null,
+          "lost_top_rank": null,
+          "groups": []
+        }
       ]
     },
     "2026-10": {
       "through": "2026-10-31",
-      "at": "2026-11-16T22:49:44.241Z",
+      "at": "2026-11-16T23:17:05.315Z",
       "campaigns": [
-        { "campaign": "Search | LR", "top_rate": 0.679, "absolute_top_rate": 0.3697, "top_share": 0.158, "absolute_top_share": 0.0999, "lost_top_budget": 0.304, "lost_top_rank": 0.5381 },
-        { "campaign": "Pmax B | Objetivo | LR", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null }
+        {
+          "campaign": "Search | LR",
+          "top_rate": 0.679,
+          "absolute_top_rate": 0.3697,
+          "top_share": 0.158,
+          "absolute_top_share": 0.0999,
+          "lost_top_budget": 0.304,
+          "lost_top_rank": 0.5381,
+          "groups": [
+            { "id": "155385398856", "name": "Términos Generales", "top_rate": 0.6680504077094144, "absolute_top_rate": 0.34662713120830246, "top_share": 0.15595727766064083, "absolute_top_share": 0.0999, "lost_top_budget": 0.30693719539594205, "lost_top_rank": 0.5371055269434171 },
+            { "id": "155729664875", "name": "Ropa Para Bebés", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null },
+            { "id": "158682062127", "name": "Ropa para Bautizos", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null },
+            { "id": "198807601888", "name": "Martin Aranda 2x1", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null },
+            { "id": "200032327635", "name": "Términos Marca", "top_rate": 0.7444543034605147, "absolute_top_rate": 0.5075421472937001, "top_share": 0.1698950766747377, "absolute_top_share": 0.1162227602905569, "lost_top_budget": 0.28652138821630346, "lost_top_rank": 0.5435835351089588 },
+            { "id": "203627833122", "name": "Regalo Recién Nacido", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null },
+            { "id": "205149017907", "name": "Outlet", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null },
+            { "id": "205688502401", "name": "Bautizo", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null },
+            { "id": "207232440652", "name": "Navidad", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null }
+          ]
+        },
+        {
+          "campaign": "Pmax B | Objetivo | LR",
+          "top_rate": null,
+          "absolute_top_rate": null,
+          "top_share": null,
+          "absolute_top_share": null,
+          "lost_top_budget": null,
+          "lost_top_rank": null,
+          "groups": []
+        }
       ]
     }
   }

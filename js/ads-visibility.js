@@ -20,6 +20,9 @@
     document.getElementById('ads-visibility')?.remove();
     document.getElementById('competitiveness-toggle')?.remove();
     window.nexusVisibilityObserver?.disconnect();
+    window.nexusVisibilityBlocksObserver?.disconnect();
+    document.querySelectorAll('.competitiveness-block-toggle,.competitiveness-block-cards').forEach(el=>el.remove());
+    document.querySelectorAll('.competitiveness-standard-strip').forEach(el=>el.hidden=false);
     const panel = document.createElement('section'); panel.id = 'ads-visibility'; panel.className = 'ads-visibility';
     panel.hidden=true;
     let enabled=false;
@@ -43,6 +46,36 @@
     const months = data?.visibilityByMonth || {};
     for (const month of Object.keys(months).sort().reverse()) { const option=document.createElement('option'); option.value=month; option.textContent=month; select.append(option); }
     let current=[];
+    const scope=document.getElementById('gp-pane-google')||document.getElementById('view-obj');
+    function blockRow(block) {
+      const group=block.classList.contains('gasto-group-block');
+      const campaignBlock=group?block.parentElement.closest('.gasto-camp-block'):block;
+      const heading=campaignBlock?.querySelector('.gasto-camp-title,.gp-camp-title');
+      const name=Array.from(heading?.childNodes||[]).filter(n=>n.nodeType===3).map(n=>n.textContent).join('').replace(/^Campaña\s*/,'').trim();
+      const matches=current.filter(r=>r.campaign===name);const campaign=matches.length===1?matches[0]:null;
+      if(!group)return campaign;
+      const groupName=(block.querySelector('.gasto-camp-title')?.firstChild?.textContent||'').replace(/^Conjunto\s*/,'').trim();
+      return campaign?.groups?.find(g=>g.name===groupName)||null;
+    }
+    function paintBlock(block) {
+      const cards=block.querySelector(':scope > .competitiveness-block-cards');if(!cards)return;
+      const row=blockRow(block);cards.replaceChildren();
+      for(const [key,label] of fields){const card=document.createElement('div');card.className='kpi-pill';const name=document.createElement('span');name.textContent=label;const value=document.createElement('strong');value.textContent=fmt(key,row?.[key]);card.append(name,value);cards.append(card);}
+      cards.title='Fuente: Nexus · Google Ads. Sin datos significa que Nexus no dispone de un valor para este nivel y periodo.';
+    }
+    function decorateBlocks() {
+      for(const block of scope?.querySelectorAll('.gasto-camp-block,.gp-camp-block')||[]){
+        if(block.querySelector(':scope > .competitiveness-block-cards'))continue;
+        const strip=block.querySelector(':scope > .gasto-camp-kpis,:scope > .gasto-group-kpis,:scope > .gp-camp-kpis');
+        const heading=block.querySelector(':scope > .gasto-camp-head .gasto-camp-heading,:scope > .gp-camp-head > div:first-child');
+        if(!strip||!heading)continue;
+        strip.classList.add('competitiveness-standard-strip');
+        const button=document.createElement('button');button.type='button';button.className='competitiveness-toggle competitiveness-block-toggle';button.setAttribute('role','switch');button.setAttribute('aria-checked','false');
+        const track=document.createElement('span');track.className='competitiveness-track';track.setAttribute('aria-hidden','true');button.append(track,document.createTextNode('Indicadores de calidad'));heading.append(button);
+        const cards=document.createElement('div');cards.className='competitiveness-cards competitiveness-block-cards';cards.hidden=true;cards.setAttribute('role','group');cards.setAttribute('aria-label','Indicadores de calidad de '+(block.querySelector('.gasto-camp-title,.gp-camp-title')?.firstChild?.textContent||'este bloque'));strip.after(cards);
+        button.addEventListener('click',()=>{const on=button.getAttribute('aria-checked')!=='true';button.setAttribute('aria-checked',String(on));strip.hidden=on;cards.hidden=!on;if(on)paintBlock(block);});
+      }
+    }
     function render() {
       const tabs=document.getElementById('month-tabs')||document.getElementById('gp-google-months');
       const selected=tabs?.querySelector('[data-month].active')?.dataset.month;
@@ -53,6 +86,8 @@
       if(current.some(r=>(r.id||r.campaign)===previous))campaignSelect.value=previous;
       else {const available=current.find(r=>fields.some(([k])=>r[k]!==null&&r[k]!==undefined));if(available)campaignSelect.value=available.id||available.campaign;}
       renderCards();
+      decorateBlocks();
+      for(const block of scope?.querySelectorAll('.gasto-camp-block,.gp-camp-block')||[])if(block.querySelector(':scope > .competitiveness-block-cards'))paintBlock(block);
       status.textContent=block?.through ? `Periodo: ${select.value}-01 al ${block.through}. Lectura: ${block.at ? new Date(block.at).toLocaleString('es-PE') : 'Sin datos'}.` : 'Sin datos para este periodo.';
       table.replaceChildren(); const head=table.createTHead().insertRow();
       for (const title of ['Campaña',...fields.map(f=>f[1])]) { const th=document.createElement('th'); th.scope='col'; th.textContent=title; head.append(th); }
@@ -69,6 +104,7 @@
       const a=document.createElement('a'); a.href=url; a.download=`visibilidad-google-ads-${select.value||'sin-datos'}.csv`; a.click(); URL.revokeObjectURL(url);
     });
     render();
+    if(scope){window.nexusVisibilityBlocksObserver=new MutationObserver(decorateBlocks);window.nexusVisibilityBlocksObserver.observe(scope,{childList:true,subtree:true});}
     const tabs=document.getElementById('month-tabs')||document.getElementById('gp-google-months');
     if(tabs){window.nexusVisibilityObserver=new MutationObserver(render);window.nexusVisibilityObserver.observe(tabs,{childList:true,subtree:true,attributes:true,attributeFilter:['class','aria-pressed']});}
   }

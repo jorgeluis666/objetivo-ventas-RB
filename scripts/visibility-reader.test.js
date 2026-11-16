@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {csv,ratio,parse}=require('./visibility-reader');
+assert.equal(ratio(''),null);assert.equal(ratio('Sin datos'),null);assert.equal(ratio('0,00%'),0);assert.equal(ratio('90,12%'),.9012);
+assert.equal(ratio('<10%'),.0999);assert.equal(ratio('>90%'),.9001);assert.equal(ratio('120%'),null);
+assert.deepEqual(csv('"a,b","c""d"\r\n1,2'),[['a,b','c"d'],['1','2']]);
+const headers=['Campaña','Nexus visibilidad · periodo',...Array.from({length:6},(_,i)=>'Nexus campaña · '+i)];
+const row=['Campaign','2026-11-01 - 2026-11-16','0%','Sin datos','<10%','20%','>90%','0%'];
+const result=parse([headers,row,row]);assert.equal(result['2026-11'].campaigns.length,1);
+assert.equal(result['2026-11'].campaigns[0].absolute_top_rate,null);
+assert.equal(result['2026-11'].campaigns[0].top_rate,0);
+assert.throws(()=>parse([headers,row,[...row.slice(0,7),'10%']]));
+assert.deepEqual(parse([['Campaña','Coste'],['A','10']]),{});
+console.log('Visibility parsing: missing, zero, bounds, locale, identity and conflicting ratios OK');

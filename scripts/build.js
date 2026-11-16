@@ -162,6 +162,8 @@ function encryptPage(html, password) {
 function main() {
   const rawHtml = readFile('index.html');
   let html = inlineCss(rawHtml);
+  const visibility = JSON.stringify(require('./visibility-reader').read(ROOT)).replace(/</g, '\\u003c');
+  html = html.replace('</head>', () => `<script>window.NEXUS_ADS_VISIBILITY = ${visibility};window.NEXUS_VISIBILITY_HOST = 'view-ads';</script></head>`);
   html = inlineScripts(html);
   checkLocalReferences(rawHtml, html);
   html = embedData(html);

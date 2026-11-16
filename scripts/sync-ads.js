@@ -35,6 +35,8 @@ const fs = require('fs');
 const path = require('path');
 const FD = require('../js/fuentes-drive.js');
 
+const visibilityReader = require('./visibility-reader');
+const visibilityCaptured = {};
 const OUTPUT_PATH = path.join(__dirname, '..', 'data', 'ads-2026.json');
 const USER_AGENT = 'royal-baby-dashboard-sync/1.0';
 const TIMEOUT_MS = 60000;
@@ -1118,6 +1120,7 @@ async function readPlatform(platform, failures, log) {
   for (const file of tabular) {
     try {
       const text = await download(file);
+      if(platform === 'google') Object.assign(visibilityCaptured, visibilityReader.parse(parseCsv(text), file.modifiedTime || null));
       // El informe por día y palabra clave de Google completa el mes del informe de campaña.
       if (platform === 'google' && parseCsv(text).slice(0, 15).some(row => isGoogleDetail(row.map(normalize)))) {
         const detail = parseGoogleDetail(text);
@@ -1332,7 +1335,7 @@ function serialize(document) {
 }
 
 function comparable(document) {
-  return JSON.stringify({ months: document.months, warnings: document.warnings, pending: document.pending });
+  return JSON.stringify({ visibilityByMonth: document.visibilityByMonth, months: document.months, warnings: document.warnings, pending: document.pending });
 }
 
 function reportToActions(changed) {
@@ -1462,6 +1465,7 @@ async function main() {
   }
   pending.forEach(item => console.log(`\n[ads] PENDIENTE: ${item}`));
 
+  document.visibilityByMonth = {...(previous?.visibilityByMonth || {}), ...visibilityCaptured};
   const changed = !previous || comparable(previous) !== comparable(document);
   if (check) {
     console.log(`\n[ads] ${changed ? 'hay cambios' : 'sin cambios'} (--check: no se escribe)`);

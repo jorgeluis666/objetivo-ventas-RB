@@ -21,8 +21,22 @@ assert.equal(e.table.rows.length,1);assert.equal(e.source,'nexus');assert.equal(
 assert.equal(e.table.rows[0][e.table.columns.indexOf('reach')],null);
 assert.deepEqual(e.totals,r.totals);
 
+// Con `extended_fields` tambien añade, detrás de las filas diarias, el desglose por edad y sexo
+// (`segment`) y el mes entero por entidad (`month_*`). No los pinta ninguna vista y no se suman con
+// los diarios, así que se saltan sin cortar la lectura. Cortarla es lo que dejó al tablero en el
+// 8/11/2026, con «Fila Nexus inválida», mientras Nexus seguía escribiendo la hoja cada día.
+const conNiveles=[extendido,
+'segment,2026-10-17,1,Campaign,Campaign,,3,30,2,1,0,0,0,0,25,OUTCOME_SALES,OFFSITE_CONVERSIONS,purchase,1,35-44,female',
+'month_campaign,2026-10-01,1,Campaign,Campaign,,10,100,9,5,1,2,3,40,90,OUTCOME_SALES,OFFSITE_CONVERSIONS,purchase,2',
+'month_ad,2026-10-01,2,Ad,Campaign,Set,10,100,9,5,1,2,3,40,90,OUTCOME_SALES,OFFSITE_CONVERSIONS,purchase,2'].join('\n');
+const n=parseMetaReport(conNiveles);
+assert.deepEqual(n.totals,e.totals);
+assert.equal(n.table.rows.length,e.table.rows.length);
+// Pero un nivel que no sea de esos sigue cortando: saltar lo conocido no es volverse permisivo.
+assert.throws(()=>parseMetaReport(extendido+'\n'+'otro,2026-10-28,3,X,Campaign,Set,1,1,1,1,0,0,0,0,1,A,B,c,1'));
+
 // Las 14 primeras se leen por posición: si una cambia de nombre o se cuela otra en medio, no se lee.
 assert.throws(()=>parseMetaReport(extendido.replace('clicks,inline_link_clicks','inline_link_clicks,clicks')));
 assert.throws(()=>parseMetaReport(extendido.replace('level,day,id','level,day,reach,id')));
 
-console.log('Nexus Meta parity, extended columns, no double counting, account isolation and missing dimensions OK');
+console.log('Nexus Meta parity, extended columns and levels, no double counting, account isolation and missing dimensions OK');

@@ -14,9 +14,17 @@ module.exports = function parseNexus(rows, parseLegacy) {
   const columnas=rows[1].map(c=>String(c??''));
   if (columnas.slice(0,header.length).join('|') !== header.join('|')) throw Error('Columnas Nexus incompatibles');
   const levels={campaign:[],adset:[],ad:[]}, seen=new Set();
+  // Con `extended_fields` el destino publica, detrás de las filas diarias, otros niveles que este
+  // lector no pinta: el desglose por edad y sexo (`segment`) y el mes entero por entidad
+  // (`month_*`, MetaSheetsSync::MONTH_LEVELS). No son filas rotas y no se suman con las diarias, así
+  // que se saltan. Cortaban la lectura entera con «Fila Nexus inválida» y el mes se quedaba con la
+  // sincronización anterior: así fue como el tablero se quedó en el 8/11 mientras Nexus escribía.
+  // Un nivel que no esté en esta lista sigue cortando, como antes.
+  const OTROS_NIVELES=new Set(['segment','month_campaign','month_adset','month_ad']);
   for(const cells of rows.slice(2)) {
     if(!cells.some(Boolean))continue;
     const r=Object.fromEntries(header.map((h,i)=>[h,cells[i]??'']));
+    if(OTROS_NIVELES.has(r.level))continue;
     if(!levels[r.level]||!/^\d+$/.test(r.id)||!r.day.startsWith(month)||r.day>through)throw Error('Fila Nexus inválida');
     const key=[r.level,r.day,r.id].join(':');if(seen.has(key))throw Error('Fila Nexus duplicada');seen.add(key);
     for(const field of header.slice(6)){r[field]=Number(r[field]);if(!Number.isFinite(r[field])||r[field]<0)throw Error('Métrica Nexus inválida');}

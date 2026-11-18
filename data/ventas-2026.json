@@ -1,12 +1,12 @@
 {
-  "generated": "2026-11-17T14:34:05",
+  "generated": "2026-11-18T10:32:47",
   "fuente2026": {
     "carpeta": "1JJdjIzDu2CrhcBI9gBUTUuPAXnKYUQal",
     "archivo": {
       "id": "10gU7SBOlo5-dWgPryagbZzOmce0971ZpSKFDiDLq1I0",
       "nombre": "Ventas Royal Baby - 2026"
     },
-    "ultimoDia": "2026-11-15"
+    "ultimoDia": "2026-11-17"
   },
   "ciclo": {
     "cierre": 25,
@@ -155,11 +155,11 @@
       "Tienda": 54333.3
     },
     "Noviembre": {
-      "WhatsApp": 3809.6,
+      "WhatsApp": 5785.5,
       "Instagram": 1091.8,
       "Facebook": 0,
       "Showroom": 2044.9,
-      "Web": 6064.7,
+      "Web": 6199.1,
       "Tienda": 58122.7
     },
     "Diciembre": {
@@ -845,12 +845,12 @@
         "w": 4,
         "desde": "2026-11-16",
         "hasta": "2026-11-22",
-        "TOTAL": 0,
-        "WHATSAPP": 0,
+        "TOTAL": 2110.3,
+        "WHATSAPP": 1975.9,
         "INSTAGRAM": 0,
         "FACEBOOK": 0,
         "SHOWROOM": 0,
-        "WEB": 0,
+        "WEB": 134.4,
         "TIENDA": 0
       },
       {
@@ -1011,11 +1011,11 @@
       "TIENDA": 160
     },
     "Noviembre": {
-      "WHATSAPP": 11,
+      "WHATSAPP": 14,
       "INSTAGRAM": 4,
       "FACEBOOK": 0,
       "SHOWROOM": 5,
-      "WEB": 18,
+      "WEB": 19,
       "TIENDA": 134
     },
     "Diciembre": {
@@ -2980,7 +2980,7 @@
         0,
         0,
         0,
-        0,
+        1975.9,
         0,
         0,
         0,
@@ -3111,7 +3111,7 @@
         0,
         204.5,
         248.1,
-        0,
+        134.4,
         0,
         0,
         0,

@@ -97,11 +97,25 @@
       if (gm.google) {
         const { start, end } = span(gm.google, gm.id);
         const days = rangeIso(start, end);
-        const t = gm.google.totals || {};
-        const parte = f => (t[f] || 0) / days.length;
-        for (const day of days) {
-          add(day, 'google', { spend: parte('cost'), value: parte('conversionValue'), purchases: parte('purchases'), impressions: parte('impressions'), clicks: parte('clicks') }, true);
-          google.set(day, gm.google);
+        // Las hojas de Google que escribe Nexus traen una fila por día y campaña: con esa serie la
+        // inversión del día es real. El informe exportado a mano llega con un total por mes y sin
+        // serie: se reparte entre los días que cubre, y queda marcado como estimado.
+        const diaria = (gm.google.daily || []).filter(r => r.day >= start && r.day <= end);
+        if (diaria.length) {
+          for (const day of days) { add(day, 'google', {}, false); google.set(day, gm.google); }
+          for (const r of diaria) {
+            add(r.day, 'google', {
+              spend: r.cost, value: r.conversionValue, purchases: r.purchases,
+              impressions: r.impressions, clicks: r.clicks, campaign: r.cost ? r.campaign : null,
+            }, false);
+          }
+        } else {
+          const t = gm.google.totals || {};
+          const parte = f => (t[f] || 0) / days.length;
+          for (const day of days) {
+            add(day, 'google', { spend: parte('cost'), value: parte('conversionValue'), purchases: parte('purchases'), impressions: parte('impressions'), clicks: parte('clicks') }, true);
+            google.set(day, gm.google);
+          }
         }
         if (!hasta.google || end > hasta.google) hasta.google = end;
       }

@@ -555,7 +555,9 @@
         badge: roasBadge(f.google, 'Google'),
         value: money(f.google.value), valueSub: 'valor de conversión atribuido por Google',
         stats: [['Compras', num(f.google.purchases)], ['Clics', num(f.google.clicks)], ['CPC prom.', f.google.cpc != null ? money(f.google.cpc, 2) : '—']],
-        chart: true, chartNote: 'Inversión por ciclo, estimada: Google Ads llega con un total por mes calendario, sin serie diaria, y se reparte por día para armar cada ciclo.',
+        chart: true, chartNote: f.google.estimated
+          ? 'Inversión por ciclo, estimada: este informe de Google Ads llega con un total por mes calendario, sin serie diaria, y se reparte por día para armar cada ciclo.'
+          : 'Inversión por ciclo, con la serie diaria del informe de Google Ads: cada día es el suyo.',
       }),
       cardHTML(f.reach, p, {
         badge: '<span class="proj-ch-badge gray">Awareness</span>',
@@ -677,7 +679,7 @@
   // con el mes elegido resaltado.
   function mountGoogleChart(s) {
     const list = months.map(m => {
-      const t = { m, spend: 0, purchases: 0, value: 0, days: 0 };
+      const t = { m, spend: 0, purchases: 0, value: 0, days: 0, estimated: false };
       for (const d of rangeIso(periodo(m).inicio, periodo(m).fin)) {
         const v = _adsDia?.dias.get(d)?.google;
         if (!v) continue;
@@ -685,6 +687,7 @@
         t.spend += v.spend;
         t.purchases += v.purchases;
         t.value += v.value;
+        t.estimated = t.estimated || v.estimated;
       }
       return t;
     }).filter(t => t.days);
@@ -707,7 +710,7 @@
           tooltip: { callbacks: {
             title: items => { const x = list[items[0].dataIndex]; return `${x.m} ${YEAR} · ${Ciclo.rangoMes(YEAR, monthIdx(x.m))}`; },
             label: ctx => ` Inversión: ${money(ctx.raw)}`,
-            footer: items => { const x = list[items[0].dataIndex]; return `Compras: ${num(x.purchases)} · Valor ${money(x.value)} · estimado`; },
+            footer: items => { const x = list[items[0].dataIndex]; return `Compras: ${num(x.purchases)} · Valor ${money(x.value)}${x.estimated ? ' · estimado' : ''}`; },
           } },
         },
         scales: {

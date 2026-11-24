@@ -109,6 +109,9 @@
 
     // Inversión y valor atribuido por fuente, sumando los días del ciclo hasta el corte.
     const porFuente = {};
+    // Un informe sin serie diaria se reparte entre los días que cubre: lo que toque de él al ciclo
+    // es un estimado. Con serie diaria —las hojas de Google que escribe Nexus— el día es el suyo.
+    let estimado = false;
     for (const k of L.fuentes) {
       const f = porFuente[k] = { key: k, ...FUENTES[k], spend: 0, value: 0, sinTipo: 0, dias: 0 };
       for (const d of global.PautaDia.rangeIso(p.inicio, corte)) {
@@ -118,6 +121,7 @@
         f.value += v.value;
         f.sinTipo += v.spendSinTipo || 0;
         f.dias++;
+        estimado = estimado || v.estimated;
       }
     }
     const inv = sum(Object.values(porFuente), f => f.spend);
@@ -133,7 +137,7 @@
       : ventaDe(null, _ventas?.dias2025?.[m], dias, p25.dias);
 
     return {
-      mes: m, p, corte, dias, completo,
+      mes: m, p, corte, dias, completo, estimado,
       venta, inv, valor, porFuente, sinTipo,
       roas: ratio(venta, inv),
       roasPlat: ratio(valor, inv),
@@ -274,7 +278,8 @@
     partes.push('De 2025 hay ventas pero no informes de pauta: se compara la venta, no el ROAS.');
     const parciales = filas.filter(r => !r.completo);
     if (parciales.length) partes.push(`${lista(parciales.map(r => r.mes))} ${parciales.length > 1 ? 'están' : 'está'} sin cerrar: ventas e inversión cortadas en el último día que tienen las dos.`);
-    if (L.fuentes.includes('google')) partes.push('La inversión de Google Ads en cada ciclo es estimada: su informe llega con un total por mes y sin serie diaria, y se reparte entre los días que cubre.');
+    const estimados = filas.filter(r => r.estimado);
+    if (estimados.length) partes.push(`La inversión de ${lista(estimados.map(r => r.mes.toLowerCase()))} es estimada: ${estimados.length > 1 ? 'esos informes llegan' : 'ese informe llega'} con un total por mes y sin serie diaria, y se reparte entre los días que cubre.${estimados.length < filas.length ? ' Los demás meses se arman con la serie diaria del informe, día por día.' : ''}`);
     const sinTipo = filas.filter(r => r.sinTipo > 0);
     if (sinTipo.length) partes.push(`<b>Aviso:</b> en ${lista(sinTipo.map(r => r.mes.toLowerCase()))} el informe de Meta no trae «Tipo de resultado» —las hojas que escribe Nexus no traen esa columna—, así que ${money(sum(sinTipo, r => r.sinTipo))} de inversión se agrupó por el nombre de la campaña. Mientras falte esa columna, el reparto entre Web y WhatsApp de esos meses depende de cómo se llame cada campaña.`);
     return partes.join(' ');

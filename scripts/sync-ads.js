@@ -219,6 +219,11 @@ function coverage(start, end, id, days) {
 // ─── Google Ads ──────────────────────────────────────────────────────────────
 
 const GA_COLUMNS = {
+  // Las hojas de Google que escribe Nexus traen una fila por día y campaña: con la columna Día la
+  // serie diaria es real y no hay que repartir el total del mes. El informe exportado a mano no la
+  // trae, y entonces el mes sigue siendo un total.
+  'dia': 'day',
+  'fecha': 'day',
   'campana': 'campaign',
   'estado de la campana': 'status',
   'tipo de campana': 'type',
@@ -342,6 +347,9 @@ function parseGoogleReport(text) {
   const accountByCategory = {};
   const byType = [];
   const campaigns = new Map();
+  // Serie diaria, si el informe trae la columna Día: una entrada por día y campaña.
+  const porDia = new Map();
+  let diasIlegibles = 0;
 
   for (const row of rows.slice(headerIndex + 1)) {
     if (!row.some(value => value.trim())) continue;
@@ -383,6 +391,18 @@ function parseGoogleReport(text) {
     for (const field of GA_METRICS) entry.metrics[field] += values[field] || 0;
     if (category) {
       entry.conversionsByCategory[category] = round((entry.conversionsByCategory[category] || 0) + (values.conversions || 0));
+    }
+
+    if (col.day !== undefined) {
+      const day = parseDay(cell(row, 'day'));
+      if (!day) { diasIlegibles++; continue; }
+      const clave = `${day}|${name}`;
+      let dia = porDia.get(clave);
+      if (!dia) {
+        dia = { day, campaign: name, ...Object.fromEntries(GA_METRICS.map(field => [field, 0])) };
+        porDia.set(clave, dia);
+      }
+      for (const field of GA_METRICS) dia[field] += values[field] || 0;
     }
   }
 
@@ -469,6 +489,17 @@ function parseGoogleReport(text) {
         conversionsByCategory: Object.keys(entry.conversionsByCategory).length ? entry.conversionsByCategory : null,
       };
     }),
+    // Serie diaria por campaña, cuando el informe trae la columna Día. Es la misma cifra que la
+    // tabla por campaña, repartida por día de verdad: no hay que estimarla.
+    daily: porDia.size ? [...porDia.values()]
+      .sort((a, b) => (a.day === b.day ? a.campaign.localeCompare(b.campaign, 'es') : a.day.localeCompare(b.day)))
+      .map(dia => {
+        const metrics = roundGoogle(dia);
+        for (const field of missing) metrics[field] = null;
+        return { day: dia.day, campaign: dia.campaign, ...metrics };
+      }) : null,
+    dias: porDia.size ? new Set([...porDia.values()].map(dia => dia.day)).size : null,
+    diasIlegibles,
     missingColumns: missing,
     repairs,
     checks,
@@ -1205,11 +1236,20 @@ function googleBlock(entry, warnings, detailEntry) {
   if (report.missingColumns.includes('conversionValue')) {
     warnings.push(`${label}: falta la columna «Valor de conv.»: sin ROAS de Google Ads este mes.`);
   }
+  if (report.diasIlegibles) {
+    warnings.push(`${label}: ${report.diasIlegibles} fila(s) con una fecha que no se pudo leer en la columna Día; quedaron fuera de la serie diaria.`);
+  }
+  // Con la columna Día el informe trae la serie real; sin ella, el mes es un total y el tablero
+  // reparte ese total entre los días que cubre para poder sumarlo por ciclo de venta.
+  const diaria = !!report.daily?.length;
+  const periodo = report.period || (diaria
+    ? { start: report.daily[0].day, end: report.daily[report.daily.length - 1].day }
+    : null);
   return {
     source: { name: file.name, id: file.id, mimeType: file.mimeType, modifiedTime: file.modifiedTime },
     monthFrom: entry.monthFrom,
-    granularity: 'mensual',
-    coverage: report.period ? coverage(report.period.start, report.period.end, month, null) : null,
+    granularity: diaria ? 'diaria' : 'mensual',
+    coverage: periodo ? coverage(periodo.start, periodo.end, month, report.dias ?? null) : null,
     segmentation: report.segmentation,
     campaignsComplete: report.campaignsComplete,
     totalsSource: report.totalsSource,
@@ -1217,6 +1257,7 @@ function googleBlock(entry, warnings, detailEntry) {
     conversionsByCategory: report.conversionsByCategory,
     byType: report.byType,
     campaigns: report.campaigns,
+    daily: report.daily,
     checks: report.checks,
     repairs: report.repairs,
     detail: detailEntry ? {
@@ -1263,6 +1304,10 @@ function googleBlockFromDetail(detailEntry, warnings) {
     conversionsByCategory: null,
     byType: [],
     campaigns: campaignsFromDetail(detail),
+    // Este mes sale del informe por día: su serie diaria ya está, y es la misma de la que salen los
+    // totales. Le falta lo mismo que a ellos (las campañas sin términos de búsqueda), pero repartir
+    // su total entre los días sería inventar un reparto teniendo las fechas reales.
+    daily: dailyFromDetail(detail, month),
     checks: [],
     repairs: [],
     detail: {
@@ -1277,6 +1322,39 @@ function googleBlockFromDetail(detailEntry, warnings) {
 
 // Una fila por campaña, sumando las del informe por día. Mismas claves que las del informe de
 // campaña para que la tabla del tablero no tenga que distinguir de dónde vienen.
+// Una fila por día y campaña, sumando las del informe por día (que va por anuncio y término de
+// búsqueda). Mismas claves que la serie del informe de campaña.
+function dailyFromDetail(detail, month) {
+  const { columns, campaigns: nombres, rows } = detail.table;
+  const idx = Object.fromEntries(columns.map((name, i) => [name, i]));
+  const porDia = new Map();
+  for (const row of rows) {
+    const day = `${month}-${String(row[idx.d]).padStart(2, '0')}`;
+    const campaign = nombres[row[idx.campaign]] || '(sin campaña)';
+    const clave = `${day}|${campaign}`;
+    let dia = porDia.get(clave);
+    if (!dia) {
+      dia = { day, campaign, cost: 0, impressions: 0, clicks: 0, conversions: 0, purchases: 0, conversionValue: 0 };
+      porDia.set(clave, dia);
+    }
+    for (const field of ['cost', 'impressions', 'clicks', 'conversions', 'purchases', 'conversionValue']) {
+      dia[field] += row[idx[field]] || 0;
+    }
+  }
+  if (!porDia.size) return null;
+  return [...porDia.values()]
+    .sort((a, b) => (a.day === b.day ? a.campaign.localeCompare(b.campaign, 'es') : a.day.localeCompare(b.day)))
+    .map(dia => ({
+      ...dia,
+      cost: round(dia.cost),
+      conversions: round(dia.conversions),
+      conversionValue: round(dia.conversionValue),
+      purchases: detail.fields.purchases ? round(dia.purchases) : null,
+      impressions: detail.fields.impressions ? dia.impressions : null,
+      allConversions: null,
+    }));
+}
+
 function campaignsFromDetail(detail) {
   const { columns, campaigns: nombres, rows } = detail.table;
   const idx = Object.fromEntries(columns.map((name, i) => [name, i]));
@@ -1441,7 +1519,7 @@ async function main() {
     generatedAt: new Date().toISOString(),
     currency: 'PEN',
     rules: [
-      'Google Ads llega mensual: sin serie diaria real. Meta Ads llega por día y la serie diaria es real.',
+      'Meta Ads llega por día y la serie diaria es real. Google Ads depende del informe: el de Nexus trae la columna Día y va con serie diaria real (granularity «diaria», google.daily: una fila por día y campaña); el exportado a mano no la trae y el mes es un total (granularity «mensual»), que el tablero reparte entre los días que cubre para poder sumarlo por ciclo de venta.',
       'Google Ads (detail): si la carpeta trae el informe por día y palabra clave del mes, va en google.detail.table: una fila por día, campaña, grupo de anuncios, anuncio ({ name, url }) y término de búsqueda. Suma menos que el informe de campaña (Google no detalla los términos con pocas impresiones): los totales del mes salen del informe de campaña.',
       'Meta: la serie diaria va por día y campaña (edad, sexo y anuncio se suman). El público (audience: edad y sexo) y los anuncios top (ads.top, con su enlace de vista previa) van por mes. Alcance y frecuencia no son aditivos: no van en los totales ni en las campañas.',
       'Meta (table): una fila por día, campaña, conjunto y anuncio (edad y sexo se suman), con índices a sus listas campaigns, adsets, ads ({ name, link }) y types. El alcance de la tabla es la suma de las filas del export, como en los reportes de la agencia: no es alcance único.',
@@ -1483,4 +1561,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { parseCsv, parseCount, parseGoogleReport, parseMetaReport, parseGoogleDetail, googleBlockFromDetail, campaignsFromDetail, monthFromName, periodFromText, consolidate };
+module.exports = { parseCsv, parseCount, parseGoogleReport, parseMetaReport, parseGoogleDetail, googleBlockFromDetail, campaignsFromDetail, dailyFromDetail, monthFromName, periodFromText, consolidate };

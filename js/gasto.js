@@ -1562,16 +1562,25 @@
         };
       });
     }
+    // Serie diaria por campaña, cuando el informe la trae (las hojas que escribe Nexus): con ella el
+    // ciclo de venta se arma sumando los días que le tocan, sin repartir el total del mes.
+    const daily = (g.daily || []).map(r => ({
+      day: r.day,
+      campaign: r.campaign,
+      group: typeOf.get(r.campaign) || typeGroup(/search|busqueda/i.test(r.campaign) ? 'Búsqueda' : ''),
+      ...Object.fromEntries(G_SUMS.map(f => [f, r[f] ?? null])),
+    }));
     const dcov = g.detail?.coverage;
     return {
-      start, end, totals, campaigns, byType, detail, detailStart: dcov?.start || null, detailEnd: dcov?.end || null,
+      start, end, totals, campaigns, byType, daily, detail, detailStart: dcov?.start || null, detailEnd: dcov?.end || null,
       conversionsByCategory: g.conversionsByCategory || null, campaignsComplete: g.campaignsComplete, raw: m,
     };
   }
 
-  // Un mes del ciclo de venta con los informes que toca. Google llega con un total por mes, así que cada informe
-  // entra con la parte de sus días que cae en el ciclo (f): totales, campañas y tipos son un estimado. El informe
-  // por día y palabra clave sí se reagrupa por fecha.
+  // Un mes del ciclo de venta con los informes que toca. El informe que trae serie diaria entra con
+  // los días que le tocan al ciclo, exacto; el que llega con un total por mes entra con la parte de
+  // sus días que cae en el ciclo (f), y entonces totales, campañas y tipos son un estimado. El
+  // informe por día y palabra clave sí se reagrupa por fecha.
   function googleCycle(c, reports) {
     const parts = reports.map(r => {
       const desde = maxIso(r.start, c.inicio);
@@ -1589,9 +1598,27 @@
       });
       return [...by.values()].map(({ first, items }) => ({ ...items[items.length - 1], ...first, ...gSum(items), status: items[items.length - 1].status }));
     };
-    const campaigns = sumBy(parts.flatMap(p => p.r.campaigns.map(x => scaled(x, p.f))), x => x.name);
-    const byType = sumBy(parts.flatMap(p => p.r.byType.map(x => scaled(x, p.f))), x => x.group.key);
-    const totals = gSum(parts.map(p => gScale(p.r.totals, p.f)));
+    // Los días del informe que caen dentro del ciclo (solo con serie diaria).
+    const diasEnCiclo = p => p.r.daily.filter(r => r.day >= p.desde && r.day <= p.hasta);
+    const agrupar = (filas, keyOf, armar) => {
+      const by = new Map();
+      filas.forEach(r => {
+        const key = keyOf(r);
+        if (!by.has(key)) by.set(key, []);
+        by.get(key).push(r);
+      });
+      return [...by.entries()].map(([key, items]) => armar(key, items));
+    };
+    const campaigns = sumBy(parts.flatMap(p => (p.r.daily.length
+      ? agrupar(diasEnCiclo(p), r => r.campaign, (name, dias) => ({
+        ...(p.r.campaigns.find(x => x.name === name) || { name, status: '', type: null }),
+        ...gSum(dias),
+      }))
+      : p.r.campaigns.map(x => scaled(x, p.f)))), x => x.name);
+    const byType = sumBy(parts.flatMap(p => (p.r.daily.length
+      ? agrupar(diasEnCiclo(p), r => r.group.key, (key, dias) => ({ group: dias[0].group, ...gSum(dias) }))
+      : p.r.byType.map(x => scaled(x, p.f)))), x => x.group.key);
+    const totals = gSum(parts.map(p => (p.r.daily.length ? gSum(diasEnCiclo(p)) : gScale(p.r.totals, p.f))));
     const conversionsByCategory = {};
     parts.forEach(p => Object.entries(p.r.conversionsByCategory || {}).forEach(([k, v]) => { conversionsByCategory[k] = (conversionsByCategory[k] || 0) + (v || 0) * p.f; }));
     const conDetalle = parts.filter(p => p.r.detail);
@@ -1610,7 +1637,9 @@
       firstDay, lastDay, complete: firstDay === 1 && lastDay === c.dias, totals, campaigns, byType, detail,
       detailFirst: dStart ? dia(dStart) : null, detailLast: dEnd ? dia(dEnd) : null,
       conversionsByCategory, campaignsComplete: parts.every(p => p.r.campaignsComplete !== false),
-      estimated: parts.some(p => p.f < 0.999), raws: parts.map(p => p.r.raw),
+      // Solo es un estimado si algún informe entró partido sin serie diaria con la que cortarlo.
+      estimated: parts.some(p => p.f < 0.999 && !p.r.daily.length),
+      daily: parts.some(p => p.r.daily.length), raws: parts.map(p => p.r.raw),
       hasData: gActive(totals),
     };
   }
@@ -1817,8 +1846,12 @@
     }
     title.textContent = `Periodo: ${period.label} ${period.year}${period.closed ? '' : ' (mes en curso)'}`;
     const c = period.compare;
+    // El informe llega por mes calendario y el tablero va por ciclo de venta: con serie diaria el
+    // ciclo se arma con los días exactos; sin ella, repartiendo el total del mes (estimado).
+    const ciclo = ` · Ciclo ${Ciclo.rangoMes(period.year, period.month.month - 1)}: `;
     const estimado = period.month.estimated
-      ? ` · Ciclo ${Ciclo.rangoMes(period.year, period.month.month - 1)}: Google llega con un total por mes calendario y se reparte por día (estimado)` : '';
+      ? `${ciclo}Google llega con un total por mes calendario y se reparte por día (estimado)`
+      : period.month.daily ? `${ciclo}armado con la serie diaria del informe de Google` : '';
     sub.textContent = (!c ? 'Sin mes anterior para comparar'
       : c.factor < 1 && !Object.keys(c.tramo).length ? `Comparación vs ${c.label} (Google llega con un total por mes)`
       : `Comparación vs ${c.label}`) + estimado;

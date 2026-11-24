@@ -2376,11 +2376,15 @@
     .replace(/[^a-z0-9%]+/g, ' ').trim();
   const driveId = id => (/^[\w-]{20,}$/.test(String(id || '')) ? String(id) : null);
 
-  // Artes del periodo: los del mes elegido o, en la vista anual, los de todos los meses (el más reciente primero).
+  // Artes del periodo: los del mes elegido o, en la vista anual, los de todos los meses (el más
+  // reciente primero). Al final van los del fondo común —las carpetas sin mes, donde Nexus deja los
+  // creativos que baja de la API—: valen para cualquier mes, y quedan últimos para que el arte de
+  // la carpeta del mes gane cuando el anuncio tiene los dos (se busca con find).
   function artesOf(period) {
     const months = state.artes?.months || {};
-    if (!period.annual) return months[period.month.key]?.artes || [];
-    return Object.keys(months).sort().reverse().flatMap(key => months[key].artes || []);
+    const fondo = state.artes?.fondo?.artes || [];
+    if (!period.annual) return [...(months[period.month.key]?.artes || []), ...fondo];
+    return [...Object.keys(months).sort().reverse().flatMap(key => months[key].artes || []), ...fondo];
   }
 
   // La miniatura de Drive hace de portada; el reproductor de Drive se carga al hacer clic (ver wireAds).

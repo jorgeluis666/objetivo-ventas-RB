@@ -14,6 +14,7 @@
     'view-obj':  'Objetivos 2026',
     'view-meta': 'Planificador Meta Ads',
     'view-proj': 'Proyecciones mensuales',
+    'view-res':  'Resultados vs inversión',
     'view-rep':  'Gasto publicitario',
     'view-ads':  'Anuncios',
     'view-arch': 'Archivo de Reportes',
@@ -28,6 +29,7 @@
     'view-obj':    'Objetivos y ventas de la marca',
     'view-meta':   'Presupuesto Web y WhatsApp',
     'view-proj':   'Ritmo del mes y plan por campaña',
+    'view-res':    'ROAS real por canal, mes a mes',
     'view-rep':    'Meta Ads y Google Ads',
     'view-ads':    'Meta Ads y Google Ads por anuncio',
     'view-arch':   'Documentos en Drive',
@@ -47,6 +49,7 @@
     'view-obj':    ['chart-weekly-combined'],
     'view-meta':   [],
     'view-proj':   ['chart-proj-ritmo', 'chart-proj-fuentes', 'chart-src-*', 'chart-plan-*'],
+    'view-res':    ['chart-res'],
     'view-rep':    [],  // Gasto.init() re-anima los charts de la pestaña activa
     'view-ads':    [],
     'view-arch':   [],
@@ -65,6 +68,7 @@
     renderedProducts: false,
     metaInited: false,
     projDirty: true,     // Proyecciones tiene datos nuevos sin dibujar
+    resDirty: true,      // Resultados vs inversión tiene datos nuevos sin dibujar
   };
 
   // ── Navegación ──
@@ -104,6 +108,8 @@
         }
       }
     }
+
+    if (id === 'view-res' && state.live && state.resDirty) renderResultados();
 
     // Init perezoso del gasto publicitario (sus charts se crean ya visibles)
     if (id === 'view-rep') window.Gasto?.init();
@@ -186,6 +192,27 @@
   function refreshProjections() {
     state.projDirty = true;
     if (document.getElementById('view-proj')?.classList.contains('visible')) renderProjections();
+  }
+
+  // Resultados vs inversión cruza las ventas del histórico (2026 y 2025, por ciclo y por día) con la
+  // inversión de Gasto publicitario. No usa los objetivos: su ROAS es venta real ÷ inversión.
+  function renderResultados() {
+    state.resDirty = false;
+    window.Resultados?.render({
+      ventas: {
+        meses: state.d2026,
+        dias: state.live?.daily2026 || null,
+        ultimoDia: state.live?.fuente2026?.ultimoDia || null,
+        meses2025: ds.d2025,
+        dias2025: state.live?.daily2025 || null,
+      },
+      gasto: state.gasto,
+    });
+  }
+
+  function refreshResultados() {
+    state.resDirty = true;
+    if (document.getElementById('view-res')?.classList.contains('visible')) renderResultados();
   }
 
   // ── YoY ──
@@ -490,6 +517,7 @@
 
     if (state.renderedProducts) renderProducts();
     refreshProjections();
+    refreshResultados();
     window.Sheets.updateGenerated(state.generated);
     window.Sheets.setDetail('default', ventasSyncDetail(liveData));
   }

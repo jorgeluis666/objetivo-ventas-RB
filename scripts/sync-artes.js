@@ -6,6 +6,11 @@
  * anuncio: un archivo suelto (video o imagen) o una subcarpeta «<anuncio> (Carrusel)» con una
  * imagen por lámina. El mes sale del nombre de la campaña («… - Octubre»).
  *
+ * Una subcarpeta que no dice de qué mes es —«Nexus - Meta», donde Nexus deja los creativos que
+ * baja de la API— no es la campaña de un mes: es un fondo común. Sus piezas van a `fondo` y
+ * valen para cualquier mes, porque el mes lo pone el anuncio, no la carpeta. Si un anuncio
+ * tiene arte en la carpeta de su mes y también en el fondo, manda el del mes.
+ *
  * Antes este archivo se escribía a mano y solo cubría una campaña, así que los anuncios de las
  * demás salían como «Arte no disponible» aunque su pieza estuviera en Drive.
  *
@@ -65,8 +70,9 @@ async function main() {
 
   // Lo escrito a mano se guarda por nombre de archivo para devolvérselo al arte que lo tenía.
   const notasPrevias = new Map();
-  for (const mes of Object.values(previo.months || {})) {
-    for (const arte of mes.artes || []) {
+  const artesPrevios = [...Object.values(previo.months || {}), previo.fondo].filter(Boolean);
+  for (const grupo of artesPrevios) {
+    for (const arte of grupo.artes || []) {
       if (arte.notes?.length || arte.seconds) notasPrevias.set(arte.file, { notes: arte.notes, seconds: arte.seconds });
     }
   }
@@ -74,17 +80,12 @@ async function main() {
   console.log(`[artes] carpeta raíz ${raiz}`);
   const campanas = await listFolder(raiz);
   const meses = {};
+  const fondo = [];
   const avisos = [];
 
-  for (const campana of campanas) {
-    if (!esCarpeta(campana)) continue;
-    const mes = mesDeCampana(campana.name);
-    if (!mes) {
-      avisos.push(`La campaña «${campana.name}» no dice de qué mes es: sus artes no se muestran. Ponle el mes al final del nombre.`);
-      console.warn(`  ! «${campana.name}»: sin mes en el nombre`);
-      continue;
-    }
-
+  // Las piezas de una subcarpeta: un archivo suelto es una pieza; una subcarpeta «(Carrusel)», un
+  // anuncio con una imagen por lámina. Cualquier otra subcarpeta se ignora.
+  async function piezasDe(campana) {
     // listFolder trata una carpeta vacía como un error, porque no la distingue de una que dejó de
     // estar compartida. Una campaña recién creada está vacía a menudo, así que no se avisa de ella.
     const entradas = await listFolder(campana.id).catch(err => {
@@ -96,9 +97,9 @@ async function main() {
       return [];
     });
 
+    const piezas = [];
     for (const entrada of entradas) {
       if (esCarpeta(entrada)) {
-        // Solo una subcarpeta «(Carrusel)» es un anuncio; cualquier otra se ignora.
         if (!CARRUSEL_RE.test(entrada.name)) continue;
         const laminas = (await listFolder(entrada.id).catch(() => []))
           .filter(hoja => tipoDeArchivo(hoja) === 'imagen')
@@ -107,7 +108,7 @@ async function main() {
           avisos.push(`El carrusel «${entrada.name}» no tiene imágenes dentro.`);
           continue;
         }
-        (meses[mes] ||= []).push({
+        piezas.push({
           file: entrada.name,
           campana: campana.name,
           driveId: laminas[0].id,
@@ -121,12 +122,25 @@ async function main() {
 
       const kind = tipoDeArchivo(entrada);
       if (!kind) continue;
-      (meses[mes] ||= []).push({ file: entrada.name, campana: campana.name, driveId: entrada.id, kind });
+      piezas.push({ file: entrada.name, campana: campana.name, driveId: entrada.id, kind });
+    }
+    return piezas;
+  }
+
+  for (const campana of campanas) {
+    if (!esCarpeta(campana)) continue;
+    const mes = mesDeCampana(campana.name);
+    const piezas = await piezasDe(campana);
+    if (mes) (meses[mes] ||= []).push(...piezas);
+    else {
+      // Sin mes en el nombre: fondo común, sirve para cualquier mes (es donde deja Nexus lo suyo).
+      fondo.push(...piezas);
+      console.log(`  · «${campana.name}»: sin mes en el nombre, va al fondo común (${piezas.length} pieza(s))`);
     }
   }
 
   // Se devuelven las notas y la duración a los artes que ya las tenían.
-  for (const artes of Object.values(meses)) {
+  for (const artes of [...Object.values(meses), fondo]) {
     for (const arte of artes) {
       const previa = notasPrevias.get(arte.file);
       if (previa?.seconds) arte.seconds = previa.seconds;
@@ -135,25 +149,25 @@ async function main() {
     artes.sort((a, b) => a.file.localeCompare(b.file, 'es'));
   }
 
+  const carpeta = { name: '06 Artes', url: `https://drive.google.com/drive/folders/${raiz}` };
   const doc = {
-    about: 'Artes de los anuncios por mes, de la carpeta de artes de la marca en Drive: una subcarpeta por campaña y, dentro, la pieza de cada anuncio (un archivo suelto, o una subcarpeta «(Carrusel)» con una imagen por lámina). Cada arte se identifica con su anuncio por el nombre del archivo, sin la extensión. Solo están los artes que hay en Drive: no todos los anuncios tienen uno. Lo escribe scripts/sync-artes.js; las tres notas de diseño se redactan a mano y el script las conserva.',
-    folder: { name: '06 Artes', url: `https://drive.google.com/drive/folders/${raiz}` },
+    about: 'Artes de los anuncios por mes, de la carpeta de artes de la marca en Drive: una subcarpeta por campaña y, dentro, la pieza de cada anuncio (un archivo suelto, o una subcarpeta «(Carrusel)» con una imagen por lámina). Cada arte se identifica con su anuncio por el nombre del archivo, sin la extensión. Las subcarpetas que no dicen de qué mes son —«Nexus - Meta», donde Nexus deja los creativos que baja de la API— van en «fondo»: valen para cualquier mes, y si un anuncio también tiene arte en la carpeta de su mes, manda el del mes. Solo están los artes que hay en Drive: no todos los anuncios tienen uno. Lo escribe scripts/sync-artes.js; las notas de diseño se redactan a mano y el script las conserva.',
+    folder: carpeta,
     sincronizado: new Date().toISOString(),
     avisos,
     months: Object.fromEntries(
-      Object.keys(meses).sort().map(mes => [mes, {
-        folder: { name: '06 Artes', url: `https://drive.google.com/drive/folders/${raiz}` },
-        artes: meses[mes],
-      }])
+      Object.keys(meses).sort().map(mes => [mes, { folder: carpeta, artes: meses[mes] }])
     ),
+    fondo: { folder: carpeta, artes: fondo },
   };
 
   const total = Object.values(meses).reduce((suma, artes) => suma + artes.length, 0);
-  const conNotas = Object.values(meses).flat().filter(arte => arte.notes?.length).length;
-  console.log(`[artes] ${total} artes en ${Object.keys(meses).length} mes(es) · ${conNotas} con notas · ${avisos.length} aviso(s)`);
+  const conNotas = [...Object.values(meses).flat(), ...fondo].filter(arte => arte.notes?.length).length;
+  console.log(`[artes] ${total} artes en ${Object.keys(meses).length} mes(es) + ${fondo.length} en el fondo común · ${conNotas} con notas · ${avisos.length} aviso(s)`);
   for (const mes of Object.keys(meses).sort()) {
     console.log(`  ${mes}: ${meses[mes].length} (${meses[mes].filter(a => a.kind === 'carrusel').length} carrusel)`);
   }
+  if (fondo.length) console.log(`  fondo: ${fondo.length} (${fondo.filter(a => a.kind === 'carrusel').length} carrusel)`);
 
   if (CHECK) {
     console.log('[artes] --check: no se escribió nada');

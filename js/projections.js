@@ -23,17 +23,9 @@
   // Canales del archivo de objetivos que mueve la pauta. Si el plan no carga, se usan sus columnas habituales.
   const DIGITAL = ['Web', 'Redes'];
   const DEFAULT_SHEETS = { Web: ['Web'], Redes: ['WhatsApp', 'Instagram', 'Facebook'] };
-  // Fuentes de tráfico: las campañas de Meta se agrupan por tipo de resultado (mismos colores que Gasto publicitario).
-  const SOURCES = {
-    ecom:   { label: 'Meta · E-Commerce', platform: 'Meta Ads',   color: '#1877F2' },
-    wa:     { label: 'Meta · WhatsApp',   platform: 'Meta Ads',   color: '#25D366' },
-    google: { label: 'Google Ads',        platform: 'Google Ads', color: '#4285F4' },
-    reach:  { label: 'Meta · Alcance',    platform: 'Meta Ads',   color: '#E1306C' },
-  };
-  const SOURCE_BY_RESULT = {
-    'Compras en el sitio web': 'ecom',
-    'Conversaciones con mensajes iniciadas': 'wa',
-  };  // Interacciones, ThruPlay y el resto van a Alcance
+  // Fuentes de tráfico: las campañas de Meta se agrupan por tipo de resultado (mismos colores que
+  // Gasto publicitario). La agrupación y la inversión por día las define js/pauta-dia.js.
+  const SOURCES = global.PautaDia.FUENTES;
   // Base de la proyección: de dónde sale el ritmo diario (venta, inversión, ROAS) de los días que quedan.
   // Con qué ritmo se proyecta lo que falta del mes. "Mes en curso" es la base por defecto: toma lo
   // que el mes lleva hecho hasta donde llega el dato, que es lo que de verdad describe cómo va. Las
@@ -96,7 +88,6 @@
     for (let d = start; d <= end; d = addDays(d, 1)) out.push(d);
     return out;
   }
-  const lastDayOfId = id => isoDate(+id.slice(0, 4), +id.slice(5, 7), 0);   // id YYYY-MM
   const ayerLima = () => addDays(Ciclo.hoyLima(), -1);
 
   // Días del ciclo cubiertos hasta la fecha ISO `end`: 0 si es anterior al ciclo, el ciclo entero si es posterior.
@@ -173,56 +164,8 @@
   // { dias: Map(fecha → { ecom, wa, reach, google }), hasta: { meta, google }, google: Map(fecha → informe) }.
   // Meta llega por día y campaña; Google, con un total por mes que se reparte entre los días que
   // cubre (estimado). Así la inversión se puede sumar por el ciclo de venta, que no coincide con el
-  // mes de los informes. Un día cubierto sin inversión cuenta igual, en 0.
-  function adsPorDia() {
-    const dias = new Map();
-    const hasta = { meta: null, google: null };
-    const google = new Map();
-    const add = (day, key, v = {}, estimated = false) => {
-      if (!dias.has(day)) dias.set(day, {});
-      const s = dias.get(day)[key] ||= { spend: 0, value: 0, purchases: 0, conversations: 0, impressions: 0, clicks: 0, results: {}, campaigns: new Set(), estimated };
-      for (const f of ['spend', 'value', 'purchases', 'conversations', 'impressions', 'clicks']) s[f] += v[f] || 0;
-      for (const [type, n] of Object.entries(v.results || {})) if (n) s.results[type] = (s.results[type] || 0) + n;
-      if (v.campaign) s.campaigns.add(v.campaign);
-    };
-    const span = (block, id) => {
-      const c = block.coverage || {};
-      return { start: c.start || `${id}-01`, end: c.complete || !c.end ? lastDayOfId(id) : c.end };
-    };
-    for (const gm of _gasto?.months || []) {
-      if (gm.meta) {
-        const { start, end } = span(gm.meta, gm.id);
-        const campana = Object.fromEntries((gm.meta.campaigns || []).map(c => [c.campaign, c]));
-        for (const day of rangeIso(start, end)) ['ecom', 'wa', 'reach'].forEach(k => add(day, k));
-        for (const r of gm.meta.daily || []) {
-          if (r.day < start || r.day > end) continue;
-          const c = campana[r.campaign] || {};
-          // Los resultados de tipos distintos no se suman entre sí. Una campaña que mezcla tipos no
-          // los separa por día: su total del mes se reparte según la inversión del día.
-          const results = c.resultType === 'mixto'
-            ? Object.fromEntries(Object.entries(c.resultsByType || {}).map(([type, n]) => [type, c.spend ? n * (r.spend || 0) / c.spend : 0]))
-            : c.resultType ? { [c.resultType]: r.results || 0 } : {};
-          add(r.day, SOURCE_BY_RESULT[c.resultType] || 'reach', {
-            spend: r.spend, value: r.purchaseValue, purchases: r.purchases, conversations: r.conversations,
-            impressions: r.impressions, clicks: r.linkClicks, results, campaign: r.spend ? r.campaign : null,
-          });
-        }
-        if (!hasta.meta || end > hasta.meta) hasta.meta = end;
-      }
-      if (gm.google) {
-        const { start, end } = span(gm.google, gm.id);
-        const days = rangeIso(start, end);
-        const t = gm.google.totals || {};
-        const parte = f => (t[f] || 0) / days.length;
-        for (const day of days) {
-          add(day, 'google', { spend: parte('cost'), value: parte('conversionValue'), purchases: parte('purchases'), impressions: parte('impressions'), clicks: parte('clicks') }, true);
-          google.set(day, gm.google);
-        }
-        if (!hasta.google || end > hasta.google) hasta.google = end;
-      }
-    }
-    return { dias, hasta, google };
-  }
+  // mes de los informes. La arma js/pauta-dia.js, que es la misma pieza que usa Resultados vs inversión.
+  const adsPorDia = () => global.PautaDia.build(_gasto);
 
   // Ritmo de una fuente en la base: inversión por día, ROAS atribuido y costo por conversación.
   function baseFuente(m, key) {

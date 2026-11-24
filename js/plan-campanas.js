@@ -225,6 +225,16 @@
     if (c.resultType === 'Compras en el sitio web') return 'web';
     if (c.resultType === 'Conversaciones con mensajes iniciadas') return 'wa';
     if (c.objective === 'Reconocimiento') return 'branding';
+    // Las hojas de Meta que escribe Nexus (de septiembre de 2026 en adelante) no traen «Tipo de
+    // resultado» ni «Objetivo»: sin ellos la campaña se agrupa por su nombre, con el mismo criterio
+    // que js/pauta-dia.js. Sin este respaldo, toda la inversión de esos meses cae en «otras» y la
+    // columna Real del plan muestra S/. 0 en cada línea.
+    if (!c.resultType && !c.objective) {
+      const f = global.PautaDia.fuenteDe(c).key;
+      if (f === 'ecom') return 'web';
+      if (f === 'wa') return 'wa';
+      if (/reconocimiento/i.test(c.campaign || '')) return 'branding';
+    }
     return 'otras';
   }
 

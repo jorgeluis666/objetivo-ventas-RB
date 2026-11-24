@@ -191,12 +191,14 @@
   // artes-2026.json guarda los meses en un objeto, no en una lista, y cada pieza es
   // { file, campana, driveId, kind }. La primera que aparece se queda: una pieza repetida en dos
   // meses es la misma pieza.
+  // Al fondo común —las carpetas sin mes, donde Nexus deja sus creativos— se le mira después de
+  // los meses: con la misma pieza en los dos, se queda la de la carpeta del mes.
   function piezasDe() {
     const meses = state.artes?.months;
     const mapa = {};
-    if (!meses || typeof meses !== 'object') return mapa;
-    Object.values(meses).forEach(mes => {
-      (mes?.artes || []).forEach(pieza => {
+    const grupos = [...(meses && typeof meses === 'object' ? Object.values(meses) : []), state.artes?.fondo];
+    grupos.forEach(grupo => {
+      (grupo?.artes || []).forEach(pieza => {
         const key = claveArte(pieza.file);
         if (key && !mapa[key]) mapa[key] = { tipo: pieza.kind, nombre: pieza.file };
       });

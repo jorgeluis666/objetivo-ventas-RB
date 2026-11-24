@@ -1,13 +1,11 @@
 {
-  "about": "Artes de los anuncios por mes, de la carpeta de artes de la marca en Drive: una subcarpeta por campaña y, dentro, la pieza de cada anuncio (un archivo suelto, o una subcarpeta «(Carrusel)» con una imagen por lámina). Cada arte se identifica con su anuncio por el nombre del archivo, sin la extensión. Solo están los artes que hay en Drive: no todos los anuncios tienen uno. Lo escribe scripts/sync-artes.js; las tres notas de diseño se redactan a mano y el script las conserva.",
+  "about": "Artes de los anuncios por mes, de la carpeta de artes de la marca en Drive: una subcarpeta por campaña y, dentro, la pieza de cada anuncio (un archivo suelto, o una subcarpeta «(Carrusel)» con una imagen por lámina). Cada arte se identifica con su anuncio por el nombre del archivo, sin la extensión. Las subcarpetas que no dicen de qué mes son —«Nexus - Meta», donde Nexus deja los creativos que baja de la API— van en «fondo»: valen para cualquier mes, y si un anuncio también tiene arte en la carpeta de su mes, manda el del mes. Solo están los artes que hay en Drive: no todos los anuncios tienen uno. Lo escribe scripts/sync-artes.js; las notas de diseño se redactan a mano y el script las conserva.",
   "folder": {
     "name": "06 Artes",
     "url": "https://drive.google.com/drive/folders/1ab1a50IRolSq5qydzycRsGctbG8J9gmP"
   },
-  "sincronizado": "2026-11-17T00:13:17.894Z",
-  "avisos": [
-    "La campaña «Nexus - Meta» no dice de qué mes es: sus artes no se muestran. Ponle el mes al final del nombre."
-  ],
+  "sincronizado": "2026-11-24T19:03:10.485Z",
+  "avisos": [],
   "months": {
     "2026-10": {
       "folder": {
@@ -430,5 +428,310 @@
         }
       ]
     }
+  },
+  "fondo": {
+    "folder": {
+      "name": "06 Artes",
+      "url": "https://drive.google.com/drive/folders/1ab1a50IRolSq5qydzycRsGctbG8J9gmP"
+    },
+    "artes": [
+      {
+        "file": "¿Cómo combinar estampados sin morir en el intento?.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1Iix9WwrCUt3fcQ4AsPdAT3aaYEJcXjbC",
+        "kind": "video"
+      },
+      {
+        "file": "45% OFF.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1nd9A0O2k_YK5bV720VP_7SpVMzKcTBmM",
+        "kind": "video"
+      },
+      {
+        "file": "5 ocasiones. 5 vestidos.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "138Aj3xjxaULLGtzNo_BLeNcyCqIt4-I9",
+        "kind": "video"
+      },
+      {
+        "file": "Carmen Taberner (Carrusel)",
+        "campana": "Nexus - Meta",
+        "driveId": "1nKoIIw6MvTmKlWXvUspBL7HMsco9RrIg",
+        "kind": "carrusel",
+        "slides": [
+          "1nKoIIw6MvTmKlWXvUspBL7HMsco9RrIg",
+          "1ZGgZPon3zPYu2OQZRdlWQ7YpORCKAl4d",
+          "1dnh0rgQ19akCPXbSYXbv26Ry6qhja94I",
+          "1WLQH57QMqUw5xn_RC4GW6Xyya-eapgIZ"
+        ],
+        "ordenIncierto": true
+      },
+      {
+        "file": "CHRISTMAS SALE · 20%.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1-AtHuwYjjVSQVWASLHCL-vaXIObDzlZN",
+        "kind": "video"
+      },
+      {
+        "file": "Dorian Gray - Copia.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1ZjQzusmStXDMquVQS8P5S51YB-4EVCQ-",
+        "kind": "video"
+      },
+      {
+        "file": "Dorian Gray - video nuevo - Copia.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1w6r4S6LkbCFq-fz_51ne9IdI0Dg5V8rF",
+        "kind": "video"
+      },
+      {
+        "file": "Dorian Gray - Video septiembre - Copia.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1cdSiaNUq7csoqqAsXbT4gX9DMcd65zQf",
+        "kind": "video"
+      },
+      {
+        "file": "Dorian Gray - Video septiembre.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1lMvMBicuI-LWYafJk236IO-X6-92Uott",
+        "kind": "video"
+      },
+      {
+        "file": "El styling favorito de Dani.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1Uyw_GfxTk_lO0cbMwUTyNCN1ria232r9",
+        "kind": "video"
+      },
+      {
+        "file": "Este verano.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1L3srNz9lZcYhbZqFNCQIumZ5FX0K_lVw",
+        "kind": "video"
+      },
+      {
+        "file": "Esto es tu señal para pasar por la tienda. - Copia.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1nz7xLnquNz-eSzvuxXk9BH4ydYf8o4ZP",
+        "kind": "video"
+      },
+      {
+        "file": "Hay algo especial en crecer con una hermana..mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1gsnXU6eY_GdMCXKxe-edG1wjN8MxOADp",
+        "kind": "video"
+      },
+      {
+        "file": "La colección más esperada.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1NTAdOS1cc8E8B1G20DhAzGnQKEyFpKLH",
+        "kind": "video"
+      },
+      {
+        "file": "La Navidad merece un look así (Carrusel)",
+        "campana": "Nexus - Meta",
+        "driveId": "1UUF5CVLuwtxmGE-8MCCXfndnmOheEwVH",
+        "kind": "carrusel",
+        "slides": [
+          "1UUF5CVLuwtxmGE-8MCCXfndnmOheEwVH",
+          "1jHQFxD56wm-QQYjCQUQS2nv-KJPWsvXz",
+          "1CI7tCLK9P9cFDIrEx53sEmSzauAweyaX",
+          "1GwCivXQ6hN2qhb6xfZle1kNdJjXceto9",
+          "1xabOKrOs5q0fpTIWhOX59Nb2ppLdqZPd",
+          "16jIid-t80zGVk5nDByYjAHOtSDE3VN-V"
+        ],
+        "ordenIncierto": true
+      },
+      {
+        "file": "La nueva marca del universo de Royal Baby (Carrusel)",
+        "campana": "Nexus - Meta",
+        "driveId": "1FILGk4uuMCC0mk17hMgTBB94FwUwgzlg",
+        "kind": "carrusel",
+        "slides": [
+          "1FILGk4uuMCC0mk17hMgTBB94FwUwgzlg",
+          "18QS0sL0SKTF-mKrKipFcji3OJOWSZstj",
+          "1Z-gpTp6Uai0IsziE2SZScTH5fj628vTk",
+          "1kwzEGxaXPXEA3rNQmZr-EzO23wA_2CBl",
+          "1vGiR20a9PQQj_a_qCiNHgAlvi0l_brO7"
+        ],
+        "ordenIncierto": true
+      },
+      {
+        "file": "Los detalles que hacen especial la Navidad - Copia 2.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1cJw4DVNEjF-8sCPrk541dfsAM_62UUpW",
+        "kind": "video"
+      },
+      {
+        "file": "Los detalles que hacen especial la Navidad (Carrusel)",
+        "campana": "Nexus - Meta",
+        "driveId": "1k-W1k-KPkoK2zcdnR9Gk7WPOq-tGqRVF",
+        "kind": "carrusel",
+        "slides": [
+          "1k-W1k-KPkoK2zcdnR9Gk7WPOq-tGqRVF",
+          "1ZfZ__5plqefVFu9Vvsb8xmWIyyUio-cz",
+          "1MxIOKSfmMRAJ2OBUcxpnoK8Vcbp9uIZs",
+          "1G0vqJ7oSR88hZqEDg6-jIV3ek-c9ZFco",
+          "1bZofhW1YGQi6IzqsfPTnbtSvSLRbTKWk",
+          "1-PEBVnS5C7SQxQEW8B3ESGxGeVSKY2Kc",
+          "1iuGK8-X4G5JwoRS1VuBoL2evm2VY6uPX"
+        ],
+        "ordenIncierto": true
+      },
+      {
+        "file": "Los total looks más exclusivos (Carrusel)",
+        "campana": "Nexus - Meta",
+        "driveId": "17mNL73jfoFshF-EzDtNnIhaYMjhPUfCe",
+        "kind": "carrusel",
+        "slides": [
+          "17mNL73jfoFshF-EzDtNnIhaYMjhPUfCe",
+          "1kcfC-IAqYZxt-yxx8dVFyA3Q0JrlmFdo",
+          "1glUqCQwVHZRv-KZjo4CkbUrRZydqT2cf",
+          "1JTouT8KkeWjyqjhllot2sm0r8s7DkQCP",
+          "1N9QNvUaxb6YggiviJ5hscngBlqnHGamO",
+          "1X4AG2wPbl_P5O3CepEGei-rY73p5iuvt"
+        ],
+        "ordenIncierto": true
+      },
+      {
+        "file": "Navidad - Colección.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1tC7VHvH7RxGZ68SNdJH-XdqTcPTlfzJ2",
+        "kind": "video"
+      },
+      {
+        "file": "Navidad - video.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1wcFPiz0A1eYpaTvKT7e0JxJqwvsJ_Dou",
+        "kind": "video"
+      },
+      {
+        "file": "No estábamos preparadas para esto.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1wRWcU_y0EDhTh_70G4JrgA48eNKWMxDw",
+        "kind": "video"
+      },
+      {
+        "file": "Nuestras primeras puestas vuelven (Carrusel)",
+        "campana": "Nexus - Meta",
+        "driveId": "1MB-mRsLUOhsY3aXgFPkF71NX4eSZf_7s",
+        "kind": "carrusel",
+        "slides": [
+          "1MB-mRsLUOhsY3aXgFPkF71NX4eSZf_7s",
+          "1el2miScOMmdGhXII2CDKAT2JDZlks6vp",
+          "1_p7lT5nmL5utJapkEQ2yyOCcNnkxH7nw",
+          "1iVhsdnuSiSei2SwQrLrv2t3eHYY60R-H",
+          "15UT4T9SvHZNkSzP5DVtDqi456BIDBPDH"
+        ],
+        "ordenIncierto": true
+      },
+      {
+        "file": "Ok, ya podemos decirlo.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1-i0I-122MWEjZrTgZNAYFYPMxgGJHmDu",
+        "kind": "video"
+      },
+      {
+        "file": "Outlet Agosto - Daniela.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1dkoGS_Ntf5THF8oeQmGsdGtcj6ia6qXT",
+        "kind": "video"
+      },
+      {
+        "file": "Outlet Daniela - video.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1v__Ixvw3vxOVB5CQWbuk4isI-fb2DSe4",
+        "kind": "video"
+      },
+      {
+        "file": "Outlet septiembre.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1Px-taRLV2nBRF_hbm06URpc5DLwvP7WA",
+        "kind": "video"
+      },
+      {
+        "file": "Para el bautizo, cuando cada detalle importa.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1HhgPdbbndJ8JvwNgxG0oBuLTF8gfA3U3",
+        "kind": "video"
+      },
+      {
+        "file": "POV: llegó la caja que todas estábamos esperando.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "11dXGLL8n-5fStcsJDWaXAkbQfwve0rlI",
+        "kind": "video"
+      },
+      {
+        "file": "Preventa.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1Cz-rpmkSOQfEYvdLv7wlb7p0cAoALX7D",
+        "kind": "video"
+      },
+      {
+        "file": "Royal Moms, este aviso es para ustedes..mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1HiKFGhOki0qijN9x3v4jWyjx8YAyQvZs",
+        "kind": "video"
+      },
+      {
+        "file": "Un imprescindible para el clóset (Carrusel)",
+        "campana": "Nexus - Meta",
+        "driveId": "1DX6wWlGPgrKNGQSfrUnIljFOLJuTLDr8",
+        "kind": "carrusel",
+        "slides": [
+          "1DX6wWlGPgrKNGQSfrUnIljFOLJuTLDr8",
+          "1ydwm77AadJ5o68VUiC6UzyeJ9MFJGxvk",
+          "153VLnEH-1H1T7f8wsi-wOpA3VvYRy19X",
+          "19sViaveoingDvBnF-wSoMmsc8YuHElWm"
+        ],
+        "ordenIncierto": true
+      },
+      {
+        "file": "Un momento especial como el bautizo de tu peque,Un momento especial como el bautizo de tu peque, (Carrusel)",
+        "campana": "Nexus - Meta",
+        "driveId": "1ckqnHX1JDGLBDcLOZ4MIZ9CA4TuNDzUs",
+        "kind": "carrusel",
+        "slides": [
+          "1ckqnHX1JDGLBDcLOZ4MIZ9CA4TuNDzUs",
+          "1qtke2JiHLNu-8yQJMBBRkYBMeze1LTpt",
+          "1WnXekaUWf9PV9gRwgLGxW-EVvldVmz6w",
+          "13d3VNZNuSB_LU-D1E01PDSQTejOBM2Bm",
+          "1DBlGU5qEm22czHMcv5doEf-41SR2zuXX"
+        ],
+        "ordenIncierto": true
+      },
+      {
+        "file": "Un total look Martín Aranda (Carrusel)",
+        "campana": "Nexus - Meta",
+        "driveId": "1zbPVYm52jNAHgyNof4TRLfKN7yWxCyaf",
+        "kind": "carrusel",
+        "slides": [
+          "1zbPVYm52jNAHgyNof4TRLfKN7yWxCyaf",
+          "1Nyjsg4V619Z-8-BYwTiLDjuvVSUgjYDk",
+          "1gFnNs893nmG0lBZxQyDlaLy7TGtbdkGh",
+          "1Uk135_PMyPfWMy9FfGRPDgLTNQUEr6li",
+          "1PXrfZi8EQZj0nJNzL1HfhmIGlPITtwDY",
+          "1ZDtJfh690CUq_oV9B1s3crhs4pcsTq9u"
+        ],
+        "ordenIncierto": true
+      },
+      {
+        "file": "Una nueva historia comienza a tomar forma.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1YW6_GOB8Kwfx1AGJcjoyE9zoX-pxxnf7",
+        "kind": "video"
+      },
+      {
+        "file": "Volvieron nuestros calcetines Dorian Gray..mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "14vis1bDByEb0sFPXMxYy6fpxmSgCWv4e",
+        "kind": "video"
+      },
+      {
+        "file": "Winter Sale.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1U-ZPFN9Trx0g8PhpdMYGGlhkyuy0pzg2",
+        "kind": "video"
+      }
+    ]
   }
 }

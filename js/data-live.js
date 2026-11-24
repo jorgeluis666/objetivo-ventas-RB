@@ -56,6 +56,7 @@
         // Nuevos (2025 live completo)
         weekly2025:        json.weekly2025       || {},
         d2025_live:        json.d2025_live       || {},
+        daily2025:               json.daily2025               || null,  // ventas 2025 por día del ciclo (Resultados vs inversión)
         transactions2025:  json.transactions2025 || {},
         source: 'live',
       };

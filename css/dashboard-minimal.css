@@ -3535,3 +3535,19 @@ a.gp-tool-btn { line-height: 32px; text-decoration: none; }
   .gp-table-wrap { overflow: visible !important; }
   .week-note textarea { height: auto; min-height: 0; padding: 0; border: 0; overflow: visible; resize: none; }
 }
+
+/* ══ Resultados vs inversión (js/resultados.js) ══════════════════ */
+.res-table td:first-child b { font-weight: 600; color: var(--text); }
+.res-table td:first-child small,
+.res-table .sub-val {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-2);
+}
+.res-table tr.res-parcial td:first-child b { color: var(--text-2); }
+.res-table .res-est { margin-left: 6px; font-size: 10px; cursor: help; }
+/* El desglose de la inversión por fuente parte en varias líneas: si no, la columna empuja a las
+   de 2025 fuera de la pantalla. */
+.res-table td.res-inv .sub-val { white-space: normal; max-width: 250px; margin-left: auto; }

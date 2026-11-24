@@ -52,6 +52,16 @@
       </div>
       <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
     </button>
+    <button title="Resultados vs inversión" class="s-item" data-view="view-res">
+      <div class="s-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="12" width="3.5" height="6"/><rect x="14" y="7" width="3.5" height="11"/><polyline points="6 9 10 5 14 8 20 3"/></svg>
+      </div>
+      <div class="s-text">
+        <div class="s-title-nav">Resultados vs inversión</div>
+        <div class="s-desc-nav">ROAS real por canal, mes a mes</div>
+      </div>
+      <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </button>
     <button title="Anuncios" class="s-item" data-view="view-ads">
       <div class="s-icon">
         <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M10 8v5l4-2.5z"/><line x1="8" y1="21" x2="16" y2="21"/></svg>
@@ -777,6 +787,47 @@
         </div>
       </section>
 
+      <!-- ══ VIEW: Resultados vs inversión ═══════════════ -->
+      <!-- El cuadro de resultados contra la inversión (js/resultados.js): el ROAS sale de las ventas
+           del xls de Drive, no de la atribución de las plataformas. -->
+      <section class="view" id="view-res">
+        <div class="section-title">Resultados vs inversión · ROAS real</div>
+        <div class="section-desc">
+          La venta real de la hoja de Drive contra la inversión publicitaria, mes a mes y por ciclo de venta. Las ventas salen del módulo <strong>Objetivos 2026</strong> y la inversión, del módulo <strong>Gasto publicitario</strong>. El <strong>ROAS real</strong> divide la venta del xls entre la inversión, porque el xls es el dato más real de la marca; el <strong>ROAS de plataforma</strong> —el valor que se atribuyen Meta y Google— va al lado, para ver la brecha entre lo que la plataforma se adjudica y lo que la marca vendió.
+        </div>
+
+        <div class="insight err" id="res-empty" style="margin:0;" hidden></div>
+
+        <div class="rep-stack" id="res-body" hidden>
+          <div>
+            <div class="rep-toolbar">
+              <div class="proj-mes-wrap">
+                <span class="proj-mes-label">Línea</span>
+                <div class="proj-mes-selector" id="res-linea-selector" role="group" aria-label="Línea del cuadro"></div>
+              </div>
+              <span class="rep-period-meta" id="res-linea-desc"></span>
+            </div>
+            <div id="res-lectura"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><div>
+              <div class="panel-title">Cuadro de resultados vs inversión</div>
+              <div class="panel-sub">Venta del xls ÷ inversión = ROAS real · cada mes por su ciclo de venta (del 26 al 25) · 2025 al mismo tramo de días</div>
+            </div></div>
+            <div id="res-tabla"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><div>
+              <div class="panel-title">Inversión por fuente y ROAS mes a mes</div>
+              <div class="panel-sub">Barras: inversión de cada fuente de tráfico · líneas: ROAS real del xls y ROAS atribuido por las plataformas · (*) mes sin cerrar</div>
+            </div></div>
+            <div class="chart-wrap h-260"><canvas id="chart-res" role="img" aria-label="Inversión por fuente de tráfico y ROAS real mes a mes"></canvas></div>
+          </div>
+        </div>
+      </section>
+
       <!-- ══ VIEW: Anuncios ════════════════════ -->
       <!-- Los mismos datos que Gasto publicitario (js/gasto.js), por anuncio. El mes se comparte con ese módulo. -->
       <section class="view" id="view-ads">
@@ -961,6 +1012,7 @@
 
 
 <script src="js/ciclo.js"></script>
+<script src="js/pauta-dia.js"></script>
 <script src="js/franjas.js"></script>
 <script src="js/data-static.js"></script>
 <script src="js/data-live.js"></script>
@@ -972,6 +1024,7 @@
 <script src="js/plan-campanas.js"></script>
 <script src="js/acciones.js"></script>
 <script src="js/projections.js"></script>
+<script src="js/resultados.js"></script>
 <script src="js/gasto.js"></script>
 <script src="js/reportes.js"></script>
 <script src="js/reporte-semanal.js"></script>

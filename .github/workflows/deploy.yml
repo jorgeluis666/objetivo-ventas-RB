@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -59,5 +60,35 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: ./dist
-      - uses: actions/deploy-pages@v5
+          name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Publicar el artefacto verificado mediante la API de Pages
         id: deployment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
+        env:
+          ARTIFACT_NAME: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+        with:
+          script: |
+            const name = process.env.ARTIFACT_NAME;
+            const {owner, repo} = context.repo;
+            let artifact;
+            for (let i=0; i<12; i++) {
+              const response = await github.rest.actions.listWorkflowRunArtifacts({owner, repo, run_id: context.runId, per_page: 100});
+              const matches = response.data.artifacts.filter(a => a.name === name && !a.expired);
+              if (matches.length > 1) throw new Error('Artefacto ambiguo');
+              if (matches.length === 1) { artifact = matches[0]; break; }
+              await new Promise(resolve => setTimeout(resolve, 5000));
+            }
+            if (!artifact) throw new Error('Artefacto de Pages no disponible');
+            const oidc_token = await core.getIDToken();
+            const {data: deployment} = await github.request('POST /repos/{owner}/{repo}/pages/deployments', {
+              owner, repo, artifact_id: artifact.id, pages_build_version: context.sha, oidc_token
+            });
+            core.setOutput('page_url', deployment.page_url);
+            core.info('Despliegue creado: ' + deployment.id);
+            for (let i=0; i<60; i++) {
+              const {data: status} = await github.request('GET /repos/{owner}/{repo}/pages/deployments/{deploymentId}', {owner, repo, deploymentId: deployment.id});
+              if (status.status === 'succeed') { core.info('Publicación verificada'); return; }
+              if (['deployment_failed','deployment_content_failed','deployment_cancelled','deployment_lost','failed','cancelled'].includes(status.status)) throw new Error('Pages: ' + status.status);
+              await new Promise(resolve => setTimeout(resolve, 5000));
+            }
+            throw new Error('Pages no terminó en cinco minutos');

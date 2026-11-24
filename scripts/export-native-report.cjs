@@ -78,7 +78,12 @@ async function main(){
    const name=`${config.brand}-${type}-${from}-${end}`,file=path.join(output,name+'.pdf');
    await page.pdf({path:file,printBackground:true,preferCSSPageSize:true,displayHeaderFooter:false});
    const pdf=fs.readFileSync(file),commit=cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
-   const manifest={generator:'dashboard-native-v1',brand:config.brand,type,from,to:end,pages:proof.pages,commit,snapshot_commit:snapshotCommit,sha256:crypto.createHash('sha256').update(pdf).digest('hex'),generated_at:new Date().toISOString(),cover:proof.cover};
+   // La medida de pagina del PDF ya impreso, leida del propio archivo: es la unica forma de saber si
+   // salio en la lamina horizontal o en una hoja vertical sin abrirlo. 960x540 puntos = 1280x720 px.
+   const caja=(pdf.toString('latin1').match(/MediaBox\s*\[\s*0\s+0\s+([\d.]+)\s+([\d.]+)/)||[]).slice(1).map(Number);
+   const medida=caja.length===2?Math.round(caja[0])+'x'+Math.round(caja[1])+(caja[0]>caja[1]?' horizontal':' VERTICAL'):'desconocida';
+   console.log('PDF_MEDIDA',medida);
+   const manifest={generator:'dashboard-native-v1',brand:config.brand,type,from,to:end,pages:proof.pages,medida,commit,snapshot_commit:snapshotCommit,sha256:crypto.createHash('sha256').update(pdf).digest('hex'),generated_at:new Date().toISOString(),cover:proof.cover};
    fs.writeFileSync(path.join(output,name+'.json'),JSON.stringify(manifest,null,2));
    // Public repositories must never expose plaintext customer reports as workflow artifacts.
    const key=crypto.randomBytes(32),iv=crypto.randomBytes(12),cipher=crypto.createCipheriv('aes-256-gcm',key,iv);

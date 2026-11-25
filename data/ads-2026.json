@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-25T18:30:16.904Z",
+  "generatedAt": "2026-11-25T23:31:49.611Z",
   "currency": "PEN",
   "rules": [
     "Meta Ads llega por día y la serie diaria es real. Google Ads depende del informe: el de Nexus trae la columna Día y va con serie diaria real (granularity «diaria», google.daily: una fila por día y campaña); el exportado a mano no la trae y el mes es un total (granularity «mensual»), que el tablero reparte entre los días que cubre para poder sumarlo por ciclo de venta.",
@@ -19,8 +19,8 @@
       "folderUrl": "https://drive.google.com/drive/folders/1TT5KTVZuGlFc7OqvGAz9nuRVyJFvwJpd",
       "discovery": "apps script",
       "files": [
-        { "id": "1l7RSkz0peNUQSQrToHZDkb5AkJaYIc0c5bueefDugys", "name": "Royal Baby GA - Noviembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-25T18:02:15.261Z" },
-        { "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "name": "Royal Baby GA - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-25T18:01:31.676Z" },
+        { "id": "1l7RSkz0peNUQSQrToHZDkb5AkJaYIc0c5bueefDugys", "name": "Royal Baby GA - Noviembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-25T23:02:12.884Z" },
+        { "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "name": "Royal Baby GA - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-25T23:01:29.413Z" },
         { "id": "14hfRraHyl3WHlqoEwVvnGjQAK_IRGITW_lpiUqplkzw", "name": "Royal Baby GA - Septiembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-31T23:00:31.029Z" },
         { "id": "1VH381U5vefmLiloy07NVzBx29BuzSxbA_vc_m0afrYY", "name": "Royal Baby - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-26T22:06:33.349Z" },
         { "id": "1pNGQFycVHdysHcniamA_xtS6T_R_uCkQBrvE7q5u3-E", "name": "Royal Baby - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-14T13:38:06.385Z" },
@@ -38,8 +38,8 @@
       "folderUrl": "https://drive.google.com/drive/folders/1kjz_QSgFpkd9semvyjrlLQi3ETH8-DPm",
       "discovery": "apps script",
       "files": [
-        { "id": "1nn3phwslw1GTlpjBHFa-zI_dQEUCbsEnZ2NwQWtMOQk", "name": "Royal Baby - Noviembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-25T18:01:16.910Z" },
-        { "id": "1KlbLoCR--a_oMVPBv2meKtBLzvqOSvYUFS5mjbCHrys", "name": "Royal Baby - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-25T18:01:08.869Z" },
+        { "id": "1nn3phwslw1GTlpjBHFa-zI_dQEUCbsEnZ2NwQWtMOQk", "name": "Royal Baby - Noviembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-25T23:01:06.891Z" },
+        { "id": "1KlbLoCR--a_oMVPBv2meKtBLzvqOSvYUFS5mjbCHrys", "name": "Royal Baby - Octubre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-25T23:00:58.642Z" },
         { "id": "1_iTA-Gaj1YTI8JjL2_JgwlyzYLf5obuMR4Pm9BZMlSI", "name": "Royal Baby - Septiembre 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-01T01:37:10.271Z" },
         { "id": "1hRh2Xh8l1Cd2GMDX7m46S21w_0nnYKXWH0JbHOCbsec", "name": "Royal Baby - Agosto 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T04:00:41.081Z" },
         { "id": "150oEt3NUe97HJl1eexW-WhXEftoIvL5gY72KSUosNQM", "name": "Royal Baby - Julio 2026", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-10-02T03:59:21.745Z" },
@@ -7976,7 +7976,7 @@
       "id": "2026-10",
       "label": "Octubre 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Octubre 2026", "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-25T18:01:31.676Z" },
+        "source": { "name": "Royal Baby GA - Octubre 2026", "id": "1trufAhvEwhHGVC1T8a9v0_rPDFa9EttIFi-mD6MjGVI", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-25T23:01:29.413Z" },
         "monthFrom": "contenido",
         "granularity": "diaria",
         "coverage": { "start": "2026-10-01", "end": "2026-10-31", "days": 30, "daysInMonth": 31, "complete": true },
@@ -8340,9 +8340,9 @@
         }
       },
       "meta": {
-        "capturedAt": "2026-11-25T13:00:01-05:00",
+        "capturedAt": "2026-11-25T18:00:01-05:00",
         "captureProvider": "Nexus",
-        "source": { "name": "Royal Baby - Octubre 2026", "id": "1KlbLoCR--a_oMVPBv2meKtBLzvqOSvYUFS5mjbCHrys", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-25T18:01:08.869Z" },
+        "source": { "name": "Royal Baby - Octubre 2026", "id": "1KlbLoCR--a_oMVPBv2meKtBLzvqOSvYUFS5mjbCHrys", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-25T23:00:58.642Z" },
         "monthFrom": "contenido",
         "granularity": "diaria",
         "coverage": { "start": "2026-10-01", "end": "2026-10-31", "days": 31, "daysInMonth": 31, "complete": true },
@@ -9207,21 +9207,21 @@
       "id": "2026-11",
       "label": "Noviembre 2026",
       "google": {
-        "source": { "name": "Royal Baby GA - Noviembre 2026", "id": "1l7RSkz0peNUQSQrToHZDkb5AkJaYIc0c5bueefDugys", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-25T18:02:15.261Z" },
+        "source": { "name": "Royal Baby GA - Noviembre 2026", "id": "1l7RSkz0peNUQSQrToHZDkb5AkJaYIc0c5bueefDugys", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-25T23:02:12.884Z" },
         "monthFrom": "contenido",
         "granularity": "diaria",
         "coverage": { "start": "2026-11-01", "end": "2026-11-25", "days": 25, "daysInMonth": 30, "complete": false },
         "segmentation": null,
         "campaignsComplete": true,
         "totalsSource": "suma de los totales por tipo de campaña",
-        "totals": { "cost": 908.19, "impressions": 41499, "clicks": 1513, "conversions": 37.23, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.036459, "cpc": 0.6, "costPerConversion": 24.39, "costPerPurchase": null, "roas": null },
+        "totals": { "cost": 917.06, "impressions": 41580, "clicks": 1527, "conversions": 39.23, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.036724, "cpc": 0.6, "costPerConversion": 23.38, "costPerPurchase": null, "roas": null },
         "conversionsByCategory": null,
         "byType": [
-          { "type": "Búsqueda", "cost": 512.95, "impressions": 5991, "clicks": 819, "conversions": 36, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.136705, "cpc": 0.63, "costPerConversion": 14.25, "costPerPurchase": null, "roas": 0, "fromCampaigns": true },
+          { "type": "Búsqueda", "cost": 521.82, "impressions": 6072, "clicks": 833, "conversions": 38, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.137187, "cpc": 0.63, "costPerConversion": 13.73, "costPerPurchase": null, "roas": 0, "fromCampaigns": true },
           { "type": "Máximo rendimiento", "cost": 395.24, "impressions": 35508, "clicks": 694, "conversions": 1.23, "purchases": 0, "allConversions": 0, "conversionValue": 0, "ctr": 0.019545, "cpc": 0.57, "costPerConversion": 321.33, "costPerPurchase": null, "roas": 0, "fromCampaigns": true }
         ],
         "campaigns": [
-          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": null, "complete": true, "cost": 512.95, "impressions": 5991, "clicks": 819, "conversions": 36, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.136705, "cpc": 0.63, "costPerConversion": 14.25, "costPerPurchase": null, "roas": null, "conversionsByCategory": null },
+          { "campaign": "Search | LR", "status": "Habilitada", "type": "Búsqueda", "dailyBudget": null, "complete": true, "cost": 521.82, "impressions": 6072, "clicks": 833, "conversions": 38, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.137187, "cpc": 0.63, "costPerConversion": 13.73, "costPerPurchase": null, "roas": null, "conversionsByCategory": null },
           { "campaign": "Pmax B | Objetivo | LR", "status": "En pausa", "type": "Máximo rendimiento", "dailyBudget": null, "complete": true, "cost": 395.24, "impressions": 35508, "clicks": 694, "conversions": 1.23, "purchases": null, "allConversions": null, "conversionValue": null, "ctr": 0.019545, "cpc": 0.57, "costPerConversion": 321.33, "costPerPurchase": null, "roas": null, "conversionsByCategory": null }
         ],
         "daily": [
@@ -9260,27 +9260,27 @@
           { "day": "2026-11-22", "campaign": "Search | LR", "cost": 26.68, "impressions": 431, "clicks": 52, "conversions": 2, "purchases": null, "allConversions": null, "conversionValue": null },
           { "day": "2026-11-23", "campaign": "Search | LR", "cost": 24.85, "impressions": 226, "clicks": 37, "conversions": 1, "purchases": null, "allConversions": null, "conversionValue": null },
           { "day": "2026-11-24", "campaign": "Search | LR", "cost": 18.88, "impressions": 258, "clicks": 40, "conversions": 1, "purchases": null, "allConversions": null, "conversionValue": null },
-          { "day": "2026-11-25", "campaign": "Search | LR", "cost": 7.48, "impressions": 107, "clicks": 11, "conversions": 0.5, "purchases": null, "allConversions": null, "conversionValue": null }
+          { "day": "2026-11-25", "campaign": "Search | LR", "cost": 16.34, "impressions": 188, "clicks": 25, "conversions": 2.5, "purchases": null, "allConversions": null, "conversionValue": null }
         ],
         "checks": [],
         "repairs": [],
         "detail": null
       },
       "meta": {
-        "capturedAt": "2026-11-25T13:00:01-05:00",
+        "capturedAt": "2026-11-25T18:00:01-05:00",
         "captureProvider": "Nexus",
-        "source": { "name": "Royal Baby - Noviembre 2026", "id": "1nn3phwslw1GTlpjBHFa-zI_dQEUCbsEnZ2NwQWtMOQk", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-25T18:01:16.910Z" },
+        "source": { "name": "Royal Baby - Noviembre 2026", "id": "1nn3phwslw1GTlpjBHFa-zI_dQEUCbsEnZ2NwQWtMOQk", "mimeType": "application/vnd.google-apps.spreadsheet", "modifiedTime": "2026-11-25T23:01:06.891Z" },
         "monthFrom": "contenido",
         "granularity": "diaria",
         "coverage": { "start": "2026-11-01", "end": "2026-11-25", "days": 25, "daysInMonth": 30, "complete": false },
         "currency": "PEN",
         "rows": 73,
-        "totals": { "spend": 2885.42, "impressions": 457338, "linkClicks": 5077, "allClicks": 15574, "interactions": null, "purchases": 3, "purchaseValue": 901.3, "conversations": 1652, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.034054, "linkCtr": 0.011101, "cpm": 6.31, "cpc": 0.57, "costPerPurchase": 961.81, "roas": 0.31 },
+        "totals": { "spend": 2919.01, "impressions": 461438, "linkClicks": 5120, "allClicks": 15740, "interactions": null, "purchases": 3, "purchaseValue": 901.3, "conversations": 1675, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.034111, "linkCtr": 0.011096, "cpm": 6.33, "cpc": 0.57, "costPerPurchase": 973, "roas": 0.31 },
         "resultsByType": {},
         "campaigns": [
-          { "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 1818.98, "impressions": 160148, "linkClicks": 3364, "allClicks": 8637, "interactions": null, "purchases": 3, "purchaseValue": 901.3, "conversations": 1611, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.053931, "linkCtr": 0.021006, "cpm": 11.36, "cpc": 0.54, "costPerPurchase": 606.33, "roas": 0.5 },
+          { "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 1849.58, "impressions": 162357, "linkClicks": 3407, "allClicks": 8757, "interactions": null, "purchases": 3, "purchaseValue": 901.3, "conversations": 1634, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.053937, "linkCtr": 0.020985, "cpm": 11.39, "cpc": 0.54, "costPerPurchase": 616.53, "roas": 0.49 },
           { "campaign": "Ventas E-Commerce | 2026 | LR | Inv. Total | Ver01", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 739.02, "impressions": 104970, "linkClicks": 1709, "allClicks": 2758, "interactions": null, "purchases": 0, "purchaseValue": 0, "conversations": 40, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.026274, "linkCtr": 0.016281, "cpm": 7.04, "cpc": 0.43, "costPerPurchase": null, "roas": 0 },
-          { "campaign": "Reconocimiento | LR", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 274.86, "impressions": 184620, "linkClicks": 4, "allClicks": 3746, "interactions": null, "purchases": 0, "purchaseValue": 0, "conversations": 1, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.02029, "linkCtr": 0.000022, "cpm": 1.49, "cpc": 68.72, "costPerPurchase": null, "roas": 0 },
+          { "campaign": "Reconocimiento | LR", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 277.85, "impressions": 186511, "linkClicks": 4, "allClicks": 3792, "interactions": null, "purchases": 0, "purchaseValue": 0, "conversations": 1, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.020331, "linkCtr": 0.000021, "cpm": 1.49, "cpc": 69.46, "costPerPurchase": null, "roas": 0 },
           { "campaign": "Campaña Interacción 2026 | LR", "objective": null, "resultType": null, "results": 0, "costPerResult": null, "spend": 52.56, "impressions": 7600, "linkClicks": 0, "allClicks": 433, "interactions": null, "purchases": 0, "purchaseValue": 0, "conversations": 0, "landingViews": null, "addToCart": null, "checkouts": null, "ctr": 0.056974, "linkCtr": 0, "cpm": 6.92, "cpc": null, "costPerPurchase": null, "roas": 0 }
         ],
         "audience": { "age": null, "gender": null },
@@ -9288,14 +9288,14 @@
           "count": 35,
           "top": [
             { "ad": "Carmen Taberner", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120252483436220380", "spend": 661.49, "impressions": 67831, "linkClicks": 1468, "purchases": 3, "purchaseValue": 901.3, "conversations": 751, "roas": 1.36 },
-            { "ad": "Royal Outlet ya está aquí ✨", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120242310194610380", "spend": 251.01, "impressions": 16375, "linkClicks": 390, "purchases": 0, "purchaseValue": 0, "conversations": 214, "roas": 0 },
+            { "ad": "Royal Outlet ya está aquí ✨", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120242310194610380", "spend": 256.51, "impressions": 16694, "linkClicks": 395, "purchases": 0, "purchaseValue": 0, "conversations": 220, "roas": 0 },
             { "ad": "5 ocasiones. 5 vestidos", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120252483301260380", "spend": 182.78, "impressions": 18011, "linkClicks": 278, "purchases": 0, "purchaseValue": 0, "conversations": 110, "roas": 0 },
-            { "ad": "Este verano", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120253107660960380", "spend": 96.71, "impressions": 10106, "linkClicks": 222, "purchases": 0, "purchaseValue": 0, "conversations": 95, "roas": 0 },
-            { "ad": "¿Se acerca el bautizo de tu peque?", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120233424004140380", "spend": 83.24, "impressions": 10287, "linkClicks": 203, "purchases": 0, "purchaseValue": 0, "conversations": 95, "roas": 0 },
-            { "ad": "Benedetta mensajes - Daniela", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120225938349550380", "spend": 73.52, "impressions": 6771, "linkClicks": 182, "purchases": 0, "purchaseValue": 0, "conversations": 84, "roas": 0 },
-            { "ad": "Outlet", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120242310194600380", "spend": 153.43, "impressions": 7630, "linkClicks": 153, "purchases": 0, "purchaseValue": 0, "conversations": 76, "roas": 0 },
-            { "ad": "CHRISTMAS SALE · 20%", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120253107908990380", "spend": 94.28, "impressions": 6726, "linkClicks": 132, "purchases": 0, "purchaseValue": 0, "conversations": 59, "roas": 0 },
-            { "ad": "La temporada de bautizos comienza aquí", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120252352638720380", "spend": 74.12, "impressions": 6130, "linkClicks": 129, "purchases": 0, "purchaseValue": 0, "conversations": 45, "roas": 0 },
+            { "ad": "Este verano", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120253107660960380", "spend": 105.17, "impressions": 11084, "linkClicks": 242, "purchases": 0, "purchaseValue": 0, "conversations": 107, "roas": 0 },
+            { "ad": "¿Se acerca el bautizo de tu peque?", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120233424004140380", "spend": 83.73, "impressions": 10333, "linkClicks": 203, "purchases": 0, "purchaseValue": 0, "conversations": 95, "roas": 0 },
+            { "ad": "Benedetta mensajes - Daniela", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120225938349550380", "spend": 78.57, "impressions": 7126, "linkClicks": 195, "purchases": 0, "purchaseValue": 0, "conversations": 87, "roas": 0 },
+            { "ad": "Outlet", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120242310194600380", "spend": 162.58, "impressions": 8002, "linkClicks": 157, "purchases": 0, "purchaseValue": 0, "conversations": 77, "roas": 0 },
+            { "ad": "CHRISTMAS SALE · 20%", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120253107908990380", "spend": 95.49, "impressions": 6813, "linkClicks": 133, "purchases": 0, "purchaseValue": 0, "conversations": 59, "roas": 0 },
+            { "ad": "La temporada de bautizos comienza aquí", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120252352638720380", "spend": 74.59, "impressions": 6162, "linkClicks": 129, "purchases": 0, "purchaseValue": 0, "conversations": 45, "roas": 0 },
             { "ad": "La línea Benedetta está creada para esos momentos", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "link": "https://www.facebook.com/ads/manager/account/ads/?act=247978639820195&selected_ad_ids=120252352559420380", "spend": 27.8, "impressions": 1943, "linkClicks": 50, "purchases": 0, "purchaseValue": 0, "conversations": 25, "roas": 0 }
           ]
         },
@@ -9367,12 +9367,12 @@
           { "day": "2026-11-22", "campaign": "Reconocimiento | LR", "spend": 15.06, "impressions": 9973, "linkClicks": 0, "allClicks": 198, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 0, "results": 0 },
           { "day": "2026-11-22", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "spend": 95.77, "impressions": 9407, "linkClicks": 188, "allClicks": 483, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 74, "results": 0 },
           { "day": "2026-11-23", "campaign": "Reconocimiento | LR", "spend": 14.55, "impressions": 9199, "linkClicks": 0, "allClicks": 201, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 1, "results": 0 },
-          { "day": "2026-11-23", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "spend": 132.6, "impressions": 8067, "linkClicks": 179, "allClicks": 447, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 76, "results": 0 },
+          { "day": "2026-11-23", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "spend": 132.62, "impressions": 8068, "linkClicks": 179, "allClicks": 447, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 76, "results": 0 },
           { "day": "2026-11-23", "campaign": "Ventas E-Commerce | 2026 | LR | Inv. Total | Ver01", "spend": 0, "impressions": 0, "linkClicks": 0, "allClicks": 0, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 0, "results": 0 },
-          { "day": "2026-11-24", "campaign": "Reconocimiento | LR", "spend": 14.11, "impressions": 8650, "linkClicks": 0, "allClicks": 180, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 0, "results": 0 },
-          { "day": "2026-11-24", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "spend": 155.44, "impressions": 12271, "linkClicks": 253, "allClicks": 670, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 100, "results": 0 },
-          { "day": "2026-11-25", "campaign": "Reconocimiento | LR", "spend": 5.37, "impressions": 3232, "linkClicks": 0, "allClicks": 72, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 0, "results": 0 },
-          { "day": "2026-11-25", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "spend": 61.44, "impressions": 5044, "linkClicks": 105, "allClicks": 280, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 48, "results": 0 }
+          { "day": "2026-11-24", "campaign": "Reconocimiento | LR", "spend": 14.14, "impressions": 8671, "linkClicks": 0, "allClicks": 180, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 0, "results": 0 },
+          { "day": "2026-11-24", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "spend": 155.45, "impressions": 12275, "linkClicks": 253, "allClicks": 670, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 100, "results": 0 },
+          { "day": "2026-11-25", "campaign": "Reconocimiento | LR", "spend": 8.33, "impressions": 5102, "linkClicks": 0, "allClicks": 118, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 0, "results": 0 },
+          { "day": "2026-11-25", "campaign": "Tráfico a Mensajes | WhatsApp | Inv Total | LR", "spend": 92.01, "impressions": 7248, "linkClicks": 148, "allClicks": 400, "interactions": 0, "purchases": 0, "purchaseValue": 0, "conversations": 71, "results": 0 }
         ],
         "table": {
           "columns": [
@@ -9878,17 +9878,17 @@
             [23,1,3,32,null,0.24,27,null,0,0,0,0,0],
             [23,1,3,12,null,6.72,463,null,7,0,0,4,0],
             [23,1,3,33,null,16.04,1311,null,27,0,0,10,0],
-            [23,1,3,34,null,49.51,3243,null,67,0,0,34,0],
+            [23,1,3,34,null,49.53,3244,null,67,0,0,34,0],
             [24,0,0,0,null,0,6,null,0,0,0,0,0],
             [24,0,0,1,null,0,1,null,0,0,0,0,0],
-            [24,0,1,3,null,6.64,3909,null,0,0,0,0,0],
-            [24,0,0,4,null,7.39,4653,null,0,0,0,0,0],
+            [24,0,1,3,null,6.64,3916,null,0,0,0,0,0],
+            [24,0,0,4,null,7.42,4667,null,0,0,0,0,0],
             [24,0,0,5,null,0.08,81,null,0,0,0,0,0],
             [24,1,2,6,null,1.33,101,null,1,0,0,0,0],
             [24,1,2,7,null,1.92,200,null,3,0,0,2,0],
-            [24,1,6,26,null,5.36,254,null,3,0,0,0,0],
+            [24,1,6,26,null,5.37,255,null,3,0,0,0,0],
             [24,1,6,24,null,16.68,508,null,7,0,0,5,0],
-            [24,1,6,20,null,14.75,648,null,17,0,0,6,0],
+            [24,1,6,20,null,14.75,649,null,17,0,0,6,0],
             [24,1,2,28,null,0.92,85,null,0,0,0,0,0],
             [24,1,2,25,null,15.54,942,null,20,0,0,8,0],
             [24,1,2,8,null,4.51,292,null,7,0,0,2,0],
@@ -9896,23 +9896,23 @@
             [24,1,3,10,null,0.01,2,null,0,0,0,0,0],
             [24,1,3,32,null,0.03,4,null,0,0,0,0,0],
             [24,1,3,12,null,0,0,null,0,0,0,1,0],
-            [24,1,3,33,null,52.45,5988,null,136,0,0,54,0],
+            [24,1,3,33,null,52.45,5990,null,136,0,0,54,0],
             [24,1,3,34,null,40.46,3182,null,57,0,0,22,0],
-            [25,0,0,0,null,0.05,61,null,0,0,0,0,0],
-            [25,0,1,3,null,2.41,1341,null,0,0,0,0,0],
-            [25,0,0,4,null,2.9,1804,null,0,0,0,0,0],
-            [25,0,0,5,null,0.01,26,null,0,0,0,0,0],
-            [25,1,2,6,null,2.77,168,null,6,0,0,2,0],
-            [25,1,2,7,null,4.74,534,null,7,0,0,2,0],
-            [25,1,6,24,null,8.45,416,null,6,0,0,4,0],
-            [25,1,6,20,null,7.81,393,null,11,0,0,4,0],
-            [25,1,2,28,null,1.13,80,null,0,0,0,0,0],
+            [25,0,0,0,null,0.05,62,null,0,0,0,0,0],
+            [25,0,1,3,null,3.76,2126,null,0,0,0,0,0],
+            [25,0,0,4,null,4.5,2882,null,0,0,0,0,0],
+            [25,0,0,5,null,0.02,32,null,0,0,0,0,0],
+            [25,1,2,6,null,7.82,523,null,19,0,0,5,0],
+            [25,1,2,7,null,5.23,580,null,7,0,0,2,0],
+            [25,1,6,24,null,17.6,788,null,10,0,0,5,0],
+            [25,1,6,20,null,13.31,711,null,16,0,0,10,0],
+            [25,1,2,28,null,1.16,84,null,0,0,0,0,0],
             [25,1,2,25,null,1.12,93,null,1,0,0,1,0],
-            [25,1,2,8,null,2.49,239,null,7,0,0,2,0],
-            [25,1,3,21,null,0.37,11,null,0,0,0,0,0],
+            [25,1,2,8,null,2.96,271,null,7,0,0,2,0],
+            [25,1,3,21,null,0.6,26,null,0,0,0,0,0],
             [25,1,3,32,null,0.03,2,null,0,0,0,0,0],
-            [25,1,3,33,null,28.22,2807,null,59,0,0,31,0],
-            [25,1,3,34,null,4.31,301,null,8,0,0,3,0]
+            [25,1,3,33,null,36.68,3783,null,79,0,0,43,0],
+            [25,1,3,34,null,5.5,387,null,9,0,0,3,0]
           ]
         }
       },
@@ -9921,15 +9921,15 @@
           "google",
           "meta"
         ],
-        "spend": 3793.61,
-        "impressions": 498837,
-        "clicks": 6590,
+        "spend": 3836.07,
+        "impressions": 503018,
+        "clicks": 6647,
         "purchases": 3,
         "purchaseValue": 901.3,
-        "cpm": 7.6,
-        "costPerPurchase": 1264.54,
-        "roas": 0.24,
-        "spendShare": { "google": 0.2394, "meta": 0.7606 },
+        "cpm": 7.63,
+        "costPerPurchase": 1278.69,
+        "roas": 0.23,
+        "spendShare": { "google": 0.2391, "meta": 0.7609 },
         "dailyBasis": "real",
         "notes": [
           "Clics = clics de Google Ads + clics en el enlace de Meta.",
@@ -9947,25 +9947,25 @@
   "visibilityByMonth": {
     "2026-11": {
       "through": "2026-11-25",
-      "at": "2026-11-25T18:02:15.261Z",
+      "at": "2026-11-25T23:02:12.884Z",
       "campaigns": [
         {
           "campaign": "Search | LR",
-          "top_rate": 0.6704000000000001,
-          "absolute_top_rate": 0.3432,
-          "top_share": 0.14730000000000001,
+          "top_rate": 0.6717,
+          "absolute_top_rate": 0.34409999999999996,
+          "top_share": 0.1475,
           "absolute_top_share": 0.0999,
-          "lost_top_budget": 0.3987,
-          "lost_top_rank": 0.45399999999999996,
+          "lost_top_budget": 0.39490000000000003,
+          "lost_top_rank": 0.4576,
           "groups": [
-            { "id": "155385398856", "name": "Términos Generales", "top_rate": 0.6391608391608392, "absolute_top_rate": 0.2878321678321678, "top_share": 0.13679616946481604, "absolute_top_share": 0.0999, "lost_top_budget": 0.3983271713437178, "lost_top_rank": 0.46487665919146615 },
+            { "id": "155385398856", "name": "Términos Generales", "top_rate": 0.6404867256637168, "absolute_top_rate": 0.28761061946902655, "top_share": 0.1372770511296076, "absolute_top_share": 0.0999, "lost_top_budget": 0.39536266349583826, "lost_top_rank": 0.4673602853745541 },
             { "id": "155729664875", "name": "Ropa Para Bebés", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null },
             { "id": "158682062127", "name": "Ropa para Bautizos", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null },
             { "id": "198807601888", "name": "Martin Aranda 2x1", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null },
-            { "id": "200032327635", "name": "Términos Marca", "top_rate": 0.7571305099394987, "absolute_top_rate": 0.48660328435609335, "top_share": 0.16666666666666666, "absolute_top_share": 0.10718424101969873, "lost_top_budget": 0.3988026264967169, "lost_top_rank": 0.43453070683661643 },
+            { "id": "200032327635", "name": "Términos Marca", "top_rate": 0.7563667232597623, "absolute_top_rate": 0.48811544991511036, "top_share": 0.1650232558139535, "absolute_top_share": 0.10623255813953489, "lost_top_budget": 0.39348837209302323, "lost_top_rank": 0.4414883720930233 },
             { "id": "203627833122", "name": "Regalo Recién Nacido", "top_rate": 1, "absolute_top_rate": 0, "top_share": 0.0999, "absolute_top_share": 0.0999, "lost_top_budget": 0, "lost_top_rank": 0.9001 },
             { "id": "205149017907", "name": "Outlet", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null },
-            { "id": "205688502401", "name": "Bautizo", "top_rate": 0.725, "absolute_top_rate": 0.505, "top_share": 0.3098901098901099, "absolute_top_share": 0.2175824175824176, "lost_top_budget": 0.4197802197802198, "lost_top_rank": 0.2703296703296703 },
+            { "id": "205688502401", "name": "Bautizo", "top_rate": 0.7330097087378641, "absolute_top_rate": 0.5145631067961165, "top_share": 0.3148936170212766, "absolute_top_share": 0.22127659574468084, "lost_top_budget": 0.40638297872340423, "lost_top_rank": 0.27872340425531916 },
             { "id": "207232440652", "name": "Navidad", "top_rate": null, "absolute_top_rate": null, "top_share": null, "absolute_top_share": null, "lost_top_budget": null, "lost_top_rank": null }
           ]
         },
@@ -9983,7 +9983,7 @@
     },
     "2026-10": {
       "through": "2026-10-31",
-      "at": "2026-11-25T18:01:31.676Z",
+      "at": "2026-11-25T23:01:29.413Z",
       "campaigns": [
         {
           "campaign": "Search | LR",

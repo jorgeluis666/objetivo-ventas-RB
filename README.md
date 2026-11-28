@@ -37,6 +37,7 @@ Publicado en **https://royalbaby.limaretail.com**, con clave.
     projections.js        Módulo Proyecciones (datos de Objetivos y Gasto publicitario): pestaña Ritmo del mes
     plan-campanas.js      Proyecciones · pestaña Plan por campaña (estrategia Plano + Picos)
     gasto.js              Módulo Gasto publicitario (Meta Ads y Google Ads desde Drive)
+    competencia.js        Módulo Análisis de Competencia (toma manual de la Biblioteca de Anuncios de Meta)
     reportes.js           Archivo de Reportes · pestaña Documentos en Drive (carpeta Reportes)
     reporte-semanal.js    Archivo de Reportes · pestaña Generación de Reporte (semana de lunes a domingo, numerada)
     reporte-mensual.js    Archivo de Reportes · pestaña Generación de Reporte (mes del ciclo y acumulado por domingo)
@@ -206,6 +207,17 @@ Módulo del menú, después de Gasto publicitario (vista `view-ads`, en `js/gast
 - **Pestañas Meta Ads y Google Ads** (se recuerda la última en `rb-ads-tab`), cada una con sus pestañas de mes y Anual.
 - **Top 3 de anuncios que generaron ventas**: los de más valor atribuido en el periodo (a igual valor, más compras), con su grupo y campaña, ventas, compras o conversiones, ROAS e inversión. En Meta son las compras (incluidas las que llegan por WhatsApp); en Google, el valor de las conversiones del informe por día.
 - **Tabla de anuncios**: el nombre del anuncio enlaza a su vista previa (Meta) o a su página (Google), y **Ventas** (valor, con la cantidad debajo) y **ROAS** van al lado del anuncio. Después, en Meta: campaña y conjunto, resultado, resultados del mes anterior y variación, costo por resultado, inversión, impresiones, alcance, CPM, clics y días activos; en Google, del informe por día (su periodo es el que cubre ese informe): campaña y grupo, inversión, conversiones del mes anterior y variación, costo por conversión, clics, CPC, términos y días activos. Las dos con cabecera fija, Grupo/Tipo y Anuncio anclados, filtro, densidad compacta (`rb-gp-ads-compact-v1`, `rb-gp-gads-compact-v1`) y pantalla completa (las pestañas de mes se mueven al panel; `Esc` sale).
+
+## Análisis de Competencia
+
+Módulo del menú, después de Anuncios (`js/competencia.js`, vista `view-comp`). Qué ofrece el rubro de ropa de bebé y niño en Perú, cuántos anuncios tiene cada marca al aire y en qué formato, según la [Biblioteca de Anuncios de Meta](https://www.facebook.com/ads/library/), que es pública y muestra los anuncios activos de cualquier página, no su inversión.
+
+- **Cuatro KPIs**: anuncios activos de Royal Baby y cuántos son de la campaña del momento, la marca de más volumen del rubro, el peso del video y la hora a la que salió Royal Baby.
+- **Ofertas y orden de salida**: el descuento de cada marca y la hora de Lima de su primer anuncio, ordenado por hora. La fila de Royal Baby va resaltada.
+- **Volumen y formatos**: anuncios activos por marca y su desglose en video, imagen y catálogo, con un gráfico de barras apiladas al lado.
+- **Los creativos de la oferta**: la pieza con la que cada marca comunica su descuento, guardada en `assets/competencia/`.
+
+**Es una toma manual, no una sincronización.** No hay script ni workflow detrás: los datos, los textos y la fecha de la toma viven en las constantes `FECHA_CORTE`, `PERIODO`, `MARCAS` y `CREATIVOS` de `js/competencia.js`, y el módulo muestra arriba un aviso ámbar con esa fecha para que nadie lo lea como dato fresco. Para rehacer la toma: entrar a la Biblioteca con el país en Perú, abrir la página de cada marca, contar los activos y su formato, guardar el creativo de la oferta en `assets/competencia/` y actualizar las constantes. El contador de la Biblioteca da el total exacto; el desglose de formato se cuenta sobre las piezas que la página llega a cargar, así que cuando es una muestra se anota en `muestra`.
 
 ## Proyecciones
 

@@ -4,7 +4,7 @@
     "name": "06 Artes",
     "url": "https://drive.google.com/drive/folders/1ab1a50IRolSq5qydzycRsGctbG8J9gmP"
   },
-  "sincronizado": "2026-11-27T23:31:51.073Z",
+  "sincronizado": "2026-11-28T11:24:41.098Z",
   "avisos": [],
   "months": {
     "2026-10": {
@@ -451,6 +451,33 @@
         "file": "5 ocasiones. 5 vestidos.mp4",
         "campana": "Nexus - Meta",
         "driveId": "138Aj3xjxaULLGtzNo_BLeNcyCqIt4-I9",
+        "kind": "video"
+      },
+      {
+        "file": "Black Days - Imagen (Carrusel)",
+        "campana": "Nexus - Meta",
+        "driveId": "13fKHVRQ5DagSmhA8XTiuKX8dbXTdMoKQ",
+        "kind": "carrusel",
+        "slides": [
+          "13fKHVRQ5DagSmhA8XTiuKX8dbXTdMoKQ",
+          "13l25fDEMPUdUhM43FizyoKLom_lJoREw",
+          "1_3LMGZWwURFXE2rxbdaKi-6x_XUWz7u6",
+          "1vG2QaXV531edbW1HcIN6-o-Sd5bivZG_",
+          "1Wx3O7uS9xv4qnb38_aBcvYhy3LuNBs2B",
+          "1feuuEEoP8fUSVAiFVOoZxIBEFmnk7wmv"
+        ],
+        "ordenIncierto": true
+      },
+      {
+        "file": "Black Days - Video.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1Q-OSe7qUniO-TOJDwAJCQ5U-zgfghrVm",
+        "kind": "video"
+      },
+      {
+        "file": "Black Fridays.mp4",
+        "campana": "Nexus - Meta",
+        "driveId": "1UvnITNYMS595LSbpyw-nMOpYsAol_RQ4",
         "kind": "video"
       },
       {

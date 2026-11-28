@@ -72,6 +72,16 @@
       </div>
       <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
     </button>
+    <button title="Análisis de Competencia" class="s-item" data-view="view-comp">
+      <div class="s-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      </div>
+      <div class="s-text">
+        <div class="s-title-nav">Análisis de Competencia</div>
+        <div class="s-desc-nav">Ofertas, volumen y formatos del rubro</div>
+      </div>
+      <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </button>
     <button title="Proyecciones" class="s-item" data-view="view-proj">
       <div class="s-icon">
         <svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
@@ -915,6 +925,60 @@
         </div>
       </section>
 
+      <!-- ══ VIEW: Análisis de Competencia ═══════ -->
+      <!-- Instantánea manual de la Biblioteca de Anuncios de Meta. Los datos y los textos
+           viven en js/competencia.js; los creativos, en assets/competencia/. -->
+      <section class="view" id="view-comp">
+        <div class="section-title">Análisis de Competencia · Black Friday</div>
+        <div class="section-desc">
+          Qué está ofreciendo el rubro de ropa de bebé y niño en Perú, cuántos anuncios tiene cada marca al aire y en qué formato. Sale de la <strong>Biblioteca de Anuncios de Meta</strong>, que es pública: muestra los anuncios activos de cualquier página, no su inversión. El volumen de cada marca es el contador de la Biblioteca; el desglose de formato se contó sobre las piezas que la página llegó a cargar.
+        </div>
+
+        <div class="insight warn" id="comp-aviso" style="margin:0 0 16px;">
+          <b>Toma manual.</b> Este módulo no se sincroniza solo: <span id="comp-corte">—</span>.
+        </div>
+
+        <div class="grid-4" id="comp-kpis" style="margin-bottom:18px;" role="group" aria-label="Resumen de la competencia"></div>
+
+        <div class="rep-stack">
+          <div class="panel">
+            <div class="panel-head"><div>
+              <div class="panel-title">Ofertas y orden de salida</div>
+              <div class="panel-sub">Hora de Lima del primer anuncio de Black Friday de cada marca</div>
+            </div></div>
+            <div id="comp-ofertas"></div>
+          </div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="panel-head"><div>
+                <div class="panel-title">Volumen y formatos</div>
+                <div class="panel-sub">Anuncios activos con alcance en Perú</div>
+              </div></div>
+              <div id="comp-formatos"></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><div>
+                <div class="panel-title">Formato de las piezas contadas</div>
+                <div class="panel-sub">Video, imagen y catálogo · en Baby Loli (28 de 99) y Babyberry (6 de 7) es una muestra, no el total</div>
+              </div></div>
+              <div class="chart-wrap h-260"><canvas id="chart-comp-activos" role="img" aria-label="Anuncios activos por marca, desglosados por formato"></canvas></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><div>
+              <div class="panel-title">Los creativos de la oferta</div>
+              <div class="panel-sub">La pieza con la que cada marca comunica su descuento</div>
+            </div></div>
+            <div style="padding:16px;">
+              <div class="comp-creativos" id="comp-creativos"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ══ VIEW: Archivo de Reportes · Documentos en Drive ══ -->
       <!-- Un módulo con dos pestañas: los documentos de la carpeta Reportes (js/reportes.js) y el reporte
            de la semana armado con las descargas de Meta Ads y Google Ads (js/reporte-semanal.js). -->
@@ -1026,6 +1090,7 @@
 <script src="js/projections.js"></script>
 <script src="js/resultados.js"></script>
 <script src="js/gasto.js"></script>
+<script src="js/competencia.js"></script>
 <script src="js/reportes.js"></script>
 <script src="js/reporte-semanal.js"></script>
 <script src="js/reporte-mensual.js"></script>

@@ -17,6 +17,7 @@
     'view-res':  'Resultados vs inversión',
     'view-rep':  'Gasto publicitario',
     'view-ads':  'Anuncios',
+    'view-comp': 'Análisis de Competencia',
     'view-arch': 'Archivo de Reportes',
     'view-week': 'Archivo de Reportes',
   };
@@ -32,6 +33,7 @@
     'view-res':    'ROAS real por canal, mes a mes',
     'view-rep':    'Meta Ads y Google Ads',
     'view-ads':    'Meta Ads y Google Ads por anuncio',
+    'view-comp':   'Ofertas, volumen y formatos del rubro',
     'view-arch':   'Documentos en Drive',
     'view-week':   'Generación de Reporte · mensual, acumulado y semanal',
   };
@@ -52,6 +54,7 @@
     'view-res':    ['chart-res'],
     'view-rep':    [],  // Gasto.init() re-anima los charts de la pestaña activa
     'view-ads':    [],
+    'view-comp':   ['chart-comp-activos'],
     'view-arch':   [],
     'view-week':   [],  // ReporteMensual.init() dibuja sus láminas (o el semanal) ya visible
   };
@@ -115,6 +118,8 @@
     if (id === 'view-rep') window.Gasto?.init();
     // Anuncios usa los mismos datos de Meta Ads y Google Ads (js/gasto.js)
     if (id === 'view-ads') window.Gasto?.initAds();
+    // Análisis de Competencia: instantánea manual, no depende de los datos de ventas ni de Drive
+    if (id === 'view-comp') window.Competencia?.init();
     // Archivo de Reportes: la lista de la carpeta y la generación de reporte, mensual o semanal (leen los datos de Gasto.load())
     if (id === 'view-arch') window.Reportes?.init();
     if (id === 'view-week') window.ReporteMensual?.init();

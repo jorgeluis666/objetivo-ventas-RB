@@ -3551,3 +3551,42 @@ a.gp-tool-btn { line-height: 32px; text-decoration: none; }
 /* El desglose de la inversión por fuente parte en varias líneas: si no, la columna empuja a las
    de 2025 fuera de la pantalla. */
 .res-table td.res-inv .sub-val { white-space: normal; max-width: 250px; margin-left: auto; }
+
+/* ── Análisis de Competencia (js/competencia.js) ── */
+/* La fila de Royal Baby, para distinguirla de las otras marcas sin usar color de marca. */
+.rep-table tr.comp-propia td { background: #fef7f7; }
+.rep-table tr.comp-propia td:first-child b { color: var(--brand-text); }
+.comp-nota { display: block; margin-top: 2px; font-size: 11px; color: var(--text-2); font-weight: 400; }
+
+.comp-creativos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+}
+.comp-creativo {
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: #fff;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+.comp-creativo.propia { border-color: #fca5a5; }
+.comp-creativo img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: contain;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border);
+}
+.comp-creativo figcaption { padding: 10px 12px; display: grid; gap: 5px; align-content: start; }
+.comp-creativo-marca { font-size: 12px; font-weight: 700; color: var(--text); }
+.comp-creativo-dice { font-size: 12px; color: var(--text); }
+.comp-creativo-cuando { font-size: 11px; color: var(--text-2); }
+
+@media (max-width: 720px) {
+  .comp-creativos { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+}
